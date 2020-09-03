@@ -6,7 +6,8 @@
     "ext-json": "*",
     "ext-pcntl": "*",
     "ext-pdo": "*",
-    "ext-posix": "*"
+    "ext-posix": "*",
+    "nesbot/carbon": "^2.39"
   },
   "require-dev": {
     "phpunit/phpunit": "~9.0"
