@@ -1,5 +1,4 @@
-DOCKER_COMPOSE_COMMAND=docker-compose -p $(shell basename $(CURDIR))
-TARGET=local
+DOCKER_COMPOSE_COMMAND=cd docker && docker-compose -p $(shell basename $(CURDIR))
 
 .PHONY: build
 build:
@@ -15,11 +14,11 @@ down:
 
 .PHONY: test
 test:
-	$(DOCKER_COMPOSE_COMMAND) exec app phpunit
+	$(DOCKER_COMPOSE_COMMAND) exec app cd tests && phpunit
 
 .PHONY: bash
 bash:
-	$(DOCKER_COMPOSE_COMMAND) exec app bash
+	$(DOCKER_COMPOSE_COMMAND) run app bash
 
 .PHONY: update
 update:

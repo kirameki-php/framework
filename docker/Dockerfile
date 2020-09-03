@@ -1,4 +1,4 @@
-FROM php:8-cli-alpine
+FROM php:cli-alpine
 
 ENV COMPOSER_ALLOW_SUPERUSER 1
 ENV TZ Asia/Tokyo

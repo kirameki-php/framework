@@ -1,10 +1,10 @@
-<phpunit bootstrap="vendor/autoload.php"
+<phpunit bootstrap="../vendor/autoload.php"
          executionOrder="depends,defects"
          verbose="true"
          colors="true">
     <testsuites>
         <testsuite name="default">
-            <directory suffix="Test.php">tests</directory>
+            <directory suffix="Test.php">./</directory>
         </testsuite>
     </testsuites>
     <php>

@@ -2,6 +2,7 @@
 /vendor
 /.env
 .docker
+composer.lock
 
 # PHPUnit
 .phpunit.result.cache

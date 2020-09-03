@@ -20,8 +20,7 @@
       "Exelion\\": "src/"
     },
     "files": [
-      "src/Support/constants.php",
-      "src/Support/helpers.php"
+      "src/helpers.php"
     ]
   },
   "autoload-dev": {
