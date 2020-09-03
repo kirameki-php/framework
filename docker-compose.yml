@@ -1,0 +1,19 @@
+version: "3"
+services:
+  app:
+    build:
+      context: .
+    ports:
+      - "9000:80"
+    volumes:
+      - .:/project:delegated
+    depends_on:
+      - mysql
+      - redis
+  mysql:
+    image: mysql:8
+    environment:
+      LANG: "C.UTF-8"
+      MYSQL_ALLOW_EMPTY_PASSWORD: "true"
+  redis:
+    image: redis:alpine
