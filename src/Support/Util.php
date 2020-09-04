@@ -1,6 +1,6 @@
 <?php
 
-namespace Exelion\Support;
+namespace Kirameki\Support;
 
 class Util
 {

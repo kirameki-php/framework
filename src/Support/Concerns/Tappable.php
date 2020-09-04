@@ -1,6 +1,6 @@
 <?php
 
-namespace Exelion\Support\Concerns;
+namespace Kirameki\Support\Concerns;
 
 trait Tappable
 {
