@@ -1,5 +1,5 @@
 {
-  "name": "taka-oyama/exelion",
+  "name": "kirameki/framework",
   "type": "project",
   "require": {
     "ext-apcu": "*",

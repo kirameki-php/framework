@@ -2,7 +2,7 @@ DOCKER_COMPOSE_COMMAND=cd docker && docker-compose -p $(shell basename $(CURDIR)
 
 .PHONY: build
 build:
-	docker build -t app:latest --target $(TARGET) .
+	$(DOCKER_COMPOSE_COMMAND) build app
 
 .PHONY: up
 up:
