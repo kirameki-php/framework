@@ -1,7 +1,9 @@
 {
   "name": "kirameki/framework",
+  "bin": ["bin/kirameki"],
   "type": "project",
   "require": {
+    "ext-apache": "*",
     "ext-apcu": "*",
     "ext-json": "*",
     "ext-pcntl": "*",
@@ -10,6 +12,7 @@
     "nesbot/carbon": "^2.39",
     "psr/container": "^1.0",
     "psr/log": "^1.1",
+    "symfony/var-dumper": "^5.1",
     "vlucas/phpdotenv": "^5.1"
   },
   "require-dev": {

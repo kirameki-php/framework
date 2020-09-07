@@ -3,37 +3,45 @@
 namespace Kirameki;
 
 use Dotenv\Dotenv;
+use InvalidArgumentException;
 use Kirameki\Container\Container;
+use Kirameki\Support\Config;
 use Kirameki\Support\Env;
 
 class Application extends Container
 {
-    protected const Version = '0.0.1';
+    protected static ?Application $instance;
 
     protected string $basePath;
 
     protected float $startTime;
 
-    public function __construct(string $basePath)
+    protected Config $config;
+
+    public static function instance(): Application
     {
-        $this->basePath = $basePath;
-        $this->startTime = microtime(true);
-        $this->loadEnvFile();
+        return static::$instance;
     }
 
-    public function loadEnvFile(string $path = null): void
+    public function __construct(string $basePath, string $dotEnvPath = null)
     {
-        Dotenv::createImmutable([$path ?? $this->basePath])->load();
+        Dotenv::createImmutable([$dotEnvPath ?? $basePath])->load();
+        static::$instance = $this;
+        $this->basePath = $basePath;
+        $this->startTime = microtime(true) * 1000;
+        $this->config = Config::fromDirectory($basePath.'/config');
+
+        date_default_timezone_set($this->config->get('app.timezone'));
+    }
+
+    public function version(): string
+    {
+        return apcu_entry('app:version', static fn() => file_get_contents(__DIR__.'/../VERSION'));
     }
 
     public function env(): string
     {
-        return Env::get('KIRAMEKI_ENV') ?? 'production';
-    }
-
-    public function inDebugMode(): bool
-    {
-        return (bool) Env::get('APP_DEBUG');
+        return Env::get('APP_ENV') ?? 'production';
     }
 
     public function isEnv(string ...$names): bool
@@ -51,8 +59,45 @@ class Application extends Container
         return !$this->isProduction();
     }
 
-    public function version(): string
+    public function runningInServer(): bool
     {
-        return self::Version;
+        return !$this->runningInConsole();
+    }
+
+    public function runningInConsole(): bool
+    {
+        return PHP_SAPI === 'cli';
+    }
+
+    public function inDebugMode(): bool
+    {
+        return (bool) $this->config->get('app.debug');
+    }
+
+    public function getBasePath(): string
+    {
+        return $this->basePath;
+    }
+
+    public function startTime(): float
+    {
+        return $this->startTime;
+    }
+
+    /**
+     * @param string|null $key
+     * @param mixed|null $value
+     * @return Config|mixed|null
+     */
+    public function config(string $key = null, $value = null)
+    {
+        $argCount = func_num_args();
+
+        if ($argCount === 0) return $this->config;
+        if ($argCount === 1) return $this->config->get($key);
+        if ($argCount === 2) return $this->config->set($key, $value);
+
+        $errorMessage = __METHOD__.'() should only have upto 2 arguments. '.$argCount.' given.';
+        throw new InvalidArgumentException($errorMessage);
     }
 }

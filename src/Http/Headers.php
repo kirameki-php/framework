@@ -1,8 +1,10 @@
 <?php
 
-namespace Kirameki\Http\Request;
+namespace Kirameki\Http;
 
-class Headers
+use Countable;
+
+class Headers implements Countable
 {
     protected array $entries;
 
@@ -14,7 +16,7 @@ class Headers
 
     public function all(): array
     {
-        return array_merge($_GET, $_POST, $this->caseSensitiveEntries());
+        return $this->caseSensitiveEntries();
     }
 
     public function has(string $name): bool
@@ -22,13 +24,14 @@ class Headers
         return $this->get($name) !== null;
     }
 
+    public function is(string $name, string $expectedValue): bool
+    {
+        return $this->get($name) === $expectedValue;
+    }
+
     public function get(string $name): string|null
     {
-        $key = strtoupper($name);
-        return $this->entries[$key]['value']
-            ?? $_POST[$key]
-            ?? $_GET[$key]
-            ?? null;
+        return $this->entries[strtoupper($name)]['value'] ?? null;
     }
 
     public function set(string $name, string $value): void
@@ -36,12 +39,11 @@ class Headers
         $this->entries[strtoupper($name)] = compact('name', 'value');
     }
 
-    public function merge(array $entries)
+    public function merge(array $entries): void
     {
         foreach ($entries as $name => $entry) {
             $this->set($name, $entry);
         }
-        return $this;
     }
 
     public function delete(string $name): void
@@ -51,7 +53,7 @@ class Headers
 
     public function count(): int
     {
-        return count($_GET) + count($_POST) + count($this->entries);
+        return count($this->entries);
     }
 
     protected function caseSensitiveEntries(): array
@@ -61,5 +63,19 @@ class Headers
             $entries[$data['name']] = $data['value'];
         }
         return $entries;
+    }
+
+    public function toString(): string
+    {
+        return $this->__toString();
+    }
+
+    public function __toString(): string
+    {
+        $raw = '';
+        foreach ($this->entries as $data) {
+            $raw.= $data['name'].': '.$data['value'];
+        }
+        return $raw;
     }
 }

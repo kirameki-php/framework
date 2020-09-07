@@ -7,15 +7,8 @@ use Psr\Container\ContainerInterface;
 
 class Container implements ContainerInterface
 {
-    protected static $instance;
-
     /** @var EntryInterface[] */
     protected array $entries = [];
-
-    public static function instance()
-    {
-        return static::$instance ??= new static();
-    }
 
     public function get($id)
     {

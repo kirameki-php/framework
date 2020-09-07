@@ -1,4 +1,13 @@
 #!/usr/bin/env php
 <?php
 
-echo 'hello';
+$currDir = '.';
+for ($i = 0; $i < 5; $i++) {
+    if ($bootFile = realpath($currDir.'/app/boot.php')) {
+        define('APP_DIR', $bootFile);
+        break;
+    }
+    $currDir.= '/..';
+}
+
+echo APP_DIR.PHP_EOL;
