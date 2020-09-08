@@ -42,6 +42,8 @@ class Container implements ContainerInterface
         $entry = $this->entries[$id];
         if ($entry instanceof ClosureEntry) {
             $entry->onResolved($callback);
+        } else {
+            $callback($entry);
         }
     }
 }

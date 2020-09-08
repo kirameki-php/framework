@@ -25,4 +25,9 @@ class InstanceEntry implements EntryInterface
     {
         return $this->instance;
     }
+
+    public function onResolved(Closure $callback): void
+    {
+        $callback($this->instance);
+    }
 }
