@@ -27,7 +27,7 @@ class Container implements ContainerInterface
             : new InstanceEntry($id, $entry);
     }
 
-    public function unset(string $id): void
+    public function remove(string $id): void
     {
         unset($this->entries[$id]);
     }

@@ -30,13 +30,12 @@ class Application extends Container
         $this->basePath = $basePath;
         $this->startTime = microtime(true) * 1000;
         $this->config = Config::fromDirectory($basePath.'/config');
-
-        date_default_timezone_set($this->config->get('app.timezone'));
+        $this->setTimeZone($this->config->get('app.timezone'));
     }
 
     public function version(): string
     {
-        return apcu_entry('app:version', static fn() => file_get_contents(__DIR__.'/../VERSION'));
+        return file_get_contents(__DIR__.'/../VERSION');
     }
 
     public function env(): string
@@ -99,5 +98,10 @@ class Application extends Container
 
         $errorMessage = __METHOD__.'() should only have upto 2 arguments. '.$argCount.' given.';
         throw new InvalidArgumentException($errorMessage);
+    }
+
+    protected function setTimeZone(string $timezone): bool
+    {
+        return date_default_timezone_set($timezone);
     }
 }

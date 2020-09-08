@@ -30,7 +30,7 @@ class Parameters implements Countable, IteratorAggregate
         $this->entries[$name] = $value;
     }
 
-    public function delete(string $name): void
+    public function remove(string $name): void
     {
         unset($this->entries[$name]);
     }

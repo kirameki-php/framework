@@ -29,7 +29,7 @@ class Headers implements Countable
         return $this->get($name) === $expectedValue;
     }
 
-    public function get(string $name): string|null
+    public function get(string $name): ?string
     {
         return $this->entries[strtoupper($name)]['value'] ?? null;
     }
@@ -46,7 +46,7 @@ class Headers implements Countable
         }
     }
 
-    public function delete(string $name): void
+    public function remove(string $name): void
     {
         unset($this->entries[strtoupper($name)]);
     }
