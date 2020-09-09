@@ -27,6 +27,11 @@ class Container implements ContainerInterface
             : new InstanceEntry($id, $entry);
     }
 
+    public function singleton(string $id, $entry): void
+    {
+        $this->set($id, $entry, true);
+    }
+
     public function remove(string $id): bool
     {
         if ($this->has($id)) {
@@ -36,9 +41,9 @@ class Container implements ContainerInterface
         return false;
     }
 
-    public function singleton(string $id, $entry): void
+    public function entry(string $id): EntryInterface
     {
-        $this->set($id, $entry, true);
+        return $this->entries[$id];
     }
 
     /**
