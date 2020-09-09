@@ -13,21 +13,25 @@ class LogManager implements LoggerInterface
 
     protected Logger $default;
 
-    public function __construct(Logger $defaultLogger)
+    public function __construct()
     {
         $this->loggers = new Container();
-        $this->loggers->singleton($defaultLogger->getName(), $defaultLogger);
-        $this->default = $defaultLogger;
     }
 
-    public function setDefaultLogger(string $name): void
+    public function setDefaultLogger(string $channel): void
     {
-        $this->default = $this->channel($name);
+        $this->default = $this->channel($channel);
     }
 
-    public function channel(string $name): Logger
+    public function addLogger(string $channel, $logger): self
     {
-        return $this->loggers->get($name);
+        $this->loggers->singleton($channel, $logger);
+        return $this;
+    }
+
+    public function channel(string $channel): Logger
+    {
+        return $this->loggers->get($channel);
     }
 
     public function log($level, $message, array $context = []): void

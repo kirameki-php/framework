@@ -34,7 +34,7 @@ interface StoreInterface
 
     public function clear(): bool;
 
-    public function prefix(): string;
+    public function namespace(): string;
 
     public function triggerEvents(bool $toggle): void;
 }

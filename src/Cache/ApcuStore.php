@@ -9,10 +9,10 @@ class ApcuStore extends AbstractStore
 {
     protected bool $enabled;
 
-    public function __construct(string $prefix)
+    public function __construct(string $namespace)
     {
-        $this->enabled = extension_loaded('apcu') && apcu_enabled();
-        $this->prefix = $prefix;
+        $this->enabled = apcu_enabled();
+        $this->namespace = $namespace;
     }
 
     public function get(string $key)

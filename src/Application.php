@@ -5,6 +5,7 @@ namespace Kirameki;
 use Dotenv\Dotenv;
 use InvalidArgumentException;
 use Kirameki\Container\Container;
+use Kirameki\Logging\LogInitializer;
 use Kirameki\Support\Config;
 use Kirameki\Support\Env;
 
@@ -31,6 +32,17 @@ class Application extends Container
         $this->startTime = microtime(true) * 1000;
         $this->config = Config::fromDirectory($basePath.'/config');
         $this->setTimeZone($this->config->get('app.timezone'));
+        $this->initialize();
+    }
+
+    protected function initialize()
+    {
+        $initializers = [
+            new LogInitializer,
+        ];
+        foreach ($initializers as $initializer) {
+            $initializer->register($this);
+        }
     }
 
     public function version(): string
@@ -73,9 +85,13 @@ class Application extends Container
         return (bool) $this->config->get('app.debug');
     }
 
-    public function getBasePath(): string
+    public function getBasePath(string $relPath = null): string
     {
-        return $this->basePath;
+        $path = $this->basePath;
+        if ($relPath !== null) {
+            $path.= '/'.ltrim($relPath, '/');
+        }
+        return $path;
     }
 
     public function startTime(): float

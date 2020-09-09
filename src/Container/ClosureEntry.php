@@ -23,6 +23,7 @@ class ClosureEntry implements EntryInterface
         $this->id = $id;
         $this->resolver = $resolver;
         $this->cacheable = $cacheable;
+        $this->resolved = false;
     }
 
     public function getId(): string

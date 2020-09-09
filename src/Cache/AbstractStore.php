@@ -6,9 +6,9 @@ use Closure;
 
 abstract class AbstractStore implements StoreInterface
 {
-    public const PREFIX_DELIMITER = ':';
-
-    protected string $prefix;
+    protected static string $delimiter = ':';
+    protected static string $prefix = 'cache:';
+    protected string $namespace;
 
     protected bool $triggerEvents = true;
 
@@ -23,14 +23,14 @@ abstract class AbstractStore implements StoreInterface
         return $value;
     }
 
-    public function prefix(): string
+    public function namespace(): string
     {
-        return $this->prefix;
+        return $this->namespace;
     }
 
     public function formatKey(string $key = null): string
     {
-        return $this->prefix.self::PREFIX_DELIMITER.$key;
+        return static::$prefix.$this->namespace.static::$delimiter.$key;
     }
 
     public function formatKeys(array $keys): array
@@ -54,6 +54,6 @@ abstract class AbstractStore implements StoreInterface
 
     protected function triggerEvent(string $name)
     {
-
+        // TODO implement event dispatcher
     }
 }

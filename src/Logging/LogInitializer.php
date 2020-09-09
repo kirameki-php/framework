@@ -7,10 +7,11 @@ use Psr\Log\LoggerInterface;
 
 class LogInitializer
 {
-    public function register(Application $container)
+    public function register(Application $app): void
     {
-        $container->singleton(LoggerInterface::class, static function () {
-            return new LogManager();
-        });
+        $logger = new LogManager();
+        $logger->addLogger('file', new FileLogger);
+        $logger->setDefaultLogger('file');
+        $app->singleton(LoggerInterface::class, $logger);
     }
 }
