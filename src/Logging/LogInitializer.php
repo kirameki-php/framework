@@ -10,7 +10,7 @@ class LogInitializer
     public function register(Application $app): void
     {
         $logger = new LogManager();
-        $logger->addLogger('file', new FileLogger);
+        $logger->addLogger('file', new Loggers\FileLogger);
         $logger->setDefaultLogger('file');
         $app->singleton(LoggerInterface::class, $logger);
     }

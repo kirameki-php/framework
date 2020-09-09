@@ -1,8 +1,9 @@
 <?php
 
-namespace Kirameki\Logging;
+namespace Kirameki\Logging\Loggers;
 
-use Monolog\Formatter\LineFormatter;
+use Bramus\Monolog\Formatter\ColoredLineFormatter;
+use Bramus\Monolog\Formatter\ColorSchemes\DefaultScheme;
 use Monolog\Handler\HandlerInterface;
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
@@ -12,7 +13,7 @@ class FileLogger extends Logger
 {
     public function __construct(array $options = [])
     {
-        $name = $options['name'] ?? 'file';
+        $name = $options['name'] ?? '';
         parent::__construct($name, $this->createHandlers($options));
     }
 
@@ -32,9 +33,10 @@ class FileLogger extends Logger
 
         $fileHandler = new StreamHandler($path, $level, $bubble, $permission);
 
+        $colorSchemeClass = $options['color_scheme'] ?? DefaultScheme::class;
         $logFormat = $options['format'] ?? "[%datetime%] [%level_name%] %message%\n";
         $dateFormat = $options['date_format'] = 'Y-m-d H:i:s.v';
-        $formatter = new LineFormatter($logFormat, $dateFormat, false, true);
+        $formatter = new ColoredLineFormatter(new $colorSchemeClass, $logFormat, $dateFormat, false, true);
 
         $fileHandler->setFormatter($formatter);
 
