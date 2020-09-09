@@ -9,9 +9,9 @@ class Map extends Enumerable implements ArrayAccess
     use Concerns\Macroable;
 
     /**
-     * @param iterable|Map|null $items
+     * @param iterable|null $items
      */
-    public function __construct(iterable|Map|null $items = null)
+    public function __construct(?iterable $items = null)
     {
         if ($items === null) {
             $items = [];
@@ -50,7 +50,7 @@ class Map extends Enumerable implements ArrayAccess
      * @param mixed $offset
      * @param mixed $value
      */
-    public function offsetSet($offset, $value)
+    public function offsetSet($offset, $value): void
     {
         $this->items[$offset] = $value;
     }
@@ -58,20 +58,9 @@ class Map extends Enumerable implements ArrayAccess
     /**
      * @param mixed $offset
      */
-    public function offsetUnset($offset)
+    public function offsetUnset($offset): void
     {
         unset($this->items[$offset]);
-    }
-
-    /**
-     * @param $key
-     * @param $value
-     * @return $this
-     */
-    public function add($key, $value)
-    {
-        $this->items[$key] = $value;
-        return $this;
     }
 
     /**
@@ -83,6 +72,25 @@ class Map extends Enumerable implements ArrayAccess
         return $this;
     }
 
+    /**
+     * @param iterable $items
+     * @return static
+     */
+    public function diff(iterable $items)
+    {
+        return $this->newInstance(array_diff_assoc($this->items, $this->asArray($items)));
+    }
+
+    /**
+     * @param iterable $items
+     * @return static
+     */
+    public function diffKeys(iterable $items)
+    {
+        return $this->newInstance(array_diff_key($this->items, $this->asArray($items)));
+    }
+
+
     public function except(int|string ...$key)
     {
         $copy = $this->items;
@@ -90,6 +98,15 @@ class Map extends Enumerable implements ArrayAccess
             unset($copy[$k]);
         }
         return $this->newInstance($copy);
+    }
+
+    /**
+     * @param int|string $key
+     * @return bool
+     */
+    public function exists($key): bool
+    {
+        return array_key_exists($key, $this->items);
     }
 
     /**
@@ -101,7 +118,7 @@ class Map extends Enumerable implements ArrayAccess
     }
 
     /**
-     * @param $key
+     * @param int|string $key
      * @return mixed|null
      */
     public function get($key)
@@ -110,12 +127,21 @@ class Map extends Enumerable implements ArrayAccess
     }
 
     /**
-     * @param $key
-     * @return bool
+     * @param iterable $items
+     * @return static
      */
-    public function hasKey($key)
+    public function intersect(iterable $items)
     {
-        return array_key_exists($key, $this->items);
+        return $this->newInstance(array_intersect_assoc($this->items, $this->asArray($items)));
+    }
+
+    /**
+     * @param iterable $items
+     * @return static
+     */
+    public function intersectKeys(iterable $items)
+    {
+        return $this->newInstance(array_intersect_key($this->items, $this->asArray($items)));
     }
 
     /**
@@ -135,10 +161,19 @@ class Map extends Enumerable implements ArrayAccess
     }
 
     /**
+     * @param int|string $key
+     * @return bool
+     */
+    public function notExists($key): bool
+    {
+        return !$this->exists($key);
+    }
+
+    /**
      * @param int|string ...$key
      * @return $this
      */
-    public function only(int|string ...$key)
+    public function only(...$key)
     {
         $map = [];
         foreach ($key as $k) {
@@ -175,6 +210,30 @@ class Map extends Enumerable implements ArrayAccess
         $copy = $this->items;
         ksort($copy, $flag);
         return $this->newInstance($copy);
+    }
+
+    /**
+     * @param $key
+     * @param $value
+     * @return $this
+     */
+    public function set($key, $value)
+    {
+        $this->items[$key] = $value;
+        return $this;
+    }
+
+    /**
+     * @param $key
+     * @param $value
+     * @return $this
+     */
+    public function setIfNotExists($key, $value)
+    {
+        if ($this->notExists($key)) {
+            $this->set($key, $value);
+        }
+        return $this;
     }
 
     /**

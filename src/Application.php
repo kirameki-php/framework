@@ -5,6 +5,8 @@ namespace Kirameki;
 use Dotenv\Dotenv;
 use InvalidArgumentException;
 use Kirameki\Container\Container;
+use Kirameki\Exceptions\ExceptionHandler;
+use Kirameki\Exceptions\ExceptionInitializer;
 use Kirameki\Logging\LogInitializer;
 use Kirameki\Support\Config;
 use Kirameki\Support\Env;
@@ -35,9 +37,10 @@ class Application extends Container
         $this->initialize();
     }
 
-    protected function initialize()
+    protected function initialize(): void
     {
         $initializers = [
+            new ExceptionInitializer,
             new LogInitializer,
         ];
         foreach ($initializers as $initializer) {

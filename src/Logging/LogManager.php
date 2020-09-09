@@ -23,7 +23,7 @@ class LogManager implements LoggerInterface
         $this->default = $this->channel($channel);
     }
 
-    public function addLogger(string $channel, $logger): self
+    public function setLogger(string $channel, $logger): self
     {
         $this->loggers->singleton($channel, $logger);
         return $this;

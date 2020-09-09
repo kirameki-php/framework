@@ -8,17 +8,19 @@ interface StoreInterface
 {
     public function get(string $key);
 
-    public function tryGet(string $key, &$value): bool;
-
     public function getMulti(string ...$keys): array;
+
+    public function exists(string $key): bool;
+
+    public function existsMulti(string ...$keys): array;
 
     public function set(string $key, $value, ?int $ttl = null): bool;
 
     public function setMulti(array $entries, ?int $ttl = null): array;
 
-    public function incr(string $key, int $by = 1, int $ttl = 0);
+    public function increment(string $key, int $by = 1, int $ttl = 0): ?int;
 
-    public function decr(string $key, int $by = 1, int $ttl = 0);
+    public function decrement(string $key, int $by = 1, int $ttl = 0): ?int;
 
     public function remember(string $key, Closure $callback, ?int $ttl = null);
 
@@ -30,7 +32,7 @@ interface StoreInterface
 
     public function removeExpired(): array;
 
-    public function exist(string $key): bool;
+    public function ttl(string $key): ?int;
 
     public function clear(): bool;
 

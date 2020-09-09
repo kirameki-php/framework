@@ -77,7 +77,7 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
      */
     public function compact()
     {
-        return $this->filter();
+        return $this->filter(static fn($item, $key) => $item !== null);
     }
 
     /**
@@ -93,29 +93,10 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
         foreach ($this->items as $key => $item) {
             $result = $callback($item, $key);
             if ($this->assureBool($result, true)) {
-                $counter+= 1;
+                $counter++;
             }
         }
         return $counter;
-    }
-
-    /**
-     * @param iterable $items
-     * @return static
-     */
-    public function diff(iterable $items)
-    {
-        return $this->newInstance(array_diff($this->toArray(), $this->asArray($items)));
-    }
-
-    /**
-     * @param $items
-     * @param callable $callback
-     * @return static
-     */
-    public function diffWith($items, callable $callback)
-    {
-        return $this->newInstance((array_udiff($this->toArray(), $this->asArray($items), $callback)));
     }
 
     /**
@@ -136,7 +117,7 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
         $offset = 0;
         foreach ($this->items as $key => $item) {
             $callback($item, $key, $offset);
-            $offset+= 1;
+            $offset++;
         }
     }
 
@@ -156,7 +137,7 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
     public function filter(callable $callback = null)
     {
         if ($callback === null) {
-            $callback = static fn($item, $key) => $item !== null;
+            $callback = static fn($item, $key) => !empty($item);
         }
         $values = [];
         foreach ($this->items as $key => $item) {
@@ -198,15 +179,6 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
             $map[$name][] = $item[$name];
         }
         return $this->newInstance($map);
-    }
-
-    /**
-     * @param iterable $items
-     * @return static
-     */
-    public function intersect(iterable $items)
-    {
-        return $this->newInstance(array_intersect($this->toArray(), $this->asArray($items)));
     }
 
     /**
@@ -258,9 +230,18 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
      * @param iterable|null $items
      * @return Collection
      */
-    public function newCollection(iterable|null $items = null)
+    public function newCollection(?iterable $items = null)
     {
         return new Collection($items);
+    }
+
+    /**
+     * @param array $entries
+     * @return Map
+     */
+    public function newMap($entries = [])
+    {
+        return new Map($entries);
     }
 
     /**
@@ -297,7 +278,7 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
         foreach ($this->items as $key => $item) {
             if ($counter < $limit && $item === $value) {
                 unset($this->items[$key]);
-                $counter += 1;
+                $counter++;
             }
         }
         return $this;

@@ -107,6 +107,15 @@ class Collection extends Enumerable implements ArrayAccess
     }
 
     /**
+     * @param iterable $items
+     * @return static
+     */
+    public function diff(iterable $items)
+    {
+        return $this->newInstance(array_diff($this->items, $this->asArray($items)));
+    }
+
+    /**
      * @param int $amount
      * @return static
      */
@@ -180,6 +189,15 @@ class Collection extends Enumerable implements ArrayAccess
     {
         array_splice($this->items, $index, 0, $value);
         return $this;
+    }
+
+    /**
+     * @param iterable $items
+     * @return static
+     */
+    public function intersect(iterable $items)
+    {
+        return $this->newInstance(array_intersect($this->items, $this->asArray($items)));
     }
 
     /**
@@ -279,7 +297,7 @@ class Collection extends Enumerable implements ArrayAccess
     public function push(...$value)
     {
         foreach ($value as $v) {
-            array_push($this->items, $v);
+            $this->items[] = $v;
         }
         return $this;
     }
@@ -355,7 +373,7 @@ class Collection extends Enumerable implements ArrayAccess
     {
         $copy = $this->items;
         shuffle($copy);
-        return $copy;
+        return $this->newInstance($copy);
     }
 
     public function sortWith(callable $callback)
@@ -388,16 +406,16 @@ class Collection extends Enumerable implements ArrayAccess
     }
 
     /**
-     * @return array
+     * @return Map
      */
-    public function tally()
+    public function tally(): Map
     {
         $mapping = [];
         foreach ($this->items as $item) {
             $mapping[$item] ??= 0;
-            $mapping[$item] += 1;
+            $mapping[$item]++;
         }
-        return $mapping;
+        return $this->newMap($mapping);
     }
 
     /**

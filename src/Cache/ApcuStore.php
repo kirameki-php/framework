@@ -24,18 +24,19 @@ class ApcuStore extends AbstractStore
         return null;
     }
 
-    public function tryGet(string $key, &$value): bool
-    {
-        $success = false;
-        if($this->enabled) {
-            $value = apcu_fetch($this->formatKey($key), $success);
-        }
-        return $success;
-    }
-
     public function getMulti(string ...$keys): array
     {
         return $this->enabled ? apcu_fetch($this->formatKeys($keys)) : [];
+    }
+
+    public function exists(string $key): bool
+    {
+        return $this->enabled && apcu_exists($this->formatKey($key));
+    }
+
+    public function existsMulti(string ...$keys): array
+    {
+        return $this->enabled ? apcu_exists($this->formatKeys($keys)) : [];
     }
 
     public function set(string $key, $value, ?int $ttl = null): bool
@@ -45,20 +46,41 @@ class ApcuStore extends AbstractStore
 
     public function setMulti(array $entries, ?int $ttl = null): array
     {
+        return $this->enabled
+            ? apcu_store($entries, null, $ttl)
+            : array_keys($entries);
+    }
+
+    public function increment(string $key, int $by = 1, int $ttl = 0): ?int
+    {
         if (!$this->enabled) {
-            return array_keys($entries);
+            return null;
         }
-        return apcu_store($entries, null, $ttl);
+        $result = apcu_inc($key, $by, $nil, $ttl);
+        return is_int($result) ? $result : null;
     }
 
-    public function incr(string $key, int $by = 1, int $ttl = 0)
+    public function decrement(string $key, int $by = 1, int $ttl = 0): ?int
     {
-        return $this->enabled ? apcu_inc($key, $by, $nil, $ttl) : false;
+        if (!$this->enabled) {
+            return null;
+        }
+        $result = apcu_dec($key, $by, $nil, $ttl);
+        return is_int($result) ? $result : null;
     }
 
-    public function decr(string $key, int $by = 1, int $ttl = 0): int
+    public function ttl(string $key): ?int
     {
-        return $this->enabled ? apcu_dec($key, $by, $nil, $ttl) : false;
+        if ($this->enabled && $data = apcu_key_info($key)) {
+            if ($data['ttl'] === 0) {
+                return 0;
+            }
+            $ttl = ($data['creation_time'] + $data['ttl']) - time();
+            if ($ttl > 0) {
+                return $ttl;
+            }
+        }
+        return null;
     }
 
     public function remove(string $key): bool
@@ -97,11 +119,6 @@ class ApcuStore extends AbstractStore
         });
         $failedKeys = apcu_delete($matchedKeys);
         return array_diff($matchedKeys, $failedKeys);
-    }
-
-    public function exist(string $key): bool
-    {
-        return $this->enabled && apcu_exists($this->formatKey($key));
     }
 
     public function clear(): bool

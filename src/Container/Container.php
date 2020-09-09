@@ -27,14 +27,40 @@ class Container implements ContainerInterface
             : new InstanceEntry($id, $entry);
     }
 
-    public function remove(string $id): void
+    public function remove(string $id): bool
     {
-        unset($this->entries[$id]);
+        if ($this->has($id)) {
+            unset($this->entries[$id]);
+            return true;
+        }
+        return false;
     }
 
     public function singleton(string $id, $entry): void
     {
         $this->set($id, $entry, true);
+    }
+
+    /**
+     * @return EntryInterface[]
+     */
+    public function entries()
+    {
+        return $this->entries;
+    }
+
+    public function instances(): array
+    {
+        $instances = [];
+        foreach (array_keys($this->entries) as $name) {
+            $instances[$name] = $this->get($name);
+        }
+        return $instances;
+    }
+
+    public function each(Closure $callback): void
+    {
+        array_map($callback, $this->instances(), array_keys($this->entries));
     }
 
     public function onResolved(string $id, Closure $callback): void

@@ -1,15 +1,16 @@
 <?php
 
-namespace Kirameki\Logging\Loggers;
+namespace Kirameki\Logging\Writers;
 
 use Bramus\Monolog\Formatter\ColoredLineFormatter;
 use Bramus\Monolog\Formatter\ColorSchemes\DefaultScheme;
+use Kirameki\Application;
 use Monolog\Handler\HandlerInterface;
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
 use Psr\Log\LogLevel;
 
-class FileLogger extends Logger
+class FileWriter extends Logger
 {
     public function __construct(array $options = [])
     {
@@ -29,7 +30,7 @@ class FileLogger extends Logger
         $path = $options['path'] ?? storage_path('logs/app.log');
         $permission = $options['permission'] ?? 0777;
         $bubble = $options['bubble'] ?? true;
-        $level = $options['level'] ?? (app()->isProduction() ? LogLevel::NOTICE : LogLevel::DEBUG);
+        $level = $options['level'] ?? (Application::instance()->inDebugMode() ? LogLevel::NOTICE : LogLevel::DEBUG);
 
         $fileHandler = new StreamHandler($path, $level, $bubble, $permission);
 
