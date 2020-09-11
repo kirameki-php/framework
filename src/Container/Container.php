@@ -3,11 +3,15 @@
 namespace Kirameki\Container;
 
 use Closure;
+use Kirameki\Support\Collection;
+use Kirameki\Support\Map;
 use Psr\Container\ContainerInterface;
 
 class Container implements ContainerInterface
 {
-    /** @var EntryInterface[] */
+    /**
+     * @var EntryInterface[]
+     */
     protected array $entries = [];
 
     public function get($id)
@@ -47,25 +51,11 @@ class Container implements ContainerInterface
     }
 
     /**
-     * @return EntryInterface[]
+     * @return Map|EntryInterface[]
      */
     public function entries()
     {
-        return $this->entries;
-    }
-
-    public function instances(): array
-    {
-        $instances = [];
-        foreach (array_keys($this->entries) as $name) {
-            $instances[$name] = $this->get($name);
-        }
-        return $instances;
-    }
-
-    public function each(Closure $callback): void
-    {
-        array_map($callback, $this->instances(), array_keys($this->entries));
+        return new Map($this->entries);
     }
 
     public function onResolved(string $id, Closure $callback): void

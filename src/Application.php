@@ -5,7 +5,6 @@ namespace Kirameki;
 use Dotenv\Dotenv;
 use InvalidArgumentException;
 use Kirameki\Container\Container;
-use Kirameki\Exceptions\ExceptionHandler;
 use Kirameki\Exceptions\ExceptionInitializer;
 use Kirameki\Logging\LogInitializer;
 use Kirameki\Support\Config;

@@ -2,8 +2,6 @@
 
 namespace Kirameki\Http;
 
-use Carbon\Carbon;
-
 class Response
 {
     public string $version;

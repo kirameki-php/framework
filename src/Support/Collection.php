@@ -6,26 +6,38 @@ use ArrayAccess;
 
 class Collection extends Enumerable implements ArrayAccess
 {
-    use Concerns\Macroable;
-
     /**
      * @param iterable|Collection|null $items
      */
-    public function __construct(iterable|Collection|null $items = null)
+    public function __construct($items = null)
     {
-        if ($items === null) {
-            $items = [];
-        }
-        $this->items = $this->asArray($items);
+        $this->items = $this->asArray($items ?? []);
+    }
+
+    /**
+     * @param iterable|null $items
+     * @return static
+     */
+    protected function newCollection(?iterable $items = null)
+    {
+        return $this->newInstance($items);
     }
 
     /**
      * @param $items
      * @return static
      */
-    public function newInstance($items): self
+    public function newInstance(?iterable $items = null)
     {
         return new static($items);
+    }
+
+    /**
+     * @return bool
+     */
+    protected function preserveKeys(): bool
+    {
+        return false;
     }
 
     /**
@@ -77,36 +89,6 @@ class Collection extends Enumerable implements ArrayAccess
     }
 
     /**
-     * @return float|int
-     */
-    public function avg()
-    {
-        return (float) $this->sum() / $this->count();
-    }
-
-    /**
-     * @param int $size
-     * @return $this
-     */
-    public function chunk(int $size)
-    {
-        $chunks = [];
-        foreach (array_chunk($this->toArray(), $size, true) as $chunk) {
-            $chunks[] = $this->newInstance($chunk);
-        }
-        return $this->newInstance($chunks);
-    }
-
-    /**
-     * @return $this
-     */
-    public function clear()
-    {
-        $this->items = [];
-        return $this;
-    }
-
-    /**
      * @param iterable $items
      * @return static
      */
@@ -116,41 +98,13 @@ class Collection extends Enumerable implements ArrayAccess
     }
 
     /**
-     * @param int $amount
-     * @return static
-     */
-    public function drop(int $amount)
-    {
-        return $this->slice(-$amount);
-    }
-
-    /**
-     * @param callable $callback
-     * @return static
-     */
-    public function dropUntil(callable $callback)
-    {
-        $index = $this->index($callback) ?? PHP_INT_MAX;
-        return $this->drop($index);
-    }
-
-    /**
-     * @param callable $callable
-     * @return static
-     */
-    public function flatMap(callable $callable)
-    {
-        return $this->map($callable)->flatten();
-    }
-
-    /**
      * @param int $depth
      * @return static
      */
     public function flatten(int $depth = PHP_INT_MAX)
     {
         $results = [];
-        $func = function($values, int $depth) use (&$func, &$results) {
+        $func = static function($values, int $depth) use (&$func, &$results) {
             foreach ($values as $value) {
                 if (!is_array($value) || $depth === 0) {
                     $results[] = $value;
@@ -164,20 +118,11 @@ class Collection extends Enumerable implements ArrayAccess
     }
 
     /**
-     * @param $value
-     * @return int|null
+     * @return Collection
      */
-    public function index($value): ?int
+    public function indexes()
     {
-        if (!is_callable($value)) {
-            $value = static fn($item, $index) => $item === $value;
-        }
-        foreach ($this->items as $index => $item) {
-            if ($this->assureBool($value($item, $index), true)) {
-                return $index;
-            }
-        }
-        return null;
+        return $this->newInstance(array_keys($this->items));
     }
 
     /**
@@ -198,67 +143,6 @@ class Collection extends Enumerable implements ArrayAccess
     public function intersect(iterable $items)
     {
         return $this->newInstance(array_intersect($this->items, $this->asArray($items)));
-    }
-
-    /**
-     * @param string $glue
-     * @return string
-     */
-    public function implode(string $glue): string
-    {
-        return implode($glue, $this->items);
-    }
-
-    /**
-     * @param string $name
-     * @return mixed
-     */
-    public function keyBy(string $name)
-    {
-        $map = [];
-        foreach ($this->items as $item) {
-            $map[$name] = $item[$name];
-        }
-        return $this->newInstance($map);
-    }
-
-    /**
-     * @param callable $callback
-     * @return static
-     */
-    public function map(callable $callback)
-    {
-        $values = [];
-        foreach ($this->items as $key => $item) {
-            $values[] = $callback($item, $key);
-        }
-        return $this->newInstance($values);
-    }
-
-    /**
-     * @return int|float
-     */
-    public function max()
-    {
-        return max(...$this->items);
-    }
-
-    /**
-     * @param iterable $collection
-     * @return $this
-     */
-    public function merge(iterable $collection)
-    {
-        $this->items = array_merge($this->items, $this->asArray($collection));
-        return $this;
-    }
-
-    /**
-     * @return int|float
-     */
-    public function min()
-    {
-        return min(...$this->items);
     }
 
     /**
@@ -303,14 +187,6 @@ class Collection extends Enumerable implements ArrayAccess
     }
 
     /**
-     * @return static
-     */
-    public function reverse()
-    {
-        return $this->newInstance(array_reverse($this->toArray(), false));
-    }
-
-    /**
      * @param $value
      * @param int|null $limit
      * @return $this
@@ -320,6 +196,10 @@ class Collection extends Enumerable implements ArrayAccess
         return parent::remove($value, $limit)->reorder();
     }
 
+    /**
+     * @param int ...$index
+     * @return $this
+     */
     public function removeAt(int ...$index)
     {
         foreach ($index as $i) {
@@ -328,94 +208,21 @@ class Collection extends Enumerable implements ArrayAccess
         return $this;
     }
 
-    public function rindex($value): ?int
-    {
-        $lastIndex = null;
-        foreach ($this->items as $index => $item) {
-            if ($item === $value) {
-                $lastIndex = $index;
-            }
-        }
-        return $lastIndex;
-    }
-
-    public function sample()
-    {
-        $index = rand(0, $this->count());
-        return $this->items[$index];
-    }
-
+    /**
+     * @return mixed
+     */
     public function shift()
     {
         return array_shift($this->items);
     }
 
     /**
-     * @param int $amount
-     * @return static
-     */
-    public function skip(int $amount)
-    {
-        return $this->newInstance(array_slice($this->items, $this->count() - $amount, $amount));
-    }
-
-    /**
-     * @param int $offset
-     * @param int|null $length
-     * @return static
-     */
-    public function slice(int $offset, int $length = null)
-    {
-        return $this->newInstance(array_slice($this->toArray(), $offset, $length));
-    }
-
-    public function shuffle()
-    {
-        $copy = $this->items;
-        shuffle($copy);
-        return $this->newInstance($copy);
-    }
-
-    public function sortWith(callable $callback)
-    {
-        return parent::sortWith($callback)->reorder();
-    }
-
-    public function sum()
-    {
-        return array_sum(...$this->items);
-    }
-
-    /**
-     * @param int $amount
-     * @return static
-     */
-    public function take(int $amount)
-    {
-        return $this->slice(0, $amount);
-    }
-
-    /**
      * @param callable $callback
      * @return static
      */
-    public function takeUntil(callable $callback)
+    public function sortWith(callable $callback)
     {
-        $index = $this->index($callback) ?? PHP_INT_MAX;
-        return $this->take($index);
-    }
-
-    /**
-     * @return Map
-     */
-    public function tally(): Map
-    {
-        $mapping = [];
-        foreach ($this->items as $item) {
-            $mapping[$item] ??= 0;
-            $mapping[$item]++;
-        }
-        return $this->newMap($mapping);
+        return parent::sortWith($callback)->reorder();
     }
 
     /**
@@ -428,14 +235,6 @@ class Collection extends Enumerable implements ArrayAccess
             $this->items[$key] = $callback($item, $key);
         }
         return $this;
-    }
-
-    /**
-     * @return static
-     */
-    public function unique()
-    {
-        return $this->newInstance(array_unique($this->toArray()));
     }
 
     /**

@@ -6,26 +6,38 @@ use ArrayAccess;
 
 class Map extends Enumerable implements ArrayAccess
 {
-    use Concerns\Macroable;
-
     /**
      * @param iterable|null $items
      */
     public function __construct(?iterable $items = null)
     {
-        if ($items === null) {
-            $items = [];
-        }
-        $this->items = $this->asArray($items);
+        $this->items = $this->asArray($items ?? []);
     }
 
     /**
-     * @param $items
+     * @param iterable|null $entries
      * @return static
      */
-    public function newInstance($items)
+    protected function newMap(?iterable $entries = null)
     {
-        return new static($items);
+        return $this->newInstance($entries);
+    }
+
+    /**
+     * @param iterable|null $entries
+     * @return static
+     */
+    public function newInstance(?iterable $entries = null)
+    {
+        return new static($entries);
+    }
+
+    /**
+     * @return bool
+     */
+    protected function preserveKeys(): bool
+    {
+        return true;
     }
 
     /**
@@ -90,8 +102,11 @@ class Map extends Enumerable implements ArrayAccess
         return $this->newInstance(array_diff_key($this->items, $this->asArray($items)));
     }
 
-
-    public function except(int|string ...$key)
+    /**
+     * @param int|string ...$key
+     * @return $this
+     */
+    public function except(...$key)
     {
         $copy = $this->items;
         foreach ($key as $k) {
@@ -106,7 +121,9 @@ class Map extends Enumerable implements ArrayAccess
      */
     public function exists($key): bool
     {
-        return array_key_exists($key, $this->items);
+        return str_contains($key, '.')
+            ? (bool) $this->digTo($this->items, explode('.', $key))
+            : array_key_exists($key, $this->items);
     }
 
     /**
@@ -123,7 +140,9 @@ class Map extends Enumerable implements ArrayAccess
      */
     public function get($key)
     {
-        return $this->items[$key] ?? null;
+        return str_contains($key, '.')
+            ? $this->digTo($this->items, explode('.', $key))
+            : $this->items[$key] ?? null;
     }
 
     /**
@@ -183,22 +202,54 @@ class Map extends Enumerable implements ArrayAccess
     }
 
     /**
-     * @return static
+     * @param callable $callback
+     * @return mixed|null
      */
-    public function reverse()
+    public function reMap(callable $callback)
     {
-        return $this->newInstance(array_reverse($this->toArray(), true));
+        return $this->reduce($callback, $this->newMap());
     }
 
     /**
      * @param $key
-     * @return mixed
+     * @return mixed|null
      */
     public function pull($key)
     {
-        $value = $this->items[$key];
-        unset($this->items[$key]);
-        return $value;
+        if (!str_contains($key, '.')) {
+            $value = $this->items[$key] ?? null;
+            unset($this->items[$key]);
+            return $value;
+        }
+        $segments = explode('.', $key);
+        $lastSegment = array_pop($segments);
+        if (is_array($array = $this->digTo($this->items, $segments))) {
+            $value = $array[$lastSegment];
+            unset($array[$lastSegment]);
+            return $value;
+        }
+        return null;
+    }
+
+    /**
+     * @param $key
+     * @param $value
+     * @return $this
+     */
+    public function set($key, $value)
+    {
+        if (!str_contains($key, '.')) {
+            $this->items[$key] = $value;
+        }
+        $ptr = &$this->items;
+        $segments = explode('.', $key);
+        $lastSegment = array_pop($segments);
+        foreach ($segments as $segment) {
+            $ptr[$segment] ??= [];
+            $ptr = &$ptr[$segment];
+        }
+        $ptr[$lastSegment] = $value;
+        return $this;
     }
 
     /**
@@ -210,17 +261,6 @@ class Map extends Enumerable implements ArrayAccess
         $copy = $this->items;
         ksort($copy, $flag);
         return $this->newInstance($copy);
-    }
-
-    /**
-     * @param $key
-     * @param $value
-     * @return $this
-     */
-    public function set($key, $value)
-    {
-        $this->items[$key] = $value;
-        return $this;
     }
 
     /**
