@@ -4,7 +4,6 @@ namespace Kirameki\Container;
 
 use Closure;
 use Kirameki\Support\Collection;
-use Kirameki\Support\Map;
 use Psr\Container\ContainerInterface;
 
 class Container implements ContainerInterface
@@ -51,11 +50,11 @@ class Container implements ContainerInterface
     }
 
     /**
-     * @return Map|EntryInterface[]
+     * @return Collection|EntryInterface[]
      */
     public function entries()
     {
-        return new Map($this->entries);
+        return new Collection($this->entries);
     }
 
     public function onResolved(string $id, Closure $callback): void

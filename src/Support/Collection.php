@@ -7,20 +7,11 @@ use ArrayAccess;
 class Collection extends Enumerable implements ArrayAccess
 {
     /**
-     * @param iterable|Collection|null $items
+     * @param iterable|null $items
      */
     public function __construct($items = null)
     {
         $this->items = $this->asArray($items ?? []);
-    }
-
-    /**
-     * @param iterable|null $items
-     * @return static
-     */
-    protected function newCollection(?iterable $items = null)
-    {
-        return $this->newInstance($items);
     }
 
     /**
@@ -33,20 +24,11 @@ class Collection extends Enumerable implements ArrayAccess
     }
 
     /**
-     * @return bool
-     */
-    protected function preserveKeys(): bool
-    {
-        return false;
-    }
-
-    /**
      * @param mixed $offset
      * @return bool
      */
     public function offsetExists($offset): bool
     {
-        $this->assureInteger($offset);
         return isset($this->items[$offset]);
     }
 
@@ -56,7 +38,6 @@ class Collection extends Enumerable implements ArrayAccess
      */
     public function offsetGet($offset)
     {
-        $this->assureInteger($offset);
         return $this->items[$offset];
     }
 
@@ -66,7 +47,6 @@ class Collection extends Enumerable implements ArrayAccess
      */
     public function offsetSet($offset, $value): void
     {
-        $this->assureInteger($offset);
         $this->items[$offset] = $value;
     }
 
@@ -75,54 +55,27 @@ class Collection extends Enumerable implements ArrayAccess
      */
     public function offsetUnset($offset): void
     {
-        $this->assureInteger($offset);
         unset($this->items[$offset]);
     }
 
     /**
-     * @param int $index
+     * @return $this
+     */
+    public function clear()
+    {
+        $this->items = [];
+        return $this;
+    }
+
+    /**
+     * @param int|string $key
      * @return mixed|null
      */
-    public function at(int $index)
+    public function get($key)
     {
-        return $this->items[$index] ?? null;
-    }
-
-    /**
-     * @param iterable $items
-     * @return static
-     */
-    public function diff(iterable $items)
-    {
-        return $this->newInstance(array_diff($this->items, $this->asArray($items)));
-    }
-
-    /**
-     * @param int $depth
-     * @return static
-     */
-    public function flatten(int $depth = PHP_INT_MAX)
-    {
-        $results = [];
-        $func = static function($values, int $depth) use (&$func, &$results) {
-            foreach ($values as $value) {
-                if (!is_array($value) || $depth === 0) {
-                    $results[] = $value;
-                } else {
-                    $func($value, $depth - 1);
-                }
-            }
-        };
-        $func($this->items, $depth);
-        return $this->newInstance($results);
-    }
-
-    /**
-     * @return Collection
-     */
-    public function indexes()
-    {
-        return $this->newInstance(array_keys($this->items));
+        return str_contains($key, '.')
+            ? $this->digTo($this->items, explode('.', $key))
+            : $this->items[$key] ?? null;
     }
 
     /**
@@ -134,15 +87,6 @@ class Collection extends Enumerable implements ArrayAccess
     {
         array_splice($this->items, $index, 0, $value);
         return $this;
-    }
-
-    /**
-     * @param iterable $items
-     * @return static
-     */
-    public function intersect(iterable $items)
-    {
-        return $this->newInstance(array_intersect($this->items, $this->asArray($items)));
     }
 
     /**
@@ -164,14 +108,24 @@ class Collection extends Enumerable implements ArrayAccess
     }
 
     /**
-     * @param int $index
-     * @return mixed
+     * @param int|string $key
+     * @return mixed|null
      */
-    public function pull(int $index)
+    public function pull($key)
     {
-        $value = $this->items[$index];
-        unset($this->items[$index]);
-        return $value;
+        if (!str_contains($key, '.')) {
+            $value = $this->items[$key] ?? null;
+            unset($this->items[$key]);
+            return $value;
+        }
+        $segments = explode('.', $key);
+        $lastSegment = array_pop($segments);
+        if (is_array($array = $this->digTo($this->items, $segments))) {
+            $value = $array[$lastSegment];
+            unset($array[$lastSegment]);
+            return $value;
+        }
+        return null;
     }
 
     /**
@@ -193,17 +147,46 @@ class Collection extends Enumerable implements ArrayAccess
      */
     public function remove($value, ?int $limit = null)
     {
-        return parent::remove($value, $limit)->reorder();
+        $counter = 0;
+        foreach ($this->items as $key => $item) {
+            if ($counter < $limit && $item === $value) {
+                unset($this->items[$key]);
+                $counter++;
+            }
+        }
+        return $this;
     }
 
     /**
-     * @param int ...$index
+     * @param $key
+     * @param $value
      * @return $this
      */
-    public function removeAt(int ...$index)
+    public function set($key, $value)
     {
-        foreach ($index as $i) {
-            array_splice($this->items, $i, 1);
+        if (!str_contains($key, '.')) {
+            $this->items[$key] = $value;
+        }
+        $ptr = &$this->items;
+        $segments = explode('.', $key);
+        $lastSegment = array_pop($segments);
+        foreach ($segments as $segment) {
+            $ptr[$segment] ??= [];
+            $ptr = &$ptr[$segment];
+        }
+        $ptr[$lastSegment] = $value;
+        return $this;
+    }
+
+    /**
+     * @param $key
+     * @param $value
+     * @return $this
+     */
+    public function setIfNotExists($key, $value)
+    {
+        if ($this->notExists($key)) {
+            $this->set($key, $value);
         }
         return $this;
     }
@@ -218,18 +201,21 @@ class Collection extends Enumerable implements ArrayAccess
 
     /**
      * @param callable $callback
-     * @return static
+     * @return $this
      */
-    public function sortWith(callable $callback)
+    public function transformKeys(callable $callback)
     {
-        return parent::sortWith($callback)->reorder();
+        foreach ($this->items as $key => $item) {
+            $this->items[$callback($key, $item)] = $item;
+        }
+        return $this;
     }
 
     /**
      * @param callable $callback
      * @return $this
      */
-    public function transform(callable $callback)
+    public function transformValues(callable $callback)
     {
         foreach ($this->items as $key => $item) {
             $this->items[$key] = $callback($item, $key);
@@ -246,28 +232,6 @@ class Collection extends Enumerable implements ArrayAccess
         foreach ($value as $v) {
             array_unshift($this->items, $v);
         }
-        return $this;
-    }
-
-    /**
-     * @param int ...$index
-     * @return static
-     */
-    public function valuesAt(int ...$index)
-    {
-        $values = [];
-        foreach ($index as $i) {
-            $values[]= $this->items[$i];
-        }
-        return $this->newInstance($values);
-    }
-
-    /**
-     * @return $this
-     */
-    protected function reorder()
-    {
-        usort($this->items, static fn() => 0);
         return $this;
     }
 }
