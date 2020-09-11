@@ -123,6 +123,16 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
     }
 
     /**
+     * @param bool $asArray
+     * @return $this
+     */
+    public function dd(bool $asArray = false)
+    {
+        dd($asArray ? $this->toArray() : $this);
+        return $this;
+    }
+
+    /**
      * @param iterable $items
      * @return static
      */
@@ -180,6 +190,16 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
     }
 
     /**
+     * @param bool $asArray
+     * @return $this
+     */
+    public function dump(bool $asArray = false)
+    {
+        dump($asArray ? $this->toArray() : $this);
+        return $this;
+    }
+
+    /**
      * @param callable $callback
      */
     public function each(callable $callback)
@@ -224,12 +244,12 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
     }
 
     /**
-     * @param iterable $items
+     * @param mixed|null $items
      * @return bool
      */
-    public function equals(iterable $items): bool
+    public function equals($items): bool
     {
-        return $this->diff($items)->count() === 0;
+        return is_iterable($items) && $this->toArray() === $this->asArray($items);
     }
 
     /**
@@ -352,11 +372,13 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
 
     /**
      * @param string $glue
+     * @param string|null $prefix
+     * @param string|null $suffix
      * @return string
      */
-    public function implode(string $glue): string
+    public function implode(string $glue, ?string $prefix = null, ?string $suffix = null): string
     {
-        return implode($glue, $this->toArray());
+        return $prefix.implode($glue, $this->toArray()).$suffix;
     }
 
     /**
@@ -503,6 +525,15 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
     public function notContains($value): bool
     {
         return !$this->contains($value);
+    }
+
+    /**
+     * @param mixed|null $items
+     * @return bool
+     */
+    public function notEquals($items): bool
+    {
+        return ! $this->equals($items);
     }
 
     /**
