@@ -76,8 +76,8 @@ class ExceptionManager
     protected function setFatalHandling(): void
     {
         register_shutdown_function(function() {
-            if(($error = error_get_last()) && ($error['type'] & E_ERROR)) {
-                $this->handle(new FatalError($error));
+            if(($err = error_get_last()) && ($err['type'] & E_ERROR)) {
+                $this->handle(new ErrorException($err['message'], 0, $err['type'], $err['file'], $err['line']));
             }
         });
     }
