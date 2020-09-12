@@ -99,7 +99,7 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
     public function containsKey($key): bool
     {
         $copy = $this->toArray();
-        return is_string($key) && str_contains($key, '.')
+        return static::isDottedKey($key)
             ? (bool) static::digTo($copy, explode('.', $key))
             : array_key_exists($key, $copy);
     }
@@ -174,7 +174,7 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
     public function dig($key)
     {
         $copy = $this->toArray();
-        $keys = is_string($key) && str_contains($key, '.') ? explode('.', $key) : [$key];
+        $keys = static::isDottedKey($key) ? explode('.', $key) : [$key];
         return $this->newInstance(static::digTo($copy, $keys));
     }
 
@@ -655,7 +655,7 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
      */
     public function pluck(string $key)
     {
-        if (is_string($key) && !str_contains($key, '.')) {
+        if (static::isNotDottedKey($key)) {
             return $this->newInstance(array_column($this->toArray(), $key));
         }
         $plucked = [];
@@ -930,6 +930,24 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
             return iterator_to_array($items);
         }
         throw new RuntimeException('Unknown type:'.get_class($items));
+    }
+
+    /**
+     * @param $key
+     * @return bool
+     */
+    protected static function isDottedKey($key): bool
+    {
+        return is_string($key) && str_contains($key, '.');
+    }
+
+    /**
+     * @param $key
+     * @return bool
+     */
+    protected static function isNotDottedKey($key): bool
+    {
+        return !static::isDottedKey($key);
     }
 
     /**

@@ -73,7 +73,7 @@ class Collection extends Enumerable implements ArrayAccess
      */
     public function get($key)
     {
-        return is_string($key) && str_contains($key, '.')
+        return static::isDottedKey($key)
             ? static::digTo($this->items, explode('.', $key))
             : $this->items[$key] ?? null;
     }
@@ -113,7 +113,7 @@ class Collection extends Enumerable implements ArrayAccess
      */
     public function pull($key)
     {
-        if (!str_contains($key, '.')) {
+        if (static::isNotDottedKey($key)) {
             $value = $this->items[$key] ?? null;
             unset($this->items[$key]);
             return $value;
@@ -164,7 +164,7 @@ class Collection extends Enumerable implements ArrayAccess
     public function removeKey($key): bool
     {
         $copy = $this->toArray();
-        if (is_string($key) && !str_contains($key, '.')) {
+        if (static::isNotDottedKey($key)) {
             if (array_key_exists($key, $copy)) {
                 unset($copy[$key]);
                 return true;
@@ -196,7 +196,7 @@ class Collection extends Enumerable implements ArrayAccess
      */
     public function set($key, $value)
     {
-        if (is_string($key) && !str_contains($key, '.')) {
+        if (static::isNotDottedKey($key)) {
             $this->items[$key] = $value;
         }
         $ptr = &$this->items;
