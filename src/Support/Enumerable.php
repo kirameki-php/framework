@@ -83,16 +83,21 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
      */
     public function contains($value): bool
     {
-        if (!is_callable($value)) {
-            $value = static fn($item) => $item === $value;
-        }
+        $call = is_callable($value) ? $value : static fn($item) => $item === $value;
         foreach ($this->items as $item) {
-            $result = $value($item);
-            if (static::isTrue($result)) {
+            if (static::isTrue($call($item))) {
                 return true;
             }
         }
         return false;
+    }
+
+    /**
+     * @return static
+     */
+    public function copy()
+    {
+        return $this->newInstance($this->items);
     }
 
     /**
@@ -106,8 +111,7 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
         }
         $counter = 0;
         foreach ($this->items as $key => $item) {
-            $result = $condition($item, $key);
-            if (static::isTrue($result)) {
+            if (static::isTrue($condition($item, $key))) {
                 $counter++;
             }
         }
@@ -462,15 +466,25 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
     }
 
     /**
-     * @param string $name
-     * @return static
+     * @param string|callable $key
+     * @return $this
      */
-    public function keyBy(string $name)
+    public function keyBy($key)
     {
+        if (is_string($key)) {
+            $segments = explode('.', $key);
+            $call = static fn($v, $k) => static::digTo($v, $segments);
+        } else {
+            $call = $key;
+        }
         $map = [];
-        foreach ($this->items as &$item) {
-            $key = static::digTo($item, explode('.', $name));
-            $map[$key] = $item;
+        foreach ($this->items as $k => $item) {
+            if (is_array($item)) {
+                $newKey = $call($item, $k);
+                if(is_string($newKey) || is_int($newKey)) {
+                    $map[$newKey] = $item;
+                }
+            }
         }
         return $this->newInstance($map);
     }
@@ -557,24 +571,6 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
     public function merge(iterable $collection)
     {
         return $this->newInstance(array_merge($this->toArray(), $this->asArray($collection)));
-    }
-
-    /**
-     * @param string $pattern
-     * @return static
-     */
-    public function match(string $pattern)
-    {
-        return $this->filter(static fn ($v, $k) => preg_match($pattern, $v));
-    }
-
-    /**
-     * @param string $pattern
-     * @return static
-     */
-    public function matchKey(string $pattern)
-    {
-        return $this->filter(static fn ($v, $k) => preg_match($pattern, $k));
     }
 
     /**
@@ -698,29 +694,6 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
     }
 
     /**
-     * @param int|string $key
-     * @return bool
-     */
-    public function removeKey($key): bool
-    {
-        if (is_string($key) && !str_contains($key, '.')) {
-            if (array_key_exists($key, $this->toArray())) {
-                unset($this->items[$key]);
-                return true;
-            }
-            return false;
-        }
-        $copy = $this->toArray();
-        $segments = explode('.', $key);
-        $lastSegment = array_pop($segments);
-        if (is_array($array = static::digTo($copy, $segments))) {
-            unset($array[$lastSegment]);
-            return true;
-        }
-        return false;
-    }
-
-    /**
      * @param bool $preserveKeys
      * @return static
      */
@@ -734,7 +707,7 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
      */
     public function sample()
     {
-        return $this->items[array_rand($this->toArray())];
+        return $this->toArray()[array_rand($this->toArray())];
     }
 
     /**
@@ -919,7 +892,7 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
      * @param int $depth
      * @return string
      */
-    public function toJson(int $options = 0, int $depth = 512)
+    public function toJson(int $options = 0, int $depth = 512): string
     {
         return Json::encode($this->jsonSerialize(), $options, $depth);
     }

@@ -158,6 +158,29 @@ class Collection extends Enumerable implements ArrayAccess
     }
 
     /**
+     * @param int|string $key
+     * @return bool
+     */
+    public function removeKey($key): bool
+    {
+        $copy = $this->toArray();
+        if (is_string($key) && !str_contains($key, '.')) {
+            if (array_key_exists($key, $copy)) {
+                unset($copy[$key]);
+                return true;
+            }
+            return false;
+        }
+        $segments = explode('.', $key);
+        $lastSegment = array_pop($segments);
+        if (is_array($array = static::digTo($copy, $segments))) {
+            unset($array[$lastSegment]);
+            return true;
+        }
+        return false;
+    }
+
+    /**
      * @param $key
      * @param $value
      * @return $this
