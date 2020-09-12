@@ -50,7 +50,7 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
     /**
      * @return float|int
      */
-    public function avg()
+    public function average()
     {
         return (float) $this->sum() / $this->count();
     }
@@ -834,7 +834,7 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
      */
     public function sum()
     {
-        return array_sum(...$this->toArray());
+        return array_sum($this->toArray());
     }
 
     /**

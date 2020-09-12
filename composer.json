@@ -3,7 +3,6 @@
   "bin": ["bin/kirameki"],
   "type": "project",
   "require": {
-    "ext-apache": "*",
     "ext-apcu": "*",
     "ext-json": "*",
     "ext-pcntl": "*",
@@ -33,7 +32,7 @@
   },
   "autoload-dev": {
     "psr-4": {
-      "Tests\\": "tests/"
+      "Kirameki\\Tests\\": "tests/src/"
     }
   },
   "config": {
