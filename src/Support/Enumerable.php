@@ -304,14 +304,8 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
      */
     public function first(callable $condition = null)
     {
-        if ($condition === null) {
-            foreach ($this->items as $item) {
-                return $item;
-            }
-            return null;
-        }
         foreach ($this->items as $key => $item) {
-            if (static::isTrue($condition($item, $key))) {
+            if ($condition === null || static::isTrue($condition($item, $key))) {
                 return $item;
             }
         }
@@ -431,6 +425,14 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
     /**
      * @return bool
      */
+    public function isAssoc(): bool
+    {
+        return !$this->isSequential();
+    }
+
+    /**
+     * @return bool
+     */
     public function isEmpty(): bool
     {
         return $this->count() === 0;
@@ -442,6 +444,21 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
     public function isNotEmpty(): bool
     {
         return !$this->isEmpty();
+    }
+
+    /**
+     * @return bool
+     */
+    public function isSequential(): bool
+    {
+        $count = 0;
+        foreach($this->items as $key => $value) {
+            if ($key !== $count) {
+                return false;
+            }
+            ++$count;
+        }
+        return true;
     }
 
     /**
@@ -574,6 +591,24 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
     public function min()
     {
         return min(...$this->toArray());
+    }
+
+    /**
+     * @return array
+     */
+    public function minMax(): array
+    {
+        $min = null;
+        $max = null;
+        foreach ($this->items as $value) {
+            if ($min === null || $min < $value) {
+                $min = $value;
+            }
+            if ($max === null || $max > $value) {
+                $max = $value;
+            }
+        }
+        return [$min, $max];
     }
 
     /**
