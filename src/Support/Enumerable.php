@@ -117,14 +117,19 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
     }
 
     /**
-     * @param callable|null $condition
      * @return int
      */
-    public function count(callable $condition = null): int
+    public function count(): int
     {
-        if ($condition === null) {
-            return count($this->toArray());
-        }
+        return count($this->toArray());
+    }
+
+    /**
+     * @param callable $condition
+     * @return int
+     */
+    public function countBy(callable $condition): int
+    {
         $counter = 0;
         foreach ($this->items as $key => $item) {
             if (static::isTrue($condition($item, $key))) {

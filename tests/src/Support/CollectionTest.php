@@ -211,4 +211,72 @@ class CollectionTest extends TestCase
         self::assertNotSame($seq, $clone);
         self::assertEquals(['a' => 3, 'b' => 4], $seq->toArray());
     }
+
+    public function testCount()
+    {
+        // empty
+        $empty = $this->collect();
+        self::assertEquals(0, $empty->count());
+
+        // count default
+        $simple = $this->collect([1,2,3]);
+        self::assertEquals(3, $simple->count());
+    }
+
+    public function testCountBy()
+    {
+        $simple = $this->collect([1,2,3]);
+        self::assertEquals(2, $simple->countBy(fn($v) => $v > 1));
+    }
+
+    public function testDeepMerge()
+    {
+        $empty = $this->collect();
+        $merged = $empty->deepMerge([1, [2]]);
+        self::assertNotSame($empty, $merged);
+        self::assertCount(0, $empty);
+        self::assertCount(2, $merged);
+        self::assertEquals([1, [2]], $merged->toArray());
+
+        $assoc = $this->collect([1, 'a' => [1,2]]);
+        $merged = $assoc->deepMerge([1, 'a' => [3]]);
+        self::assertCount(2, $assoc);
+        self::assertCount(3, $merged);
+        self::assertNotSame($assoc, $merged);
+        self::assertSame([1, 'a' => [1,2,3], 1], $merged->toArray());
+    }
+
+    public function testDiff()
+    {
+        $empty = $this->collect();
+        $diffed = $empty->diff([1]);
+        self::assertNotSame($empty, $diffed);
+        self::assertCount(0, $empty);
+        self::assertCount(0, $diffed);
+
+        $original = [-1, 'a' => 1, 'b' => 2, 3];
+        $differ = [2, 3, 'a' => 1, 'c' => 2, 5];
+        $assoc = $this->collect($original);
+        $diffed = $assoc->diff($differ);
+        self::assertNotSame($assoc, $diffed);
+        self::assertSame($original, $assoc->toArray());
+        self::assertSame([-1], $diffed->toArray());
+    }
+
+    public function testDiffKeys()
+    {
+        $empty = $this->collect();
+        $diffed = $empty->diffKeys([-1]);
+        self::assertNotSame($empty, $diffed);
+        self::assertCount(0, $empty);
+        self::assertCount(0, $diffed);
+
+        $original = [-1, 'a' => 1, 'b' => 2, 3, -10 => -10];
+        $differ = [2, 3, 'a' => 1, 'c' => 2, 5];
+        $assoc = $this->collect($original);
+        $diffed = $assoc->diffKeys($differ);
+        self::assertNotSame($assoc, $diffed);
+        self::assertSame($original, $assoc->toArray());
+        self::assertSame(['b' => 2, -10 => -10], $diffed->toArray());
+    }
 }
