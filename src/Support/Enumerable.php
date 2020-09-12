@@ -84,12 +84,24 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
     public function contains($value): bool
     {
         $call = is_callable($value) ? $value : static fn($item) => $item === $value;
-        foreach ($this->items as $item) {
-            if (static::isTrue($call($item))) {
+        foreach ($this->items as $key => $item) {
+            if (static::isTrue($call($item, $key))) {
                 return true;
             }
         }
         return false;
+    }
+
+    /**
+     * @param int|string $key
+     * @return bool
+     */
+    public function containsKey($key): bool
+    {
+        $copy = $this->toArray();
+        return is_string($key) && str_contains($key, '.')
+            ? (bool) static::digTo($copy, explode('.', $key))
+            : array_key_exists($key, $copy);
     }
 
     /**
@@ -272,31 +284,17 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
     }
 
     /**
-     * @param int|string $key
-     * @return bool
-     */
-    public function exists($key): bool
-    {
-        $copy = $this->toArray();
-        return is_string($key) && str_contains($key, '.')
-            ? (bool) static::digTo($copy, explode('.', $key))
-            : array_key_exists($key, $copy);
-    }
-
-    /**
      * @param callable|null $condition
      * @return static
      */
     public function filter(callable $condition = null)
     {
-        if ($condition === null) {
-            $condition = static fn($item, $key) => !empty($item);
-        }
+        $condition ??= static fn($item, $key) => !empty($item);
         $values = [];
         foreach ($this->items as $key => $item) {
             $result = $condition($item, $key);
             if (static::isTrue($result)) {
-                $values[]= $result;
+                $values[$key] = $item;
             }
         }
         return $this->newInstance($values);
@@ -431,7 +429,12 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
      */
     public function isAssoc(): bool
     {
-        return !$this->isSequential();
+        foreach($this->items as $key => $value) {
+            if (!is_string($key)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
@@ -455,12 +458,10 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
      */
     public function isSequential(): bool
     {
-        $count = 0;
         foreach($this->items as $key => $value) {
-            if ($key !== $count) {
+            if (!is_int($key)) {
                 return false;
             }
-            ++$count;
         }
         return true;
     }
@@ -481,7 +482,7 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
         foreach ($this->items as $k => $item) {
             if (is_array($item)) {
                 $newKey = $call($item, $k);
-                if(is_string($newKey) || is_int($newKey)) {
+                if (is_string($newKey) || is_int($newKey)) {
                     $map[$newKey] = $item;
                 }
             }
@@ -617,21 +618,21 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
     }
 
     /**
+     * @param int|string $key
+     * @return bool
+     */
+    public function notContainsKey($key): bool
+    {
+        return !$this->containsKey($key);
+    }
+
+    /**
      * @param mixed|null $items
      * @return bool
      */
     public function notEquals($items): bool
     {
         return ! $this->equals($items);
-    }
-
-    /**
-     * @param int|string $key
-     * @return bool
-     */
-    public function notExists($key): bool
-    {
-        return !$this->exists($key);
     }
 
     /**
@@ -654,18 +655,8 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
      */
     public function pluck(string $key)
     {
-        return $this->newInstance($this->pluckInternal($key));
-    }
-
-    /**
-     * @param $key
-     * @param string|int|null $indexBy
-     * @return array
-     */
-    protected function pluckInternal($key): array
-    {
         if (is_string($key) && !str_contains($key, '.')) {
-            return array_column($this->toArray(), $key);
+            return $this->newInstance(array_column($this->toArray(), $key));
         }
         $plucked = [];
         $keySegments = explode('.', $key);
@@ -676,7 +667,7 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
                 $plucked[] = $ptr[$lastKeySegment];
             }
         }
-        return $plucked;
+        return $this->newInstance($plucked);
     }
 
     /**

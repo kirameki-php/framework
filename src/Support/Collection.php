@@ -74,7 +74,7 @@ class Collection extends Enumerable implements ArrayAccess
     public function get($key)
     {
         return str_contains($key, '.')
-            ? $this->digTo($this->items, explode('.', $key))
+            ? static::digTo($this->items, explode('.', $key))
             : $this->items[$key] ?? null;
     }
 
@@ -120,7 +120,7 @@ class Collection extends Enumerable implements ArrayAccess
         }
         $segments = explode('.', $key);
         $lastSegment = array_pop($segments);
-        if (is_array($array = $this->digTo($this->items, $segments))) {
+        if (is_array($array = static::digTo($this->items, $segments))) {
             $value = $array[$lastSegment];
             unset($array[$lastSegment]);
             return $value;
@@ -178,6 +178,15 @@ class Collection extends Enumerable implements ArrayAccess
             return true;
         }
         return false;
+    }
+
+    /**
+     * @return $this
+     */
+    public function reorder()
+    {
+        uasort($this->items, static fn () => 0);
+        return $this;
     }
 
     /**

@@ -1,13 +1,14 @@
 FROM php:cli-alpine
 
 ENV COMPOSER_ALLOW_SUPERUSER 1
-ENV TZ Asia/Tokyo
 ENV PATH="/project/vendor/bin:${PATH}"
 ENV PHP_IDE_CONFIG serverName=host.docker.internal
+ENV TERM xterm-256color
+ENV TZ Asia/Tokyo
 
 RUN  apk add --no-cache bash coreutils git libxml2 libstdc++ yaml \
-  && apk add --no-cache --virtual=.build-deps autoconf curl-dev libxml2-dev linux-headers gcc g++ make pcre-dev tzdata yaml-dev \
-  && docker-php-ext-install -j$(nproc) pdo pdo_mysql opcache pcntl \
+  && apk add --no-cache --virtual=.build-deps autoconf curl-dev gmp-dev libxml2-dev linux-headers gcc g++ make pcre-dev tzdata yaml-dev \
+  && docker-php-ext-install -j$(nproc) bcmath gmp pdo pdo_mysql opcache pcntl \
   && if [ ! "${HTTP_PROXY}" = "" ]; then pear config-set http_proxy ${HTTP_PROXY}; fi \
   && pecl install -o -f apcu msgpack redis yaml \
   && docker-php-ext-enable apcu msgpack redis yaml \
