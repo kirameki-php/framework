@@ -1,6 +1,7 @@
 <?php
 
 use Kirameki\Application;
+use Kirameki\Support\Collection;
 use Kirameki\Support\Config;
 use Kirameki\Support\Env;
 use Psr\Log\LoggerInterface;
@@ -18,6 +19,11 @@ function config(): Config
 function env(string $name)
 {
     return Env::get($name);
+}
+
+function collect(?iterable $items = null)
+{
+    return new Collection($items);
 }
 
 function logger(): LoggerInterface

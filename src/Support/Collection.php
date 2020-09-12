@@ -9,7 +9,7 @@ class Collection extends Enumerable implements ArrayAccess
     /**
      * @param iterable|null $items
      */
-    public function __construct($items = null)
+    public function __construct(?iterable $items = null)
     {
         $this->items = $this->asArray($items ?? []);
     }
