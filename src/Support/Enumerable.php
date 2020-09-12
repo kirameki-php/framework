@@ -48,14 +48,6 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
     }
 
     /**
-     * @return array
-     */
-    public function toArray(): array
-    {
-        return $this->asArray($this->items);
-    }
-
-    /**
      * @return float|int
      */
     public function avg()
@@ -185,7 +177,17 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
      */
     public function dropUntil(callable $condition)
     {
-        $index = $this->search($condition) ?? PHP_INT_MAX;
+        $index = $this->firstIndex($condition) ?? PHP_INT_MAX;
+        return $this->drop($index);
+    }
+
+    /**
+     * @param callable $condition
+     * @return static
+     */
+    public function dropWhile(callable $condition)
+    {
+        $index = $this->firstIndex(static fn($item, $key) => !$condition($item, $key)) ?? PHP_INT_MAX;
         return $this->drop($index);
     }
 
@@ -312,6 +314,22 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
             if (static::isTrue($condition($item, $key))) {
                 return $item;
             }
+        }
+        return null;
+    }
+
+    /**
+     * @param callable $condition
+     * @return int|null
+     */
+    public function firstIndex(callable $condition): ?int
+    {
+        $count = 0;
+        foreach ($this->items as $key => $item) {
+            if (static::isTrue($condition($item, $key))) {
+                return $count;
+            }
+            $count++;
         }
         return null;
     }
@@ -467,6 +485,23 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
     }
 
     /**
+     * @param callable $condition
+     * @return int|null
+     */
+    public function lastIndex(callable $condition): ?int
+    {
+        $copy = $this->toArray();
+        $count = 0;
+        foreach (array_reverse($copy) as $key => $item) {
+            if (static::isTrue($condition($item, $key))) {
+                return $count;
+            }
+            $count++;
+        }
+        return null;
+    }
+
+    /**
      * @param callable|null $condition
      * @return int|string|null
      */
@@ -530,7 +565,7 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
      */
     public function max()
     {
-        return max(...$this->items);
+        return max(...$this->toArray());
     }
 
     /**
@@ -538,7 +573,7 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
      */
     public function min()
     {
-        return min(...$this->items);
+        return min(...$this->toArray());
     }
 
     /**
@@ -620,7 +655,7 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
      */
     public function reduce(callable $callback, $initial = null)
     {
-        $result = $initial;
+        $result = $initial ?? $this->newInstance();
         foreach ($this->items as $key => $item) {
             $result = $callback($result, $item, $key);
         }
@@ -809,7 +844,17 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
      */
     public function takeUntil(callable $callback)
     {
-        $index = $this->search($callback) ?? PHP_INT_MAX;
+        $index = $this->firstIndex($callback) ?? PHP_INT_MAX;
+        return $this->take($index);
+    }
+
+    /**
+     * @param callable $condition
+     * @return static
+     */
+    public function takeWhile(callable $condition)
+    {
+        $index = $this->firstIndex(static fn($item, $key) => !$condition($item, $key)) ?? PHP_INT_MAX;
         return $this->take($index);
     }
 
@@ -824,6 +869,24 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
             $mapping[$item]++;
         }
         return $this->newInstance($mapping);
+    }
+
+    /**
+     * @return array
+     */
+    public function toArray(): array
+    {
+        return $this->asArray($this->items);
+    }
+
+    /**
+     * @param int $options
+     * @param int $depth
+     * @return string
+     */
+    public function toJson(int $options = 0, int $depth = 512)
+    {
+        return Json::encode($this->jsonSerialize(), $options, $depth);
     }
 
     /**
