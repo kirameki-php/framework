@@ -73,7 +73,7 @@ class Collection extends Enumerable implements ArrayAccess
      */
     public function get($key)
     {
-        return str_contains($key, '.')
+        return is_string($key) && str_contains($key, '.')
             ? static::digTo($this->items, explode('.', $key))
             : $this->items[$key] ?? null;
     }
@@ -196,7 +196,7 @@ class Collection extends Enumerable implements ArrayAccess
      */
     public function set($key, $value)
     {
-        if (!str_contains($key, '.')) {
+        if (is_string($key) && !str_contains($key, '.')) {
             $this->items[$key] = $value;
         }
         $ptr = &$this->items;
@@ -217,7 +217,7 @@ class Collection extends Enumerable implements ArrayAccess
      */
     public function setIfNotExists($key, $value)
     {
-        if ($this->notExists($key)) {
+        if ($this->containsKey($key)) {
             $this->set($key, $value);
         }
         return $this;
