@@ -190,7 +190,7 @@ class Collection extends Enumerable implements ArrayAccess
     }
 
     /**
-     * @param $key
+     * @param int|string $key
      * @param $value
      * @return $this
      */

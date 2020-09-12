@@ -21,7 +21,7 @@ class CollectionTest extends TestCase
 
     public function testChunk()
     {
-        // chunking empty returns new blank instance
+        // empty but not same instance
         $empty = $this->collect();
         $result = $empty->chunk(1);
         self::assertEmpty($result);
@@ -77,7 +77,7 @@ class CollectionTest extends TestCase
 
     public function testCompact()
     {
-        // compact empty returns new blank instance
+        // empty but not same instance
         $empty = $this->collect();
         self::assertNotSame($empty, $empty->compact());
 
@@ -158,8 +158,57 @@ class CollectionTest extends TestCase
         self::assertTrue($assoc->contains(static fn($v, $k) => $k === 'b'));
     }
 
+    public function testContainsKey()
+    {
+        // empty but not same instance
+        $empty = $this->collect();
+        self::assertFalse($empty->containsKey('a'));
+        self::assertFalse($empty->containsKey('a.a'));
+        self::assertEmpty($empty->containsKey(0));
+        self::assertEmpty($empty->containsKey(-1));
+
+        // copy sequence
+        $seq = $this->collect([-2 => 1, 3, 4, [1, 2, [1, 2, 3]], [null]]);
+        self::assertTrue($seq->containsKey(1));
+        self::assertTrue($seq->containsKey('1'));
+        self::assertTrue($seq->containsKey('-2'));
+        self::assertTrue($seq->containsKey(-2));
+        self::assertFalse($seq->containsKey(-1));
+        self::assertFalse($seq->containsKey(999));
+        self::assertFalse($seq->containsKey('0.3'));
+        self::assertFalse($seq->containsKey('2.999'));
+        self::assertFalse($seq->containsKey("1.1.1"));
+        self::assertTrue($seq->containsKey("2.2"));
+        self::assertTrue($seq->containsKey("2.2.2"));
+        self::assertFalse($seq->containsKey("2.2.2.-2"));
+        self::assertTrue($seq->containsKey("3"));
+
+        // copy assoc
+        $assoc = $this->collect(['a' => [1, 2, 3], '-' => 'c', 'd' => ['e'], 'f' => null]);
+        self::assertTrue($assoc->containsKey('a'));
+        self::assertFalse($assoc->containsKey('a.a'));
+        self::assertTrue($assoc->containsKey('d.0'));
+        self::assertTrue($assoc->containsKey('f'));
+    }
+
     public function testCopy()
     {
+        // empty but not same instance
+        $empty = $this->collect();
+        $clone = $empty->copy();
+        self::assertNotSame($empty, $clone);
+        self::assertEmpty($clone);
 
+        // copy sequence
+        $seq = $this->collect([3, 4]);
+        $clone = $seq->copy();
+        self::assertNotSame($seq, $clone);
+        self::assertEquals([3, 4], $seq->toArray());
+
+        // copy assoc
+        $seq = $this->collect(['a' => 3, 'b' => 4]);
+        $clone = $seq->copy();
+        self::assertNotSame($seq, $clone);
+        self::assertEquals(['a' => 3, 'b' => 4], $seq->toArray());
     }
 }

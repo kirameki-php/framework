@@ -99,9 +99,13 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
     public function containsKey($key): bool
     {
         $copy = $this->toArray();
-        return static::isDottedKey($key)
-            ? (bool) static::digTo($copy, explode('.', $key))
-            : array_key_exists($key, $copy);
+        if (static::isNotDottedKey($key)) {
+            return array_key_exists($key, $copy);
+        }
+        $segments = explode('.', $key);
+        $lastSegment = array_pop($segments);
+        $ptr = static::digTo($copy, $segments);
+        return is_array($ptr) && array_key_exists($lastSegment, $ptr);
     }
 
     /**
@@ -991,7 +995,10 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
     protected static function digTo(array &$array, array $keys)
     {
         foreach ($keys as $key) {
-            if (!isset($array[$key]) && !array_key_exists($key, $array)) {
+            if (!isset($array[$key])) {
+                return null;
+            }
+            if (!is_array($array[$key])) {
                 return null;
             }
             $array = $array[$key];
