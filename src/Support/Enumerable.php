@@ -4,6 +4,7 @@ namespace Kirameki\Support;
 
 use ArrayIterator;
 use Countable;
+use Generator;
 use IteratorAggregate;
 use JsonSerializable;
 use RuntimeException;
@@ -137,6 +138,16 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
             }
         }
         return $counter;
+    }
+
+    /**
+     * @return Generator
+     */
+    public function cursor(): Generator
+    {
+        foreach ($this->items as $key => $item) {
+            yield $key => $item;
+        }
     }
 
     /**
