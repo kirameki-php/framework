@@ -32,11 +32,34 @@ interface StoreInterface
 
     public function removeExpired(): array;
 
+    /**
+     * Returns the remaining TTL (time-to-live) of cache entry in seconds.
+     * If cache is persisted, it will return `INF`.
+     * If the key does not exist, it will return null;
+     *
+     * @param string $key
+     * @return int|null
+     */
     public function ttl(string $key): ?int;
 
+    /**
+     * Clears all entries from cache
+     *
+     * @return bool
+     */
     public function clear(): bool;
 
+    /**
+     * Returns the namespace set to store
+     *
+     * @return string
+     */
     public function namespace(): string;
 
-    public function triggerEvents(bool $toggle): void;
+    /**
+     * Set bool to toggle event emitter
+     *
+     * @param bool $toggle
+     */
+    public function emitEvents(bool $toggle): void;
 }
