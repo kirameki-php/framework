@@ -14,21 +14,21 @@ interface StoreInterface
 
     public function existsMulti(string ...$keys): array;
 
-    public function set(string $key, $value, ?int $ttl = null): bool;
+    public function set(string $key, $value, $ttl = null): bool;
 
-    public function setMulti(array $entries, ?int $ttl = null): array;
+    public function setMulti(array $entries, $ttl = null): array;
 
-    public function increment(string $key, int $by = 1, int $ttl = 0): ?int;
+    public function increment(string $key, int $by = 1, $ttl = null): ?int;
 
-    public function decrement(string $key, int $by = 1, int $ttl = 0): ?int;
+    public function decrement(string $key, int $by = 1, $ttl = null): ?int;
 
-    public function remember(string $key, Closure $callback, ?int $ttl = null);
+    public function remember(string $key, Closure $callback, $ttl = null);
 
     public function remove(string $key): bool;
 
     public function removeMulti(string ...$keys): array;
 
-    public function removeMatched(string $match): array;
+    public function removeMatched(string $pattern): array;
 
     public function removeExpired(): array;
 

@@ -3,6 +3,8 @@
 namespace Kirameki\Cache;
 
 use Closure;
+use DateInterval;
+use DateTimeInterface;
 
 abstract class AbstractStore implements StoreInterface
 {
@@ -55,5 +57,17 @@ abstract class AbstractStore implements StoreInterface
     protected function triggerEvent(string $name)
     {
         // TODO implement event dispatcher
+    }
+
+    protected function formatTtl($ttl = null, int $now = null): int
+    {
+        if ($ttl instanceof DateTimeInterface) {
+            return $ttl->getTimestamp() - ($now ?? time());
+        }
+        if ($ttl instanceof DateInterval) {
+            return ($ttl->days * 86400 + $ttl->h * 3600 + $ttl->i * 60 + $ttl->s)
+                 * ($ttl->invert === 1 ? -1 : 1);
+        }
+        return $ttl;
     }
 }

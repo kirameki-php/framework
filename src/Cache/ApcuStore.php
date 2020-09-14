@@ -41,31 +41,31 @@ class ApcuStore extends AbstractStore
 
     public function set(string $key, $value, ?int $ttl = null): bool
     {
-        return $this->enabled && apcu_store($this->formatKey($key), $value, $ttl);
+        return $this->enabled && apcu_store($this->formatKey($key), $value, $this->formatTtl($ttl));
     }
 
     public function setMulti(array $entries, ?int $ttl = null): array
     {
         return $this->enabled
-            ? apcu_store($entries, null, $ttl)
+            ? apcu_store($entries, null, $this->formatTtl($ttl))
             : array_keys($entries);
     }
 
-    public function increment(string $key, int $by = 1, int $ttl = 0): ?int
+    public function increment(string $key, int $by = 1, $ttl = null): ?int
     {
         if (!$this->enabled) {
             return null;
         }
-        $result = apcu_inc($key, $by, $nil, $ttl);
+        $result = apcu_inc($key, $by, $nil, $this->formatTtl($ttl));
         return is_int($result) ? $result : null;
     }
 
-    public function decrement(string $key, int $by = 1, int $ttl = 0): ?int
+    public function decrement(string $key, int $by = 1, $ttl = null): ?int
     {
         if (!$this->enabled) {
             return null;
         }
-        $result = apcu_dec($key, $by, $nil, $ttl);
+        $result = apcu_dec($key, $by, $nil, $this->formatTtl($ttl));
         return is_int($result) ? $result : null;
     }
 
@@ -73,7 +73,7 @@ class ApcuStore extends AbstractStore
     {
         if ($this->enabled && $data = apcu_key_info($key)) {
             if ($data['ttl'] === 0) {
-                return 0;
+                return INF;
             }
             $ttl = ($data['creation_time'] + $data['ttl']) - time();
             if ($ttl > 0) {
@@ -93,14 +93,14 @@ class ApcuStore extends AbstractStore
         return $this->enabled ? apcu_delete($this->formatKeys($keys)) : $keys;
     }
 
-    public function removeMatched(string $match): array
+    public function removeMatched(string $pattern): array
     {
         if (!$this->enabled) {
             return [];
         }
-        $matchedKeys = $this->scan($match);
+        $matchedKeys = $this->scan($pattern);
         $failedKeys = apcu_delete($matchedKeys);
-        return ['successful' => $matchedKeys, 'failed' => $failedKeys,];
+        return ['successful' => $matchedKeys, 'failed' => $failedKeys];
     }
 
     public function removeExpired(): array
@@ -130,7 +130,7 @@ class ApcuStore extends AbstractStore
     {
         $keys = [];
         $search = $this->formatKey($search);
-        foreach (new APCuIterator("/^{$search}/", $format) as $data) {
+        foreach (new APCuIterator($search, $format) as $data) {
             if ($filter !== null && $filter($data) !== false) {
                 $keys[] = $data['key'];
             }

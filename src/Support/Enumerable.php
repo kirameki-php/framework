@@ -668,13 +668,9 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
             return $this->newInstance(array_column($this->toArray(), $key));
         }
         $plucked = [];
-        $keySegments = explode('.', $key);
-        $lastKeySegment = array_pop($keySegments);
-        foreach ($this->items as &$values) {
-            $ptr = static::digTo($values, $keySegments);
-            if (is_array($ptr) && array_key_exists($lastKeySegment, $ptr)) {
-                $plucked[] = $ptr[$lastKeySegment];
-            }
+        $segments = explode('.', $key);
+        foreach ($this->items as $values) {
+            $plucked[] = static::digTo($values, $segments);
         }
         return $this->newInstance($plucked);
     }
@@ -997,13 +993,17 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
      * @param array $keys
      * @return mixed
      */
-    protected static function digTo(array &$array, array $keys)
+    protected static function digTo(array $array, array $keys)
     {
         foreach ($keys as $key) {
             if (!isset($array[$key])) {
                 return null;
             }
             if (!is_array($array[$key])) {
+                // If at last key, return the referenced value
+                if ($key === $keys[array_key_last($keys)]) {
+                    return $array[$key];
+                }
                 return null;
             }
             $array = $array[$key];
