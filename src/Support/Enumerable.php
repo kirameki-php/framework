@@ -992,7 +992,7 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
     protected static function boolCheck($value, bool $expected): bool
     {
         if (!is_bool($value)) {
-            $result = Util::valueAsString($value);
+            $result = Util::toString($value);
             $message = "Invalid return value: $result. Call must return a boolean value";
             throw new RuntimeException($message);
         }

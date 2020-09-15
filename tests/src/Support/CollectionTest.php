@@ -3,6 +3,7 @@
 namespace Kirameki\Tests\Support;
 
 use ErrorException;
+use Generator;
 use Kirameki\Support\Collection;
 use Kirameki\Tests\TestCase;
 
@@ -229,6 +230,14 @@ class CollectionTest extends TestCase
         self::assertEquals(2, $simple->countBy(fn($v) => $v > 1));
     }
 
+    public function testCursor()
+    {
+        $array = ['a' => 1, 'b' => 2];
+        $simple = $this->collect($array);
+        self::assertInstanceOf(Generator::class, $simple->cursor());
+        self::assertSame($array, iterator_to_array($simple->cursor()));
+    }
+
     public function testDeepMerge()
     {
         $empty = $this->collect();
@@ -278,5 +287,10 @@ class CollectionTest extends TestCase
         self::assertNotSame($assoc, $diffed);
         self::assertSame($original, $assoc->toArray());
         self::assertSame(['b' => 2, -10 => -10], $diffed->toArray());
+    }
+
+    public function testDig()
+    {
+        
     }
 }

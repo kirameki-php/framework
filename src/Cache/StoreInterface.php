@@ -8,6 +8,8 @@ interface StoreInterface
 {
     public function get(string $key);
 
+    public function tryGet(string $key, &$value): bool;
+
     public function getMulti(string ...$keys): array;
 
     public function exists(string $key): bool;

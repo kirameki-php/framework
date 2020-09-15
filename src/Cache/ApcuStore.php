@@ -24,6 +24,20 @@ class ApcuStore extends AbstractStore
         return null;
     }
 
+    public function tryGet(string $key, &$value): bool
+    {
+        if($this->enabled) {
+            $success = false;
+            $value = apcu_fetch($this->formatKey($key), $success);
+            if (!$success) {
+                $value = null;
+            }
+            return $success;
+        }
+        $value = null;
+        return false;
+    }
+
     public function getMulti(string ...$keys): array
     {
         return $this->enabled ? apcu_fetch($this->formatKeys($keys)) : [];

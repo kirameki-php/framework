@@ -49,7 +49,7 @@ abstract class AbstractStore implements StoreInterface
         return $prefixed;
     }
 
-    public function triggerEvents(bool $toggle): void
+    public function emitEvents(bool $toggle): void
     {
         $this->triggerEvents = $toggle;
     }
