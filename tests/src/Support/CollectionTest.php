@@ -291,6 +291,6 @@ class CollectionTest extends TestCase
 
     public function testDig()
     {
-        
+
     }
 }

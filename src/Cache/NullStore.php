@@ -6,6 +6,11 @@ use Closure;
 
 class NullStore extends AbstractStore
 {
+    public function __construct(string $namespace = null)
+    {
+        $this->namespace = $namespace ?? '';
+    }
+
     public function get(string $key)
     {
         return null;
