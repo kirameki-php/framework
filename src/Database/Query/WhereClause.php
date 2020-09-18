@@ -290,7 +290,7 @@ class WhereClause
 
     /**
      * @param Formatter $formatter
-     * @param string $table
+     * @param string|null $table
      * @return string
      */
     protected function buildCurrent(Formatter $formatter, ?string $table): string
@@ -299,7 +299,7 @@ class WhereClause
             return (string) $this->value;
         }
 
-        $column = "{{$formatter->column($this->column, $table)}";
+        $column = $formatter->column($this->column, $table);
         $operator = $this->operator;
         $negated = $this->negated;
         $value = $this->value;
@@ -314,24 +314,27 @@ class WhereClause
                 return $column.' '.$expr;
             }
             $operator = $negated ? '!'.$operator : $operator;
-            return $column.' '.$operator.' ?';
+            return $column.' '.$operator.' '.$formatter->bindName();
         }
 
         if ($operator === 'IN') {
             if (empty($value)) return '1 = 0';
             $operator = $negated ? 'NOT '.$operator : $operator;
-            $expr = implode(',', array_fill(0, count($value), '?'));
-            return $column.' '.$operator.' ('.$expr.')';
+            $bindNames = [];
+            for($i = 0, $size = count($value); $i < $size; $i++) {
+                $bindNames[] = $formatter->bindName();
+            }
+            return $column.' '.$operator.' ('.implode(',', $bindNames).')';
         }
 
         if ($operator === 'BETWEEN') {
             $operator = $negated ? 'NOT '.$operator : $operator;
-            return $column.' '.$operator.' ? AND ?';
+            return $column.' '.$operator.' '.$formatter->bindName().' AND '.$formatter->bindName();
         }
 
         if ($operator === 'LIKE') {
             $operator = $negated ? 'NOT '.$operator : $operator;
-            return $column.' '.$operator.' ?';
+            return $column.' '.$operator.' '.$formatter->bindName();
         }
 
         // ">=", ">", "<", "<=" and raw cannot be negated

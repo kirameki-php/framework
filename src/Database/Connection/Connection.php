@@ -2,6 +2,7 @@
 
 namespace Kirameki\Database\Connection;
 
+use Generator;
 use Kirameki\Database\Query\Formatter;
 use PDO;
 
@@ -15,18 +16,30 @@ class Connection
 
     public ?PDO $pdo;
 
+    /**
+     * @param string $name
+     * @param array $config
+     */
     public function __construct(string $name, array $config)
     {
         $this->name = $name;
         $this->config = $config;
     }
 
+    /**
+     * @return array
+     */
     public function getConfig()
     {
         return $this->config;
     }
 
-    public function cursor(string $statement, array $bindings)
+    /**
+     * @param string $statement
+     * @param array $bindings
+     * @return Generator
+     */
+    public function cursor(string $statement, array $bindings): Generator
     {
         $pdo = $this->getPdo();
         $prepared = $pdo->prepare($statement);
@@ -36,12 +49,17 @@ class Connection
         }
     }
 
+    /**
+     * @param string $statement
+     * @param array $bindings
+     * @return array
+     */
     public function select(string $statement, array $bindings): array
     {
         $pdo = $this->getPdo();
         $prepared = $pdo->prepare($statement);
         $prepared->execute($bindings);
-        return $prepared->fetchAll();
+        return $prepared->fetchAll(PDO::FETCH_ASSOC);
     }
 
     /**
@@ -52,6 +70,9 @@ class Connection
         return $this->pdo??= $this->connect();
     }
 
+    /**
+     * @return Formatter
+     */
     public function getFormatter()
     {
         return $this->formatter ??= new Formatter($this);

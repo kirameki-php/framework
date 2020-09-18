@@ -244,14 +244,7 @@ class Builder
 
         if ($bind) {
             $bindings = $this->getBindings();
-            $sql = preg_replace_callback('/\?\??/', static function($matches) use (&$bindings) {
-                if ($matches[0] === '?') {
-                    $current = current($bindings);
-                    next($bindings);
-                    return $current;
-                }
-                return $matches[0];
-            }, $sql);
+            $formatter->intropolate($sql, $bindings);
         }
 
         return $sql;

@@ -9,6 +9,8 @@ class Formatter
 {
     protected Connection $connection;
 
+    protected string $quote = '`';
+
     /**
      * @param Connection $connection
      */
@@ -17,6 +19,10 @@ class Formatter
         $this->connection = $connection;
     }
 
+    /**
+     * @param Statement $statement
+     * @return string
+     */
     public function select(Statement $statement): string
     {
         if (empty($statement->select)) {
@@ -25,6 +31,10 @@ class Formatter
         return implode(', ', $statement->select);
     }
 
+    /**
+     * @param Statement $statement
+     * @return string
+     */
     public function from(Statement $statement): string
     {
         $expr = $statement->from;
@@ -34,6 +44,10 @@ class Formatter
         return $expr;
     }
 
+    /**
+     * @param Statement $statement
+     * @return string|null
+     */
     public function where(Statement $statement): ?string
     {
         if ($statement->where !== null) {
@@ -46,6 +60,10 @@ class Formatter
         return null;
     }
 
+    /**
+     * @param Statement $statement
+     * @return string|null
+     */
     public function order(Statement $statement): ?string
     {
         if ($statement->orderBy !== null) {
@@ -59,11 +77,19 @@ class Formatter
         return null;
     }
 
+    /**
+     * @param Statement $statement
+     * @return string|null
+     */
     public function offset(Statement $statement): ?string
     {
         return $statement->offset !== null ? 'OFFSET '.$statement->offset : null;
     }
 
+    /**
+     * @param Statement $statement
+     * @return string|null
+     */
     public function limit(Statement $statement): ?string
     {
         return $statement->limit !== null ? 'LIMIT '.$statement->limit : null;
@@ -75,7 +101,15 @@ class Formatter
      */
     public function table(string $name): string
     {
-        return "`$name`";
+        return $this->quote.$name.$this->quote;
+    }
+
+    /**
+     * @return string
+     */
+    public function bindName(): string
+    {
+        return '?';
     }
 
     /**
@@ -85,7 +119,7 @@ class Formatter
      */
     public function column(string $name, ?string $table = null): string
     {
-        $name = $name !== '*' ? "`$name`" : $name;
+        $name = $name !== '*' ? $this->quote.$name.$this->quote : $name;
         return $table !== null ? $this->table($table).'.'.$name : $name;
     }
 
@@ -117,5 +151,22 @@ class Formatter
         }
 
         return $value;
+    }
+
+    /**
+     * @param string $statement
+     * @param array $bindings
+     * @return string
+     */
+    public function intropolate(string $statement, array $bindings): string
+    {
+        return preg_replace_callback('/\?\??/', static function($matches) use (&$bindings) {
+            if ($matches[0] === '?') {
+                $current = current($bindings);
+                next($bindings);
+                return $current;
+            }
+            return $matches[0];
+        }, $statement);
     }
 }
