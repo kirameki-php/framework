@@ -14,6 +14,11 @@ class Model implements ArrayAccess, JsonSerializable
         Concerns\Querying,
         Concerns\Relations;
 
+    public static function basename(): string
+    {
+        return class_basename(static::class);
+    }
+
     protected static function boot()
     {
 

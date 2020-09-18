@@ -2,67 +2,24 @@
 
 namespace Kirameki\Database\Query;
 
-use Closure;
+use Kirameki\Database\Connection\Connection;
 use Kirameki\Support\Collection;
-use PDO;
 use RuntimeException;
 
 class Builder
 {
-    /**
-     * @var PDO
-     */
-    protected PDO $pdo;
+    protected Connection $connection;
+
+    protected Statement $statement;
 
     /**
-     * @var Formatter
+     * @param Connection $connection
      */
-    protected Formatter $formatter;
-
-    /**
-     * @var string
-     */
-    public string $from;
-
-    /**
-     * @var string|null
-     */
-    public ?string $as;
-
-    /**
-     * @var bool
-     */
-    public bool $distinct = false;
-
-    /**
-     * @var array|null
-     */
-    public ?array $select;
-
-    /**
-     * @var WhereClause[]
-     */
-    public ?array $wheres;
-
-    /**
-     * @var array|null
-     */
-    public ?array $order;
-
-    /**
-     * @var int|null
-     */
-    public ?int $limit;
-
-    /**
-     * @var int|null
-     */
-    public ?int $offset;
-
-    /**
-     * @var bool|null
-     */
-    public ?bool $lock;
+    public function __construct(Connection $connection)
+    {
+        $this->connection = $connection;
+        $this->statement = new Statement();
+    }
 
     /**
      * Do a deep clone of object types
@@ -70,7 +27,7 @@ class Builder
      */
     public function __clone()
     {
-        $this->wheres = array_map(static fn($w) => clone $w, $this->wheres);
+        $this->statement = clone $this->statement;
     }
 
     /**
@@ -80,8 +37,8 @@ class Builder
      */
     public function from(string $table, ?string $as = null)
     {
-        $this->from = $table;
-        $this->as = $as;
+        $this->statement->from = $table;
+        $this->statement->as = $as;
         return $this;
     }
 
@@ -91,7 +48,7 @@ class Builder
      */
     public function select(...$columns)
     {
-        $this->select = $columns;
+        $this->statement->select = $columns;
         return $this;
     }
 
@@ -100,7 +57,7 @@ class Builder
      */
     public function distinct()
     {
-        $this->distinct = true;
+        $this->statement->distinct = true;
         return $this;
     }
 
@@ -116,18 +73,18 @@ class Builder
 
         if ($num === 1) {
             return is_callable($column)
-                ? $this->addWhereClause(WhereClause::for($this, $column)->tap($column))
+                ? $this->addWhereClause(WhereClause::for($column)->tap($column))
                 : $this->addWhereClause($column);
         }
 
         if ($num === 2) {
             return is_array($operator)
-                ? $this->addWhereClause(WhereClause::for($this, $column)->in($operator))
-                : $this->addWhereClause(WhereClause::for($this, $column)->eq($operator));
+                ? $this->addWhereClause(WhereClause::for($column)->in($operator))
+                : $this->addWhereClause(WhereClause::for($column)->eq($operator));
         }
 
         if ($num === 3) {
-            return $this->addWhereClause(WhereClause::for($this, $column)->with($operator, $value));
+            return $this->addWhereClause(WhereClause::for($column)->with($operator, $value));
         }
 
         throw new \RuntimeException('Invalid number of arguments. expected: 1~3. '.$num.' given.');
@@ -139,34 +96,29 @@ class Builder
      */
     public function whereRaw(string $raw)
     {
-        return $this->addWhereClause(WhereClause::raw($this, $raw));
+        return $this->addWhereClause(WhereClause::raw($raw));
     }
 
     /**
-     * @param array $pairs
-     * @return $this
-     */
-    public function order(array $pairs)
-    {
-        foreach ($pairs as $column => $sort) {
-            $this->orderBy($column, $sort);
-        }
-        return $this;
-    }
-
-    /**
-     * @param string $column
+     * @param string|array $column
      * @param string $sort
      * @return $this
      */
-    public function orderBy(string $column, string $sort = 'ASC')
+    public function orderBy($column, string $sort = 'ASC')
     {
+        if (is_array($column)) {
+            foreach ($column as $c => $s) {
+                $this->orderBy($c, $s);
+            }
+            return $this;
+        }
+
         $sort = strtoupper($sort);
         if (! in_array($sort, ['ASC', 'DESC'])) {
             throw new RuntimeException('Invalid sorting: '.$sort. ' Only ASC or DESC is allowed.');
         }
-        $this->order ??= [];
-        $this->order[$column] = $sort;
+        $this->statement->orderBy ??= [];
+        $this->statement->orderBy[$column] = $sort;
         return $this;
     }
 
@@ -193,7 +145,7 @@ class Builder
      */
     public function reorder()
     {
-        $this->order = null;
+        $this->statement->order = null;
         return $this;
     }
 
@@ -203,7 +155,7 @@ class Builder
      */
     public function limit(int $count)
     {
-        $this->limit = $count;
+        $this->statement->limit = $count;
         return $this;
     }
 
@@ -213,7 +165,7 @@ class Builder
      */
     public function offset(int $skipRows)
     {
-        $this->offset = $skipRows;
+        $this->statement->offset = $skipRows;
         return $this;
     }
 
@@ -222,20 +174,17 @@ class Builder
      */
     public function lock()
     {
-        $this->lock = true;
+        $this->statement->lock = true;
         return $this;
     }
-
-    // Terminal Methods -------------------------------------------------------
 
     /**
      * @return Collection
      */
     public function all()
     {
-        $statement = $this->pdo->prepare($this->toSql());
-        $statement->execute($this->getBindings());
-        return new Collection();
+        $results = $this->connection->select($this->toSql(), $this->getBindings());
+        return new Collection($results);
     }
 
     /**
@@ -252,17 +201,9 @@ class Builder
      */
     protected function addWhereClause(WhereClause $clause)
     {
-        $this->wheres ??= [];
-        $this->wheres[] = $clause;
+        $this->statement->where ??= [];
+        $this->statement->where[] = $clause;
         return $this;
-    }
-
-    /**
-     * @return Formatter
-     */
-    public function getFormatter(): Formatter
-    {
-        return $this->formatter ??= new Formatter($this->pdo);
     }
 
     /**
@@ -270,10 +211,13 @@ class Builder
      */
     public function getBindings(): array
     {
+        $formatter = $this->connection->getFormatter();
+        $table = $this->statement->as ?? $this->statement->from;
+
         $bindings = [];
-        foreach ($this->wheres as $where) {
-            $whereClauses[] = $where->toSql();
-            foreach($where->getBindings() as $binding) {
+        foreach ($this->statement->where as $where) {
+            $whereClauses[] = $where->toSql($formatter, $table);
+            foreach($where->getBindings($formatter) as $binding) {
                 $bindings[] = $binding;
             }
         }
@@ -286,31 +230,17 @@ class Builder
      */
     public function toSql($bind = false): string
     {
-        $formatter = $this->getFormatter();
+        $statement = $this->statement;
+        $formatter = $this->connection->getFormatter();
 
-        $exprs = [];
-
-        if (empty($this->select)) {
-            $this->select = ['*'];
-        }
-        $exprs[] = implode(', ', $this->select);
-
-        $whereClauses = array_map(static fn(WhereClause $w) => $w->toSql(), $this->wheres);
-        $exprs[] = 'WHERE '.implode(' AND ', $whereClauses);
-
-        if ($this->offset !== null) {
-            $exprs[] = 'OFFSET '.$this->offset;
-        }
-
-        if ($this->limit !== null) {
-            $exprs[] = 'LIMIT '.$this->limit;
-        }
-
-        if (!empty($this->order)) {
-            $exprs[] = $formatter->order($this->order, $this->from);
-        }
-
-        $sql = implode(' ', $exprs);
+        $sql = implode(' ', [
+            $formatter->select($statement),
+            $formatter->from($statement),
+            $formatter->where($statement),
+            $formatter->offset($statement),
+            $formatter->limit($statement),
+            $formatter->order($statement),
+        ]);
 
         if ($bind) {
             $bindings = $this->getBindings();

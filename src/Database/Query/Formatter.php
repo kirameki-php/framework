@@ -3,18 +3,70 @@
 namespace Kirameki\Database\Query;
 
 use DateTimeInterface;
-use PDO;
+use Kirameki\Database\Connection\Connection;
 
 class Formatter
 {
-    protected PDO $pdo;
+    protected Connection $connection;
 
     /**
-     * @param PDO $pdo
+     * @param Connection $connection
      */
-    public function __construct(PDO $pdo)
+    public function __construct(Connection $connection)
     {
-        $this->pdo = $pdo;
+        $this->connection = $connection;
+    }
+
+    public function select(Statement $statement): string
+    {
+        if (empty($statement->select)) {
+            $statement->select = ['*'];
+        }
+        return implode(', ', $statement->select);
+    }
+
+    public function from(Statement $statement): string
+    {
+        $expr = $statement->from;
+        if ($statement->as !== null) {
+            $expr.=' AS '.$statement->as;
+        }
+        return $expr;
+    }
+
+    public function where(Statement $statement): ?string
+    {
+        if ($statement->where !== null) {
+            $exprs = [];
+            foreach ($statement->where as $clause) {
+                $exprs[] = $clause->toSql($this, $statement->as);
+            }
+            return 'WHERE '.implode(' AND ', $exprs);
+        }
+        return null;
+    }
+
+    public function order(Statement $statement): ?string
+    {
+        if ($statement->orderBy !== null) {
+            $table = $statement->as ?? $statement->from;
+            $exprs = [];
+            foreach ($statement->orderBy as $column => $sort) {
+                $exprs[] = $this->column($column, $table).' '.$sort;
+            }
+            return implode(', ', $exprs);
+        }
+        return null;
+    }
+
+    public function offset(Statement $statement): ?string
+    {
+        return $statement->offset !== null ? 'OFFSET '.$statement->offset : null;
+    }
+
+    public function limit(Statement $statement): ?string
+    {
+        return $statement->limit !== null ? 'LIMIT '.$statement->limit : null;
     }
 
     /**
@@ -48,7 +100,7 @@ class Formatter
         }
 
         if (is_string($value)) {
-            $quoted = $this->pdo->quote($value);
+            $quoted = $this->connection->getPdo()->quote($value);
             return is_string($quoted) ? $quoted : $value;
         }
 
@@ -65,14 +117,5 @@ class Formatter
         }
 
         return $value;
-    }
-
-    public function order(array $orders, ?string $table = null)
-    {
-        $exprs = [];
-        foreach ($orders as $column => $sort) {
-            $exprs[] = $this->column($column, $table).' '.$sort;
-        }
-        return implode(', ', $exprs);
     }
 }

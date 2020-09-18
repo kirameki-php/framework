@@ -10,10 +10,6 @@ class WhereClause
 {
     use Tappable;
 
-    protected Builder $builder;
-
-    protected string $table;
-
     protected string $column;
 
     protected ?string $operator;
@@ -27,24 +23,21 @@ class WhereClause
     protected ?self $nextClause;
 
     /**
-     * @param Builder $builder
      * @param string $column
      * @return static
      */
-    public static function for(Builder $builder, string $column)
+    public static function for(string $column)
     {
-        return (new static($builder))->column($column);
+        return (new static)->column($column);
     }
 
     /**
-     * @param Builder $builder
      * @param string $raw
      * @return static
      */
-    public static function raw(Builder $builder, string $raw)
+    public static function raw(string $raw)
     {
-        $instance = new static($builder);
-        $instance->table = $builder->as ?? $builder->from;
+        $instance = new static();
         $instance->negated = false;
         $instance->operator = null;
         $instance->value = $raw;
@@ -52,19 +45,13 @@ class WhereClause
     }
 
     /**
-     * @param Builder $builder
-     */
-    public function __construct(Builder $builder)
-    {
-        $this->builder = $builder;
-    }
-
-    /**
      * Do a deep clone of object types
      */
     public function __clone()
     {
-        $this->nextClause = clone $this->nextClause;
+        if ($this->nextClause !== null) {
+            $this->nextClause = clone $this->nextClause;
+        }
     }
 
     /**
@@ -74,7 +61,7 @@ class WhereClause
     public function and(string $column)
     {
         $this->nextLogic = 'AND';
-        $this->nextClause = static::for($this->builder, $column);
+        $this->nextClause = static::for($column);
         return $this->nextClause;
     }
 
@@ -85,7 +72,7 @@ class WhereClause
     public function or(string $column)
     {
         $this->nextLogic = 'OR';
-        $this->nextClause = static::for($this->builder, $column);
+        $this->nextClause = static::for($column);
         return $this->nextClause;
     }
 
@@ -265,32 +252,33 @@ class WhereClause
     /**
      * @return array
      */
-    public function getBindings(): array
+    public function getBindings(Formatter $formatter): array
     {
         $values = is_array($this->value) ? $this->value : [$this->value];
-        $formatter = $this->builder->getFormatter();
         $bindings = array_map(static fn($v) => $formatter->value($v), $values);
 
         if ($this->nextClause !== null) {
-            $bindings = array_merge($bindings, $this->getBindings());
+            $bindings = array_merge($bindings, $this->getBindings($formatter));
         }
 
         return $bindings;
     }
 
     /**
+     * @param Formatter $formatter
+     * @param string|null $table
      * @return string
      */
-    public function toSql(): string
+    public function toSql(Formatter $formatter, ?string $table): string
     {
-        $sql = $this->buildCurrent();
+        $sql = $this->buildCurrent($formatter, $table);
 
         // Dig through all chained clauses if exists
         if ($this->nextClause !== null) {
             $nextLogic = $this->nextLogic;
             $nextClause = $this->nextClause;
             while ($nextClause !== null) {
-                $sql.= $nextLogic.' '.$nextClause->buildCurrent();
+                $sql.= $nextLogic.' '.$nextClause->buildCurrent($formatter, $table);
                 $nextLogic = $nextClause->nextLogic;
                 $nextClause = $nextClause->nextClause;
             }
@@ -301,18 +289,17 @@ class WhereClause
     }
 
     /**
+     * @param Formatter $formatter
+     * @param string $table
      * @return string
      */
-    protected function buildCurrent(): string
+    protected function buildCurrent(Formatter $formatter, ?string $table): string
     {
-        $builder = $this->builder;
-        $formatter = $builder->getFormatter();
-
         if ($this->column === null) {
             return (string) $this->value;
         }
 
-        $column = "{{$formatter->column($this->column, $this->table)}";
+        $column = "{{$formatter->column($this->column, $table)}";
         $operator = $this->operator;
         $negated = $this->negated;
         $value = $this->value;

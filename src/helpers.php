@@ -11,6 +11,11 @@ function app(): Application
     return Application::instance();
 }
 
+function collect(?iterable $items = null)
+{
+    return new Collection($items);
+}
+
 function config(): Config
 {
     return app()->config();
@@ -21,9 +26,10 @@ function env(string $name)
     return Env::get($name);
 }
 
-function collect(?iterable $items = null)
+function class_basename($class): string
 {
-    return new Collection($items);
+    $class = is_object($class) ? get_class($class) : $class;
+    return basename(str_replace('\\', '/', $class));
 }
 
 function logger(): LoggerInterface
