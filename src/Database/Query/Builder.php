@@ -31,14 +31,6 @@ class Builder
     }
 
     /**
-     * @return string
-     */
-    public function __toString(): string
-    {
-        return $this->toString();
-    }
-
-    /**
      * @param string $table
      * @param string|null $as
      * @return $this
@@ -197,7 +189,7 @@ class Builder
     /**
      * @return array
      */
-    public function one()
+    public function one(): array
     {
         return $this->copy()->limit(1)->runQuery();
     }
@@ -221,14 +213,14 @@ class Builder
             $this->addToSelect(current($this->statement->groupBy));
         }
 
-        $results = $this->copy()->addToSelect('count(*) as cnt')->runQuery();
+        $results = $this->copy()->addToSelect('count(*) AS total')->runQuery();
 
-        // when GROUP BY is defined, return in [colmnValue => count] format
+        // when GROUP BY is defined, return in [columnValue => count] format
         if ($this->statement->groupBy !== null) {
             $key = array_key_first($this->statement->select);
             $aggregated = [];
             foreach ($results as $result) {
-                $result[$key] = $result['cnt'];
+                $result[$key] = $result['total'];
             }
             return $aggregated;
         }
@@ -241,14 +233,21 @@ class Builder
     }
 
     /**
+     * @param string $column
+     */
+    public function sum(string $column)
+    {
+        $results = $this->copy()->addToSelect('sum() as total')->runQuery();
+    }
+
+    /**
      * @return array
      */
     public function getBindings(): array
     {
-        $formatter = $this->connection->getFormatter();
         $bindings = [];
         foreach ($this->statement->where as $where) {
-            foreach($where->getBindings($formatter) as $binding) {
+            foreach($where->getBindings() as $binding) {
                 $bindings[] = $binding;
             }
         }
@@ -260,7 +259,7 @@ class Builder
      */
     public function toString(): string
     {
-        return $this->connection->getFormatter()->intropolate(
+        return $this->connection->getFormatter()->interpolate(
             (string) $this->statement,
             $this->getBindings()
         );

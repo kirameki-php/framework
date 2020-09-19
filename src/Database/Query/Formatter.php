@@ -36,17 +36,22 @@ class Formatter
     }
 
     /**
+     * FOR DEBUGGING ONLY
+     *
      * @param string $statement
      * @param array $bindings
      * @return string
      */
-    public function intropolate(string $statement, array $bindings): string
+    public function interpolate(string $statement, array $bindings): string
     {
         return preg_replace_callback('/\?\??/', static function($matches) use (&$bindings) {
             if ($matches[0] === '?') {
                 $current = current($bindings);
                 next($bindings);
-                return $current;
+                if (is_null($current)) return 'NULL';
+                if (is_bool($current)) return $current ? 'TRUE' : 'FALSE';
+                if (is_string($current)) return $this->connection->getPdo()->quote($current);
+                return $this->parameter($current);
             }
             return $matches[0];
         }, $statement);
@@ -59,14 +64,21 @@ class Formatter
     public function select(Statement $statement): string
     {
         if (empty($statement->select)) {
-            return '*';
+            $statement->select[] = '*';
         }
         $exprs = [];
-        foreach ($statement->select as $name => $as) {
-            $table = $statement->as ?? $statement->from;
-            $expr = $this->column($name, $table);
-            $expr.= $as !== null ? ' AS '.$as : '';
-            $exprs[] = $expr;
+        $table = $statement->as ?? $statement->from;
+        foreach ($statement->select as $name) {
+            $segments = preg_split('/\s+as\s+/i', $name);
+            if (count($segments) > 1) {
+                $exprs[] = $this->column($segments[0]).' AS '.$segments[1];
+            } else {
+                if (ctype_alnum($segments[0])) {
+                    $exprs[] = $this->column($segments[0], $table);
+                } else {
+                    $exprs[] = $segments[0];
+                }
+            }
         }
         return implode(', ', $exprs);
     }
@@ -141,7 +153,7 @@ class Formatter
      */
     public function table(string $name): string
     {
-        return $this->quote.$name.$this->quote;
+        return $this->addQuotes($name);
     }
 
     /**
@@ -159,37 +171,45 @@ class Formatter
      */
     public function column(string $name, ?string $table = null): string
     {
-        $name = $name !== '*' ? $this->quote.$name.$this->quote : $name;
+        $name = $name !== '*' ? $this->addQuotes($name) : $name;
         return $table !== null ? $this->table($table).'.'.$name : $name;
     }
 
     /**
-     * @param $value
-     * @return array|string
+     * @param array $values
+     * @return array
      */
-    public function value($value)
+    public function parameters(array $values)
     {
-        if (is_bool($value)) {
-            return $value ? 'TRUE' : 'FALSE';
+        $bindings = [];
+        foreach($values as $name => $binding) {
+            $bindings[$name] = $this->parameter($binding);
         }
+        return $bindings;
+    }
 
-        if (is_string($value)) {
-            $quoted = $this->connection->getPdo()->quote($value);
-            return is_string($quoted) ? $quoted : $value;
-        }
-
-        if (is_iterable($value)) {
-            $formatted = [];
-            foreach ($value as $k => $v) {
-                $formatted[$k] = $this->value($v);
-            }
-            return $formatted;
-        }
-
+    /**
+     * @param $value
+     * @return string
+     */
+    public function parameter($value)
+    {
         if ($value instanceof DateTimeInterface) {
             return '"'.$value->format(DateTimeInterface::RFC3339_EXTENDED).'"';
         }
 
         return $value;
+    }
+
+    /**
+     * @param string $text
+     * @return string
+     */
+    protected function addQuotes(string $text)
+    {
+        $quoted = $this->quote;
+        $quoted.= str_replace($this->quote, $this->quote.$this->quote, $text);
+        $quoted.= $this->quote;
+        return $quoted;
     }
 }

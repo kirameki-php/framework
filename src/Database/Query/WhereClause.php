@@ -16,7 +16,7 @@ class WhereClause
 
     protected bool $negated;
 
-    protected $value;
+    protected ?array $parameters;
 
     protected ?string $nextLogic;
 
@@ -40,7 +40,7 @@ class WhereClause
         $instance = new static();
         $instance->negated = false;
         $instance->operator = null;
-        $instance->value = $raw;
+        $instance->parameter($raw);
         return $instance;
     }
 
@@ -97,12 +97,12 @@ class WhereClause
 
     public function with(string $operator, $value)
     {
-        if ($operator ===  '=') return $this->eq($value);
+        if ($operator === '=') return $this->eq($value);
         if ($operator === '!=') return $this->ne($value);
         if ($operator === '<>') return $this->ne($value);
-        if ($operator === '>' ) return $this->gt($value);
+        if ($operator === '>') return $this->gt($value);
         if ($operator === '>=') return $this->gte($value);
-        if ($operator === '<' ) return $this->lt($value);
+        if ($operator === '<') return $this->lt($value);
         if ($operator === '<=') return $this->lte($value);
         if ($operator === 'IN') return $this->in($value);
         if ($operator === 'NOT IN') return $this->notIn($value);
@@ -110,7 +110,7 @@ class WhereClause
         if ($operator === 'NOT BETWEEN') return $this->notBetween($value[0], $value[1]);
         if ($operator === 'LIKE') return $this->like($value);
         if ($operator === 'NOT LIKE') return $this->notLike($value);
-        throw new RuntimeException('Unknown operator:'.$operator);
+        throw new RuntimeException('Unknown operator:' . $operator);
     }
 
     /**
@@ -120,7 +120,7 @@ class WhereClause
     {
         $this->negated = false;
         $this->operator = '=';
-        $this->value = $value;
+        $this->parameter($value);
         return $this;
     }
 
@@ -140,7 +140,7 @@ class WhereClause
     {
         $this->negated = false;
         $this->operator = '>=';
-        $this->value = $value;
+        $this->parameter($value);
         return $this;
     }
 
@@ -151,7 +151,7 @@ class WhereClause
     {
         $this->negated = false;
         $this->operator = '>';
-        $this->value = $value;
+        $this->parameter($value);
         return $this;
     }
 
@@ -163,7 +163,7 @@ class WhereClause
     {
         $this->negated = false;
         $this->operator = '<=';
-        $this->value = $value;
+        $this->parameter($value);
         return $this;
     }
 
@@ -175,7 +175,7 @@ class WhereClause
     {
         $this->negated = false;
         $this->operator = '<';
-        $this->value = $value;
+        $this->parameter($value);
         return $this;
     }
 
@@ -187,7 +187,7 @@ class WhereClause
     {
         $this->negated = false;
         $this->operator = 'LIKE';
-        $this->value = $value;
+        $this->parameter($value);
         return $this;
     }
 
@@ -209,11 +209,11 @@ class WhereClause
         $this->negated = false;
         $this->operator = 'IN';
         if (is_iterable($value)) {
-            $value = ($value instanceof Traversable) ? iterator_to_array($value) : (array) $value;
+            $value = ($value instanceof Traversable) ? iterator_to_array($value) : (array)$value;
             $value = array_filter($value, static fn($s) => $s !== null);
             $value = array_unique($value);
         }
-        $this->value = $value;
+        $this->parameter($value);
         return $this;
     }
 
@@ -235,7 +235,7 @@ class WhereClause
     {
         $this->negated = false;
         $this->operator = 'BETWEEN';
-        $this->value = [$min, $max];
+        $this->parameters = [$min, $max];
         return $this;
     }
 
@@ -250,18 +250,34 @@ class WhereClause
     }
 
     /**
-     * @param Formatter $formatter
+     * @param array|mixed $value
+     * @return $this
+     */
+    public function parameter($value)
+    {
+        $value = is_array($value) ? $value : [$value];
+        $this->parameters = [];
+        foreach ($value as $name => $binding) {
+            is_string($name)
+                ? $this->parameters[$name] = $binding
+                : $this->parameters[] = $binding;
+        }
+        return $this;
+    }
+
+    /**
      * @return array
      */
-    public function getBindings(Formatter $formatter): array
+    public function getBindings(): array
     {
-        $values = is_array($this->value) ? $this->value : [$this->value];
-        $bindings = array_map(static fn($v) => $formatter->value($v), $values);
-
+        $bindings = $this->parameters;
         if ($this->nextClause !== null) {
-            $bindings = array_merge($bindings, $this->getBindings($formatter));
+            foreach ($this->getBindings() as $name => $binding) {
+                is_string($name)
+                    ? $bindings[$name] = $binding
+                    : $bindings[] = $binding;
+            }
         }
-
         return $bindings;
     }
 
@@ -296,14 +312,15 @@ class WhereClause
      */
     protected function buildCurrent(Formatter $formatter, ?string $table): string
     {
+        // treat it as raw query
         if ($this->column === null) {
-            return (string) $this->value;
+            return (string) $this->parameters;
         }
 
         $column = $formatter->column($this->column, $table);
         $operator = $this->operator;
         $negated = $this->negated;
-        $value = $this->value;
+        $value = $this->parameters;
 
         if ($operator === null) {
             return $column.' '.$value;

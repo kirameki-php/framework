@@ -5,6 +5,7 @@
   "require": {
     "ext-apcu": "*",
     "ext-bcmath": "*",
+    "ext-ctype": "*",
     "ext-gmp": "*",
     "ext-json": "*",
     "ext-pcntl": "*",

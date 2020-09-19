@@ -5,16 +5,17 @@ namespace Kirameki\Database\Connection;
 use Generator;
 use Kirameki\Database\Query\Formatter;
 use PDO;
+use PDOStatement;
 
 class Connection
 {
-    public string $name;
+    protected string $name;
 
-    public array $config;
+    protected array $config;
 
-    public ?Formatter $formatter;
+    protected ?Formatter $formatter;
 
-    public ?PDO $pdo;
+    protected ?PDO $pdo;
 
     /**
      * @param string $name
@@ -27,9 +28,17 @@ class Connection
     }
 
     /**
+     * @return string
+     */
+    public function getName(): string
+    {
+        return $this->name;
+    }
+
+    /**
      * @return array
      */
-    public function getConfig()
+    public function getConfig(): array
     {
         return $this->config;
     }
@@ -41,9 +50,7 @@ class Connection
      */
     public function cursor(string $statement, array $bindings): Generator
     {
-        $pdo = $this->getPdo();
-        $prepared = $pdo->prepare($statement);
-        $prepared->execute($bindings);
+        $prepared = $this->execQuery($statement, $bindings);
         while($data = $prepared->fetch()) {
             yield $data;
         }
@@ -56,10 +63,7 @@ class Connection
      */
     public function query(string $statement, ?array $bindings = null): array
     {
-        $pdo = $this->getPdo();
-        $prepared = $pdo->prepare($statement);
-        $prepared->execute($bindings);
-        return $prepared->fetchAll(PDO::FETCH_ASSOC);
+        return $this->execQuery($statement, $bindings)->fetchAll(PDO::FETCH_ASSOC);
     }
 
     /**
@@ -76,5 +80,19 @@ class Connection
     public function getFormatter()
     {
         return $this->formatter ??= new Formatter($this);
+    }
+
+    /**
+     * @param string $statement
+     * @param array|null $bindings
+     * @return PDOStatement
+     */
+    protected function execQuery(string $statement, ?array $bindings): PDOStatement
+    {
+        $pdo = $this->getPdo();
+        $formatter = $this->getFormatter();
+        $prepared = $pdo->prepare($statement);
+        $prepared->execute($formatter->parameters($bindings ?? []));
+        return $prepared;
     }
 }
