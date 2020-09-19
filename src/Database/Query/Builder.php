@@ -18,7 +18,7 @@ class Builder
     public function __construct(Connection $connection)
     {
         $this->connection = $connection;
-        $this->statement = new Statement($connection->getFormatter());
+        $this->statement = new Statement($connection->getQueryFormatter());
     }
 
     /**
@@ -87,7 +87,7 @@ class Builder
             return $this->addWhereClause(WhereClause::for($column)->with($operator, $value));
         }
 
-        throw new \RuntimeException('Invalid number of arguments. expected: 1~3. '.$num.' given.');
+        throw new RuntimeException('Invalid number of arguments. expected: 1~3. '.$num.' given.');
     }
 
     /**
@@ -183,7 +183,7 @@ class Builder
      */
     public function all(): Collection
     {
-        return new Collection($this->runQuery());
+        return new Collection($this->execute());
     }
 
     /**
@@ -191,7 +191,7 @@ class Builder
      */
     public function one(): array
     {
-        return $this->copy()->limit(1)->runQuery();
+        return $this->copy()->limit(1)->execute();
     }
 
     /**
@@ -199,7 +199,7 @@ class Builder
      */
     public function exists(): bool
     {
-        return !empty($this->copy()->select(1)->limit(1)->runQuery());
+        return !empty($this->copy()->select(1)->limit(1)->execute());
     }
 
     /**
@@ -213,7 +213,7 @@ class Builder
             $this->addToSelect(current($this->statement->groupBy));
         }
 
-        $results = $this->copy()->addToSelect('count(*) AS total')->runQuery();
+        $results = $this->copy()->addToSelect('count(*) AS total')->execute();
 
         // when GROUP BY is defined, return in [columnValue => count] format
         if ($this->statement->groupBy !== null) {
@@ -229,15 +229,31 @@ class Builder
             return 0;
         }
 
-        return $results[0]['cnt'];
+        return $results[0]['total'];
     }
 
     /**
      * @param string $column
+     * @return int
      */
     public function sum(string $column)
     {
-        $results = $this->copy()->addToSelect('sum() as total')->runQuery();
+        $formatter = $this->connection->getQueryFormatter();
+        $column = $formatter->column($column);
+        $results = $this->copy()->select('SUM('.$column.') as total')->execute();
+        return !empty($results) ? $results[0]['total'] : 0;
+    }
+
+    /**
+     * @param string $column
+     * @return int
+     */
+    public function avg(string $column)
+    {
+        $formatter = $this->connection->getQueryFormatter();
+        $column = $formatter->column($column);
+        $results = $this->copy()->select('AVG('.$column.') as total')->execute();
+        return !empty($results) ? $results[0]['total'] : 0;
     }
 
     /**
@@ -259,7 +275,7 @@ class Builder
      */
     public function toString(): string
     {
-        return $this->connection->getFormatter()->interpolate(
+        return $this->connection->getQueryFormatter()->interpolate(
             (string) $this->statement,
             $this->getBindings()
         );
@@ -305,9 +321,9 @@ class Builder
     /**
      * @return array
      */
-    protected function runQuery(): array
+    protected function execute(): array
     {
-        return $this->connection->query(
+        return $this->connection->execute(
             (string) $this->statement,
             $this->getBindings()
         );

@@ -3,17 +3,18 @@
 namespace Kirameki\Database\Connection;
 
 use Generator;
+use Kirameki\Database\Query\Builder;
 use Kirameki\Database\Query\Formatter;
 use PDO;
 use PDOStatement;
 
 class Connection
 {
+    use Concerns\Queries;
+
     protected string $name;
 
     protected array $config;
-
-    protected ?Formatter $formatter;
 
     protected ?PDO $pdo;
 
@@ -44,55 +45,44 @@ class Connection
     }
 
     /**
-     * @param string $statement
-     * @param array $bindings
-     * @return Generator
-     */
-    public function cursor(string $statement, array $bindings): Generator
-    {
-        $prepared = $this->execQuery($statement, $bindings);
-        while($data = $prepared->fetch()) {
-            yield $data;
-        }
-    }
-
-    /**
-     * @param string $statement
-     * @param array|null $bindings
-     * @return array
-     */
-    public function query(string $statement, ?array $bindings = null): array
-    {
-        return $this->execQuery($statement, $bindings)->fetchAll(PDO::FETCH_ASSOC);
-    }
-
-    /**
      * @return PDO
      */
     public function getPdo()
     {
-        return $this->pdo??= $this->connect();
+        if ($this->pdo === null) {
+            $this->reconnect();
+        }
+        return $this->pdo;
     }
 
     /**
-     * @return Formatter
+     * @return $this
      */
-    public function getFormatter()
+    public function reconnect()
     {
-        return $this->formatter ??= new Formatter($this);
+        $config = $this->getConfig();
+        if (isset($config['socket'])) {
+            $hostOrSocket = 'unix_socket='.$config['socket'];
+        } else {
+            $hostOrSocket = 'host='.$config['host'];
+            $hostOrSocket.= isset($config['port']) ? 'port='.$config['port'] : '';
+        }
+        $database = isset($config['database']) ? 'dbname='.$config['database'] : '';
+        $charset = isset($config['charset']) ? 'charset='.$config['charset'] : '';
+        $dsn = "mysql:{$hostOrSocket}{$database}{$charset}";
+        $username = $config['username'] ?? 'root';
+        $password = $config['password'] ?? null;
+        $options = $config['options'] ?? [];
+        $this->pdo = new PDO($dsn, $username, $password, $options);
+        return $this;
     }
 
     /**
-     * @param string $statement
-     * @param array|null $bindings
-     * @return PDOStatement
+     * @return bool
      */
-    protected function execQuery(string $statement, ?array $bindings): PDOStatement
+    public function close()
     {
-        $pdo = $this->getPdo();
-        $formatter = $this->getFormatter();
-        $prepared = $pdo->prepare($statement);
-        $prepared->execute($formatter->parameters($bindings ?? []));
-        return $prepared;
+        $this->pdo = null;
+        return true;
     }
 }

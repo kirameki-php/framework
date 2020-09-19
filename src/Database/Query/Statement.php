@@ -59,6 +59,9 @@ class Statement
      */
     public ?bool $lock;
 
+    /**
+     * @param Formatter $formatter
+     */
     public function __construct(Formatter $formatter)
     {
         $this->formatter = $formatter;
