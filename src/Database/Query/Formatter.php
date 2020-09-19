@@ -23,15 +23,92 @@ class Formatter
      * @param Statement $statement
      * @return string
      */
-    public function statement(Statement $statement): string
+    public function statementForSelect(Statement $statement): string
     {
         return implode(' ', [
             $this->select($statement),
             $this->from($statement),
             $this->where($statement),
-            $this->offset($statement),
-            $this->limit($statement),
             $this->order($statement),
+            $this->limit($statement),
+            $this->offset($statement),
+        ]);
+    }
+
+    /**
+     * @param Statement $statement
+     * @param iterable $list
+     * @return string
+     */
+    public function statementForBulkInsert(Statement $statement, iterable $list): string
+    {
+        $columnsAssoc = [];
+        $listSize = 0;
+        foreach ($list as $each) {
+            foreach($each as $name => $value) {
+                if ($value !== null) {
+                    $columnsAssoc[$name] = null;
+                }
+            }
+            $listSize++;
+        }
+
+        $columnNames = array_keys($columnsAssoc);
+        $cloumnCount = count($columnNames);
+
+        $valuesList = [];
+        for ($i = 0; $i < $listSize; $i++) {
+            $binders = [];
+            for ($j = 0; $j < $cloumnCount; $j++) {
+                $binders[] = $this->bindName();
+            }
+            $valuesList[] = '('.implode(', ', $binders).')';
+        }
+
+        return implode(' ', [
+            'INSERT INTO',
+            $this->tableName($statement->table),
+            '('.implode(', ', $columnNames).')',
+            'VALUES',
+            implode(', ', $valuesList),
+        ]);
+    }
+
+    /**
+     * @param Statement $statement
+     * @param array $values
+     * @return string
+     */
+    public function statementForUpdate(Statement $statement, array $values): string
+    {
+        $assignments = [];
+        foreach (array_keys($values) as $name) {
+            $assignments[] = $name.' = ?';
+        }
+
+        return implode(' ', [
+            'UPDATE',
+            $this->tableName($statement->table),
+            'SET',
+            implode(', ', $assignments),
+            $this->where($statement),
+            $this->order($statement),
+            $this->limit($statement),
+        ]);
+    }
+
+    /**
+     * @param Statement $statement
+     * @return string
+     */
+    public function statementForDelete(Statement $statement): string
+    {
+        return implode(' ', [
+            'DELETE FROM',
+            $this->tableName($statement->table),
+            $this->where($statement),
+            $this->order($statement),
+            $this->limit($statement),
         ]);
     }
 
@@ -67,20 +144,20 @@ class Formatter
             $statement->select[] = '*';
         }
         $exprs = [];
-        $table = $statement->as ?? $statement->from;
+        $table = $statement->tableAlias ?? $statement->table;
         foreach ($statement->select as $name) {
             $segments = preg_split('/\s+as\s+/i', $name);
             if (count($segments) > 1) {
-                $exprs[] = $this->column($segments[0]).' AS '.$segments[1];
+                $exprs[] = $this->columnName($segments[0]).' AS '.$segments[1];
             } else {
                 if (ctype_alnum($segments[0])) {
-                    $exprs[] = $this->column($segments[0], $table);
+                    $exprs[] = $this->columnName($segments[0], $table);
                 } else {
                     $exprs[] = $segments[0];
                 }
             }
         }
-        return implode(', ', $exprs);
+        return 'SELECT '.implode(', ', $exprs);
     }
 
     /**
@@ -89,9 +166,9 @@ class Formatter
      */
     public function from(Statement $statement): string
     {
-        $expr = $statement->from;
-        if ($statement->as !== null) {
-            $expr.=' AS '.$statement->as;
+        $expr = $statement->table;
+        if ($statement->tableAlias !== null) {
+            $expr.=' AS '.$statement->tableAlias;
         }
         return $expr;
     }
@@ -105,7 +182,7 @@ class Formatter
         if ($statement->where !== null) {
             $exprs = [];
             foreach ($statement->where as $clause) {
-                $exprs[] = $clause->toSql($this, $statement->as);
+                $exprs[] = $clause->toSql($this, $statement->tableAlias);
             }
             return 'WHERE '.implode(' AND ', $exprs);
         }
@@ -119,10 +196,10 @@ class Formatter
     public function order(Statement $statement): ?string
     {
         if ($statement->orderBy !== null) {
-            $table = $statement->as ?? $statement->from;
+            $table = $statement->tableAlias ?? $statement->table;
             $exprs = [];
             foreach ($statement->orderBy as $column => $sort) {
-                $exprs[] = $this->column($column, $table).' '.$sort;
+                $exprs[] = $this->columnName($column, $table).' '.$sort;
             }
             return implode(', ', $exprs);
         }
@@ -151,7 +228,7 @@ class Formatter
      * @param string $name
      * @return string
      */
-    public function table(string $name): string
+    public function tableName(string $name): string
     {
         return $this->addQuotes($name);
     }
@@ -169,23 +246,10 @@ class Formatter
      * @param string|null $table
      * @return string
      */
-    public function column(string $name, ?string $table = null): string
+    public function columnName(string $name, ?string $table = null): string
     {
         $name = $name !== '*' ? $this->addQuotes($name) : $name;
-        return $table !== null ? $this->table($table).'.'.$name : $name;
-    }
-
-    /**
-     * @param array $values
-     * @return array
-     */
-    public function parameters(array $values)
-    {
-        $bindings = [];
-        foreach($values as $name => $binding) {
-            $bindings[$name] = $this->parameter($binding);
-        }
-        return $bindings;
+        return $table !== null ? $this->tableName($table).'.'.$name : $name;
     }
 
     /**

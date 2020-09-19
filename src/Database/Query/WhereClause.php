@@ -344,7 +344,7 @@ class WhereClause
             return (string) $this->parameters;
         }
 
-        $column = $formatter->column($this->column, $table);
+        $column = $formatter->columnName($this->column, $table);
         $operator = $this->operator;
         $negated = $this->negated;
         $value = $this->parameters;

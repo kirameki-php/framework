@@ -3,6 +3,7 @@
 namespace Kirameki\Database\Model\Concerns;
 
 use Kirameki\Database\Model\Model;
+use Kirameki\Database\Query\Builder as BaseBuilder;
 
 /**
  * @mixin Model
@@ -52,8 +53,7 @@ trait Querying
     public function newQuery()
     {
         $connection = app('db')->connection($this->getConnection());
-        $baseBuilder = new BaseBuilder($connection);
-        return new Builder($this, $baseBuilder);
+        return new Builder($this, $connection);
     }
 
     public function save()

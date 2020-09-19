@@ -18,7 +18,7 @@ class Builder
     public function __construct(Connection $connection)
     {
         $this->connection = $connection;
-        $this->statement = new Statement($connection->getQueryFormatter());
+        $this->statement = new Statement();
     }
 
     /**
@@ -35,10 +35,10 @@ class Builder
      * @param string|null $as
      * @return $this
      */
-    public function from(string $table, ?string $as = null)
+    public function table(string $table, ?string $as = null)
     {
-        $this->statement->from = $table;
-        $this->statement->as = $as;
+        $this->statement->table = $table;
+        $this->statement->tableAlias = $as;
         return $this;
     }
 
@@ -183,7 +183,7 @@ class Builder
      */
     public function all(): Collection
     {
-        return new Collection($this->execute());
+        return new Collection($this->execSelect());
     }
 
     /**
@@ -191,7 +191,7 @@ class Builder
      */
     public function one(): array
     {
-        return $this->copy()->limit(1)->execute();
+        return $this->copy()->limit(1)->execSelect();
     }
 
     /**
@@ -199,7 +199,7 @@ class Builder
      */
     public function exists(): bool
     {
-        return !empty($this->copy()->select(1)->limit(1)->execute());
+        return !empty($this->copy()->select(1)->limit(1)->execSelect());
     }
 
     /**
@@ -213,7 +213,7 @@ class Builder
             $this->addToSelect(current($this->statement->groupBy));
         }
 
-        $results = $this->copy()->addToSelect('count(*) AS total')->execute();
+        $results = $this->copy()->addToSelect('count(*) AS total')->execSelect();
 
         // when GROUP BY is defined, return in [columnValue => count] format
         if ($this->statement->groupBy !== null) {
@@ -234,26 +234,81 @@ class Builder
 
     /**
      * @param string $column
-     * @return int
+     * @return int|float
      */
-    public function sum(string $column)
+    public function sum(string $column): int
     {
-        $formatter = $this->connection->getQueryFormatter();
-        $column = $formatter->column($column);
-        $results = $this->copy()->select('SUM('.$column.') as total')->execute();
-        return !empty($results) ? $results[0]['total'] : 0;
+        return $this->execAggregate($column, 'SUM');
     }
 
     /**
      * @param string $column
-     * @return int
+     * @return int|float
      */
     public function avg(string $column)
     {
+        return $this->execAggregate($column, 'AVG');
+    }
+
+    /**
+     * @param string $column
+     * @return mixed
+     */
+    public function min(string $column)
+    {
+        return $this->execAggregate($column, 'MIN');
+    }
+
+    /**
+     * @param string $column
+     * @return mixed
+     */
+    public function max(string $column)
+    {
+        return $this->execAggregate($column, 'MAX');
+    }
+
+    /**
+     * @param array $data
+     */
+    public function insert(array $data)
+    {
+        $this->bulkInsert([$data]);
+    }
+
+    /**
+     * @param iterable $list
+     */
+    public function bulkInsert(iterable $list)
+    {
+        if (!empty($list)) {
+            $formatter = $this->connection->getQueryFormatter();
+            $statement = $formatter->statementForBulkInsert($this->statement, $list);
+            $this->connection->execSelect($statement, $this->getBindings());
+        }
+    }
+
+    /**
+     * @param array $values
+     * @return int
+     */
+    public function update(array $values)
+    {
         $formatter = $this->connection->getQueryFormatter();
-        $column = $formatter->column($column);
-        $results = $this->copy()->select('AVG('.$column.') as total')->execute();
-        return !empty($results) ? $results[0]['total'] : 0;
+        $statement = $formatter->statementForUpdate($this->statement, $values);
+        $bindings = array_merge($values, $this->getBindings());
+        return $this->connection->execAffecting($statement, $bindings);
+    }
+
+    /**
+     * @return int
+     */
+    public function delete()
+    {
+        $formatter = $this->connection->getQueryFormatter();
+        $statement = $formatter->statementForDelete($this->statement);
+        $bindings = $this->getBindings();
+        return $this->connection->execAffecting($statement, $bindings);
     }
 
     /**
@@ -268,17 +323,6 @@ class Builder
             }
         }
         return $bindings;
-    }
-
-    /**
-     * @return string
-     */
-    public function toString(): string
-    {
-        return $this->connection->getQueryFormatter()->interpolate(
-            (string) $this->statement,
-            $this->getBindings()
-        );
     }
 
     /**
@@ -321,11 +365,26 @@ class Builder
     /**
      * @return array
      */
-    protected function execute(): array
+    protected function execSelect(): array
     {
-        return $this->connection->execute(
-            (string) $this->statement,
+        $formatter = $this->connection->getQueryFormatter();
+
+        return $this->connection->execSelect(
+            $formatter->statementForSelect($this->statement),
             $this->getBindings()
         );
+    }
+
+    /**
+     * @param string $function
+     * @param string $column
+     * @return int
+     */
+    protected function execAggregate(string $function, string $column): int
+    {
+        $formatter = $this->connection->getQueryFormatter();
+        $column = $formatter->columnName($column);
+        $results = $this->copy()->select($function.'('.$column.') as cnt')->execSelect();
+        return !empty($results) ? $results[0]['cnt'] : 0;
     }
 }
