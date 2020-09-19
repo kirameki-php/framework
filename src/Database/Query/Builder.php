@@ -18,7 +18,7 @@ class Builder
     public function __construct(Connection $connection)
     {
         $this->connection = $connection;
-        $this->statement = new Statement();
+        $this->statement = new Statement($connection->getFormatter());
     }
 
     /**
@@ -28,6 +28,14 @@ class Builder
     public function __clone()
     {
         $this->statement = clone $this->statement;
+    }
+
+    /**
+     * @return string
+     */
+    public function __toString(): string
+    {
+        return $this->toString();
     }
 
     /**
@@ -145,7 +153,7 @@ class Builder
      */
     public function reorder()
     {
-        $this->statement->order = null;
+        $this->statement->orderBy = null;
         return $this;
     }
 
@@ -181,18 +189,89 @@ class Builder
     /**
      * @return Collection
      */
-    public function all()
+    public function all(): Collection
     {
-        $results = $this->connection->select($this->toSql(), $this->getBindings());
-        return new Collection($results);
+        return new Collection($this->runQuery());
+    }
+
+    /**
+     * @return array
+     */
+    public function one()
+    {
+        return $this->copy()->limit(1)->runQuery();
+    }
+
+    /**
+     * @return bool
+     */
+    public function exists(): bool
+    {
+        return !empty($this->copy()->select(1)->limit(1)->runQuery());
     }
 
     /**
      * @return array|int
      */
-    public function count(): int|array
+    public function count()
     {
-        return $this->select('count(*) as cnt')->all();
+        // If GROUP BY exists but no SELECT is defined, use the first GROUP BY column that was defined.
+        if ($this->statement->groupBy !== null &&
+            $this->statement->select === null) {
+            $this->addToSelect(current($this->statement->groupBy));
+        }
+
+        $results = $this->copy()->addToSelect('count(*) as cnt')->runQuery();
+
+        // when GROUP BY is defined, return in [colmnValue => count] format
+        if ($this->statement->groupBy !== null) {
+            $key = array_key_first($this->statement->select);
+            $aggregated = [];
+            foreach ($results as $result) {
+                $result[$key] = $result['cnt'];
+            }
+            return $aggregated;
+        }
+
+        if (empty($results)) {
+            return 0;
+        }
+
+        return $results[0]['cnt'];
+    }
+
+    /**
+     * @return array
+     */
+    public function getBindings(): array
+    {
+        $formatter = $this->connection->getFormatter();
+        $bindings = [];
+        foreach ($this->statement->where as $where) {
+            foreach($where->getBindings($formatter) as $binding) {
+                $bindings[] = $binding;
+            }
+        }
+        return $bindings;
+    }
+
+    /**
+     * @return string
+     */
+    public function toString(): string
+    {
+        return $this->connection->getFormatter()->intropolate(
+            (string) $this->statement,
+            $this->getBindings()
+        );
+    }
+
+    /**
+     * @return static
+     */
+    public function subquery()
+    {
+        return new static($this->connection);
     }
 
     /**
@@ -207,46 +286,31 @@ class Builder
     }
 
     /**
-     * @return array
+     * @param string $select
+     * @return $this
      */
-    public function getBindings(): array
+    protected function addToSelect(string $select)
     {
-        $formatter = $this->connection->getFormatter();
-        $table = $this->statement->as ?? $this->statement->from;
-
-        $bindings = [];
-        foreach ($this->statement->where as $where) {
-            $whereClauses[] = $where->toSql($formatter, $table);
-            foreach($where->getBindings($formatter) as $binding) {
-                $bindings[] = $binding;
-            }
-        }
-        return $bindings;
+        $this->statement->select[] = $select;
+        return $this;
     }
 
     /**
-     * @param false $bind
-     * @return string
+     * @return static
      */
-    public function toSql($bind = false): string
+    protected function copy()
     {
-        $statement = $this->statement;
-        $formatter = $this->connection->getFormatter();
+        return clone $this;
+    }
 
-        $sql = implode(' ', [
-            $formatter->select($statement),
-            $formatter->from($statement),
-            $formatter->where($statement),
-            $formatter->offset($statement),
-            $formatter->limit($statement),
-            $formatter->order($statement),
-        ]);
-
-        if ($bind) {
-            $bindings = $this->getBindings();
-            $formatter->intropolate($sql, $bindings);
-        }
-
-        return $sql;
+    /**
+     * @return array
+     */
+    protected function runQuery(): array
+    {
+        return $this->connection->query(
+            (string) $this->statement,
+            $this->getBindings()
+        );
     }
 }

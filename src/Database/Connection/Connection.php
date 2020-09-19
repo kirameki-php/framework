@@ -51,10 +51,10 @@ class Connection
 
     /**
      * @param string $statement
-     * @param array $bindings
+     * @param array|null $bindings
      * @return array
      */
-    public function select(string $statement, array $bindings): array
+    public function query(string $statement, ?array $bindings = null): array
     {
         $pdo = $this->getPdo();
         $prepared = $pdo->prepare($statement);

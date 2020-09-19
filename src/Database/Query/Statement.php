@@ -5,6 +5,11 @@ namespace Kirameki\Database\Query;
 class Statement
 {
     /**
+     * @var Formatter
+     */
+    protected Formatter $formatter;
+
+    /**
      * @var string
      */
     public string $from;
@@ -32,6 +37,11 @@ class Statement
     /**
      * @var array|null
      */
+    public ?array $groupBy;
+
+    /**
+     * @var array|null
+     */
     public ?array $orderBy;
 
     /**
@@ -49,6 +59,11 @@ class Statement
      */
     public ?bool $lock;
 
+    public function __construct(Formatter $formatter)
+    {
+        $this->formatter = $formatter;
+    }
+
     public function __clone()
     {
         $where = [];
@@ -56,5 +71,13 @@ class Statement
             $where[] = clone $clause;
         }
         $this->where = $where;
+    }
+
+    /**
+     * @return string
+     */
+    public function __toString(): string
+    {
+        return $this->formatter->statement($this);
     }
 }

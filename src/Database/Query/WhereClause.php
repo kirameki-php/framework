@@ -250,6 +250,7 @@ class WhereClause
     }
 
     /**
+     * @param Formatter $formatter
      * @return array
      */
     public function getBindings(Formatter $formatter): array

@@ -23,12 +23,52 @@ class Formatter
      * @param Statement $statement
      * @return string
      */
+    public function statement(Statement $statement): string
+    {
+        return implode(' ', [
+            $this->select($statement),
+            $this->from($statement),
+            $this->where($statement),
+            $this->offset($statement),
+            $this->limit($statement),
+            $this->order($statement),
+        ]);
+    }
+
+    /**
+     * @param string $statement
+     * @param array $bindings
+     * @return string
+     */
+    public function intropolate(string $statement, array $bindings): string
+    {
+        return preg_replace_callback('/\?\??/', static function($matches) use (&$bindings) {
+            if ($matches[0] === '?') {
+                $current = current($bindings);
+                next($bindings);
+                return $current;
+            }
+            return $matches[0];
+        }, $statement);
+    }
+
+    /**
+     * @param Statement $statement
+     * @return string
+     */
     public function select(Statement $statement): string
     {
         if (empty($statement->select)) {
-            $statement->select = ['*'];
+            return '*';
         }
-        return implode(', ', $statement->select);
+        $exprs = [];
+        foreach ($statement->select as $name => $as) {
+            $table = $statement->as ?? $statement->from;
+            $expr = $this->column($name, $table);
+            $expr.= $as !== null ? ' AS '.$as : '';
+            $exprs[] = $expr;
+        }
+        return implode(', ', $exprs);
     }
 
     /**
@@ -151,22 +191,5 @@ class Formatter
         }
 
         return $value;
-    }
-
-    /**
-     * @param string $statement
-     * @param array $bindings
-     * @return string
-     */
-    public function intropolate(string $statement, array $bindings): string
-    {
-        return preg_replace_callback('/\?\??/', static function($matches) use (&$bindings) {
-            if ($matches[0] === '?') {
-                $current = current($bindings);
-                next($bindings);
-                return $current;
-            }
-            return $matches[0];
-        }, $statement);
     }
 }
