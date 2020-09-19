@@ -16,7 +16,7 @@ class WhereClause
 
     protected bool $negated;
 
-    protected ?array $parameters;
+    protected $parameters;
 
     protected ?string $nextLogic;
 
@@ -242,11 +242,32 @@ class WhereClause
     /**
      * @param $min
      * @param $max
-     * @return static
+     * @return $this
      */
     public function notBetween($min, $max)
     {
         return $this->between($min, $max)->negate();
+    }
+
+    /**
+     * @param Range $range
+     * @return $this
+     */
+    public function inRange(Range $range)
+    {
+        $this->negated = false;
+        $this->operator = 'RANGE';
+        $this->parameters = $range;
+        return $this;
+    }
+
+    /**
+     * @param Range $range
+     * @return $this
+     */
+    public function notInRange(Range $range)
+    {
+        return $this->inRange($range)->negate();
     }
 
     /**
@@ -271,13 +292,19 @@ class WhereClause
     public function getBindings(): array
     {
         $bindings = $this->parameters;
-        if ($this->nextClause !== null) {
-            foreach ($this->getBindings() as $name => $binding) {
+
+        if ($bindings instanceof Range) {
+            $bindings = $bindings->getBindings();
+        }
+
+        while ($this->nextClause !== null) {
+            foreach ($this->nextClause->getBindings() as $name => $binding) {
                 is_string($name)
                     ? $bindings[$name] = $binding
                     : $bindings[] = $binding;
             }
         }
+
         return $bindings;
     }
 
@@ -353,6 +380,10 @@ class WhereClause
         if ($operator === 'LIKE') {
             $operator = $negated ? 'NOT '.$operator : $operator;
             return $column.' '.$operator.' '.$formatter->bindName();
+        }
+
+        if ($operator === 'RANGE' && $value instanceof Range) {
+            return $value->toSql($formatter, $column, $negated);
         }
 
         // ">=", ">", "<", "<=" and raw cannot be negated
