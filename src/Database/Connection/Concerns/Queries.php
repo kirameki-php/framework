@@ -4,7 +4,10 @@ namespace Kirameki\Database\Connection\Concerns;
 
 use Generator;
 use Kirameki\Database\Connection\Connection;
-use Kirameki\Database\Query\Builder;
+use Kirameki\Database\Query\Builders\DeleteBuilder;
+use Kirameki\Database\Query\Builders\InsertBuilder;
+use Kirameki\Database\Query\Builders\SelectBuilder;
+use Kirameki\Database\Query\Builders\UpdateBuilder;
 use Kirameki\Database\Query\Formatter;
 use PDO;
 use PDOStatement;
@@ -17,11 +20,39 @@ trait Queries
     protected ?Formatter $formatter;
 
     /**
-     * @return Builder
+     * @param mixed ...$columns
+     * @return SelectBuilder
      */
-    public function query()
+    public function selectFrom(...$columns)
     {
-        return new Builder($this);
+        return (new SelectBuilder($this))->select($columns);
+    }
+
+    /**
+     * @param string $table
+     * @return InsertBuilder
+     */
+    public function insertInto(string $table)
+    {
+        return (new InsertBuilder($this))->table($table);
+    }
+
+    /**
+     * @param string $table
+     * @return UpdateBuilder
+     */
+    public function update(string $table)
+    {
+        return (new UpdateBuilder($this))->table($table);
+    }
+
+    /**
+     * @param string $table
+     * @return DeleteBuilder
+     */
+    public function delete(string $table)
+    {
+        return (new DeleteBuilder($this))->table($table);
     }
 
     /**
@@ -29,7 +60,7 @@ trait Queries
      * @param array|null $bindings
      * @return array
      */
-    public function execSelect(string $statement, ?array $bindings = null): array
+    public function query(string $statement, ?array $bindings = null): array
     {
         return $this->execQuery($statement, $bindings)->fetchAll(PDO::FETCH_ASSOC);
     }
@@ -39,18 +70,9 @@ trait Queries
      * @param array|null $bindings
      * @return int
      */
-    public function execAffecting(string $statement, ?array $bindings = null)
+    public function affectingQuery(string $statement, ?array $bindings = null)
     {
         return $this->execQuery($statement, $bindings)->rowCount();
-    }
-
-    /**
-     * @param string $statement
-     * @return array
-     */
-    public function unprepared(string $statement): array
-    {
-        return $this->getPdo()->query($statement)->fetchAll(PDO::FETCH_ASSOC);
     }
 
     /**

@@ -2,6 +2,7 @@
 
 namespace Kirameki\Database\Query;
 
+use Kirameki\Database\Query\Builders\Builder;
 use Kirameki\Support\Concerns\Tappable;
 use RuntimeException;
 use Traversable;

@@ -1,38 +1,15 @@
 <?php
 
-namespace Kirameki\Database\Query;
+namespace Kirameki\Database\Query\Statements;
 
-class Statement
+use Kirameki\Database\Query\WhereClause;
+
+class ConditionStatement extends BaseStatement
 {
-    /**
-     * @var string
-     */
-    public string $table;
-
-    /**
-     * @var string|null
-     */
-    public ?string $tableAlias;
-
-    /**
-     * @var bool
-     */
-    public bool $distinct = false;
-
-    /**
-     * @var array|null
-     */
-    public ?array $select;
-
     /**
      * @var WhereClause[]
      */
     public ?array $where;
-
-    /**
-     * @var array|null
-     */
-    public ?array $groupBy;
 
     /**
      * @var array|null
@@ -48,11 +25,6 @@ class Statement
      * @var int|null
      */
     public ?int $offset;
-
-    /**
-     * @var bool|null
-     */
-    public ?bool $lock;
 
     public function __clone()
     {

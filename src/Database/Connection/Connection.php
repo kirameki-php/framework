@@ -2,11 +2,7 @@
 
 namespace Kirameki\Database\Connection;
 
-use Generator;
-use Kirameki\Database\Query\Builder;
-use Kirameki\Database\Query\Formatter;
 use PDO;
-use PDOStatement;
 
 class Connection
 {
