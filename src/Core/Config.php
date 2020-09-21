@@ -1,6 +1,6 @@
 <?php
 
-namespace Kirameki\Support;
+namespace Kirameki\Core;
 
 use ArrayAccess;
 

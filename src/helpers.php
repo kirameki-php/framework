@@ -2,8 +2,8 @@
 
 use Kirameki\Application;
 use Kirameki\Support\Collection;
-use Kirameki\Support\Config;
-use Kirameki\Support\Env;
+use Kirameki\Core\Config;
+use Kirameki\Core\Env;
 use Psr\Log\LoggerInterface;
 
 function app(): Application

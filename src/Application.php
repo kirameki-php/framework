@@ -7,8 +7,8 @@ use InvalidArgumentException;
 use Kirameki\Container\Container;
 use Kirameki\Exceptions\ExceptionInitializer;
 use Kirameki\Logging\LogInitializer;
-use Kirameki\Support\Config;
-use Kirameki\Support\Env;
+use Kirameki\Core\Config;
+use Kirameki\Core\Env;
 
 class Application extends Container
 {
