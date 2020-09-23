@@ -7,5 +7,5 @@ class UpdateStatement extends ConditionStatement
     /**
      * @var array|null
      */
-    public ?array $data;
+    public ?array $data = null;
 }

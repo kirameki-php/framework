@@ -7,20 +7,20 @@ class SelectStatement extends ConditionStatement
     /**
      * @var string[]|null
      */
-    public ?array $columns;
+    public ?array $columns = null;
 
     /**
      * @var array|null
      */
-    public ?array $groupBy;
+    public ?array $groupBy = null;
 
     /**
      * @var bool
      */
-    public ?bool $distinct;
+    public ?bool $distinct = null;
 
     /**
      * @var bool|null
      */
-    public ?bool $lock;
+    public ?bool $lock = null;
 }

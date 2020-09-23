@@ -9,22 +9,22 @@ class ConditionStatement extends BaseStatement
     /**
      * @var WhereClause[]
      */
-    public ?array $where;
+    public ?array $where = null;
 
     /**
      * @var array|null
      */
-    public ?array $orderBy;
+    public ?array $orderBy = null;
 
     /**
      * @var int|null
      */
-    public ?int $limit;
+    public ?int $limit = null;
 
     /**
      * @var int|null
      */
-    public ?int $offset;
+    public ?int $offset = null;
 
     public function __clone()
     {

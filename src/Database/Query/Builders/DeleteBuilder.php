@@ -26,4 +26,15 @@ class DeleteBuilder extends ConditonBuilder
         $bindings = $formatter->bindingsForDelete($this->statement);
         return $this->connection->affectingQuery($statement, $bindings);
     }
+
+    /**
+     * @return array
+     */
+    public function inspect(): array
+    {
+        $formatter = $this->connection->getQueryFormatter();
+        $statement = $formatter->statementForDelete($this->statement);
+        $bindings = $formatter->bindingsForDelete($this->statement);
+        return compact('statement', 'bindings');
+    }
 }

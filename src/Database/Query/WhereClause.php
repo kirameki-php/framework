@@ -11,7 +11,7 @@ class WhereClause
 {
     use Tappable;
 
-    protected string $column;
+    protected ?string $column;
 
     protected ?string $operator;
 
@@ -29,7 +29,16 @@ class WhereClause
      */
     public static function for(string $column)
     {
-        return (new static)->column($column);
+        return new static($column);
+    }
+
+    /**
+     * @param string $column
+     * @return static
+     */
+    public static function not(string $column)
+    {
+        return (new static($column))->negate();
     }
 
     /**
@@ -39,10 +48,20 @@ class WhereClause
     public static function raw(string $raw)
     {
         $instance = new static();
-        $instance->negated = false;
-        $instance->operator = null;
         $instance->parameter($raw);
         return $instance;
+    }
+
+    /**
+     * @param string|null $column
+     */
+    public function __construct(string $column = null)
+    {
+        $this->column = $column;
+        $this->negated = false;
+        $this->operator = null;
+        $this->nextLogic = null;
+        $this->nextClause = null;
     }
 
     /**
@@ -78,16 +97,6 @@ class WhereClause
     }
 
     /**
-     * @param string $column
-     * @return $this
-     */
-    protected function column(string $column)
-    {
-        $this->column = $column;
-        return $this;
-    }
-
-    /**
      * @return $this
      */
     protected function negate()
@@ -96,6 +105,11 @@ class WhereClause
         return $this;
     }
 
+    /**
+     * @param string $operator
+     * @param $value
+     * @return $this
+     */
     public function with(string $operator, $value)
     {
         if ($operator === '=') return $this->eq($value);
@@ -370,7 +384,7 @@ class WhereClause
             for($i = 0, $size = count($value); $i < $size; $i++) {
                 $bindNames[] = $formatter->bindName();
             }
-            return $column.' '.$operator.' ('.implode(',', $bindNames).')';
+            return $column.' '.$operator.' ('.implode(', ', $bindNames).')';
         }
 
         if ($operator === 'BETWEEN') {
@@ -387,12 +401,16 @@ class WhereClause
             return $value->toSql($formatter, $column, $negated);
         }
 
-        // ">=", ">", "<", "<=" and raw cannot be negated
+        // ">", ">=", "<", "<=" and raw cannot be negated
         if ($negated) {
             // TODO needs better exception
             throw new RuntimeException("Negation not valid for '$operator'");
         }
 
-        return $column.' '.$operator.' '.$value;
+        if (count($value) > 1) {
+            throw new RuntimeException(count($value).' parameters for WHERE '.$operator.' detected where only 1 is expected.');
+        }
+
+        return $column.' '.$operator.' '.$formatter->bindName();
     }
 }

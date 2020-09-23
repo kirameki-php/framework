@@ -21,7 +21,7 @@ class SelectBuilder extends ConditonBuilder
      * @param mixed ...$columns
      * @return $this
      */
-    public function select(...$columns)
+    public function columns(...$columns)
     {
         $this->statement->columns = $columns;
         return $this;
@@ -76,7 +76,7 @@ class SelectBuilder extends ConditonBuilder
      */
     public function exists(): bool
     {
-        return !empty($this->copy()->select(1)->limit(1)->execSelect());
+        return !empty($this->copy()->columns(1)->limit(1)->execSelect());
     }
 
     /**
@@ -113,7 +113,7 @@ class SelectBuilder extends ConditonBuilder
      * @param string $column
      * @return int|float
      */
-    public function sum(string $column): int
+    public function sum(string $column)
     {
         return $this->execAggregate($column, 'SUM');
     }
@@ -160,6 +160,17 @@ class SelectBuilder extends ConditonBuilder
     }
 
     /**
+     * @return array
+     */
+    public function inspect(): array
+    {
+        $formatter = $this->connection->getQueryFormatter();
+        $statement = $formatter->statementForSelect($this->statement);
+        $bindings = $formatter->bindingsForSelect($this->statement);
+        return compact('statement', 'bindings');
+    }
+
+    /**
      * @param string $select
      * @return $this
      */
@@ -189,7 +200,7 @@ class SelectBuilder extends ConditonBuilder
     {
         $formatter = $this->connection->getQueryFormatter();
         $column = $formatter->columnName($column);
-        $results = $this->copy()->select($function.'('.$column.') as cnt')->execSelect();
+        $results = $this->copy()->columns($function.'('.$column.') AS cnt')->execSelect();
         return !empty($results) ? $results[0]['cnt'] : 0;
     }
 }

@@ -36,4 +36,15 @@ class UpdateBuilder extends ConditonBuilder
         $bindings = $formatter->bindingsForUpdate($this->statement);
         return $this->connection->affectingQuery($statement, $bindings);
     }
+
+    /**
+     * @return array
+     */
+    public function inspect(): array
+    {
+        $formatter = $this->connection->getQueryFormatter();
+        $statement = $formatter->statementForUpdate($this->statement);
+        $bindings = $formatter->bindingsForUpdate($this->statement);
+        return compact('statement', 'bindings');
+    }
 }

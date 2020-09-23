@@ -23,9 +23,9 @@ trait Queries
      * @param mixed ...$columns
      * @return SelectBuilder
      */
-    public function selectFrom(...$columns)
+    public function select(...$columns)
     {
-        return (new SelectBuilder($this))->select($columns);
+        return (new SelectBuilder($this))->columns($columns);
     }
 
     /**

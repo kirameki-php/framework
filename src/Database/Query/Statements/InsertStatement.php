@@ -7,5 +7,5 @@ class InsertStatement extends BaseStatement
     /**
      * @var array[]|null
      */
-    public ?array $dataset;
+    public ?array $dataset = null;
 }

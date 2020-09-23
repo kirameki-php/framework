@@ -4,7 +4,7 @@ namespace Kirameki\Database\Connection;
 
 use PDO;
 
-class Connection
+abstract class Connection
 {
     use Concerns\Queries;
 
@@ -46,7 +46,7 @@ class Connection
     public function getPdo()
     {
         if ($this->pdo === null) {
-            $this->reconnect();
+            $this->connect();
         }
         return $this->pdo;
     }
@@ -56,34 +56,19 @@ class Connection
      */
     public function reconnect()
     {
-        $config = $this->getConfig();
-        if (isset($config['socket'])) {
-            $hostOrSocket = 'unix_socket='.$config['socket'];
-        } else {
-            $hostOrSocket = 'host='.$config['host'];
-            $hostOrSocket.= isset($config['port']) ? 'port='.$config['port'] : '';
-        }
-        $database = isset($config['database']) ? 'dbname='.$config['database'] : '';
-        $charset = isset($config['charset']) ? 'charset='.$config['charset'] : '';
-        $dsn = "mysql:{$hostOrSocket}{$database}{$charset}";
-        $username = $config['username'] ?? 'root';
-        $password = $config['password'] ?? null;
-        $options = $config['options'] ?? [];
-        $options+= [
-            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-            PDO::MYSQL_ATTR_FOUND_ROWS => TRUE,
-        ];
-        $this->pdo = new PDO($dsn, $username, $password, $options);
+        $this->disconnect();
+        $this->connect();
         return $this;
     }
 
     /**
-     * @return bool
+     * @return $this
      */
-    public function close()
-    {
-        $this->pdo = null;
-        return true;
-    }
+    abstract public function connect();
+
+
+    /**
+     * @return $this
+     */
+    abstract public function disconnect();
 }

@@ -31,14 +31,11 @@ class Formatter
      */
     public function statementForSelect(SelectStatement $statement): string
     {
-        return implode(' ', [
+        return implode(' ', array_filter([
             $this->select($statement),
             $this->from($statement),
-            $this->where($statement),
-            $this->order($statement),
-            $this->limit($statement),
-            $this->offset($statement),
-        ]);
+            $this->conditions($statement),
+        ]));
     }
 
     /**
@@ -119,9 +116,7 @@ class Formatter
             $this->tableName($statement->table),
             'SET',
             implode(', ', $assignments),
-            $this->where($statement),
-            $this->order($statement),
-            $this->limit($statement),
+            $this->conditions($statement),
         ]);
     }
 
@@ -143,9 +138,7 @@ class Formatter
         return implode(' ', [
             'DELETE FROM',
             $this->tableName($statement->table),
-            $this->where($statement),
-            $this->order($statement),
-            $this->limit($statement),
+            $this->conditions($statement),
         ]);
     }
 
@@ -167,7 +160,7 @@ class Formatter
      */
     public function interpolate(string $statement, array $bindings): string
     {
-        return preg_replace_callback('/\?\??/', static function($matches) use (&$bindings) {
+        return preg_replace_callback('/\?\??/', function($matches) use (&$bindings) {
             if ($matches[0] === '?') {
                 $current = current($bindings);
                 next($bindings);
@@ -213,62 +206,44 @@ class Formatter
      */
     public function from(BaseStatement $statement): string
     {
-        $expr = $statement->table;
+        if (!isset($statement->table)) {
+            return '';
+        }
+        $expr = $this->tableName($statement->table);
         if ($statement->tableAlias !== null) {
             $expr.=' AS '.$statement->tableAlias;
         }
-        return $expr;
+        return 'FROM '.$expr;
     }
 
     /**
      * @param ConditionStatement $statement
-     * @return string|null
+     * @return string
      */
-    public function where(ConditionStatement $statement): ?string
+    public function conditions(ConditionStatement $statement): string
     {
+        $parts = [];
         if ($statement->where !== null) {
             $exprs = [];
             foreach ($statement->where as $clause) {
                 $exprs[] = $clause->toSql($this, $statement->tableAlias);
             }
-            return 'WHERE '.implode(' AND ', $exprs);
+            $parts[]= 'WHERE '.implode(' AND ', $exprs);
         }
-        return null;
-    }
-
-    /**
-     * @param ConditionStatement $statement
-     * @return string|null
-     */
-    public function order(ConditionStatement $statement): ?string
-    {
         if ($statement->orderBy !== null) {
-            $table = $statement->tableAlias ?? $statement->table;
             $exprs = [];
             foreach ($statement->orderBy as $column => $sort) {
-                $exprs[] = $this->columnName($column, $table).' '.$sort;
+                $exprs[] = $this->columnName($column, $statement->tableAlias).' '.$sort;
             }
-            return implode(', ', $exprs);
+            $parts[]= 'ORDER BY '.implode(', ', $exprs);
         }
-        return null;
-    }
-
-    /**
-     * @param ConditionStatement $statement
-     * @return string|null
-     */
-    public function offset(ConditionStatement $statement): ?string
-    {
-        return $statement->offset !== null ? 'OFFSET '.$statement->offset : null;
-    }
-
-    /**
-     * @param ConditionStatement $statement
-     * @return string|null
-     */
-    public function limit(ConditionStatement $statement): ?string
-    {
-        return $statement->limit !== null ? 'LIMIT '.$statement->limit : null;
+        if ($statement->limit !== null) {
+            $parts[]= 'LIMIT '.$statement->limit;
+        }
+        if ($statement->offset !== null) {
+            $parts[]= 'OFFSET '.$statement->offset;
+        }
+        return implode(' ', $parts);
     }
 
     /**
@@ -319,9 +294,11 @@ class Formatter
     protected function bindingsForCondition(ConditionStatement $statement): array
     {
         $bindings = [];
-        foreach ($statement->where as $where) {
-            foreach($where->getBindings() as $binding) {
-                $bindings[] = $binding;
+        if ($statement->where !== null) {
+            foreach ($statement->where as $where) {
+                foreach($where->getBindings() as $binding) {
+                    $bindings[] = $binding;
+                }
             }
         }
         return $bindings;

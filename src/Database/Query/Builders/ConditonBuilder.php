@@ -2,6 +2,8 @@
 
 namespace Kirameki\Database\Query\Builders;
 
+use Closure;
+use Kirameki\Database\Query\Range;
 use Kirameki\Database\Query\Statements\ConditionStatement;
 use Kirameki\Database\Query\WhereClause;
 use RuntimeException;
@@ -23,20 +25,58 @@ abstract class ConditonBuilder extends Builder
     {
         $num = func_num_args();
 
-        if ($num === 1) {
-            return is_callable($column)
-                ? $this->addWhereClause(WhereClause::for($column)->tap($column))
-                : $this->addWhereClause($column);
+        if ($num === 1 && ($column instanceof WhereClause)) {
+            return $this->addWhereClause($column);
         }
 
         if ($num === 2) {
-            return is_array($operator)
-                ? $this->addWhereClause(WhereClause::for($column)->in($operator))
-                : $this->addWhereClause(WhereClause::for($column)->eq($operator));
+            if (is_callable($operator)) {
+                return $this->addWhereClause(WhereClause::for($column)->tap($operator));
+            }
+            if (is_iterable($operator)) {
+                return $this->addWhereClause(WhereClause::for($column)->in($operator));
+            }
+            if ($operator instanceof Range) {
+                return $this->addWhereClause(WhereClause::for($column)->inRange($operator));
+            }
+            return $this->addWhereClause(WhereClause::for($column)->eq($operator));
         }
 
         if ($num === 3) {
             return $this->addWhereClause(WhereClause::for($column)->with($operator, $value));
+        }
+
+        throw new RuntimeException('Invalid number of arguments. expected: 1~3. '.$num.' given.');
+    }
+
+    /**
+     * @param $column
+     * @param mixed|null $operator
+     * @param mixed|null $value
+     * @return $this
+     */
+    public function whereNot($column, $operator, $value = null)
+    {
+        $num = func_num_args();
+
+        if ($num === 2) {
+            if (is_callable($operator)) {
+                return $this->addWhereClause(WhereClause::not($column)->tap($operator));
+            }
+
+            if (is_array($operator)) {
+                return $this->addWhereClause(WhereClause::not($column)->in($operator));
+            }
+
+            if ($operator instanceof Range) {
+                return $this->addWhereClause(WhereClause::not($column)->inRange($operator));
+            }
+
+            return $this->addWhereClause(WhereClause::not($column)->eq($operator));
+        }
+
+        if ($num === 3) {
+            return $this->addWhereClause(WhereClause::not($column)->with($operator, $value));
         }
 
         throw new RuntimeException('Invalid number of arguments. expected: 1~3. '.$num.' given.');

@@ -62,12 +62,12 @@ class Range
     public function toSql(Formatter $formatter, string $column, bool $negated = false): string
     {
         $lowerOperator = $negated
-            ? ($this->lowerClosed ? '>=' : '>')
-            : ($this->lowerClosed ? '<' : '<=');
+            ? ($this->lowerClosed ? '<' : '<=')
+            : ($this->lowerClosed ? '>=' : '>');
 
         $upperOperator = $negated
-            ? ($this->upperClosed ? '<=' : '<')
-            : ($this->upperClosed ? '>' : '>=');
+            ? ($this->upperClosed ? '>' : '>=')
+            : ($this->upperClosed ? '<=' : '<');
 
         $expr = $column.' '.$lowerOperator.' '.$formatter->bindName();
         $expr.= $negated ? ' OR ' : ' AND ';
