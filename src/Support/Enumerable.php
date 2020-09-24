@@ -189,13 +189,14 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
 
     /**
      * @param int|string $key
-     * @return static
+     * @return static|null
      */
     public function dig($key)
     {
         $copy = $this->toArray();
         $keys = static::isDottedKey($key) ? explode('.', $key) : [$key];
-        return $this->newInstance(static::digTo($copy, $keys));
+        $dug = static::digTo($copy, $keys);
+        return is_iterable($dug) ? $this->newInstance($dug) : null;
     }
 
     /**

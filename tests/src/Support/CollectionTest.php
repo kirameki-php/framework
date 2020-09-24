@@ -291,6 +291,24 @@ class CollectionTest extends TestCase
 
     public function testDig()
     {
+        $assoc = $this->collect(['one' => ['two' => [1,2], 'three' => 4, 'four' => []]]);
+        $dug = $assoc->dig('nothing');
+        self::assertNull($dug);
 
+        $dug = $assoc->dig('one.nothing');
+        self::assertNull($dug);
+
+        $dug = $assoc->dig('one.two');
+        self::assertCount(2, $dug);
+        self::assertEquals([1,2], $dug->toArray());
+
+        $dug = $assoc->dig('one.two.three');
+        self::assertNull($dug);
+
+        $dug = $assoc->dig('one.two.0');
+        self::assertNull($dug);
+
+        $dug = $assoc->dig('one.four');
+        self::assertEquals([], $dug->toArray());
     }
 }
