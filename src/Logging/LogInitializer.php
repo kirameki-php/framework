@@ -2,7 +2,7 @@
 
 namespace Kirameki\Logging;
 
-use Kirameki\Application;
+use Kirameki\Core\Application;
 use Psr\Log\LoggerInterface;
 
 class LogInitializer

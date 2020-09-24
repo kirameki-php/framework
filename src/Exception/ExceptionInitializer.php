@@ -1,9 +1,9 @@
 <?php
 
-namespace Kirameki\Exceptions;
+namespace Kirameki\Exception;
 
-use Kirameki\Application;
-use Kirameki\Exceptions\Handlers\LogHandler;
+use Kirameki\Core\Application;
+use Kirameki\Exception\Handlers\LogHandler;
 
 class ExceptionInitializer
 {

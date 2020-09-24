@@ -4,7 +4,7 @@ namespace Kirameki\Logging\Writers;
 
 use Bramus\Monolog\Formatter\ColoredLineFormatter;
 use Bramus\Monolog\Formatter\ColorSchemes\DefaultScheme;
-use Kirameki\Application;
+use Kirameki\Core\Application;
 use Monolog\Handler\HandlerInterface;
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger;

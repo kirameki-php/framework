@@ -3,7 +3,7 @@
 namespace Kirameki\Http;
 
 use Carbon\Carbon;
-use Kirameki\Application;
+use Kirameki\Core\Application;
 use RuntimeException;
 
 class Url

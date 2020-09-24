@@ -1,6 +1,6 @@
 <?php
 
-use Kirameki\Application;
+use Kirameki\Core\Application;
 use Kirameki\Support\Collection;
 use Kirameki\Core\Config;
 use Kirameki\Core\Env;

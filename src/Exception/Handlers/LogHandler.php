@@ -1,6 +1,6 @@
 <?php
 
-namespace Kirameki\Exceptions\Handlers;
+namespace Kirameki\Exception\Handlers;
 
 use Throwable;
 

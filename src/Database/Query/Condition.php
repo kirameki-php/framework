@@ -14,8 +14,6 @@ class Condition
 {
     use Tappable;
 
-    protected self $current;
-
     protected ?string $column;
 
     protected ?string $operator;
@@ -24,11 +22,13 @@ class Condition
 
     protected $parameters;
 
+    protected bool $defined;
+
     protected ?string $nextLogic;
 
-    protected ?self $nextCondition;
+    protected ?self $next;
 
-    protected bool $defined;
+    protected self $current;
 
     /**
      * @param string $column
@@ -58,10 +58,11 @@ class Condition
         $this->column = $column;
         $this->negated = false;
         $this->operator = null;
-        $this->nextLogic = null;
-        $this->nextCondition = null;
-        $this->current = $this;
+        $this->parameters = null;
         $this->defined = false;
+        $this->nextLogic = null;
+        $this->next = null;
+        $this->current = $this;
     }
 
     /**
@@ -69,14 +70,14 @@ class Condition
      */
     public function __clone()
     {
-        if ($this->nextCondition !== null) {
-            $this->nextCondition = clone $this->nextCondition;
+        if ($this->next !== null) {
+            $this->next = clone $this->next;
         }
 
-        // current should always point to the last condition
+        // $this->current should always point to the last condition
         $this->current = $this;
-        while($this->current->nextCondition !== null) {
-            $this->current = $this->current->nextCondition;
+        while($this->current->next !== null) {
+            $this->current = $this->current->next;
         }
     }
 
@@ -88,7 +89,7 @@ class Condition
     {
         $nextCond = static::for($column ?? $this->column);
         $this->current->nextLogic = 'AND';
-        $this->current->nextCondition = $nextCond;
+        $this->current->next = $nextCond;
         $this->current = $nextCond;
         return $this;
     }
@@ -101,7 +102,7 @@ class Condition
     {
         $nextCond = static::for($column ?? $this->column);
         $this->current->nextLogic = 'OR';
-        $this->current->nextCondition = $nextCond;
+        $this->current->next = $nextCond;
         $this->current = $nextCond;
         return $this;
     }
@@ -389,21 +390,21 @@ class Condition
      */
     public function toSql(Formatter $formatter, ?string $table): string
     {
-        $conds = [];
-        $conds[] = $this->buildCurrent($formatter, $table);
+        $parts = [];
+        $parts[] = $this->buildCurrent($formatter, $table);
 
         // Dig through all chained clauses if exists
-        if ($this->nextCondition !== null) {
-            $nextLogic = $this->nextLogic;
-            $nextCond = $this->nextCondition;
-            while ($nextCond !== null) {
-                $conds[]= $nextLogic.' '.$nextCond->buildCurrent($formatter, $table);
-                $nextLogic = $nextCond->nextLogic;
-                $nextCond = $nextCond->nextCondition;
+        if ($this->next !== null) {
+            $logic = $this->nextLogic;
+            $cond = $this->next;
+            while ($cond !== null) {
+                $parts[]= $logic.' '.$cond->buildCurrent($formatter, $table);
+                $logic = $cond->nextLogic;
+                $cond = $cond->next;
             }
         }
 
-        return (count($conds) > 1) ? '('.implode(' ', $conds).')': $conds[0];
+        return (count($parts) > 1) ? '('.implode(' ', $parts).')': $parts[0];
     }
 
     /**
@@ -484,14 +485,14 @@ class Condition
             $bindings = $bindings->getBindings();
         }
 
-        $nextCond = $this->nextCondition;
-        while ($nextCond !== null) {
-            foreach ($nextCond->getBindings() as $name => $binding) {
+        $cond = $this->next;
+        while ($cond !== null) {
+            foreach ($cond->getBindings() as $name => $binding) {
                 is_string($name)
                     ? $bindings[$name] = $binding
                     : $bindings[] = $binding;
             }
-            $nextCond = $nextCond->nextCondition;
+            $cond = $cond->next;
         }
 
         return $bindings;

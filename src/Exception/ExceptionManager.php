@@ -1,11 +1,11 @@
 <?php
 
-namespace Kirameki\Exceptions;
+namespace Kirameki\Exception;
 
 use ErrorException;
 use Kirameki\Container\Container;
 use Kirameki\Container\EntryInterface;
-use Kirameki\Exceptions\Handlers\HandlerInterface;
+use Kirameki\Exception\Handlers\HandlerInterface;
 use Throwable;
 
 class ExceptionManager

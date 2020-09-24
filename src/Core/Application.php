@@ -1,11 +1,11 @@
 <?php
 
-namespace Kirameki;
+namespace Kirameki\Core;
 
 use Dotenv\Dotenv;
 use InvalidArgumentException;
 use Kirameki\Container\Container;
-use Kirameki\Exceptions\ExceptionInitializer;
+use Kirameki\Exception\ExceptionInitializer;
 use Kirameki\Logging\LogInitializer;
 use Kirameki\Core\Config;
 use Kirameki\Core\Env;

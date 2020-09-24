@@ -2,7 +2,7 @@
 
 namespace Kirameki\Tests;
 
-use Kirameki\Application;
+use Kirameki\Core\Application;
 use PHPUnit\Framework\TestCase as BaseTestCase;
 
 class TestCase extends BaseTestCase
