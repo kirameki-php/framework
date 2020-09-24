@@ -4,6 +4,7 @@ namespace Kirameki\Database\Query\Builders;
 
 use Kirameki\Database\Connection\Connection;
 use Kirameki\Database\Query\Statements\SelectStatement;
+use Kirameki\Database\Query\Condition;
 use Kirameki\Support\Collection;
 
 class SelectBuilder extends ConditonBuilder
@@ -15,6 +16,16 @@ class SelectBuilder extends ConditonBuilder
     {
         $this->connection = $connection;
         $this->statement = new SelectStatement;
+    }
+
+    /**
+     * @param string $table
+     * @param string|null $as
+     * @return $this
+     */
+    public function from(string $table, ?string $as = null)
+    {
+        return $this->table($table, $as);
     }
 
     /**
@@ -37,21 +48,33 @@ class SelectBuilder extends ConditonBuilder
     }
 
     /**
-     * @param int $skipRows
-     * @return $this
-     */
-    public function offset(int $skipRows)
-    {
-        $this->statement->offset = $skipRows;
-        return $this;
-    }
-
-    /**
      * @return $this
      */
     public function lock()
     {
         $this->statement->lock = true;
+        return $this;
+    }
+
+    /**
+     * @param string ...$columns
+     * @return $this
+     */
+    public function groupBy(string ...$columns)
+    {
+        $this->statement->groupBy = $columns;
+        return $this;
+    }
+
+    /**
+     * @param mixed $column
+     * @param mixed $operator
+     * @param mixed|null $value
+     * @return $this
+     */
+    public function having($column, $operator, $value = null)
+    {
+        $this->addHavingCondition($this->buildCondition(...func_get_args()));
         return $this;
     }
 
@@ -177,6 +200,17 @@ class SelectBuilder extends ConditonBuilder
     protected function addToSelect(string $select)
     {
         $this->statement->columns[] = $select;
+        return $this;
+    }
+
+    /**
+     * @param Condition $condition
+     * @return $this
+     */
+    protected function addHavingCondition(Condition $condition)
+    {
+        $this->statement->having ??= [];
+        $this->statement->having[] = $condition;
         return $this;
     }
 

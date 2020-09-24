@@ -5,7 +5,7 @@ namespace Kirameki\Database\Query;
 use DateTimeInterface;
 use Kirameki\Database\Connection\Connection;
 use Kirameki\Database\Query\Statements\BaseStatement;
-use Kirameki\Database\Query\Statements\ConditionStatement;
+use Kirameki\Database\Query\Statements\ConditionalStatement;
 use Kirameki\Database\Query\Statements\DeleteStatement;
 use Kirameki\Database\Query\Statements\InsertStatement;
 use Kirameki\Database\Query\Statements\SelectStatement;
@@ -183,21 +183,33 @@ class Formatter
             $statement->columns[] = '*';
         }
         $exprs = [];
-        $table = $statement->tableAlias ?? $statement->table;
+
+        $distinct = '';
+        if ($statement->distinct) {
+            $distinct = 'DISTINCT ';
+        }
+
         foreach ($statement->columns as $name) {
+            if ($name instanceof Expr) {
+                $exprs[] = $name->toString();
+                continue;
+            }
+
             $segments = preg_split('/\s+as\s+/i', $name);
             if (count($segments) > 1) {
                 $exprs[] = $this->columnName($segments[0]).' AS '.$segments[1];
-            } else {
-                // consists of only alphanumerics so assume it's just a column
-                if (ctype_alnum($segments[0])) {
-                    $exprs[] = $this->columnName($segments[0], $table);
-                } else {
-                    $exprs[] = $segments[0];
-                }
+                continue;
             }
+
+            // consists of only alphanumerics so assume it's just a column
+            if (ctype_alnum($segments[0])) {
+                $exprs[] = $this->columnName($segments[0], $statement->tableAlias);
+                continue;
+            }
+
+            $exprs[] = $segments[0];
         }
-        return 'SELECT '.implode(', ', $exprs);
+        return 'SELECT '.$distinct.implode(', ', $exprs);
     }
 
     /**
@@ -217,25 +229,34 @@ class Formatter
     }
 
     /**
-     * @param ConditionStatement $statement
+     * @param ConditionalStatement $statement
      * @return string
      */
-    public function conditions(ConditionStatement $statement): string
+    public function conditions(ConditionalStatement $statement): string
     {
         $parts = [];
         if ($statement->where !== null) {
-            $exprs = [];
-            foreach ($statement->where as $clause) {
-                $exprs[] = $clause->toSql($this, $statement->tableAlias);
+            $clause = [];
+            foreach ($statement->where as $condition) {
+                $clause[] = $condition->toSql($this, $statement->tableAlias);
             }
-            $parts[]= 'WHERE '.implode(' AND ', $exprs);
+            $parts[]= 'WHERE '.implode(' AND ', $clause);
+        }
+        if ($statement instanceof SelectStatement) {
+            if ($statement->groupBy !== null) {
+                $clause = [];
+                foreach ($statement->groupBy as $column) {
+                    $clause[] = $this->columnName($column, $statement->tableAlias);
+                }
+                $parts[]= 'GROUP BY '.implode(', ', $clause);
+            }
         }
         if ($statement->orderBy !== null) {
-            $exprs = [];
+            $clause = [];
             foreach ($statement->orderBy as $column => $sort) {
-                $exprs[] = $this->columnName($column, $statement->tableAlias).' '.$sort;
+                $clause[] = $this->columnName($column, $statement->tableAlias).' '.$sort;
             }
-            $parts[]= 'ORDER BY '.implode(', ', $exprs);
+            $parts[]= 'ORDER BY '.implode(', ', $clause);
         }
         if ($statement->limit !== null) {
             $parts[]= 'LIMIT '.$statement->limit;
@@ -288,10 +309,10 @@ class Formatter
     }
 
     /**
-     * @param ConditionStatement $statement
+     * @param ConditionalStatement $statement
      * @return array
      */
-    protected function bindingsForCondition(ConditionStatement $statement): array
+    protected function bindingsForCondition(ConditionalStatement $statement): array
     {
         $bindings = [];
         if ($statement->where !== null) {

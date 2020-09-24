@@ -2,16 +2,15 @@
 
 namespace Kirameki\Database\Query\Builders;
 
-use Closure;
 use Kirameki\Database\Query\Range;
-use Kirameki\Database\Query\Statements\ConditionStatement;
-use Kirameki\Database\Query\WhereClause;
+use Kirameki\Database\Query\Statements\ConditionalStatement;
+use Kirameki\Database\Query\Condition;
 use RuntimeException;
 
 abstract class ConditonBuilder extends Builder
 {
     /**
-     * @var ConditionStatement
+     * @var ConditionalStatement
      */
     protected $statement;
 
@@ -23,63 +22,17 @@ abstract class ConditonBuilder extends Builder
      */
     public function where($column, $operator = null, $value = null)
     {
-        $num = func_num_args();
-
-        if ($num === 1 && ($column instanceof WhereClause)) {
-            return $this->addWhereClause($column);
-        }
-
-        if ($num === 2) {
-            if (is_callable($operator)) {
-                return $this->addWhereClause(WhereClause::for($column)->tap($operator));
-            }
-            if (is_iterable($operator)) {
-                return $this->addWhereClause(WhereClause::for($column)->in($operator));
-            }
-            if ($operator instanceof Range) {
-                return $this->addWhereClause(WhereClause::for($column)->inRange($operator));
-            }
-            return $this->addWhereClause(WhereClause::for($column)->eq($operator));
-        }
-
-        if ($num === 3) {
-            return $this->addWhereClause(WhereClause::for($column)->with($operator, $value));
-        }
-
-        throw new RuntimeException('Invalid number of arguments. expected: 1~3. '.$num.' given.');
+        return $this->addWhereCondition($this->buildCondition(...func_get_args()));
     }
 
     /**
      * @param $column
-     * @param mixed|null $operator
      * @param mixed|null $value
      * @return $this
      */
-    public function whereNot($column, $operator, $value = null)
+    public function whereNot($column, $value)
     {
-        $num = func_num_args();
-
-        if ($num === 2) {
-            if (is_callable($operator)) {
-                return $this->addWhereClause(WhereClause::not($column)->tap($operator));
-            }
-
-            if (is_array($operator)) {
-                return $this->addWhereClause(WhereClause::not($column)->in($operator));
-            }
-
-            if ($operator instanceof Range) {
-                return $this->addWhereClause(WhereClause::not($column)->inRange($operator));
-            }
-
-            return $this->addWhereClause(WhereClause::not($column)->eq($operator));
-        }
-
-        if ($num === 3) {
-            return $this->addWhereClause(WhereClause::not($column)->with($operator, $value));
-        }
-
-        throw new RuntimeException('Invalid number of arguments. expected: 1~3. '.$num.' given.');
+        return $this->addWhereCondition($this->buildNotCondition($column, $value));
     }
 
     /**
@@ -88,7 +41,7 @@ abstract class ConditonBuilder extends Builder
      */
     public function whereRaw(string $raw)
     {
-        return $this->addWhereClause(WhereClause::raw($raw));
+        return $this->addWhereCondition(Condition::raw($raw));
     }
 
     /**
@@ -162,13 +115,53 @@ abstract class ConditonBuilder extends Builder
     }
 
     /**
-     * @param WhereClause $clause
+     * @param $column
+     * @param mixed|null $operator
+     * @param mixed|null $value
+     * @return Condition
+     */
+    protected function buildCondition($column, $operator = null, $value = null): Condition
+    {
+        $num = func_num_args();
+
+        if ($num === 1 && ($column instanceof Condition)) {
+            return $column;
+        }
+
+        if ($num === 2) {
+            if (is_callable($operator)) return Condition::for($column)->tap($operator);
+            if (is_iterable($operator)) return Condition::for($column)->in($operator);
+            if ($operator instanceof Range) return Condition::for($column)->inRange($operator);
+            return Condition::for($column)->equals($operator);
+        }
+
+        if ($num === 3) {
+            return Condition::for($column)->with($operator, $value);
+        }
+
+        throw new RuntimeException('Invalid number of arguments. expected: 1~3. '.$num.' given.');
+    }
+
+    /**
+     * @param $column
+     * @param mixed|null $value
+     * @return Condition
+     */
+    public function buildNotCondition(string $column, $value): Condition
+    {
+        if (is_array($value)) return Condition::for($column)->notIn($value);
+        if ($value instanceof Range) return Condition::for($column)->notInRange($value);
+        return Condition::for($column)->notEquals($value);
+    }
+
+    /**
+     * @param Condition $condition
      * @return $this
      */
-    protected function addWhereClause(WhereClause $clause)
+    protected function addWhereCondition(Condition $condition)
     {
         $this->statement->where ??= [];
-        $this->statement->where[] = $clause;
+        $this->statement->where[] = $condition;
         return $this;
     }
 }

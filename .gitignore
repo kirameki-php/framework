@@ -1,4 +1,5 @@
 # Framework
+/storage/logs/*.log
 /vendor
 /.env
 .docker

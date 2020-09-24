@@ -6,8 +6,11 @@ use Kirameki\Database\Query\Builders\Builder;
 use Kirameki\Support\Concerns\Tappable;
 use RuntimeException;
 use Traversable;
+use function PHPUnit\Framework\greaterThan;
+use function PHPUnit\Framework\greaterThanOrEqual;
+use function PHPUnit\Framework\lessThan;
 
-class WhereClause
+class Condition
 {
     use Tappable;
 
@@ -21,7 +24,7 @@ class WhereClause
 
     protected ?string $nextLogic;
 
-    protected ?self $nextClause;
+    protected ?self $nextCondition;
 
     /**
      * @param string $column
@@ -30,15 +33,6 @@ class WhereClause
     public static function for(string $column)
     {
         return new static($column);
-    }
-
-    /**
-     * @param string $column
-     * @return static
-     */
-    public static function not(string $column)
-    {
-        return (new static($column))->negate();
     }
 
     /**
@@ -61,7 +55,7 @@ class WhereClause
         $this->negated = false;
         $this->operator = null;
         $this->nextLogic = null;
-        $this->nextClause = null;
+        $this->nextCondition = null;
     }
 
     /**
@@ -69,31 +63,29 @@ class WhereClause
      */
     public function __clone()
     {
-        if ($this->nextClause !== null) {
-            $this->nextClause = clone $this->nextClause;
+        if ($this->nextCondition !== null) {
+            $this->nextCondition = clone $this->nextCondition;
         }
     }
 
     /**
-     * @param string $column
+     * @param string|null $column
      * @return static
      */
-    public function and(string $column)
+    public function and(?string $column = null)
     {
         $this->nextLogic = 'AND';
-        $this->nextClause = static::for($column);
-        return $this->nextClause;
+        return $this->nextCondition = static::for($column ?? $this->column);
     }
 
     /**
-     * @param string $column
+     * @param string|null $column
      * @return static
      */
-    public function or(string $column)
+    public function or(?string $column = null)
     {
         $this->nextLogic = 'OR';
-        $this->nextClause = static::for($column);
-        return $this->nextClause;
+        return $this->nextCondition = static::for($column ?? $this->column);
     }
 
     /**
@@ -112,13 +104,13 @@ class WhereClause
      */
     public function with(string $operator, $value)
     {
-        if ($operator === '=') return $this->eq($value);
-        if ($operator === '!=') return $this->ne($value);
-        if ($operator === '<>') return $this->ne($value);
-        if ($operator === '>') return $this->gt($value);
-        if ($operator === '>=') return $this->gte($value);
-        if ($operator === '<') return $this->lt($value);
-        if ($operator === '<=') return $this->lte($value);
+        if ($operator === '=') return $this->equals($value);
+        if ($operator === '!=') return $this->notEquals($value);
+        if ($operator === '<>') return $this->notEquals($value);
+        if ($operator === '>') return $this->greaterThan($value);
+        if ($operator === '>=') return $this->greaterThanOrEquals($value);
+        if ($operator === '<') return $this->lessThan($value);
+        if ($operator === '<=') return $this->lessThanOrEquals($value);
         if ($operator === 'IN') return $this->in($value);
         if ($operator === 'NOT IN') return $this->notIn($value);
         if ($operator === 'BETWEEN') return $this->between($value[0], $value[1]);
@@ -129,9 +121,71 @@ class WhereClause
     }
 
     /**
+     * @see equals()
+     * @param $value
      * @return $this
      */
     public function eq($value)
+    {
+        return $this->equals($value);
+    }
+
+    /**
+     * @see notEquals()
+     * @param $value
+     * @return $this
+     */
+    public function ne($value)
+    {
+        return $this->notEquals($value);
+    }
+
+    /**
+     * @see lessThan()
+     * @param $value
+     * @return $this
+     */
+    public function lt($value)
+    {
+        return $this->lessThan($value);
+    }
+
+    /**
+     * @see lessThanOrEquals()
+     * @param $value
+     * @return $this
+     */
+    public function lte($value)
+    {
+        return $this->lessThanOrEquals($value);
+    }
+
+    /**
+     * @see greaterThan()
+     * @param $value
+     * @return $this
+     */
+    public function gt($value)
+    {
+        return $this->greaterThan($value);
+    }
+
+    /**
+     * @see greaterThanOrEquals()
+     * @param $value
+     * @return $this
+     */
+    public function gte($value)
+    {
+        return $this->greaterThanOrEquals($value);
+    }
+
+
+    /**
+     * @param $value
+     * @return $this
+     */
+    public function equals($value)
     {
         $this->negated = false;
         $this->operator = '=';
@@ -143,15 +197,15 @@ class WhereClause
      * @param $value
      * @return $this
      */
-    public function ne($value)
+    public function notEquals($value)
     {
-        return $this->eq($value)->negate();
+        return $this->equals($value)->negate();
     }
 
     /**
      * @return $this
      */
-    public function gte($value)
+    public function greaterThanOrEquals($value)
     {
         $this->negated = false;
         $this->operator = '>=';
@@ -162,7 +216,7 @@ class WhereClause
     /**
      * @return $this
      */
-    public function gt($value)
+    public function greaterThan($value)
     {
         $this->negated = false;
         $this->operator = '>';
@@ -174,7 +228,7 @@ class WhereClause
      * @param $value
      * @return $this
      */
-    public function lte($value)
+    public function lessThanOrEquals($value)
     {
         $this->negated = false;
         $this->operator = '<=';
@@ -186,7 +240,7 @@ class WhereClause
      * @param $value
      * @return $this
      */
-    public function lt($value)
+    public function lessThan($value)
     {
         $this->negated = false;
         $this->operator = '<';
@@ -312,12 +366,14 @@ class WhereClause
             $bindings = $bindings->getBindings();
         }
 
-        while ($this->nextClause !== null) {
-            foreach ($this->nextClause->getBindings() as $name => $binding) {
+        $nextCond = $this->nextCondition;
+        while ($nextCond !== null) {
+            foreach ($nextCond->getBindings() as $name => $binding) {
                 is_string($name)
                     ? $bindings[$name] = $binding
                     : $bindings[] = $binding;
             }
+            $nextCond = $nextCond->nextCondition;
         }
 
         return $bindings;
@@ -330,21 +386,21 @@ class WhereClause
      */
     public function toSql(Formatter $formatter, ?string $table): string
     {
-        $sql = $this->buildCurrent($formatter, $table);
+        $conds = [];
+        $conds[] = $this->buildCurrent($formatter, $table);
 
         // Dig through all chained clauses if exists
-        if ($this->nextClause !== null) {
+        if ($this->nextCondition !== null) {
             $nextLogic = $this->nextLogic;
-            $nextClause = $this->nextClause;
-            while ($nextClause !== null) {
-                $sql.= $nextLogic.' '.$nextClause->buildCurrent($formatter, $table);
-                $nextLogic = $nextClause->nextLogic;
-                $nextClause = $nextClause->nextClause;
+            $nextCond = $this->nextCondition;
+            while ($nextCond !== null) {
+                $conds[]= $nextLogic.' '.$nextCond->buildCurrent($formatter, $table);
+                $nextLogic = $nextCond->nextLogic;
+                $nextCond = $nextCond->nextCondition;
             }
-            $sql = '('.$sql.')';
         }
 
-        return $sql;
+        return (count($conds) > 1) ? '('.implode(' ', $conds).')': $conds[0];
     }
 
     /**
@@ -408,7 +464,7 @@ class WhereClause
         }
 
         if (count($value) > 1) {
-            throw new RuntimeException(count($value).' parameters for WHERE '.$operator.' detected where only 1 is expected.');
+            throw new RuntimeException(count($value).' parameters for condition detected where only 1 is expected.');
         }
 
         return $column.' '.$operator.' '.$formatter->bindName();

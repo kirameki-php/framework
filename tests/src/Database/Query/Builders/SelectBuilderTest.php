@@ -4,8 +4,9 @@ namespace Kirameki\Tests\Database\Query\Builders;
 
 use Kirameki\Database\Connection\MySqlConnection;
 use Kirameki\Database\Query\Builders\SelectBuilder;
+use Kirameki\Database\Query\Expr;
 use Kirameki\Database\Query\Range;
-use Kirameki\Database\Query\WhereClause;
+use Kirameki\Database\Query\Condition;
 use Kirameki\Tests\TestCase;
 
 class SelectBuilderTest extends TestCase
@@ -17,7 +18,7 @@ class SelectBuilderTest extends TestCase
 
     public function testPlain()
     {
-        $sql = $this->selectBuilder()->columns(1)->toSql();
+        $sql = $this->selectBuilder()->columns(Expr::raw(1))->toSql();
         static::assertEquals("SELECT 1", $sql);
     }
 
@@ -27,15 +28,27 @@ class SelectBuilderTest extends TestCase
         static::assertEquals("SELECT * FROM `User`", $sql);
     }
 
-    public function testFromWithAlias()
+    public function testFrom_WithAlias()
     {
         $sql = $this->selectBuilder()->table('User', 'u')->toSql();
         static::assertEquals("SELECT * FROM `User` AS u", $sql);
     }
 
-    public function testWhereWithTwoArgs()
+    public function testColumns()
     {
-        $sql = $this->selectBuilder()->table('User')->where('id', fn(WhereClause $w) => $w->eq(1))->toSql();
+        $sql = $this->selectBuilder()->table('User')->columns('id', 'name')->toSql();
+        static::assertEquals("SELECT `id`, `name` FROM `User`", $sql);
+    }
+
+    public function testDistinct()
+    {
+        $sql = $this->selectBuilder()->table('User')->columns('id')->distinct()->toSql();
+        static::assertEquals("SELECT DISTINCT `id` FROM `User`", $sql);
+    }
+
+    public function testWhere_WithTwoArgs()
+    {
+        $sql = $this->selectBuilder()->table('User')->where('id', fn(Condition $w) => $w->equals(1))->toSql();
         static::assertEquals("SELECT * FROM `User` WHERE `id` = 1", $sql);
 
         $sql = $this->selectBuilder()->table('User')->where('id', [3, 4])->toSql();
@@ -48,10 +61,25 @@ class SelectBuilderTest extends TestCase
         static::assertEquals("SELECT * FROM `User` WHERE `id` = 1", $sql);
     }
 
-    public function testWhereWithThreeArgs()
+    public function testWhere_WithThreeArgs()
     {
         $sql = $this->selectBuilder()->table('User')->where('id', '=', 1)->toSql();
         static::assertEquals("SELECT * FROM `User` WHERE `id` = 1", $sql);
+    }
+
+    public function testWhere_Multiples()
+    {
+        $sql = $this->selectBuilder()->table('User')->where('id', 1)->where('status', 0)->toSql();
+        static::assertEquals("SELECT * FROM `User` WHERE `id` = 1 AND `status` = 0", $sql);
+    }
+
+    public function testWhere_Combined()
+    {
+        $sql = $this->selectBuilder()->table('User')
+            ->where('id', fn(Condition $w) => $w->lessThan(1)->or()->equals(3))
+            ->whereNot('id', -1)
+            ->toSql();
+        static::assertEquals("SELECT * FROM `User` WHERE (`id` < 1 OR `id` = 3) AND `id` != -1", $sql);
     }
 
     public function testOrderBy()
@@ -64,6 +92,12 @@ class SelectBuilderTest extends TestCase
     {
         $sql = $this->selectBuilder()->table('User')->where('id', 1)->orderByDesc('id')->toSql();
         static::assertEquals("SELECT * FROM `User` WHERE `id` = 1 ORDER BY `id` DESC", $sql);
+    }
+
+    public function testGroupBy()
+    {
+        $sql = $this->selectBuilder()->table('User')->groupBy('status')->toSql();
+        static::assertEquals("SELECT * FROM `User` GROUP BY `status`", $sql);
     }
 
     public function testReorder()
@@ -82,5 +116,11 @@ class SelectBuilderTest extends TestCase
     {
         $sql = $this->selectBuilder()->table('User')->where('id', 1)->limit(1)->offset(10)->toSql();
         static::assertEquals("SELECT * FROM `User` WHERE `id` = 1 LIMIT 1 OFFSET 10", $sql);
+    }
+
+    public function testCombination()
+    {
+        $sql = $this->selectBuilder()->table('User')->where('id', 1)->groupBy('status')->having('status', 1)->limit(2)->orderBy('id')->toSql();
+        static::assertEquals("SELECT * FROM `User` WHERE `id` = 1 GROUP BY `status` ORDER BY `id` ASC LIMIT 2", $sql);
     }
 }

@@ -2,12 +2,12 @@
 
 namespace Kirameki\Database\Query\Statements;
 
-use Kirameki\Database\Query\WhereClause;
+use Kirameki\Database\Query\Condition;
 
-class ConditionStatement extends BaseStatement
+abstract class ConditionalStatement extends BaseStatement
 {
     /**
-     * @var WhereClause[]
+     * @var Condition[]
      */
     public ?array $where = null;
 
@@ -29,8 +29,8 @@ class ConditionStatement extends BaseStatement
     public function __clone()
     {
         $where = [];
-        foreach ($this->where as $clause) {
-            $where[] = clone $clause;
+        foreach ($this->where as $condition) {
+            $where[] = clone $condition;
         }
         $this->where = $where;
     }

@@ -2,7 +2,7 @@
 
 namespace Kirameki\Database\Query\Statements;
 
-class UpdateStatement extends ConditionStatement
+class UpdateStatement extends ConditionalStatement
 {
     /**
      * @var array|null
