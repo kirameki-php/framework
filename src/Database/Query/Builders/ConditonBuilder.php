@@ -125,7 +125,7 @@ abstract class ConditonBuilder extends Builder
         $num = func_num_args();
 
         if ($num === 1 && ($column instanceof Condition)) {
-            return $column;
+            return $column->firstCondtion();
         }
 
         if ($num === 2) {
@@ -147,7 +147,7 @@ abstract class ConditonBuilder extends Builder
      * @param mixed|null $value
      * @return Condition
      */
-    public function buildNotCondition(string $column, $value): Condition
+    protected function buildNotCondition(string $column, $value): Condition
     {
         if (is_array($value)) return Condition::for($column)->notIn($value);
         if ($value instanceof Range) return Condition::for($column)->notInRange($value);

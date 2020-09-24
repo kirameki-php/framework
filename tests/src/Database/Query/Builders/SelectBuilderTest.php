@@ -123,4 +123,15 @@ class SelectBuilderTest extends TestCase
         $sql = $this->selectBuilder()->table('User')->where('id', 1)->groupBy('status')->having('status', 1)->limit(2)->orderBy('id')->toSql();
         static::assertEquals("SELECT * FROM `User` WHERE `id` = 1 GROUP BY `status` ORDER BY `id` ASC LIMIT 2", $sql);
     }
+
+    public function testClone()
+    {
+        $where = Condition::for('id')->eq(1)->or('id')->eq(2);
+        $base = $this->selectBuilder()->table('User')->where($where);
+        $copy = clone $base;
+        $where->or()->in([3,4]); // change $base but should not be reflected on copy
+        static::assertEquals("SELECT * FROM `User` WHERE (`id` = 1 OR `id` = 2 OR `id` IN (3, 4))", $base->toSql());
+        static::assertEquals("SELECT * FROM `User` WHERE (`id` = 1 OR `id` = 2)", $copy->toSql());
+        static::assertNotEquals($base->toSql(), $copy->toSql());
+    }
 }

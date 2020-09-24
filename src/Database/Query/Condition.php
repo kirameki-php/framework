@@ -26,6 +26,8 @@ class Condition
 
     protected ?self $nextCondition;
 
+    protected ?self $prevCondition;
+
     /**
      * @param string $column
      * @return static
@@ -49,13 +51,14 @@ class Condition
     /**
      * @param string|null $column
      */
-    public function __construct(string $column = null)
+    protected function __construct(string $column = null)
     {
         $this->column = $column;
         $this->negated = false;
         $this->operator = null;
         $this->nextLogic = null;
         $this->nextCondition = null;
+        $this->prevCondition = null;
     }
 
     /**
@@ -65,6 +68,7 @@ class Condition
     {
         if ($this->nextCondition !== null) {
             $this->nextCondition = clone $this->nextCondition;
+            $this->nextCondition->prevCondition = $this;
         }
     }
 
@@ -75,7 +79,9 @@ class Condition
     public function and(?string $column = null)
     {
         $this->nextLogic = 'AND';
-        return $this->nextCondition = static::for($column ?? $this->column);
+        $next = $this->nextCondition = static::for($column ?? $this->column);
+        $next->prevCondition = $this;
+        return $next;
     }
 
     /**
@@ -85,7 +91,9 @@ class Condition
     public function or(?string $column = null)
     {
         $this->nextLogic = 'OR';
-        return $this->nextCondition = static::for($column ?? $this->column);
+        $next = $this->nextCondition = static::for($column ?? $this->column);
+        $next->prevCondition = $this;
+        return $next;
     }
 
     /**
@@ -356,30 +364,6 @@ class Condition
     }
 
     /**
-     * @return array
-     */
-    public function getBindings(): array
-    {
-        $bindings = $this->parameters;
-
-        if ($bindings instanceof Range) {
-            $bindings = $bindings->getBindings();
-        }
-
-        $nextCond = $this->nextCondition;
-        while ($nextCond !== null) {
-            foreach ($nextCond->getBindings() as $name => $binding) {
-                is_string($name)
-                    ? $bindings[$name] = $binding
-                    : $bindings[] = $binding;
-            }
-            $nextCond = $nextCond->nextCondition;
-        }
-
-        return $bindings;
-    }
-
-    /**
      * @param Formatter $formatter
      * @param string|null $table
      * @return string
@@ -387,12 +371,14 @@ class Condition
     public function toSql(Formatter $formatter, ?string $table): string
     {
         $conds = [];
-        $conds[] = $this->buildCurrent($formatter, $table);
+        $firstCond = $this->firstCondtion();
+
+        $conds[] = $firstCond->buildCurrent($formatter, $table);
 
         // Dig through all chained clauses if exists
-        if ($this->nextCondition !== null) {
-            $nextLogic = $this->nextLogic;
-            $nextCond = $this->nextCondition;
+        if ($firstCond->nextCondition !== null) {
+            $nextLogic = $firstCond->nextLogic;
+            $nextCond = $firstCond->nextCondition;
             while ($nextCond !== null) {
                 $conds[]= $nextLogic.' '.$nextCond->buildCurrent($formatter, $table);
                 $nextLogic = $nextCond->nextLogic;
@@ -401,6 +387,20 @@ class Condition
         }
 
         return (count($conds) > 1) ? '('.implode(' ', $conds).')': $conds[0];
+    }
+
+    /**
+     * Go back up the chain and get the first condition.
+     *
+     * @return Condition
+     */
+    public function firstCondtion()
+    {
+        $curr = $this;
+        while ($curr->prevCondition !== null) {
+            $curr = $curr->prevCondition;
+        }
+        return $curr;
     }
 
     /**
@@ -468,5 +468,41 @@ class Condition
         }
 
         return $column.' '.$operator.' '.$formatter->bindName();
+    }
+
+    /**
+     * @return array
+     */
+    public function getBindings(): array
+    {
+        $firstCond = $this->firstCondtion();
+
+        $bindings = $firstCond->buildBindings();
+
+        $nextCond = $firstCond->nextCondition;
+        while ($nextCond !== null) {
+            foreach ($nextCond->buildBindings() as $name => $binding) {
+                is_string($name)
+                    ? $bindings[$name] = $binding
+                    : $bindings[] = $binding;
+            }
+            $nextCond = $nextCond->nextCondition;
+        }
+
+        return $bindings;
+    }
+
+    /**
+     * @return array
+     */
+    protected function buildBindings()
+    {
+        $bindings = $this->parameters;
+
+        if ($bindings instanceof Range) {
+            $bindings = $bindings->getBindings();
+        }
+
+        return $bindings;
     }
 }
