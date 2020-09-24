@@ -8,7 +8,7 @@ use Kirameki\Database\Query\Builders\DeleteBuilder;
 use Kirameki\Database\Query\Builders\InsertBuilder;
 use Kirameki\Database\Query\Builders\SelectBuilder;
 use Kirameki\Database\Query\Builders\UpdateBuilder;
-use Kirameki\Database\Query\Formatter;
+use Kirameki\Database\Query\Formatters\Formatter;
 use PDO;
 use PDOStatement;
 

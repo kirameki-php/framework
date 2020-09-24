@@ -2,13 +2,10 @@
 
 namespace Kirameki\Cache;
 
-use APCuIterator;
 use Carbon\Carbon;
-use Closure;
 use DateTimeInterface;
 use Kirameki\Support\Util;
 use RuntimeException;
-use function Sodium\increment;
 
 class DeferrableStore extends AbstractStore
 {
@@ -118,10 +115,7 @@ class DeferrableStore extends AbstractStore
     public function increment(string $key, int $by = 1, $ttl = null): ?int
     {
         if ($this->deferred) {
-            $value = null;
-            if($this->memory->tryGet($key, $value)) {
-                $this->memory->set($key, $value + $by, $ttl);
-            }
+            $this->memory->set($key, ($this->get($key) ?? 0) + $by, $ttl);
             $this->enqueue(__FUNCTION__, $key, $by, $this->toAbsoluteTtl($ttl));
         }
         return $this->actual->increment($key, $by, $ttl);
@@ -138,10 +132,7 @@ class DeferrableStore extends AbstractStore
     public function decrement(string $key, int $by = 1, $ttl = null): ?int
     {
         if ($this->deferred) {
-            $value = null;
-            if($this->memory->tryGet($key, $value)) {
-                $this->memory->set($key, $value - $by, $ttl);
-            }
+            $this->memory->set($key, ($this->get($key) ?? 0) - $by, $ttl);
             $this->enqueue(__FUNCTION__, $key, $by, $this->toAbsoluteTtl($ttl));
         }
         return $this->actual->decrement($key, $by, $ttl);

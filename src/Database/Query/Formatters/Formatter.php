@@ -1,9 +1,10 @@
 <?php
 
-namespace Kirameki\Database\Query;
+namespace Kirameki\Database\Query\Formatters;
 
 use DateTimeInterface;
 use Kirameki\Database\Connection\Connection;
+use Kirameki\Database\Query\Expr;
 use Kirameki\Database\Query\Statements\BaseStatement;
 use Kirameki\Database\Query\Statements\ConditionalStatement;
 use Kirameki\Database\Query\Statements\DeleteStatement;

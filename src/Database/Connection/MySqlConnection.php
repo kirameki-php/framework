@@ -18,7 +18,7 @@ class MySqlConnection extends Connection
             $hostOrSocket = 'host='.$config['host'];
             $hostOrSocket.= isset($config['port']) ? 'port='.$config['port'] : '';
         }
-        $database = isset($config['database']) ? 'dbname='.$config['database'] : '';
+        $database = 'dbname='.($config['database'] ?? $this->getName());
         $charset = isset($config['charset']) ? 'charset='.$config['charset'] : '';
         $dsn = "mysql:{$hostOrSocket}{$database}{$charset}";
         $username = $config['username'] ?? 'root';

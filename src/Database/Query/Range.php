@@ -2,6 +2,8 @@
 
 namespace Kirameki\Database\Query;
 
+use Kirameki\Database\Query\Formatters\Formatter;
+
 class Range
 {
     public $lowerBound;
@@ -37,6 +39,39 @@ class Range
     public static function halfOpen($lower, $upper)
     {
         return new static($lower, true, $upper, false);
+    }
+
+    /**
+     * @see closed()
+     * @param $lower
+     * @param $upper
+     * @return static
+     */
+    public static function included($lower, $upper)
+    {
+        return static::closed($lower, $upper);
+    }
+
+    /**
+     * @see open()
+     * @param $lower
+     * @param $upper
+     * @return static
+     */
+    public static function excluded($lower, $upper)
+    {
+        return static::open($lower, $upper);
+    }
+
+    /**
+     * @see halfOpen()
+     * @param $lower
+     * @param $upper
+     * @return static
+     */
+    public static function endExcluded($lower, $upper)
+    {
+        return static::halfOpen($lower, $upper);
     }
 
     /**

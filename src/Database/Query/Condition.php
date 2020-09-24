@@ -3,6 +3,7 @@
 namespace Kirameki\Database\Query;
 
 use Kirameki\Database\Query\Builders\Builder;
+use Kirameki\Database\Query\Formatters\Formatter;
 use Kirameki\Support\Concerns\Tappable;
 use RuntimeException;
 use Traversable;

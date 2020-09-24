@@ -3,6 +3,7 @@
 namespace Kirameki\Cache;
 
 use APCuIterator;
+use Carbon\Carbon;
 use Closure;
 
 class ApcuStore extends AbstractStore

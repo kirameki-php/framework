@@ -2,20 +2,13 @@
 
 namespace Kirameki\Tests\Database\Query\Builders;
 
-use Kirameki\Database\Connection\MySqlConnection;
-use Kirameki\Database\Query\Builders\SelectBuilder;
 use Kirameki\Database\Query\Expr;
 use Kirameki\Database\Query\Range;
 use Kirameki\Database\Query\Condition;
-use Kirameki\Tests\TestCase;
+use Kirameki\Tests\Database\Query\QueryTestCase;
 
-class SelectBuilderTest extends TestCase
+class SelectBuilderTest extends QueryTestCase
 {
-    protected function selectBuilder()
-    {
-        return new SelectBuilder(new MySqlConnection('test', []));
-    }
-
     public function testPlain()
     {
         $sql = $this->selectBuilder()->columns(Expr::raw(1))->toSql();
