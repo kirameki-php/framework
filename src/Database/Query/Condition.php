@@ -14,6 +14,8 @@ class Condition
 {
     use Tappable;
 
+    protected self $current;
+
     protected ?string $column;
 
     protected ?string $operator;
@@ -26,7 +28,7 @@ class Condition
 
     protected ?self $nextCondition;
 
-    protected ?self $prevCondition;
+    protected bool $defined;
 
     /**
      * @param string $column
@@ -58,7 +60,8 @@ class Condition
         $this->operator = null;
         $this->nextLogic = null;
         $this->nextCondition = null;
-        $this->prevCondition = null;
+        $this->current = $this;
+        $this->defined = false;
     }
 
     /**
@@ -68,7 +71,12 @@ class Condition
     {
         if ($this->nextCondition !== null) {
             $this->nextCondition = clone $this->nextCondition;
-            $this->nextCondition->prevCondition = $this;
+        }
+
+        // current should always point to the last condition
+        $this->current = $this;
+        while($this->current->nextCondition !== null) {
+            $this->current = $this->current->nextCondition;
         }
     }
 
@@ -78,10 +86,11 @@ class Condition
      */
     public function and(?string $column = null)
     {
-        $this->nextLogic = 'AND';
-        $next = $this->nextCondition = static::for($column ?? $this->column);
-        $next->prevCondition = $this;
-        return $next;
+        $nextCond = static::for($column ?? $this->column);
+        $this->current->nextLogic = 'AND';
+        $this->current->nextCondition = $nextCond;
+        $this->current = $nextCond;
+        return $this;
     }
 
     /**
@@ -90,10 +99,11 @@ class Condition
      */
     public function or(?string $column = null)
     {
-        $this->nextLogic = 'OR';
-        $next = $this->nextCondition = static::for($column ?? $this->column);
-        $next->prevCondition = $this;
-        return $next;
+        $nextCond = static::for($column ?? $this->column);
+        $this->current->nextLogic = 'OR';
+        $this->current->nextCondition = $nextCond;
+        $this->current = $nextCond;
+        return $this;
     }
 
     /**
@@ -101,7 +111,7 @@ class Condition
      */
     protected function negate()
     {
-        $this->negated = true;
+        $this->current->negated = true;
         return $this;
     }
 
@@ -195,9 +205,10 @@ class Condition
      */
     public function equals($value)
     {
-        $this->negated = false;
-        $this->operator = '=';
+        $this->current->negated = false;
+        $this->current->operator = '=';
         $this->parameter($value);
+        $this->current->markAsDefined();
         return $this;
     }
 
@@ -215,9 +226,10 @@ class Condition
      */
     public function greaterThanOrEquals($value)
     {
-        $this->negated = false;
-        $this->operator = '>=';
+        $this->current->negated = false;
+        $this->current->operator = '>=';
         $this->parameter($value);
+        $this->current->markAsDefined();
         return $this;
     }
 
@@ -226,9 +238,10 @@ class Condition
      */
     public function greaterThan($value)
     {
-        $this->negated = false;
-        $this->operator = '>';
+        $this->current->negated = false;
+        $this->current->operator = '>';
         $this->parameter($value);
+        $this->current->markAsDefined();
         return $this;
     }
 
@@ -238,9 +251,10 @@ class Condition
      */
     public function lessThanOrEquals($value)
     {
-        $this->negated = false;
-        $this->operator = '<=';
+        $this->current->negated = false;
+        $this->current->operator = '<=';
         $this->parameter($value);
+        $this->current->markAsDefined();
         return $this;
     }
 
@@ -250,9 +264,10 @@ class Condition
      */
     public function lessThan($value)
     {
-        $this->negated = false;
-        $this->operator = '<';
+        $this->current->negated = false;
+        $this->current->operator = '<';
         $this->parameter($value);
+        $this->current->markAsDefined();
         return $this;
     }
 
@@ -262,9 +277,10 @@ class Condition
      */
     public function like(string $value)
     {
-        $this->negated = false;
-        $this->operator = 'LIKE';
+        $this->current->negated = false;
+        $this->current->operator = 'LIKE';
         $this->parameter($value);
+        $this->current->markAsDefined();
         return $this;
     }
 
@@ -283,14 +299,15 @@ class Condition
      */
     public function in($value)
     {
-        $this->negated = false;
-        $this->operator = 'IN';
+        $this->current->negated = false;
+        $this->current->operator = 'IN';
         if (is_iterable($value)) {
             $value = ($value instanceof Traversable) ? iterator_to_array($value) : (array)$value;
             $value = array_filter($value, static fn($s) => $s !== null);
             $value = array_unique($value);
         }
         $this->parameter($value);
+        $this->current->markAsDefined();
         return $this;
     }
 
@@ -310,9 +327,10 @@ class Condition
      */
     public function between($min, $max)
     {
-        $this->negated = false;
-        $this->operator = 'BETWEEN';
-        $this->parameters = [$min, $max];
+        $this->current->negated = false;
+        $this->current->operator = 'BETWEEN';
+        $this->current->parameters = [$min, $max];
+        $this->current->markAsDefined();
         return $this;
     }
 
@@ -332,9 +350,10 @@ class Condition
      */
     public function inRange(Range $range)
     {
-        $this->negated = false;
-        $this->operator = 'RANGE';
-        $this->parameters = $range;
+        $this->current->negated = false;
+        $this->current->operator = 'RANGE';
+        $this->current->parameters = $range;
+        $this->current->markAsDefined();
         return $this;
     }
 
@@ -354,11 +373,11 @@ class Condition
     public function parameter($value)
     {
         $value = is_array($value) ? $value : [$value];
-        $this->parameters = [];
+        $this->current->parameters = [];
         foreach ($value as $name => $binding) {
             is_string($name)
-                ? $this->parameters[$name] = $binding
-                : $this->parameters[] = $binding;
+                ? $this->current->parameters[$name] = $binding
+                : $this->current->parameters[] = $binding;
         }
         return $this;
     }
@@ -371,14 +390,12 @@ class Condition
     public function toSql(Formatter $formatter, ?string $table): string
     {
         $conds = [];
-        $firstCond = $this->firstCondtion();
-
-        $conds[] = $firstCond->buildCurrent($formatter, $table);
+        $conds[] = $this->buildCurrent($formatter, $table);
 
         // Dig through all chained clauses if exists
-        if ($firstCond->nextCondition !== null) {
-            $nextLogic = $firstCond->nextLogic;
-            $nextCond = $firstCond->nextCondition;
+        if ($this->nextCondition !== null) {
+            $nextLogic = $this->nextLogic;
+            $nextCond = $this->nextCondition;
             while ($nextCond !== null) {
                 $conds[]= $nextLogic.' '.$nextCond->buildCurrent($formatter, $table);
                 $nextLogic = $nextCond->nextLogic;
@@ -387,20 +404,6 @@ class Condition
         }
 
         return (count($conds) > 1) ? '('.implode(' ', $conds).')': $conds[0];
-    }
-
-    /**
-     * Go back up the chain and get the first condition.
-     *
-     * @return Condition
-     */
-    public function firstCondtion()
-    {
-        $curr = $this;
-        while ($curr->prevCondition !== null) {
-            $curr = $curr->prevCondition;
-        }
-        return $curr;
     }
 
     /**
@@ -475,13 +478,15 @@ class Condition
      */
     public function getBindings(): array
     {
-        $firstCond = $this->firstCondtion();
+        $bindings = $this->parameters;
 
-        $bindings = $firstCond->buildBindings();
+        if ($bindings instanceof Range) {
+            $bindings = $bindings->getBindings();
+        }
 
-        $nextCond = $firstCond->nextCondition;
+        $nextCond = $this->nextCondition;
         while ($nextCond !== null) {
-            foreach ($nextCond->buildBindings() as $name => $binding) {
+            foreach ($nextCond->getBindings() as $name => $binding) {
                 is_string($name)
                     ? $bindings[$name] = $binding
                     : $bindings[] = $binding;
@@ -493,16 +498,14 @@ class Condition
     }
 
     /**
-     * @return array
+     * @return $this
      */
-    protected function buildBindings()
+    protected function markAsDefined()
     {
-        $bindings = $this->parameters;
-
-        if ($bindings instanceof Range) {
-            $bindings = $bindings->getBindings();
+        if ($this->defined) {
+            throw new RuntimeException('Tried to set condition when it was already set!');
         }
-
-        return $bindings;
+        $this->defined = true;
+        return $this;
     }
 }

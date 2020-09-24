@@ -125,7 +125,7 @@ abstract class ConditonBuilder extends Builder
         $num = func_num_args();
 
         if ($num === 1 && ($column instanceof Condition)) {
-            return $column->firstCondtion();
+            return $column;
         }
 
         if ($num === 2) {
