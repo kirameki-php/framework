@@ -4,10 +4,9 @@ namespace Kirameki\Database\Query\Builders;
 
 use Kirameki\Database\Connection\Connection;
 use Kirameki\Database\Query\Statements\SelectStatement;
-use Kirameki\Database\Query\Condition;
 use Kirameki\Support\Collection;
 
-class SelectBuilder extends ConditonBuilder
+class SelectBuilder extends ConditonsBuilder
 {
     /**
      * @param Connection $connection

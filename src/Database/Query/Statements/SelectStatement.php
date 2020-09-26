@@ -2,7 +2,7 @@
 
 namespace Kirameki\Database\Query\Statements;
 
-use Kirameki\Database\Query\Condition;
+use Kirameki\Database\Query\Builders\Condition;
 
 class SelectStatement extends ConditionalStatement
 {

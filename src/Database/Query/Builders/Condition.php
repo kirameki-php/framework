@@ -1,9 +1,10 @@
 <?php
 
-namespace Kirameki\Database\Query;
+namespace Kirameki\Database\Query\Builders;
 
 use Kirameki\Database\Query\Builders\Builder;
 use Kirameki\Database\Query\Formatters\Formatter;
+use Kirameki\Database\Query\Support\Range;
 use Kirameki\Support\Concerns\Tappable;
 use RuntimeException;
 use Traversable;

@@ -5,7 +5,7 @@ namespace Kirameki\Database\Query\Builders;
 use Kirameki\Database\Connection\Connection;
 use Kirameki\Database\Query\Statements\UpdateStatement;
 
-class UpdateBuilder extends ConditonBuilder
+class UpdateBuilder extends ConditonsBuilder
 {
     /**
      * @param Connection $connection

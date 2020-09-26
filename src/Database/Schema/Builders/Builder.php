@@ -45,16 +45,11 @@ abstract class Builder
     }
 
     /**
-     * @return array
-     */
-    abstract public function inspect(): array;
-
-    /**
      * @return string
      */
     public function toSql(): string
     {
         $formatter = $this->connection->getQueryFormatter();
-        return $formatter->interpolate(...array_values($this->inspect()));
+        return $formatter->interpolate($this->statement);
     }
 }

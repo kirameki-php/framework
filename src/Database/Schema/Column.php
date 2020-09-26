@@ -8,6 +8,10 @@ class Column
 
     protected string $type;
 
+    protected ?int $size;
+
+    protected ?int $scale;
+
     protected ?bool $primaryKey;
 
     protected ?bool $nullable;
@@ -30,6 +34,23 @@ class Column
         $this->nullable = null;
         $this->autoIncrement = null;
         $this->comment = null;
+        $this->size = null;
+    }
+
+    /**
+     * @param int|null $size
+     * @return $this
+     */
+    public function size(?int $size)
+    {
+        $this->size = $size;
+        return $this;
+    }
+
+    public function scale(?int $scale)
+    {
+        $this->scale = $scale;
+        return $this;
     }
 
     /**

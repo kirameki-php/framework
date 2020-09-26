@@ -2,9 +2,9 @@
 
 namespace Kirameki\Tests\Database\Query\Builders;
 
-use Kirameki\Database\Query\Expr;
-use Kirameki\Database\Query\Range;
-use Kirameki\Database\Query\Condition;
+use Kirameki\Database\Query\Support\Expr;
+use Kirameki\Database\Query\Support\Range;
+use Kirameki\Database\Query\Builders\Condition;
 use Kirameki\Tests\Database\Query\QueryTestCase;
 
 class SelectBuilderTest extends QueryTestCase

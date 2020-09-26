@@ -5,7 +5,7 @@ namespace Kirameki\Database\Query\Builders;
 use Kirameki\Database\Connection\Connection;
 use Kirameki\Database\Query\Statements\DeleteStatement;
 
-class DeleteBuilder extends ConditonBuilder
+class DeleteBuilder extends ConditonsBuilder
 {
     /**
      * @param Connection $connection

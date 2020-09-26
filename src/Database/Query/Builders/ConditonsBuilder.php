@@ -2,12 +2,11 @@
 
 namespace Kirameki\Database\Query\Builders;
 
-use Kirameki\Database\Query\Range;
+use Kirameki\Database\Query\Support\Range;
 use Kirameki\Database\Query\Statements\ConditionalStatement;
-use Kirameki\Database\Query\Condition;
 use RuntimeException;
 
-abstract class ConditonBuilder extends Builder
+abstract class ConditonsBuilder extends Builder
 {
     /**
      * @var ConditionalStatement
