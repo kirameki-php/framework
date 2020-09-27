@@ -4,6 +4,7 @@ namespace Kirameki\Database\Schema\Builders;
 
 use Kirameki\Database\Connection\Connection;
 use Kirameki\Database\Schema\Statements\CreateTableStatement;
+use Kirameki\Database\Support\Expr;
 
 class CreateTableBuilder extends Builder
 {
@@ -139,11 +140,14 @@ class CreateTableBuilder extends Builder
         return $this->column($column, __FUNCTION__);
     }
 
+    /**
+     * @return ColumnAggregate
+     */
     public function timestamps()
     {
         return new ColumnAggregate([
-            $this->datetime('createdAt'),
-            $this->datetime('updatedAt'),
+            $this->datetime('createdAt')->default(Expr::raw('CURRENT_TIMESTAMP')),
+            $this->datetime('updatedAt')->default(Expr::raw('CURRENT_TIMESTAMP')),
         ]);
     }
 

@@ -3,7 +3,7 @@
 return [
     'connections' => [
         'userdata' => [
-            'driver' => 'mysql',
+            'adapter' => 'mysql',
             'host' => 'mysql',
         ],
     ],

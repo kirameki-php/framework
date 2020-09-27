@@ -17,7 +17,7 @@ class DatabaseManager
     /**
      * @var Closure[]
      */
-    protected array $drivers;
+    protected array $adapters;
 
     /**
      *
@@ -25,7 +25,7 @@ class DatabaseManager
     public function __construct()
     {
         $this->connections = [];
-        $this->drivers = [];
+        $this->adapters = [];
     }
 
     /**
@@ -38,7 +38,7 @@ class DatabaseManager
             return $this->connections[$name];
         }
         $config = config()->get('database.connections.'.$name);
-        $resolver = $this->getDriverResolver($config['driver']);
+        $resolver = $this->getAdapterResolver($config['adapter']);
         return $this->connections[$name] = $resolver($name, $config);
     }
 
@@ -47,26 +47,26 @@ class DatabaseManager
      * @param Closure $deferred
      * @return $this
      */
-    public function addDriver(string $name, Closure $deferred)
+    public function addAdapter(string $name, Closure $deferred)
     {
-        $this->drivers[$name] = $deferred;
+        $this->adapters[$name] = $deferred;
         return $this;
     }
 
     /**
-     * @param string $driver
+     * @param string $adapter
      * @return Closure
      */
-    protected function getDriverResolver(string $driver): Closure
+    protected function getAdapterResolver(string $adapter): Closure
     {
-        if (isset($this->drivers[$driver])) {
-            return $this->drivers[$driver];
+        if (isset($this->adapters[$adapter])) {
+            return $this->adapters[$adapter];
         }
 
-        switch ($driver) {
+        switch ($adapter) {
             case 'mysql': return fn(string $name, array $config) => new MySqlConnection($name, $config);
         }
 
-        throw new RuntimeException('Undefined driver: '.$driver);
+        throw new RuntimeException('Undefined adapter: '.$adapter);
     }
 }

@@ -2,9 +2,6 @@
 
 namespace Kirameki\Database\Schema\Builders;
 
-/**
- * @mixin Column
- */
 class ColumnAggregate
 {
     /**
@@ -21,14 +18,12 @@ class ColumnAggregate
     }
 
     /**
-     * @param string $method
-     * @param $args
      * @return $this
      */
-    public function __call(string $method, array $args)
+    public function notNull()
     {
         foreach ($this->columns as $column) {
-            $column->$method(...$args);
+            $column->notNull();
         }
         return $this;
     }
