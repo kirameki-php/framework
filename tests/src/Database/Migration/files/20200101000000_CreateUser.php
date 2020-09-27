@@ -10,6 +10,7 @@ class CreateUser extends Migration
         $this->on('userdata')->createTable('User')->tap(function(CreateTableBuilder $t) {
             $t->uuid('id')->primaryKey()->notNull();
             $t->string('name', 100)->default('Anonymous');
+            $t->timestamps();
         });
     }
 }

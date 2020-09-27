@@ -1,6 +1,6 @@
 <?php
 
-namespace Kirameki\Database\Query\Support;
+namespace Kirameki\Database\Support;
 
 class Expr
 {

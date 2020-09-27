@@ -4,7 +4,7 @@ namespace Kirameki\Database\Query\Formatters;
 
 use DateTimeInterface;
 use Kirameki\Database\Connection\Connection;
-use Kirameki\Database\Query\Support\Expr;
+use Kirameki\Database\Support\Expr;
 use Kirameki\Database\Query\Statements\BaseStatement;
 use Kirameki\Database\Query\Statements\ConditionalStatement;
 use Kirameki\Database\Query\Statements\DeleteStatement;

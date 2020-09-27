@@ -2,7 +2,7 @@
 
 namespace Kirameki\Tests\Database\Query\Builders;
 
-use Kirameki\Database\Query\Support\Expr;
+use Kirameki\Database\Support\Expr;
 use Kirameki\Database\Query\Support\Range;
 use Kirameki\Database\Query\Builders\Condition;
 use Kirameki\Tests\Database\Query\QueryTestCase;

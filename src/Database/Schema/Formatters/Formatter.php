@@ -4,7 +4,7 @@ namespace Kirameki\Database\Schema\Formatters;
 
 use DateTimeInterface;
 use Kirameki\Database\Connection\Connection;
-use Kirameki\Database\Query\Support\Expr;
+use Kirameki\Database\Support\Expr;
 use Kirameki\Database\Query\Statements\BaseStatement;
 use Kirameki\Database\Query\Statements\ConditionalStatement;
 use Kirameki\Database\Query\Statements\DeleteStatement;
@@ -113,6 +113,9 @@ class Formatter
 
     protected function value(string $type, $value)
     {
+        if ($value instanceof Expr) {
+            return $value->toString();
+        }
         if (is_string($value)) {
             return $this->stringLiteral($value);
         }
