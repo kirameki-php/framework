@@ -5,6 +5,7 @@ namespace Kirameki\Core;
 use Dotenv\Dotenv;
 use InvalidArgumentException;
 use Kirameki\Container\Container;
+use Kirameki\Database\DatabaseInitializer;
 use Kirameki\Exception\ExceptionInitializer;
 use Kirameki\Logging\LogInitializer;
 use Kirameki\Core\Config;
@@ -41,6 +42,7 @@ class Application extends Container
         $initializers = [
             new ExceptionInitializer,
             new LogInitializer,
+            new DatabaseInitializer,
         ];
         foreach ($initializers as $initializer) {
             $initializer->register($this);

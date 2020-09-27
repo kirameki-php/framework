@@ -8,7 +8,7 @@ use Kirameki\Database\Query\Builders\DeleteBuilder;
 use Kirameki\Database\Query\Builders\InsertBuilder;
 use Kirameki\Database\Query\Builders\SelectBuilder;
 use Kirameki\Database\Query\Builders\UpdateBuilder;
-use Kirameki\Database\Query\Formatters\Formatter;
+use Kirameki\Database\Query\Formatters\Formatter as QueryFormatter;
 use PDO;
 use PDOStatement;
 
@@ -17,7 +17,7 @@ use PDOStatement;
  */
 trait Queries
 {
-    protected ?Formatter $formatter;
+    protected ?QueryFormatter $queryFormatter;
 
     /**
      * @param mixed ...$columns
@@ -89,11 +89,11 @@ trait Queries
     }
 
     /**
-     * @return Formatter
+     * @return QueryFormatter
      */
     public function getQueryFormatter()
     {
-        return $this->formatter ??= new Formatter($this);
+        return $this->queryFormatter ??= new QueryFormatter($this);
     }
 
     /**

@@ -1,6 +1,6 @@
 <?php
 
-namespace Kirameki\Database\Schema;
+namespace Kirameki\Database\Schema\Builders;
 
 /**
  * @mixin Column

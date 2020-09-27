@@ -4,9 +4,13 @@ namespace Kirameki\Database\Schema\Builders;
 
 use Kirameki\Database\Connection\Connection;
 use Kirameki\Database\Query\Statements\BaseStatement;
+use Kirameki\Database\Schema\Formatters\Formatter;
+use Kirameki\Support\Concerns\Tappable;
 
 abstract class Builder
 {
+    use Tappable;
+
     /**
      * @var Connection
      */
@@ -45,11 +49,8 @@ abstract class Builder
     }
 
     /**
+     * @param Formatter $formatter
      * @return string
      */
-    public function toSql(): string
-    {
-        $formatter = $this->connection->getQueryFormatter();
-        return $formatter->interpolate($this->statement);
-    }
+    abstract public function toSql(): string;
 }

@@ -1,6 +1,7 @@
 <?php
 
 use Kirameki\Core\Application;
+use Kirameki\Database\DatabaseManager;
 use Kirameki\Support\Collection;
 use Kirameki\Core\Config;
 use Kirameki\Core\Env;
@@ -19,6 +20,11 @@ function collect(?iterable $items = null)
 function config(): Config
 {
     return app()->config();
+}
+
+function db(): DatabaseManager
+{
+    return app()->get(DatabaseManager::class);
 }
 
 function env(string $name)

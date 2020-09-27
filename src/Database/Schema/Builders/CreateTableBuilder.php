@@ -3,8 +3,6 @@
 namespace Kirameki\Database\Schema\Builders;
 
 use Kirameki\Database\Connection\Connection;
-use Kirameki\Database\Schema\Column;
-use Kirameki\Database\Schema\ColumnAggregate;
 use Kirameki\Database\Schema\Statements\CreateTableStatement;
 
 class CreateTableBuilder extends Builder
@@ -26,17 +24,25 @@ class CreateTableBuilder extends Builder
      */
     public function int(string $column, ?int $size = null)
     {
-        return $this->column($column, __FUNCTION__)->size($size);
+        return $this->sizeableColumn($column, __FUNCTION__, $size);
     }
 
     /**
      * @param string $column
-     * @param int|null $size
      * @return Column
      */
-    public function float(string $column, ?int $size = null)
+    public function float(string $column)
     {
-        return $this->column($column, __FUNCTION__)->size($size);
+        return $this->column($column, __FUNCTION__);
+    }
+
+    /**
+     * @param string $column
+     * @return Column
+     */
+    public function double(string $column)
+    {
+        return $this->column($column, __FUNCTION__);
     }
 
     /**
@@ -75,7 +81,7 @@ class CreateTableBuilder extends Builder
      */
     public function datetime(string $column, ?int $precision = null)
     {
-        return $this->column($column, __FUNCTION__)->size($precision);
+        return $this->sizeableColumn($column, __FUNCTION__, $precision);
     }
 
     /**
@@ -94,7 +100,7 @@ class CreateTableBuilder extends Builder
      */
     public function string(string $column, ?int $size = null)
     {
-        return $this->column($column, __FUNCTION__)->size($size);
+        return $this->sizeableColumn($column, __FUNCTION__, $size);
     }
 
     /**
@@ -146,10 +152,22 @@ class CreateTableBuilder extends Builder
      * @param string $type
      * @return Column
      */
-    protected function column(string $name, string $type)
+    public function column(string $name, string $type)
     {
         $this->statement->columns ??= [];
         return $this->statement->columns[] = new Column($name, $type);
+    }
+
+    /**
+     * @param string $name
+     * @param string $type
+     * @param int|null $size
+     * @return Column
+     */
+    protected function sizeableColumn(string $name, string $type, ?int $size)
+    {
+        $this->statement->columns ??= [];
+        return $this->statement->columns[] = Column::sizeable($name, $type, $size);
     }
 
     /**
@@ -161,6 +179,16 @@ class CreateTableBuilder extends Builder
      */
     public function scalableColumn(string $name, string $type, ?int $precision, ?int $scale)
     {
-        return $this->column($name, $type)->size($precision)->scale($scale);
+        $this->statement->columns ??= [];
+        return $this->statement->columns[] = Column::scalable($name, $type, $precision, $scale);
+    }
+
+    /**
+     * @return string
+     */
+    public function toSql(): string
+    {
+        $formatter = $this->connection->getSchemaFormatter();
+        return $formatter->statementForCreate($this->statement);
     }
 }

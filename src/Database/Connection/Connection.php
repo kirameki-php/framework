@@ -6,7 +6,8 @@ use PDO;
 
 abstract class Connection
 {
-    use Concerns\Queries;
+    use Concerns\Queries,
+        Concerns\Schemas;
 
     protected string $name;
 

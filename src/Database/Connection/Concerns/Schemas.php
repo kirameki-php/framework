@@ -3,19 +3,28 @@
 namespace Kirameki\Database\Connection\Concerns;
 
 use Kirameki\Database\Connection\Connection;
-use Kirameki\Database\Schema\Builders\CreateTableBuilder;
+use Kirameki\Database\Schema\Formatters\Formatter as SchemaFormatter;
 
 /**
  * @mixin Connection
  */
 trait Schemas
 {
+    protected ?SchemaFormatter $schemaFormatter;
+
     /**
-     * @param string $table
-     * @return CreateTableBuilder
+     * @return SchemaFormatter
      */
-    public function createTable(string $table)
+    public function getSchemaFormatter()
     {
-        return new CreateTableBuilder($this, $table);
+        return $this->schemaFormatter ??= new SchemaFormatter($this);
+    }
+
+    /**
+     * @param string $statement
+     */
+    public function execSchema(string $statement)
+    {
+        $this->getPdo()->exec($statement);
     }
 }

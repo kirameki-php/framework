@@ -32,7 +32,7 @@ class Config implements ArrayAccess
     public function get(string $key)
     {
         if (!str_contains($key, '.')) {
-            return $this->entries[$key];
+            return $this->entries[$key] ?? null;
         }
 
         $curr = &$this->entries;

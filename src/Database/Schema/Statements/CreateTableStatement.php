@@ -2,7 +2,7 @@
 
 namespace Kirameki\Database\Schema\Statements;
 
-use Kirameki\Database\Schema\Column;
+use Kirameki\Database\Schema\Builders\Column;
 
 class CreateTableStatement
 {
