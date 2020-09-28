@@ -2,9 +2,9 @@
 
 namespace Kirameki\Database\Query\Statements;
 
-use Kirameki\Database\Query\Builders\Condition;
+use Kirameki\Database\Query\Builders\ConditionBuilder;
 
-class SelectStatement extends ConditionalStatement
+class SelectStatement extends ConditionsStatement
 {
     /**
      * @var string[]|null
@@ -17,7 +17,7 @@ class SelectStatement extends ConditionalStatement
     public ?array $groupBy = null;
 
     /**
-     * @var Condition[]
+     * @var ConditionDefinition[]
      */
     public ?array $having = null;
 

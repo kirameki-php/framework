@@ -4,13 +4,16 @@ namespace Kirameki\Database\Query\Formatters;
 
 use DateTimeInterface;
 use Kirameki\Database\Connection\Connection;
+use Kirameki\Database\Query\Statements\ConditionDefinition;
+use Kirameki\Database\Query\Support\Range;
 use Kirameki\Database\Support\Expr;
 use Kirameki\Database\Query\Statements\BaseStatement;
-use Kirameki\Database\Query\Statements\ConditionalStatement;
+use Kirameki\Database\Query\Statements\ConditionsStatement;
 use Kirameki\Database\Query\Statements\DeleteStatement;
 use Kirameki\Database\Query\Statements\InsertStatement;
 use Kirameki\Database\Query\Statements\SelectStatement;
 use Kirameki\Database\Query\Statements\UpdateStatement;
+use RuntimeException;
 
 class Formatter
 {
@@ -161,10 +164,12 @@ class Formatter
      */
     public function interpolate(string $statement, array $bindings): string
     {
-        return preg_replace_callback('/\?\??/', function($matches) use (&$bindings) {
-            if ($matches[0] === '?') {
+        $remains = count($bindings);
+        return preg_replace_callback('/\?\??/', function($matches) use (&$bindings, &$remains) {
+            if ($matches[0] === '?' && $remains > 0) {
                 $current = current($bindings);
                 next($bindings);
+                $remains--;
                 if (is_null($current)) return 'NULL';
                 if (is_bool($current)) return $current ? 'TRUE' : 'FALSE';
                 if (is_string($current)) return $this->connection->getPdo()->quote($current);
@@ -230,16 +235,16 @@ class Formatter
     }
 
     /**
-     * @param ConditionalStatement $statement
+     * @param ConditionsStatement $statement
      * @return string
      */
-    public function conditions(ConditionalStatement $statement): string
+    public function conditions(ConditionsStatement $statement): string
     {
         $parts = [];
         if ($statement->where !== null) {
             $clause = [];
             foreach ($statement->where as $condition) {
-                $clause[] = $condition->toSql($this, $statement->tableAlias);
+                $clause[] = $this->condition($condition, $statement->tableAlias);
             }
             $parts[]= 'WHERE '.implode(' AND ', $clause);
         }
@@ -266,6 +271,104 @@ class Formatter
             $parts[]= 'OFFSET '.$statement->offset;
         }
         return implode(' ', $parts);
+    }
+
+    /**
+     * @param ConditionDefinition $def
+     * @param string|null $table
+     * @return string
+     */
+    public function condition(ConditionDefinition $def, ?string $table): string
+    {
+        $parts = [];
+        $parts[] = $this->conditionSegment($def, $table);
+
+        // Dig through all chained clauses if exists
+        if ($def->next !== null) {
+            $logic = $def->nextLogic;
+            while ($def = $def->next) {
+                $parts[]= $logic.' '.$this->conditionSegment($def, $table);
+                $logic = $def->nextLogic;
+            }
+        }
+
+        return (count($parts) > 1) ? '('.implode(' ', $parts).')': $parts[0];
+    }
+
+    /**
+     * @param ConditionDefinition $def
+     * @param string|null $table
+     * @return string
+     */
+    protected function conditionSegment(ConditionDefinition $def, ?string $table): string
+    {
+        // treat it as raw query
+        if ($def->column === null) {
+            return (string) $def->parameters;
+        }
+
+        $column = $this->columnName($def->column, $table);
+        $operator = $def->operator;
+        $negated = $def->negated;
+        $value = $def->parameters;
+
+        if ($operator === null) {
+            return $column.' '.$value;
+        }
+
+        if ($operator === '=') {
+            if ($value === null) {
+                $expr = $negated ? 'IS NOT NULL' : 'IS NULL';
+                return $column.' '.$expr;
+            }
+            $operator = $negated ? '!'.$operator : $operator;
+            return $column.' '.$operator.' '.$this->bindName();
+        }
+
+        if ($operator === 'IN') {
+            if (empty($value)) return '1 = 0';
+            $operator = $negated ? 'NOT '.$operator : $operator;
+            $bindNames = [];
+            for($i = 0, $size = count($value); $i < $size; $i++) {
+                $bindNames[] = $this->bindName();
+            }
+            return $column.' '.$operator.' ('.implode(', ', $bindNames).')';
+        }
+
+        if ($operator === 'BETWEEN') {
+            $operator = $negated ? 'NOT '.$operator : $operator;
+            return $column.' '.$operator.' '.$this->bindName().' AND '.$this->bindName();
+        }
+
+        if ($operator === 'LIKE') {
+            $operator = $negated ? 'NOT '.$operator : $operator;
+            return $column.' '.$operator.' '.$this->bindName();
+        }
+
+        if ($operator === 'RANGE' && $value instanceof Range) {
+            $lowerOperator = $negated
+                ? ($value->lowerClosed ? '<' : '<=')
+                : ($value->lowerClosed ? '>=' : '>');
+            $upperOperator = $negated
+                ? ($value->upperClosed ? '>' : '>=')
+                : ($value->upperClosed ? '<=' : '<');
+            $expr = $column.' '.$lowerOperator.' '.$this->bindName();
+            $expr.= $negated ? ' OR ' : ' AND ';
+            $expr.= $column.' '.$upperOperator.' '.$this->bindName();
+            return $expr;
+        }
+
+        // ">", ">=", "<", "<=" and raw cannot be negated
+        if ($negated) {
+            // TODO needs better exception
+            throw new RuntimeException("Negation not valid for '$operator'");
+        }
+
+        if (count($value) > 1) {
+            throw new RuntimeException(count($value).' parameters for condition detected where only 1 is expected.');
+        }
+
+        return $column.' '.$operator.' '.$this->bindName();
     }
 
     /**
@@ -310,16 +413,24 @@ class Formatter
     }
 
     /**
-     * @param ConditionalStatement $statement
+     * @param ConditionsStatement $statement
      * @return array
      */
-    protected function bindingsForCondition(ConditionalStatement $statement): array
+    protected function bindingsForCondition(ConditionsStatement $statement): array
     {
         $bindings = [];
         if ($statement->where !== null) {
-            foreach ($statement->where as $where) {
-                foreach($where->getBindings() as $binding) {
-                    $bindings[] = $binding;
+            foreach ($statement->where as $cond) {
+                while ($cond !== null) {
+                    $parameters = ($cond->parameters instanceof Range)
+                        ? $cond->parameters->getBounds()
+                        : $cond->parameters;
+                    foreach ($parameters as $name => $binding) {
+                        is_string($name)
+                            ? $bindings[$name] = $binding
+                            : $bindings[] = $binding;
+                    }
+                    $cond = $cond->next;
                 }
             }
         }

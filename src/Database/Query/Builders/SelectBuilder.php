@@ -3,6 +3,7 @@
 namespace Kirameki\Database\Query\Builders;
 
 use Kirameki\Database\Connection\Connection;
+use Kirameki\Database\Query\Statements\ConditionDefinition;
 use Kirameki\Database\Query\Statements\SelectStatement;
 use Kirameki\Support\Collection;
 
@@ -203,10 +204,10 @@ class SelectBuilder extends ConditonsBuilder
     }
 
     /**
-     * @param Condition $condition
+     * @param ConditionDefinition $condition
      * @return $this
      */
-    protected function addHavingCondition(Condition $condition)
+    protected function addHavingCondition(ConditionDefinition $condition)
     {
         $this->statement->having ??= [];
         $this->statement->having[] = $condition;

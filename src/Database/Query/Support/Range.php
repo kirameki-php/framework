@@ -89,32 +89,9 @@ class Range
     }
 
     /**
-     * @param Formatter $formatter
-     * @param string $column
-     * @param bool $negated
-     * @return string
-     */
-    public function toSql(Formatter $formatter, string $column, bool $negated = false): string
-    {
-        $lowerOperator = $negated
-            ? ($this->lowerClosed ? '<' : '<=')
-            : ($this->lowerClosed ? '>=' : '>');
-
-        $upperOperator = $negated
-            ? ($this->upperClosed ? '>' : '>=')
-            : ($this->upperClosed ? '<=' : '<');
-
-        $expr = $column.' '.$lowerOperator.' '.$formatter->bindName();
-        $expr.= $negated ? ' OR ' : ' AND ';
-        $expr.= $column.' '.$upperOperator.' '.$formatter->bindName();
-
-        return $expr;
-    }
-
-    /**
      * @return array
      */
-    public function getBindings()
+    public function getBounds()
     {
         return [
             $this->lowerBound,

@@ -2,14 +2,15 @@
 
 namespace Kirameki\Database\Query\Builders;
 
+use Kirameki\Database\Query\Statements\ConditionDefinition;
 use Kirameki\Database\Query\Support\Range;
-use Kirameki\Database\Query\Statements\ConditionalStatement;
+use Kirameki\Database\Query\Statements\ConditionsStatement;
 use RuntimeException;
 
 abstract class ConditonsBuilder extends Builder
 {
     /**
-     * @var ConditionalStatement
+     * @var ConditionsStatement
      */
     protected $statement;
 
@@ -40,7 +41,7 @@ abstract class ConditonsBuilder extends Builder
      */
     public function whereRaw(string $raw)
     {
-        return $this->addWhereCondition(Condition::raw($raw));
+        return $this->addWhereCondition(ConditionBuilder::raw($raw)->getDefinition());
     }
 
     /**
@@ -114,28 +115,25 @@ abstract class ConditonsBuilder extends Builder
     }
 
     /**
-     * @param $column
+     * @param string|ConditionBuilder $column
      * @param mixed|null $operator
      * @param mixed|null $value
-     * @return Condition
+     * @return ConditionDefinition
      */
-    protected function buildCondition($column, $operator = null, $value = null): Condition
+    protected function buildCondition($column, $operator = null, $value = null): ConditionDefinition
     {
         $num = func_num_args();
-
-        if ($num === 1 && ($column instanceof Condition)) {
-            return $column;
+        if ($num === 1) {
+            return $column->getDefinition();
         }
-
         if ($num === 2) {
-            if (is_callable($operator)) return Condition::for($column)->tap($operator);
-            if (is_iterable($operator)) return Condition::for($column)->in($operator);
-            if ($operator instanceof Range) return Condition::for($column)->inRange($operator);
-            return Condition::for($column)->equals($operator);
+            if (is_callable($operator)) return ConditionBuilder::for($column)->tap($operator)->getDefinition();
+            if (is_iterable($operator)) return ConditionBuilder::for($column)->in($operator)->getDefinition();
+            if ($operator instanceof Range) return ConditionBuilder::for($column)->inRange($operator)->getDefinition();
+            return ConditionBuilder::for($column)->equals($operator)->getDefinition();
         }
-
         if ($num === 3) {
-            return Condition::for($column)->with($operator, $value);
+            return ConditionBuilder::for($column)->with($operator, $value)->getDefinition();
         }
 
         throw new RuntimeException('Invalid number of arguments. expected: 1~3. '.$num.' given.');
@@ -144,23 +142,23 @@ abstract class ConditonsBuilder extends Builder
     /**
      * @param $column
      * @param mixed|null $value
-     * @return Condition
+     * @return ConditionDefinition
      */
-    protected function buildNotCondition(string $column, $value): Condition
+    protected function buildNotCondition(string $column, $value): ConditionDefinition
     {
-        if (is_array($value)) return Condition::for($column)->notIn($value);
-        if ($value instanceof Range) return Condition::for($column)->notInRange($value);
-        return Condition::for($column)->notEquals($value);
+        if (is_array($value)) return ConditionBuilder::for($column)->notIn($value)->getDefinition();
+        if ($value instanceof Range) return ConditionBuilder::for($column)->notInRange($value)->getDefinition();
+        return ConditionBuilder::for($column)->notEquals($value)->getDefinition();
     }
 
     /**
-     * @param Condition $condition
+     * @param ConditionDefinition $definition
      * @return $this
      */
-    protected function addWhereCondition(Condition $condition)
+    protected function addWhereCondition(ConditionDefinition $definition)
     {
         $this->statement->where ??= [];
-        $this->statement->where[] = $condition;
+        $this->statement->where[] = $definition;
         return $this;
     }
 }

@@ -2,9 +2,10 @@
 
 namespace Kirameki\Tests\Database\Query\Builders;
 
+use Kirameki\Database\Query\Statements\ConditionDefinition;
 use Kirameki\Database\Support\Expr;
 use Kirameki\Database\Query\Support\Range;
-use Kirameki\Database\Query\Builders\Condition;
+use Kirameki\Database\Query\Builders\ConditionBuilder;
 use Kirameki\Tests\Database\Query\QueryTestCase;
 
 class SelectBuilderTest extends QueryTestCase
@@ -41,7 +42,7 @@ class SelectBuilderTest extends QueryTestCase
 
     public function testWhere_WithTwoArgs()
     {
-        $sql = $this->selectBuilder()->table('User')->where('id', fn(Condition $w) => $w->equals(1))->toSql();
+        $sql = $this->selectBuilder()->table('User')->where('id', fn(ConditionBuilder $w) => $w->equals(1))->toSql();
         static::assertEquals("SELECT * FROM `User` WHERE `id` = 1", $sql);
 
         $sql = $this->selectBuilder()->table('User')->where('id', [3, 4])->toSql();
@@ -69,7 +70,7 @@ class SelectBuilderTest extends QueryTestCase
     public function testWhere_Combined()
     {
         $sql = $this->selectBuilder()->table('User')
-            ->where('id', fn(Condition $w) => $w->lessThan(1)->or()->equals(3))
+            ->where('id', fn(ConditionBuilder $w) => $w->lessThan(1)->or()->equals(3))
             ->whereNot('id', -1)
             ->toSql();
         static::assertEquals("SELECT * FROM `User` WHERE (`id` < 1 OR `id` = 3) AND `id` != -1", $sql);
@@ -119,7 +120,7 @@ class SelectBuilderTest extends QueryTestCase
 
     public function testClone()
     {
-        $where = Condition::for('id')->eq(1)->or('id')->eq(2);
+        $where = ConditionBuilder::for('id')->eq(1)->or('id')->eq(2);
         $base = $this->selectBuilder()->table('User')->where($where);
         $copy = clone $base;
         $where->or()->in([3,4]); // change $base but should not be reflected on copy

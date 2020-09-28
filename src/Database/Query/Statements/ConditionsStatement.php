@@ -2,12 +2,10 @@
 
 namespace Kirameki\Database\Query\Statements;
 
-use Kirameki\Database\Query\Builders\Condition;
-
-abstract class ConditionalStatement extends BaseStatement
+abstract class ConditionsStatement extends BaseStatement
 {
     /**
-     * @var Condition[]
+     * @var ConditionDefinition[]
      */
     public ?array $where = null;
 

@@ -2,6 +2,6 @@
 
 namespace Kirameki\Database\Query\Statements;
 
-class DeleteStatement extends ConditionalStatement
+class DeleteStatement extends ConditionsStatement
 {
 }
