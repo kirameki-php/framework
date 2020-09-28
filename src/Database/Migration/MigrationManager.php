@@ -3,6 +3,7 @@
 namespace Kirameki\Database\Migration;
 
 use DateTime;
+use Kirameki\Support\Arr;
 
 class MigrationManager
 {
@@ -36,9 +37,9 @@ class MigrationManager
         $ddls = [];
         foreach ($this->readMigrations($since) as $migration) {
             $migration->up();
-            $ddls[] = $migration->toDdl();
+            $ddls[] = $migration->toDdls();
         }
-        return $ddls;
+        return Arr::flatten($ddls);
     }
 
     /**

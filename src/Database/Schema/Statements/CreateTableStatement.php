@@ -3,6 +3,7 @@
 namespace Kirameki\Database\Schema\Statements;
 
 use Kirameki\Database\Schema\Builders\Column;
+use Kirameki\Database\Schema\Builders\CreateIndexBuilder;
 
 class CreateTableStatement
 {
@@ -12,9 +13,14 @@ class CreateTableStatement
     public string $table;
 
     /**
-     * @var Column[]
+     * @var ColumnDefinition[]
      */
     public array $columns;
+
+    /**
+     * @var CreateIndexStatement[]
+     */
+    public array $indexes;
 
     /**
      * @param string $table
@@ -22,5 +28,7 @@ class CreateTableStatement
     public function __construct(string $table)
     {
         $this->table = $table;
+        $this->columns = [];
+        $this->indexes = [];
     }
 }

@@ -23,6 +23,7 @@ abstract class Builder
 
     /**
      * Do a deep clone of object types
+     *
      * @return void
      */
     public function __clone()
@@ -49,8 +50,7 @@ abstract class Builder
     }
 
     /**
-     * @param Formatter $formatter
-     * @return string
+     * @return string[]
      */
-    abstract public function toSql(): string;
+    abstract public function toDdls(): array;
 }

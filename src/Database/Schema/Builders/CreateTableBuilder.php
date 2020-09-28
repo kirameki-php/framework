@@ -3,6 +3,8 @@
 namespace Kirameki\Database\Schema\Builders;
 
 use Kirameki\Database\Connection\Connection;
+use Kirameki\Database\Schema\Statements\ColumnDefinition;
+use Kirameki\Database\Schema\Statements\CreateIndexStatement;
 use Kirameki\Database\Schema\Statements\CreateTableStatement;
 use Kirameki\Database\Support\Expr;
 
@@ -158,8 +160,23 @@ class CreateTableBuilder extends Builder
      */
     public function column(string $name, string $type)
     {
+        $definition = new ColumnDefinition($name, $type);
         $this->statement->columns ??= [];
-        return $this->statement->columns[] = new Column($name, $type);
+        $this->statement->columns[] = $definition;
+        return new Column($definition);
+    }
+
+    /**
+     * @param string ...$columns
+     * @return CreateIndexBuilder
+     */
+    public function index(string ...$columns)
+    {
+        $this->statement->indexes ??= [];
+        $statement = new CreateIndexStatement($this->statement->table, $columns);
+        $builders = new CreateIndexBuilder($this->connection, $statement);
+        $this->statement->indexes[] = $statement;
+        return $builders;
     }
 
     /**
@@ -170,8 +187,11 @@ class CreateTableBuilder extends Builder
      */
     protected function sizeableColumn(string $name, string $type, ?int $size)
     {
+        $definition = new ColumnDefinition($name, $type);
+        $definition->size = $size;
         $this->statement->columns ??= [];
-        return $this->statement->columns[] = Column::sizeable($name, $type, $size);
+        $this->statement->columns[] = $definition;
+        return new Column($definition);
     }
 
     /**
@@ -183,16 +203,25 @@ class CreateTableBuilder extends Builder
      */
     public function scalableColumn(string $name, string $type, ?int $precision, ?int $scale)
     {
+        $definition = new ColumnDefinition($name, $type);
+        $definition->size = $precision;
+        $definition->scale = $scale;
         $this->statement->columns ??= [];
-        return $this->statement->columns[] = Column::scalable($name, $type, $precision, $scale);
+        $this->statement->columns[] = $definition;
+        return new Column($definition);
     }
 
     /**
-     * @return string
+     * @return string[]
      */
-    public function toSql(): string
+    public function toDdls(): array
     {
         $formatter = $this->connection->getSchemaFormatter();
-        return $formatter->statementForCreate($this->statement);
+        $ddls = [];
+        $ddls[] = $formatter->statementForCreateTable($this->statement);
+        foreach ($this->statement->indexes as $indexStatement) {
+            $ddls[] = $formatter->statementForCreateIndex($indexStatement);
+        }
+        return $ddls;
     }
 }

@@ -5,10 +5,16 @@ namespace Kirameki\Database\Migration;
 use DateTime;
 use Kirameki\Database\Connection\Connection;
 use Kirameki\Database\Schema\Builders\Builder;
+use Kirameki\Database\Schema\Builders\CreateIndexBuilder;
 use Kirameki\Database\Schema\Builders\CreateTableBuilder;
+use Kirameki\Database\Schema\Statements\CreateIndexStatement;
+use Kirameki\Support\Arr;
+use Kirameki\Support\Concerns\Tappable;
 
 abstract class Migration
 {
+    use Tappable;
+
     /**
      * @var string|null
      */
@@ -65,12 +71,11 @@ abstract class Migration
     }
 
     /**
-     * @return string
+     * @return string[]
      */
-    public function toDdl()
+    public function toDdls()
     {
-        $defs = array_map(fn(Builder $b) => $b->toSql(), $this->builders);
-        return implode(PHP_EOL, $defs);
+        return Arr::flatMap($this->builders, fn(Builder $b) => $b->toDdls());
     }
 
     /**
@@ -78,7 +83,7 @@ abstract class Migration
      */
     public function apply()
     {
-        $this->connection->query($this->toDdl());
+        $this->connection->query(implode(PHP_EOL, $this->toDdls()));
     }
 
     /**
@@ -88,5 +93,17 @@ abstract class Migration
     public function createTable(string $table): CreateTableBuilder
     {
         return $this->builders[]= new CreateTableBuilder($this->connection, $table);
+    }
+
+    /**
+     * @param string $table
+     * @param string|string[] $columns
+     * @return CreateIndexBuilder
+     */
+    public function createIndex(string $table, $columns): CreateIndexBuilder
+    {
+        $statement = new CreateIndexStatement($table, Arr::wrap($columns));
+        $builder = new CreateIndexBuilder($this->connection, $statement);
+        return $this->builders[]= $builder;
     }
 }
