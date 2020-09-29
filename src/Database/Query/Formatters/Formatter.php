@@ -3,7 +3,6 @@
 namespace Kirameki\Database\Query\Formatters;
 
 use DateTimeInterface;
-use Kirameki\Database\Connection\Connection;
 use Kirameki\Database\Query\Statements\ConditionDefinition;
 use Kirameki\Database\Query\Support\Range;
 use Kirameki\Database\Support\Expr;
@@ -17,17 +16,7 @@ use RuntimeException;
 
 class Formatter
 {
-    protected Connection $connection;
-
     protected string $quote = '`';
-
-    /**
-     * @param Connection $connection
-     */
-    public function __construct(Connection $connection)
-    {
-        $this->connection = $connection;
-    }
 
     /**
      * @param SelectStatement $statement
@@ -172,7 +161,7 @@ class Formatter
                 $remains--;
                 if (is_null($current)) return 'NULL';
                 if (is_bool($current)) return $current ? 'TRUE' : 'FALSE';
-                if (is_string($current)) return $this->connection->getPdo()->quote($current);
+                if (is_string($current)) return $this->stringLiteral($current);
                 return $this->parameter($current);
             }
             return $matches[0];
@@ -447,5 +436,14 @@ class Formatter
         $quoted.= str_replace($this->quote, $this->quote.$this->quote, $text);
         $quoted.= $this->quote;
         return $quoted;
+    }
+
+    /**
+     * @param string $str
+     * @return string
+     */
+    protected function stringLiteral(string $str)
+    {
+        return "'".str_replace("'", "''", $str)."'";
     }
 }

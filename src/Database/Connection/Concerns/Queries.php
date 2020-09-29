@@ -93,7 +93,7 @@ trait Queries
      */
     public function getQueryFormatter()
     {
-        return $this->queryFormatter ??= new QueryFormatter($this);
+        return $this->queryFormatter ??= new QueryFormatter();
     }
 
     /**

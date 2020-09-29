@@ -17,7 +17,7 @@ trait Schemas
      */
     public function getSchemaFormatter()
     {
-        return $this->schemaFormatter ??= new SchemaFormatter($this);
+        return $this->schemaFormatter ??= new SchemaFormatter();
     }
 
     /**

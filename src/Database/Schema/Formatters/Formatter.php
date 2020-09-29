@@ -2,7 +2,6 @@
 
 namespace Kirameki\Database\Schema\Formatters;
 
-use Kirameki\Database\Connection\Connection;
 use Kirameki\Database\Schema\Statements\CreateIndexStatement;
 use Kirameki\Database\Support\Expr;
 use Kirameki\Database\Schema\Statements\ColumnDefinition;
@@ -11,17 +10,10 @@ use Kirameki\Support\Arr;
 
 class Formatter
 {
-    protected Connection $connection;
-
-    protected string $quote = '`';
-
     /**
-     * @param Connection $connection
+     * @var string
      */
-    public function __construct(Connection $connection)
-    {
-        $this->connection = $connection;
-    }
+    protected string $quote = '`';
 
     /**
      * @param CreateTableStatement $statement
@@ -99,7 +91,7 @@ class Formatter
      * @param int|null $scale
      * @return string
      */
-    protected function columnType(string $type, ?int $size, ?int $scale)
+    protected function columnType(string $type, ?int $size, ?int $scale): string
     {
         if ($type === 'int') {
             if ($size === null) return 'BIGINT';
@@ -129,7 +121,7 @@ class Formatter
      * @param string $text
      * @return string
      */
-    protected function addQuotes(string $text)
+    protected function addQuotes(string $text): string
     {
         $quoted = $this->quote;
         $quoted.= str_replace($this->quote, $this->quote.$this->quote, $text);
@@ -137,7 +129,12 @@ class Formatter
         return $quoted;
     }
 
-    protected function value(string $type, $value)
+    /**
+     * @param string $type
+     * @param $value
+     * @return string
+     */
+    protected function value(string $type, $value): string
     {
         if ($value instanceof Expr) {
             return $value->toString();
@@ -152,7 +149,7 @@ class Formatter
      * @param string $str
      * @return string
      */
-    protected function stringLiteral(string $str)
+    protected function stringLiteral(string $str): string
     {
         return "'".str_replace("'", "''", $str)."'";
     }
