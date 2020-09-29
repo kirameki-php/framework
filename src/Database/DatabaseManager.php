@@ -3,8 +3,9 @@
 namespace Kirameki\Database;
 
 use Closure;
+use Kirameki\Database\Connection\Adapters\MySqlAdapter;
+use Kirameki\Database\Connection\Adapters\SqliteAdapter;
 use Kirameki\Database\Connection\Connection;
-use Kirameki\Database\Connection\MySqlConnection;
 use RuntimeException;
 
 class DatabaseManager
@@ -37,9 +38,13 @@ class DatabaseManager
         if(isset($this->connections[$name])) {
             return $this->connections[$name];
         }
+
         $config = config()->get('database.connections.'.$name);
+        $config['connection'] = $name;
+
         $resolver = $this->getAdapterResolver($config['adapter']);
-        return $this->connections[$name] = $resolver($name, $config);
+        $adapter = $resolver($config);
+        return $this->connections[$name] = new Connection($name);
     }
 
     /**
@@ -59,14 +64,22 @@ class DatabaseManager
      */
     protected function getAdapterResolver(string $adapter): Closure
     {
-        if (isset($this->adapters[$adapter])) {
-            return $this->adapters[$adapter];
+        if (!isset($this->adapters[$adapter])) {
+            $this->addAdapter($adapter, $this->getDefaultAdapterResolver($adapter));
         }
+        return $this->adapters[$adapter];
+    }
 
+    /**
+     * @param string $adapter
+     * @return Closure
+     */
+    protected function getDefaultAdapterResolver(string $adapter): Closure
+    {
         switch ($adapter) {
-            case 'mysql': return fn(string $name, array $config) => new MySqlConnection($name, $config);
+            case 'mysql' : return fn(array $config) => new MySqlAdapter($config);
+            case 'sqlite': return fn(array $config) => new SqliteAdapter($config);
         }
-
         throw new RuntimeException('Undefined adapter: '.$adapter);
     }
 }
