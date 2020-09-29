@@ -6,7 +6,7 @@ use Kirameki\Database\Connection\Connection;
 use Kirameki\Database\Query\Statements\InsertStatement;
 use Traversable;
 
-class InsertBuilder extends Builder
+class InsertBuilder extends StatementBuilder
 {
     /**
      * @param Connection $connection

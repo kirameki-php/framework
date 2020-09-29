@@ -7,7 +7,7 @@ use Kirameki\Database\Query\Support\Range;
 use Kirameki\Database\Query\Statements\ConditionsStatement;
 use RuntimeException;
 
-abstract class ConditonsBuilder extends Builder
+abstract class ConditonsBuilder extends StatementBuilder
 {
     /**
      * @var ConditionsStatement

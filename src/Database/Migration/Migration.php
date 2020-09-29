@@ -4,7 +4,7 @@ namespace Kirameki\Database\Migration;
 
 use DateTime;
 use Kirameki\Database\Connection\Connection;
-use Kirameki\Database\Schema\Builders\Builder;
+use Kirameki\Database\Schema\Builders\StatementBuilder;
 use Kirameki\Database\Schema\Builders\CreateIndexBuilder;
 use Kirameki\Database\Schema\Builders\CreateTableBuilder;
 use Kirameki\Database\Schema\Statements\CreateIndexStatement;
@@ -21,7 +21,7 @@ abstract class Migration
     protected ?string $time;
 
     /**
-     * @var Builder[]
+     * @var StatementBuilder[]
      */
     protected array $builders;
 
@@ -63,7 +63,7 @@ abstract class Migration
     }
 
     /**
-     * @return Builder[]
+     * @return StatementBuilder[]
      */
     public function getBuilders(): array
     {
@@ -75,7 +75,7 @@ abstract class Migration
      */
     public function toDdls()
     {
-        return Arr::flatMap($this->builders, fn(Builder $b) => $b->toDdls());
+        return Arr::flatMap($this->builders, fn(StatementBuilder $b) => $b->toDdls());
     }
 
     /**

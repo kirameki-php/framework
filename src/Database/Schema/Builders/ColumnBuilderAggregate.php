@@ -2,10 +2,10 @@
 
 namespace Kirameki\Database\Schema\Builders;
 
-class ColumnAggregate
+class ColumnBuilderAggregate
 {
     /**
-     * @var Column[]
+     * @var ColumnBuilder[]
      */
     public array $columns;
 

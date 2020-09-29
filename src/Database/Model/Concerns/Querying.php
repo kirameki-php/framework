@@ -3,7 +3,7 @@
 namespace Kirameki\Database\Model\Concerns;
 
 use Kirameki\Database\Model\Model;
-use Kirameki\Database\Query\Builders\Builder as BaseBuilder;
+use Kirameki\Database\Query\Builders\StatementBuilder as BaseBuilder;
 
 /**
  * @mixin Model

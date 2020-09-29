@@ -8,7 +8,7 @@ use Kirameki\Database\Schema\Statements\CreateIndexStatement;
 use Kirameki\Database\Schema\Statements\CreateTableStatement;
 use Kirameki\Database\Support\Expr;
 
-class CreateTableBuilder extends Builder
+class CreateTableBuilder extends StatementBuilder
 {
     /**
      * @param Connection $connection
@@ -23,7 +23,7 @@ class CreateTableBuilder extends Builder
     /**
      * @param string $column
      * @param int|null $size
-     * @return Column
+     * @return ColumnBuilder
      */
     public function int(string $column, ?int $size = null)
     {
@@ -32,7 +32,7 @@ class CreateTableBuilder extends Builder
 
     /**
      * @param string $column
-     * @return Column
+     * @return ColumnBuilder
      */
     public function float(string $column)
     {
@@ -41,7 +41,7 @@ class CreateTableBuilder extends Builder
 
     /**
      * @param string $column
-     * @return Column
+     * @return ColumnBuilder
      */
     public function double(string $column)
     {
@@ -52,7 +52,7 @@ class CreateTableBuilder extends Builder
      * @param string $column
      * @param int|null $precision
      * @param int|null $scale
-     * @return Column
+     * @return ColumnBuilder
      */
     public function decimal(string $column, ?int $precision = null, ?int $scale = null)
     {
@@ -61,7 +61,7 @@ class CreateTableBuilder extends Builder
 
     /**
      * @param string $column
-     * @return Column
+     * @return ColumnBuilder
      */
     public function bool(string $column)
     {
@@ -70,7 +70,7 @@ class CreateTableBuilder extends Builder
 
     /**
      * @param string $column
-     * @return Column
+     * @return ColumnBuilder
      */
     public function date(string $column)
     {
@@ -80,7 +80,7 @@ class CreateTableBuilder extends Builder
     /**
      * @param string $column
      * @param int|null $precision
-     * @return Column
+     * @return ColumnBuilder
      */
     public function datetime(string $column, ?int $precision = null)
     {
@@ -89,7 +89,7 @@ class CreateTableBuilder extends Builder
 
     /**
      * @param string $column
-     * @return Column
+     * @return ColumnBuilder
      */
     public function time(string $column)
     {
@@ -99,7 +99,7 @@ class CreateTableBuilder extends Builder
     /**
      * @param string $column
      * @param int|null $size
-     * @return Column
+     * @return ColumnBuilder
      */
     public function string(string $column, ?int $size = null)
     {
@@ -108,7 +108,7 @@ class CreateTableBuilder extends Builder
 
     /**
      * @param string $column
-     * @return Column
+     * @return ColumnBuilder
      */
     public function text(string $column)
     {
@@ -117,7 +117,7 @@ class CreateTableBuilder extends Builder
 
     /**
      * @param string $column
-     * @return Column
+     * @return ColumnBuilder
      */
     public function json(string $column)
     {
@@ -126,7 +126,7 @@ class CreateTableBuilder extends Builder
 
     /**
      * @param string $column
-     * @return Column
+     * @return ColumnBuilder
      */
     public function binary(string $column)
     {
@@ -135,7 +135,7 @@ class CreateTableBuilder extends Builder
 
     /**
      * @param string $column
-     * @return Column
+     * @return ColumnBuilder
      */
     public function uuid(string $column)
     {
@@ -143,11 +143,11 @@ class CreateTableBuilder extends Builder
     }
 
     /**
-     * @return ColumnAggregate
+     * @return ColumnBuilderAggregate
      */
     public function timestamps()
     {
-        return new ColumnAggregate([
+        return new ColumnBuilderAggregate([
             $this->datetime('createdAt')->default(Expr::raw('CURRENT_TIMESTAMP')),
             $this->datetime('updatedAt')->default(Expr::raw('CURRENT_TIMESTAMP')),
         ]);
@@ -156,14 +156,14 @@ class CreateTableBuilder extends Builder
     /**
      * @param string $name
      * @param string $type
-     * @return Column
+     * @return ColumnBuilder
      */
     public function column(string $name, string $type)
     {
         $definition = new ColumnDefinition($name, $type);
         $this->statement->columns ??= [];
         $this->statement->columns[] = $definition;
-        return new Column($definition);
+        return new ColumnBuilder($definition);
     }
 
     /**
@@ -183,7 +183,7 @@ class CreateTableBuilder extends Builder
      * @param string $name
      * @param string $type
      * @param int|null $size
-     * @return Column
+     * @return ColumnBuilder
      */
     protected function sizeableColumn(string $name, string $type, ?int $size)
     {
@@ -191,7 +191,7 @@ class CreateTableBuilder extends Builder
         $definition->size = $size;
         $this->statement->columns ??= [];
         $this->statement->columns[] = $definition;
-        return new Column($definition);
+        return new ColumnBuilder($definition);
     }
 
     /**
@@ -199,7 +199,7 @@ class CreateTableBuilder extends Builder
      * @param string $type
      * @param int|null $precision
      * @param int|null $scale
-     * @return Column
+     * @return ColumnBuilder
      */
     public function scalableColumn(string $name, string $type, ?int $precision, ?int $scale)
     {
@@ -208,7 +208,7 @@ class CreateTableBuilder extends Builder
         $definition->scale = $scale;
         $this->statement->columns ??= [];
         $this->statement->columns[] = $definition;
-        return new Column($definition);
+        return new ColumnBuilder($definition);
     }
 
     /**

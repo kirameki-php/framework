@@ -1,16 +1,12 @@
 <?php
 
-namespace Kirameki\Database\Schema\Builders;
+namespace Kirameki\Database\Query\Builders;
 
 use Kirameki\Database\Connection\Connection;
 use Kirameki\Database\Query\Statements\BaseStatement;
-use Kirameki\Database\Schema\Formatters\Formatter;
-use Kirameki\Support\Concerns\Tappable;
 
-abstract class Builder
+abstract class StatementBuilder
 {
-    use Tappable;
-
     /**
      * @var Connection
      */
@@ -23,7 +19,6 @@ abstract class Builder
 
     /**
      * Do a deep clone of object types
-     *
      * @return void
      */
     public function __clone()
@@ -33,11 +28,13 @@ abstract class Builder
 
     /**
      * @param string $table
+     * @param string|null $as
      * @return $this
      */
-    public function table(string $table)
+    public function table(string $table, ?string $as = null)
     {
         $this->statement->table = $table;
+        $this->statement->tableAlias = $as;
         return $this;
     }
 
@@ -50,7 +47,16 @@ abstract class Builder
     }
 
     /**
-     * @return string[]
+     * @return array
      */
-    abstract public function toDdls(): array;
+    abstract public function inspect(): array;
+
+    /**
+     * @return string
+     */
+    public function toSql(): string
+    {
+        $formatter = $this->connection->getQueryFormatter();
+        return $formatter->interpolate(...array_values($this->inspect()));
+    }
 }

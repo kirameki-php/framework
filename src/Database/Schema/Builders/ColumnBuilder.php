@@ -4,7 +4,7 @@ namespace Kirameki\Database\Schema\Builders;
 
 use Kirameki\Database\Schema\Statements\ColumnDefinition;
 
-class Column
+class ColumnBuilder
 {
     /**
      * @var ColumnDefinition

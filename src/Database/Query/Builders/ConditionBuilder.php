@@ -286,7 +286,7 @@ class ConditionBuilder
     }
 
     /**
-     * @param Builder|iterable $value
+     * @param StatementBuilder|iterable $value
      * @return $this
      */
     public function in($value)
