@@ -2,6 +2,8 @@
 
 namespace Kirameki\Support;
 
+use RuntimeException;
+use Traversable;
 
 class Arr
 {
@@ -51,7 +53,13 @@ class Arr
      */
     public static function from(iterable $iterable)
     {
-        return is_array($iterable) ? $iterable : iterator_to_array($iterable);
+        if (is_array($iterable)) {
+            return $iterable;
+        }
+        if ($iterable instanceof Traversable) {
+            return iterator_to_array($iterable);
+        }
+        throw new RuntimeException('Unknown type:'.get_class($iterable));
     }
 
     /**
