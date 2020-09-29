@@ -98,6 +98,14 @@ class Application extends Container
         return $path;
     }
 
+    public function getStoragePath(string $relPath = null): string
+    {
+        if ($relPath !== null) {
+            $relPath.= '/'.ltrim($relPath, '/');
+        }
+        return $this->getBasePath('/storage/'.$relPath);
+    }
+
     public function startTime(): float
     {
         return $this->startTime;

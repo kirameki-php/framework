@@ -2,6 +2,7 @@
 
 namespace Kirameki\Database\Connection;
 
+use Kirameki\Database\Connection\Drivers\Driver;
 use PDO;
 
 abstract class Connection
@@ -9,20 +10,24 @@ abstract class Connection
     use Concerns\Queries,
         Concerns\Schemas;
 
+    /**
+     * @var string
+     */
     protected string $name;
 
-    protected array $config;
-
-    protected ?PDO $pdo;
+    /**
+     * @var Driver
+     */
+    protected Driver $driver;
 
     /**
      * @param string $name
-     * @param array $config
+     * @param Driver $driver
      */
-    public function __construct(string $name, array $config)
+    public function __construct(string $name, Driver $driver)
     {
         $this->name = $name;
-        $this->config = $config;
+        $this->driver = $driver;
     }
 
     /**
@@ -38,18 +43,7 @@ abstract class Connection
      */
     public function getConfig(): array
     {
-        return $this->config;
-    }
-
-    /**
-     * @return PDO
-     */
-    public function getPdo()
-    {
-        if ($this->pdo === null) {
-            $this->connect();
-        }
-        return $this->pdo;
+        return $this->driver->getConfig();
     }
 
     /**
@@ -65,11 +59,26 @@ abstract class Connection
     /**
      * @return $this
      */
-    abstract public function connect();
-
+    public function connect()
+    {
+        $this->driver->connect();
+        return $this;
+    }
 
     /**
      * @return $this
      */
-    abstract public function disconnect();
+    public function disconnect()
+    {
+        $this->driver->disconnect();
+        return $this;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isConnected(): bool
+    {
+        return $this->driver->isConnected();
+    }
 }

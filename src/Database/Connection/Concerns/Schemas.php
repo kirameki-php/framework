@@ -10,21 +10,19 @@ use Kirameki\Database\Schema\Formatters\Formatter as SchemaFormatter;
  */
 trait Schemas
 {
-    protected ?SchemaFormatter $schemaFormatter;
-
     /**
      * @return SchemaFormatter
      */
-    public function getSchemaFormatter()
+    public function getSchemaFormatter(): SchemaFormatter
     {
-        return $this->schemaFormatter ??= new SchemaFormatter();
+        return $this->driver->getSchemaFormatter();
     }
 
     /**
      * @param string $statement
      */
-    public function execSchema(string $statement)
+    public function execSchema(string $statement): void
     {
-        $this->getPdo()->exec($statement);
+        $this->driver->execute($statement);
     }
 }
