@@ -69,6 +69,28 @@ class Arr
     }
 
     /**
+     * @param array $arr
+     * @return array
+     */
+    public static function shuffle(array $arr)
+    {
+        $copy = $arr;
+        shuffle($copy);
+        return $copy;
+    }
+
+    /**
+     * @param array $arr
+     * @param string|null $namespace
+     * @return string
+     */
+    public static function toUrlQuery(array $arr, ?string $namespace = null)
+    {
+        $data = $namespace !== null ? [$namespace => $arr] : $arr;
+        return http_build_query($data, '&', PHP_QUERY_RFC3986);
+    }
+
+    /**
      * @param $value
      * @return array
      */
