@@ -2,7 +2,7 @@
 
 namespace Kirameki\Database\Query\Builders;
 
-use Kirameki\Database\Connection\Connection;
+use Kirameki\Database\Connection;
 use Kirameki\Database\Query\Statements\DeleteStatement;
 
 class DeleteBuilder extends ConditonsBuilder

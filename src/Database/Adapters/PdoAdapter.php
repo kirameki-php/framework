@@ -1,58 +1,67 @@
 <?php
 
-namespace Kirameki\Database\Connection\Concerns;
+namespace Kirameki\Database\Adapters;
 
 use Generator;
-use Kirameki\Database\Connection\Connection;
-use Kirameki\Database\Query\Builders\DeleteBuilder;
-use Kirameki\Database\Query\Builders\InsertBuilder;
-use Kirameki\Database\Query\Builders\SelectBuilder;
-use Kirameki\Database\Query\Builders\UpdateBuilder;
+use Kirameki\Database\Connection;
 use Kirameki\Database\Query\Formatters\Formatter as QueryFormatter;
+use Kirameki\Database\Schema\Formatters\Formatter as SchemaFormatter;
 use PDO;
 use PDOStatement;
 
 /**
  * @mixin Connection
  */
-trait Queries
+abstract class PdoAdapter implements AdapterInterface
 {
-    protected ?QueryFormatter $queryFormatter;
+    /**
+     * @var PDO|null
+     */
+    protected ?PDO $pdo = null;
 
     /**
-     * @param mixed ...$columns
-     * @return SelectBuilder
+     * @var array
      */
-    public function select(...$columns)
+    protected array $config;
+
+    /**
+     * @param array $config
+     */
+    public function __construct(array $config)
     {
-        return (new SelectBuilder($this))->columns($columns);
+        $this->config = $config;
     }
 
     /**
-     * @param string $table
-     * @return InsertBuilder
+     * @return array
      */
-    public function insertInto(string $table)
+    public function getConfig(): array
     {
-        return (new InsertBuilder($this))->table($table);
+        return $this->config;
     }
 
     /**
-     * @param string $table
-     * @return UpdateBuilder
+     * @return bool
      */
-    public function update(string $table)
+    public function isConnected(): bool
     {
-        return (new UpdateBuilder($this))->table($table);
+        return $this->pdo !== null;
     }
 
     /**
-     * @param string $table
-     * @return DeleteBuilder
+     * @return QueryFormatter
      */
-    public function delete(string $table)
+    public function getQueryFormatter(): QueryFormatter
     {
-        return (new DeleteBuilder($this))->table($table);
+        return new QueryFormatter();
+    }
+
+    /**
+     * @return SchemaFormatter
+     */
+    public function getSchemaFormatter(): SchemaFormatter
+    {
+        return new SchemaFormatter();
     }
 
     /**
@@ -70,7 +79,7 @@ trait Queries
      * @param array|null $bindings
      * @return int
      */
-    public function affectingQuery(string $statement, ?array $bindings = null)
+    public function affectingQuery(string $statement, ?array $bindings = null): int
     {
         return $this->execQuery($statement, $bindings)->rowCount();
     }
@@ -89,11 +98,11 @@ trait Queries
     }
 
     /**
-     * @return QueryFormatter
+     * @param string $statement
      */
-    public function getQueryFormatter()
+    public function execute(string $statement): void
     {
-        return $this->queryFormatter ??= new QueryFormatter();
+        $this->getPdo()->exec($statement);
     }
 
     /**
@@ -103,25 +112,16 @@ trait Queries
      */
     protected function execQuery(string $statement, ?array $bindings): PDOStatement
     {
-        $prepared = $this->prepare($statement);
+        $prepared = $this->getPdo()->prepare($statement)($statement);
         $prepared->execute($this->prepareBindings($bindings ?? []));
         return $prepared;
-    }
-
-    /**
-     * @param string $statement
-     * @return PDOStatement
-     */
-    protected function prepare(string $statement): PDOStatement
-    {
-        return $this->getPdo()->prepare($statement);
     }
 
     /**
      * @param array $bindings
      * @return array
      */
-    protected function prepareBindings(array $bindings)
+    protected function prepareBindings(array $bindings): array
     {
         $formatter = $this->getQueryFormatter();
         $prepared = [];
@@ -129,5 +129,16 @@ trait Queries
             $prepared[$name] = $formatter->parameter($binding);
         }
         return $prepared;
+    }
+
+    /**
+     * @return PDO
+     */
+    protected function getPdo(): PDO
+    {
+        if ($this->pdo === null) {
+            $this->connect();
+        }
+        return $this->pdo;
     }
 }

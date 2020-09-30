@@ -2,7 +2,7 @@
 
 namespace Kirameki\Database\Schema\Builders;
 
-use Kirameki\Database\Connection\Connection;
+use Kirameki\Database\Connection;
 use Kirameki\Database\Schema\Statements\CreateIndexStatement;
 
 class CreateIndexBuilder extends StatementBuilder

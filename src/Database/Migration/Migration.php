@@ -3,7 +3,7 @@
 namespace Kirameki\Database\Migration;
 
 use DateTime;
-use Kirameki\Database\Connection\Connection;
+use Kirameki\Database\Connection;
 use Kirameki\Database\Schema\Builders\StatementBuilder;
 use Kirameki\Database\Schema\Builders\CreateIndexBuilder;
 use Kirameki\Database\Schema\Builders\CreateTableBuilder;

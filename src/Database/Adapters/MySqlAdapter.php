@@ -1,17 +1,17 @@
 <?php
 
-namespace Kirameki\Database\Connection\Drivers;
+namespace Kirameki\Database\Adapters;
 
 use PDO;
 
-class MySqlDriver extends PdoDriver
+class MySqlAdapter extends PdoAdapter
 {
     /**
      * @return $this
      */
     public function connect()
     {
-        $config = $this->getConfig();
+        $config = $this->config;
         if (isset($config['socket'])) {
             $hostOrSocket = 'unix_socket='.$config['socket'];
         } else {

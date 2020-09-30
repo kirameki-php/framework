@@ -2,7 +2,7 @@
 
 namespace Kirameki\Database\Query\Builders;
 
-use Kirameki\Database\Connection\Connection;
+use Kirameki\Database\Connection;
 use Kirameki\Database\Query\Statements\ConditionDefinition;
 use Kirameki\Database\Query\Statements\SelectStatement;
 use Kirameki\Support\Collection;

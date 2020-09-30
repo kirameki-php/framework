@@ -2,7 +2,7 @@
 
 namespace Kirameki\Database\Schema\Builders;
 
-use Kirameki\Database\Connection\Connection;
+use Kirameki\Database\Connection;
 use Kirameki\Database\Query\Statements\BaseStatement;
 use Kirameki\Database\Schema\Formatters\Formatter;
 use Kirameki\Support\Concerns\Tappable;

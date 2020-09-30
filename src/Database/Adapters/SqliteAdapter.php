@@ -1,19 +1,19 @@
 <?php
 
-namespace Kirameki\Database\Connection;
+namespace Kirameki\Database\Adapters;
 
 use PDO;
 
-class SqliteConnection extends Connection
+class SqliteAdapter extends PdoAdapter
 {
     /**
      * @return $this
      */
     public function connect()
     {
-        $config = $this->getConfig();
-        $path = $config['path'] ?? app()->getBasePath('storage/'.$this->getName().'.db');
-        $dsn = "sqlite:{$path}";
+        $config = $this->config;
+        $path = $config['path'] ?? app()->getStoragePath($config['connection'].'.db');
+        $dsn = 'sqlite:'.$path;
         $options = $config['options'] ?? [];
         $options+= [
             PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
