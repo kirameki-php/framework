@@ -7,8 +7,6 @@ use Countable;
 use Generator;
 use IteratorAggregate;
 use JsonSerializable;
-use RuntimeException;
-use Traversable;
 
 abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializable
 {
@@ -131,13 +129,7 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
      */
     public function countBy(callable $condition): int
     {
-        $counter = 0;
-        foreach ($this->items as $key => $item) {
-            if (Assert::isTrue($condition($item, $key))) {
-                $counter++;
-            }
-        }
-        return $counter;
+        return Arr::countBy($this->items, $condition);
     }
 
     /**
@@ -241,7 +233,7 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
     /**
      * @param callable $callback
      */
-    public function each(callable $callback)
+    public function each(callable $callback): void
     {
         Arr::each($this->items, $callback);
     }
@@ -250,7 +242,7 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
      * @param int $size
      * @param callable $callback
      */
-    public function eachChunk(int $size, callable $callback)
+    public function eachChunk(int $size, callable $callback): void
     {
         $count = $size;
         $chunk = $this->newInstance();
@@ -271,7 +263,7 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
     /**
      * @param callable $callback
      */
-    public function eachWithIndex(callable $callback)
+    public function eachWithIndex(callable $callback): void
     {
         Arr::eachWithIndex($this->items, $callback);
     }
@@ -304,15 +296,7 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
      */
     public function filter(callable $condition = null)
     {
-        $condition ??= static fn($item, $key) => !empty($item);
-        $values = [];
-        foreach ($this->items as $key => $item) {
-            $result = $condition($item, $key);
-            if (Assert::isTrue($result)) {
-                $values[$key] = $item;
-            }
-        }
-        return $this->newInstance($values);
+        return $this->newInstance(Arr::filter($this->items, $condition));
     }
 
     /**
@@ -321,12 +305,7 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
      */
     public function first(callable $condition = null)
     {
-        foreach ($this->items as $key => $item) {
-            if ($condition === null || Assert::isTrue($condition($item, $key))) {
-                return $item;
-            }
-        }
-        return null;
+        return Arr::first($this->items, $condition);
     }
 
     /**
@@ -335,14 +314,7 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
      */
     public function firstIndex(callable $condition): ?int
     {
-        $count = 0;
-        foreach ($this->items as $key => $item) {
-            if (Assert::isTrue($condition($item, $key))) {
-                return $count;
-            }
-            $count++;
-        }
-        return null;
+        return Arr::firstIndex($this->items, $condition);
     }
 
     /**
@@ -351,12 +323,7 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
      */
     public function firstKey(callable $condition = null)
     {
-        foreach ($this->items as $key => $item) {
-            if ($condition === null || Assert::isTrue($condition($item, $key))) {
-                return $key;
-            }
-        }
-        return null;
+        return Arr::firstKey($this->items, $condition);
     }
 
     /**
@@ -499,16 +466,7 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
      */
     public function last(callable $condition = null)
     {
-        $copy = $this->toArray();
-        if ($condition === null) {
-            return end($copy);
-        }
-        foreach (array_reverse($copy, true) as $key => $item) {
-            if (Assert::isTrue($condition($item, $key))) {
-                return $item;
-            }
-        }
-        return null;
+        return Arr::last($this->items, $condition);
     }
 
     /**
@@ -517,15 +475,7 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
      */
     public function lastIndex(callable $condition): ?int
     {
-        $copy = $this->toArray();
-        $count = 0;
-        foreach (array_reverse($copy) as $key => $item) {
-            if (Assert::isTrue($condition($item, $key))) {
-                return $count;
-            }
-            $count++;
-        }
-        return null;
+        return Arr::lastIndex($this->items, $condition);
     }
 
     /**
@@ -534,17 +484,7 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
      */
     public function lastKey(callable $condition = null)
     {
-        $copy = $this->toArray();
-        if ($condition === null) {
-            return array_key_last($copy);
-        }
-
-        foreach(array_reverse($copy, true) as $key => $item) {
-            if (Assert::isTrue($condition($item, $key))) {
-                return $key;
-            }
-        }
-        return null;
+        return Arr::lastKey($this->items, $condition);
     }
 
     /**

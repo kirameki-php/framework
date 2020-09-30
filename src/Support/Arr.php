@@ -18,6 +18,22 @@ class Arr
 
     /**
      * @param iterable $iterable
+     * @param callable $condition
+     * @return int
+     */
+    public static function countBy(iterable $iterable, callable $condition): int
+    {
+        $counter = 0;
+        foreach ($iterable as $key => $item) {
+            if (Assert::isTrue($condition($item, $key))) {
+                $counter++;
+            }
+        }
+        return $counter;
+    }
+
+    /**
+     * @param iterable $iterable
      * @param callable $callback
      */
     public static function each(iterable $iterable, callable $callback): void
@@ -38,6 +54,71 @@ class Arr
             $callback($item, $key, $offset);
             $offset++;
         }
+    }
+
+    /**
+     * @param iterable $iterable
+     * @param callable|null $condition
+     * @return array
+     */
+    public static function filter(iterable $iterable, ?callable $condition = null): array
+    {
+        $condition ??= static fn($item, $key) => !empty($item);
+        $values = [];
+        foreach ($iterable as $key => $item) {
+            $result = $condition($item, $key);
+            if (Assert::isTrue($result)) {
+                $values[$key] = $item;
+            }
+        }
+        return $values;
+    }
+
+    /**
+     * @param iterable $iterable
+     * @param callable|null $condition
+     * @return mixed|null
+     */
+    public static function first(iterable $iterable, ?callable $condition = null)
+    {
+        foreach ($iterable as $key => $item) {
+            if ($condition === null || Assert::isTrue($condition($item, $key))) {
+                return $item;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * @param iterable $iterable
+     * @param callable $condition
+     * @return int|null
+     */
+    public static function firstIndex(iterable $iterable, callable $condition): ?int
+    {
+        $count = 0;
+        foreach ($iterable as $key => $item) {
+            if (Assert::isTrue($condition($item, $key))) {
+                return $count;
+            }
+            $count++;
+        }
+        return null;
+    }
+
+    /**
+     * @param iterable $iterable
+     * @param callable|null $condition
+     * @return int|string|null
+     */
+    public static function firstKey(iterable $iterable, ?callable $condition = null)
+    {
+        foreach ($iterable as $key => $item) {
+            if ($condition === null || Assert::isTrue($condition($item, $key))) {
+                return $key;
+            }
+        }
+        return null;
     }
 
     /**
@@ -124,6 +205,65 @@ class Arr
             }
         }
         return true;
+    }
+
+    /**
+     * @param iterable $iterable
+     * @param callable|null $condition
+     * @return mixed|null
+     */
+    public static function last(iterable $iterable, ?callable $condition = null)
+    {
+        $copy = static::from($iterable);
+        if ($condition === null) {
+            return end($copy);
+        }
+        foreach (array_reverse($copy, true) as $key => $item) {
+            if (Assert::isTrue($condition($item, $key))) {
+                return $item;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * @param iterable $iterable
+     * @param callable $condition
+     * @return int|null
+     */
+    public static function lastIndex(iterable $iterable, callable $condition): ?int
+    {
+        $copy = static::from($iterable);
+        $count = count($copy) - 1;
+        foreach (array_reverse($copy) as $key => $item) {
+            $count--;
+            if (Assert::isTrue($condition($item, $key))) {
+                return $count;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * @param iterable $iterable
+     * @param callable|null $condition
+     * @return int|string|null
+     */
+    public static function lastKey(iterable $iterable, ?callable $condition = null)
+    {
+        $copy = static::from($iterable);
+
+        if ($condition === null) {
+            return array_key_last($copy);
+        }
+
+        foreach(array_reverse($copy, true) as $key => $item) {
+            if (Assert::isTrue($condition($item, $key))) {
+                return $key;
+            }
+        }
+
+        return null;
     }
 
     /**
