@@ -3,6 +3,7 @@
 namespace Kirameki\Database\Schema\Formatters;
 
 use Kirameki\Database\Schema\Statements\CreateIndexStatement;
+use Kirameki\Database\Schema\Statements\Statement;
 use Kirameki\Database\Support\Expr;
 use Kirameki\Database\Schema\Statements\ColumnDefinition;
 use Kirameki\Database\Schema\Statements\CreateTableStatement;
@@ -33,6 +34,15 @@ class Formatter
     }
 
     /**
+     * @param Statement $statement
+     * @return string
+     */
+    public function statementForDropTable(Statement $statement): string
+    {
+        return 'DROP TABLE '.$statement->table.';';
+    }
+
+    /**
      * @param CreateIndexStatement $statement
      * @return string
      */
@@ -49,9 +59,7 @@ class Formatter
             $parts[] = 'UNIQUE';
         }
         $parts[]= 'INDEX';
-        $parts[]= $statement->name === null
-            ? implode('_', array_merge([$statement->table], $columnParts))
-            : $statement->name;
+        $parts[]= $statement->name ?? implode('_', array_merge([$statement->table], $columnParts));
         $parts[]= 'ON';
         $parts[]= $statement->table;
         $parts[] = '('.implode(', ', $columnParts).')';

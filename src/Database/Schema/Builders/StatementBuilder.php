@@ -3,8 +3,7 @@
 namespace Kirameki\Database\Schema\Builders;
 
 use Kirameki\Database\Connection;
-use Kirameki\Database\Query\Statements\BaseStatement;
-use Kirameki\Database\Schema\Formatters\Formatter;
+use Kirameki\Database\Schema\Statements\Statement;
 use Kirameki\Support\Concerns\Tappable;
 
 abstract class StatementBuilder
@@ -14,10 +13,10 @@ abstract class StatementBuilder
     /**
      * @var Connection
      */
-    protected $connection;
+    protected Connection $connection;
 
     /**
-     * @var BaseStatement
+     * @var Statement
      */
     protected $statement;
 
@@ -29,16 +28,6 @@ abstract class StatementBuilder
     public function __clone()
     {
         $this->statement = clone $this->statement;
-    }
-
-    /**
-     * @param string $table
-     * @return $this
-     */
-    public function table(string $table)
-    {
-        $this->statement->table = $table;
-        return $this;
     }
 
     /**

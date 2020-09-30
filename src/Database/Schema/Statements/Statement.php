@@ -5,25 +5,18 @@ namespace Kirameki\Database\Schema\Statements;
 use Kirameki\Database\Schema\Builders\ColumnBuilder;
 use Kirameki\Database\Schema\Builders\CreateIndexBuilder;
 
-class CreateTableStatement extends Statement
+class Statement
 {
     /**
-     * @var ColumnDefinition[]
+     * @var string
      */
-    public array $columns;
-
-    /**
-     * @var CreateIndexStatement[]
-     */
-    public array $indexes;
+    public string $table;
 
     /**
      * @param string $table
      */
     public function __construct(string $table)
     {
-        parent::__construct($table);
-        $this->columns = [];
-        $this->indexes = [];
+        $this->table = $table;
     }
 }

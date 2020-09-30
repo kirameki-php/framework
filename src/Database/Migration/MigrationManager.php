@@ -23,7 +23,7 @@ class MigrationManager
     /**
      * @param DateTime|null $since
      */
-    public function up(?DateTime $since = null)
+    public function up(?DateTime $since = null): void
     {
         foreach ($this->readMigrations($since) as $migration) {
             $migration->up();
@@ -34,7 +34,7 @@ class MigrationManager
     /**
      * @param DateTime|null $since
      */
-    public function down(?DateTime $since = null)
+    public function down(?DateTime $since = null): void
     {
         foreach ($this->readMigrations($since) as $migration) {
             $migration->down();

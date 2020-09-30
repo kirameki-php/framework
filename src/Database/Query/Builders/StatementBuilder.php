@@ -10,7 +10,7 @@ abstract class StatementBuilder
     /**
      * @var Connection
      */
-    protected $connection;
+    protected Connection $connection;
 
     /**
      * @var BaseStatement
