@@ -75,7 +75,7 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
      */
     public function compact()
     {
-        return $this->filter(static fn($item) => $item !== null);
+        return $this->newInstance(Arr::compact($this->items));
     }
 
     /**
@@ -86,7 +86,7 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
     {
         $call = is_callable($value) ? $value : static fn($item) => $item === $value;
         foreach ($this->items as $key => $item) {
-            if (static::isTrue($call($item, $key))) {
+            if (Assert::isTrue($call($item, $key))) {
                 return true;
             }
         }
@@ -133,7 +133,7 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
     {
         $counter = 0;
         foreach ($this->items as $key => $item) {
-            if (static::isTrue($condition($item, $key))) {
+            if (Assert::isTrue($condition($item, $key))) {
                 $counter++;
             }
         }
@@ -243,9 +243,7 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
      */
     public function each(callable $callback)
     {
-        foreach ($this->items as $key => $item) {
-            $callback($item, $key);
-        }
+        Arr::each($this->items, $callback);
     }
 
     /**
@@ -275,11 +273,7 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
      */
     public function eachWithIndex(callable $callback)
     {
-        $offset = 0;
-        foreach ($this->items as $key => $item) {
-            $callback($item, $key, $offset);
-            $offset++;
-        }
+        Arr::eachWithIndex($this->items, $callback);
     }
 
     /**
@@ -314,7 +308,7 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
         $values = [];
         foreach ($this->items as $key => $item) {
             $result = $condition($item, $key);
-            if (static::isTrue($result)) {
+            if (Assert::isTrue($result)) {
                 $values[$key] = $item;
             }
         }
@@ -328,7 +322,7 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
     public function first(callable $condition = null)
     {
         foreach ($this->items as $key => $item) {
-            if ($condition === null || static::isTrue($condition($item, $key))) {
+            if ($condition === null || Assert::isTrue($condition($item, $key))) {
                 return $item;
             }
         }
@@ -343,7 +337,7 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
     {
         $count = 0;
         foreach ($this->items as $key => $item) {
-            if (static::isTrue($condition($item, $key))) {
+            if (Assert::isTrue($condition($item, $key))) {
                 return $count;
             }
             $count++;
@@ -358,7 +352,7 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
     public function firstKey(callable $condition = null)
     {
         foreach ($this->items as $key => $item) {
-            if ($condition === null || static::isTrue($condition($item, $key))) {
+            if ($condition === null || Assert::isTrue($condition($item, $key))) {
                 return $key;
             }
         }
@@ -367,11 +361,12 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
 
     /**
      * @param callable $callable
+     * @param int|null $depth
      * @return static
      */
-    public function flatMap(callable $callable)
+    public function flatMap(callable $callable, int $depth = null)
     {
-        return $this->map($callable)->flatten();
+        return $this->map($callable)->flatten($depth);
     }
 
     /**
@@ -380,18 +375,7 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
      */
     public function flatten(int $depth = PHP_INT_MAX)
     {
-        $results = [];
-        $func = static function($values, int $depth) use (&$func, &$results) {
-            foreach ($values as $value) {
-                if (!is_iterable($value) || $depth === 0) {
-                    $results[] = $value;
-                } else {
-                    $func($value, $depth - 1);
-                }
-            }
-        };
-        $func($this->items, $depth);
-        return $this->newInstance($results);
+        return $this->newInstance(Arr::flatten($this->items, $depth));
     }
 
     /**
@@ -424,7 +408,7 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
      */
     public function implode(string $glue, ?string $prefix = null, ?string $suffix = null): string
     {
-        return $prefix.implode($glue, $this->toArray()).$suffix;
+        return Arr::implode($this->items, $glue, $prefix, $suffix);
     }
 
     /**
@@ -450,12 +434,7 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
      */
     public function isAssoc(): bool
     {
-        foreach($this->items as $key => $value) {
-            if (!is_string($key)) {
-                return false;
-            }
-        }
-        return true;
+        return Arr::isAssoc($this->items);
     }
 
     /**
@@ -479,12 +458,7 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
      */
     public function isSequential(): bool
     {
-        foreach($this->items as $key => $value) {
-            if (!is_int($key)) {
-                return false;
-            }
-        }
-        return true;
+        return Arr::isSequential($this->items);
     }
 
     /**
@@ -530,7 +504,7 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
             return end($copy);
         }
         foreach (array_reverse($copy, true) as $key => $item) {
-            if (static::isTrue($condition($item, $key))) {
+            if (Assert::isTrue($condition($item, $key))) {
                 return $item;
             }
         }
@@ -546,7 +520,7 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
         $copy = $this->toArray();
         $count = 0;
         foreach (array_reverse($copy) as $key => $item) {
-            if (static::isTrue($condition($item, $key))) {
+            if (Assert::isTrue($condition($item, $key))) {
                 return $count;
             }
             $count++;
@@ -566,7 +540,7 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
         }
 
         foreach(array_reverse($copy, true) as $key => $item) {
-            if (static::isTrue($condition($item, $key))) {
+            if (Assert::isTrue($condition($item, $key))) {
                 return $key;
             }
         }
@@ -579,11 +553,7 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
      */
     public function map(callable $callback)
     {
-        $values = [];
-        foreach ($this->items as $key => $item) {
-            $values[] = $callback($item, $key);
-        }
-        return $this->newInstance($values);
+        return $this->newInstance(Arr::map($this->items, $callback));
     }
 
     /**
@@ -715,7 +685,7 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
      */
     public function sample()
     {
-        return $this->toArray()[array_rand($this->toArray())];
+        return Arr::sample($this->items);
     }
 
     /**
@@ -725,7 +695,7 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
     public function satisfyAll(callable $condition): bool
     {
         foreach ($this->items as $item) {
-            if (static::isFalse($condition($item))) {
+            if (Assert::isFalse($condition($item))) {
                 return false;
             }
         }
@@ -746,9 +716,7 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
      */
     public function shuffle()
     {
-        $copy = $this->toArray();
-        shuffle($copy);
-        return $this->newInstance($copy);
+        return $this->newInstance(Arr::shuffle($this->items));
     }
 
     /**
@@ -911,10 +879,7 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
      */
     public function toUrlQuery(?string $namespace = null): string
     {
-        $data = $namespace !== null
-            ? [$namespace => $this->toArray()]
-            : $this->toArray();
-        return http_build_query($data, '&', PHP_QUERY_RFC3986);
+        return Arr::toUrlQuery($this->items, $namespace);
     }
 
     /**
@@ -940,13 +905,7 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
      */
     protected function asArray(iterable $items): array
     {
-        if (is_array($items)) {
-            return $items;
-        }
-        if ($items instanceof Traversable) {
-            return iterator_to_array($items);
-        }
-        throw new RuntimeException('Unknown type:'.get_class($items));
+        return Arr::from($items);
     }
 
     /**
@@ -965,39 +924,6 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
     protected static function isNotDottedKey($key): bool
     {
         return !static::isDottedKey($key);
-    }
-
-    /**
-     * @param $value
-     * @return bool
-     */
-    protected static function isTrue($value): bool
-    {
-        return static::boolCheck($value, true);
-    }
-
-    /**
-     * @param $value
-     * @return bool
-     */
-    protected static function isFalse($value): bool
-    {
-        return static::boolCheck($value, false);
-    }
-
-    /**
-     * @param $value
-     * @param bool $expected
-     * @return bool
-     */
-    protected static function boolCheck($value, bool $expected): bool
-    {
-        if (!is_bool($value)) {
-            $result = Util::toString($value);
-            $message = "Invalid return value: $result. Call must return a boolean value";
-            throw new RuntimeException($message);
-        }
-        return $value === $expected;
     }
 
     /**
