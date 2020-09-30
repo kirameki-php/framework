@@ -35,13 +35,11 @@ class CreateIndexBuilder extends StatementBuilder
      */
     public function columns($columns)
     {
-        $columns = Arr::wrap($columns);
-        foreach ($columns as $column => $order) {
+        foreach (Arr::wrap($columns) as $column => $order) {
             is_string($column)
                 ? $this->column($column, $order)
                 : $this->column($order);
         }
-
         return $this;
     }
 

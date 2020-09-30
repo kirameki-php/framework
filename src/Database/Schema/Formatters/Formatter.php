@@ -4,6 +4,7 @@ namespace Kirameki\Database\Schema\Formatters;
 
 use Kirameki\Database\Schema\Statements\CreateIndexStatement;
 use Kirameki\Database\Schema\Statements\BaseStatement;
+use Kirameki\Database\Schema\Statements\DropIndexStatement;
 use Kirameki\Database\Support\Expr;
 use Kirameki\Database\Schema\Statements\ColumnDefinition;
 use Kirameki\Database\Schema\Statements\CreateTableStatement;
@@ -66,6 +67,16 @@ class Formatter
             $parts[]= $this->stringLiteral($statement->comment);
         }
         return implode(' ', $parts).';';
+    }
+
+    /**
+     * @param DropIndexStatement $statement
+     * @return string
+     */
+    public function statementForDropIndex(DropIndexStatement $statement): string
+    {
+        $name = $statement->name ?? implode('_', array_merge([$statement->table], $statement->columns));
+        return 'DROP INDEX '.$name.' ON '.$statement->table.';';
     }
 
     /**
