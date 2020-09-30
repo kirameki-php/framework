@@ -32,7 +32,7 @@ class DatabaseManager
      * @param string $name
      * @return Connection
      */
-    public function on(string $name): Connection
+    public function using(string $name): Connection
     {
         if(isset($this->connections[$name])) {
             return $this->connections[$name];
@@ -43,7 +43,8 @@ class DatabaseManager
 
         $resolver = $this->getAdapterResolver($config['adapter']);
         $adapter = $resolver($config);
-        return $this->connections[$name] = new Connection($config, $adapter);
+
+        return $this->connections[$name] = new Connection($name, $adapter);
     }
 
     /**

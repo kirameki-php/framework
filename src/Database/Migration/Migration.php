@@ -45,12 +45,17 @@ abstract class Migration
     abstract public function up(): void;
 
     /**
+     * @return void
+     */
+    abstract public function down(): void;
+
+    /**
      * @param string $connection
      * @return $this
      */
-    public function on(string $connection)
+    public function using(string $connection)
     {
-        $this->connection = db()->on($connection);
+        $this->connection = db()->using($connection);
         return $this;
     }
 
@@ -73,7 +78,7 @@ abstract class Migration
     /**
      * @return string[]
      */
-    public function toDdls()
+    public function toDdls(): array
     {
         return Arr::flatMap($this->builders, fn(StatementBuilder $b) => $b->toDdls());
     }
@@ -81,7 +86,7 @@ abstract class Migration
     /**
      * @return void
      */
-    public function apply()
+    public function apply(): void
     {
         $this->connection->query(implode(PHP_EOL, $this->toDdls()));
     }

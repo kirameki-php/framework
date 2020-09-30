@@ -7,7 +7,7 @@ class CreateUser extends Migration
 {
     public function up(): void
     {
-        $this->on('userdata')
+        $this->using('userdata')
             ->createTable('User')->tap(function(CreateTableBuilder $t) {
                 $t->uuid('id')->primaryKey()->notNull();
                 $t->string('name', 100)->default('Anonymous');

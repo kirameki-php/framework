@@ -7,6 +7,9 @@ use Kirameki\Support\Arr;
 
 class MigrationManager
 {
+    /**
+     * @var string
+     */
     protected string $filePath;
 
     /**
@@ -30,31 +33,61 @@ class MigrationManager
 
     /**
      * @param DateTime|null $since
-     * @return Migration[]
      */
-    public function inspectUp(?DateTime $since = null)
+    public function down(?DateTime $since = null)
     {
-        $ddls = [];
         foreach ($this->readMigrations($since) as $migration) {
-            $migration->up();
-            $ddls[] = $migration->toDdls();
+            $migration->down();
+            $migration->apply();
         }
-        return Arr::flatten($ddls);
     }
 
     /**
      * @param DateTime|null $since
      * @return Migration[]
      */
-    protected function readMigrations(?DateTime $since = null): array
+    public function inspectUp(?DateTime $since = null)
     {
-        $since = $since ? $since->format('Ymdhis') : '19700101000000';
+        return $this->inspect('up', $since);
+    }
+
+    /**
+     * @param DateTime|null $since
+     * @return Migration[]
+     */
+    public function inspectDown(?DateTime $since = null)
+    {
+        return $this->inspect('down', $since);
+    }
+
+    /**
+     * @param string $direction
+     * @param DateTime|null $since
+     * @return array
+     */
+    public function inspect(string $direction, ?DateTime $since = null)
+    {
+        $ddls = [];
+        foreach ($this->readMigrations($since) as $migration) {
+            $migration->$direction();
+            $ddls[] = $migration->toDdls();
+        }
+        return Arr::flatten($ddls);
+    }
+
+    /**
+     * @param DateTime|null $startAt
+     * @return Migration[]
+     */
+    protected function readMigrations(?DateTime $startAt = null): array
+    {
+        $start = $startAt ? $startAt->format('YmdHis') : '00000000000000';
         $migrations = [];
         foreach ($this->getMigrationFiles() as $file) {
             $datetime = strstr(class_basename($file), '_', true);
-            if ($datetime === null || $datetime >= $since) {
+            if ($datetime === null || $datetime >= $start) {
                 $className = rtrim(ltrim(strstr($file, '_'), '_'), '.php');
-                require_once $file;
+                require $file;
                 $migrations[]= new $className($datetime);
             }
         }

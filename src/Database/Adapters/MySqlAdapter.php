@@ -18,7 +18,7 @@ class MySqlAdapter extends PdoAdapter
             $hostOrSocket = 'host='.$config['host'];
             $hostOrSocket.= isset($config['port']) ? 'port='.$config['port'] : '';
         }
-        $database = 'dbname='.($config['database'] ?? $config['connection']);
+        $database = isset($config['database']) ? 'dbname='.$config['database'] : '';
         $charset = isset($config['charset']) ? 'charset='.$config['charset'] : '';
         $dsn = "mysql:{$hostOrSocket}{$database}{$charset}";
         $username = $config['username'] ?? 'root';
