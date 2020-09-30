@@ -63,6 +63,20 @@ class Arr
     }
 
     /**
+     * @param iterable $arr
+     * @return bool
+     */
+    public static function isSequential(iterable $arr): bool
+    {
+        foreach($arr as $key => $value) {
+            if (!is_int($key)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
      * @param iterable $iterable
      * @param callable $callback
      * @return array

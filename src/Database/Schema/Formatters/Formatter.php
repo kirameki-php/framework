@@ -3,7 +3,7 @@
 namespace Kirameki\Database\Schema\Formatters;
 
 use Kirameki\Database\Schema\Statements\CreateIndexStatement;
-use Kirameki\Database\Schema\Statements\Statement;
+use Kirameki\Database\Schema\Statements\BaseStatement;
 use Kirameki\Database\Support\Expr;
 use Kirameki\Database\Schema\Statements\ColumnDefinition;
 use Kirameki\Database\Schema\Statements\CreateTableStatement;
@@ -34,10 +34,10 @@ class Formatter
     }
 
     /**
-     * @param Statement $statement
+     * @param BaseStatement $statement
      * @return string
      */
-    public function statementForDropTable(Statement $statement): string
+    public function statementForDropTable(BaseStatement $statement): string
     {
         return 'DROP TABLE '.$statement->table.';';
     }
@@ -48,20 +48,19 @@ class Formatter
      */
     public function statementForCreateIndex(CreateIndexStatement $statement): string
     {
-        $columnParts = [];
-        foreach ($statement->columns as $column => $order) {
-            $columnParts[] = is_string($column) ? "$column $order" : $order;
-        }
-
         $parts = [];
         $parts[]= 'CREATE';
         if ($statement->unique) {
             $parts[] = 'UNIQUE';
         }
         $parts[]= 'INDEX';
-        $parts[]= $statement->name ?? implode('_', array_merge([$statement->table], $columnParts));
+        $parts[]= $statement->name ?? implode('_', array_merge([$statement->table], array_keys($statement->columns)));
         $parts[]= 'ON';
         $parts[]= $statement->table;
+        $columnParts = [];
+        foreach ($statement->columns as $column => $order) {
+            $columnParts[] = "$column $order";
+        }
         $parts[] = '('.implode(', ', $columnParts).')';
         if ($statement->comment !== null) {
             $parts[]= $this->stringLiteral($statement->comment);

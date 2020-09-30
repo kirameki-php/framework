@@ -6,7 +6,7 @@ use Kirameki\Database\Connection;
 use Kirameki\Database\Schema\Statements\ColumnDefinition;
 use Kirameki\Database\Schema\Statements\CreateIndexStatement;
 use Kirameki\Database\Schema\Statements\CreateTableStatement;
-use Kirameki\Database\Schema\Statements\Statement;
+use Kirameki\Database\Schema\Statements\BaseStatement;
 use Kirameki\Database\Support\Expr;
 
 class DropTableBuilder extends StatementBuilder
@@ -18,7 +18,7 @@ class DropTableBuilder extends StatementBuilder
     public function __construct(Connection $connection, string $table)
     {
         $this->connection = $connection;
-        $this->statement = new Statement($table);
+        $this->statement = new BaseStatement($table);
     }
 
     /**

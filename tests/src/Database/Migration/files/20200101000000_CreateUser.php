@@ -19,11 +19,6 @@ class CreateUser extends Migration
     public function down(): void
     {
         $this->using('userdata')
-            ->createTable('User')->tap(function(CreateTableBuilder $t) {
-                $t->uuid('id')->primaryKey()->notNull();
-                $t->string('name', 100)->default('Anonymous');
-                $t->timestamps();
-                $t->index('index')->unique();
-            });
+            ->dropTable('User');
     }
 }

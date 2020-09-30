@@ -4,7 +4,7 @@
 namespace Kirameki\Database\Schema\Statements;
 
 
-class CreateIndexStatement extends Statement
+class CreateIndexStatement extends BaseStatement
 {
     /**
      * @var string|null
@@ -35,11 +35,11 @@ class CreateIndexStatement extends Statement
      * @param string|null $table
      * @param string[] $columns
      */
-    public function __construct(?string $table, array $columns)
+    public function __construct(?string $table)
     {
         parent::__construct($table);
         $this->name = null;
-        $this->columns = $columns;
+        $this->columns = [];
         $this->unique = null;
         $this->order = 'ASC';
         $this->comment = null;

@@ -167,16 +167,16 @@ class CreateTableBuilder extends StatementBuilder
     }
 
     /**
-     * @param string ...$columns
+     * @param string|string[] $columns
      * @return CreateIndexBuilder
      */
-    public function index(string ...$columns)
+    public function index($columns)
     {
+        $statement = new CreateIndexStatement($this->statement->table);
         $this->statement->indexes ??= [];
-        $statement = new CreateIndexStatement($this->statement->table, $columns);
-        $builders = new CreateIndexBuilder($this->connection, $statement);
         $this->statement->indexes[] = $statement;
-        return $builders;
+        $builder = new CreateIndexBuilder($this->connection, $statement);
+        return $builder->columns($columns);
     }
 
     /**

@@ -3,7 +3,7 @@
 namespace Kirameki\Database\Schema\Builders;
 
 use Kirameki\Database\Connection;
-use Kirameki\Database\Schema\Statements\Statement;
+use Kirameki\Database\Schema\Statements\BaseStatement;
 use Kirameki\Support\Concerns\Tappable;
 
 abstract class StatementBuilder
@@ -16,7 +16,7 @@ abstract class StatementBuilder
     protected Connection $connection;
 
     /**
-     * @var Statement
+     * @var BaseStatement
      */
     protected $statement;
 

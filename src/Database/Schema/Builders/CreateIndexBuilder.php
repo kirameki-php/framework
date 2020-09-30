@@ -4,6 +4,7 @@ namespace Kirameki\Database\Schema\Builders;
 
 use Kirameki\Database\Connection;
 use Kirameki\Database\Schema\Statements\CreateIndexStatement;
+use Kirameki\Support\Arr;
 
 class CreateIndexBuilder extends StatementBuilder
 {
@@ -15,6 +16,33 @@ class CreateIndexBuilder extends StatementBuilder
     {
         $this->connection = $connection;
         $this->statement = $statement;
+    }
+
+    /**
+     * @param string $column
+     * @param string|null $order
+     * @return $this
+     */
+    public function column(string $column, ?string $order = null)
+    {
+        $this->statement->columns[$column] = $order ?? 'ASC';
+        return $this;
+    }
+
+    /**
+     * @param string|string[] $columns
+     * @return $this
+     */
+    public function columns($columns)
+    {
+        $columns = Arr::wrap($columns);
+        foreach ($columns as $column => $order) {
+            is_string($column)
+                ? $this->column($column, $order)
+                : $this->column($order);
+        }
+
+        return $this;
     }
 
     /**

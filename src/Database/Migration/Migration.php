@@ -112,12 +112,11 @@ abstract class Migration
 
     /**
      * @param string $table
-     * @param string|string[] $columns
      * @return CreateIndexBuilder
      */
-    public function createIndex(string $table, $columns): CreateIndexBuilder
+    public function createIndex(string $table): CreateIndexBuilder
     {
-        $statement = new CreateIndexStatement($table, Arr::wrap($columns));
+        $statement = new CreateIndexStatement($table);
         $builder = new CreateIndexBuilder($this->connection, $statement);
         return $this->builders[]= $builder;
     }
