@@ -18,6 +18,22 @@ class Arr
 
     /**
      * @param iterable $iterable
+     * @param mixed|callable $value
+     * @return bool
+     */
+    public static function contains(iterable $iterable, $value): bool
+    {
+        $call = is_callable($value) ? $value : static fn($item) => $item === $value;
+        foreach ($iterable as $key => $item) {
+            if (Assert::isTrue($call($item, $key))) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * @param iterable $iterable
      * @param callable $condition
      * @return int
      */
@@ -278,6 +294,16 @@ class Arr
             $values[] = $callback($item, $key);
         }
         return $values;
+    }
+
+    /**
+     * @param iterable $iterable
+     * @param mixed|callable $value
+     * @return bool
+     */
+    public static function notContains(iterable $iterable, $value): bool
+    {
+        return !static::contains($iterable, $value);
     }
 
     /**

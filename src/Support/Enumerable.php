@@ -82,13 +82,7 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
      */
     public function contains($value): bool
     {
-        $call = is_callable($value) ? $value : static fn($item) => $item === $value;
-        foreach ($this->items as $key => $item) {
-            if (Assert::isTrue($call($item, $key))) {
-                return true;
-            }
-        }
-        return false;
+        return Arr::contains($this->items, $value);
     }
 
     /**
@@ -545,7 +539,7 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
      */
     public function notContains($value): bool
     {
-        return !$this->contains($value);
+        return Arr::notContains($this->items, $value);
     }
 
     /**

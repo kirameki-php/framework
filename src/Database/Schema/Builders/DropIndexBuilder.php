@@ -5,6 +5,7 @@ namespace Kirameki\Database\Schema\Builders;
 use Kirameki\Database\Connection;
 use Kirameki\Database\Schema\Statements\DropIndexStatement;
 use Kirameki\Support\Arr;
+use RuntimeException;
 
 class DropIndexBuilder extends StatementBuilder
 {
@@ -55,9 +56,23 @@ class DropIndexBuilder extends StatementBuilder
      */
     public function toDdls(): array
     {
+        $this->validate();
         $formatter = $this->connection->getSchemaFormatter();
         return [
             $formatter->statementForDropIndex($this->statement)
         ];
+    }
+
+    /**
+     * @return void
+     */
+    public function validate(): void
+    {
+        $name = $this->statement->name;
+        $columns = $this->statement->columns;
+
+        if($name === null && empty($columns)) {
+            throw new RuntimeException('No name or columns required to drop an index.');
+        }
     }
 }

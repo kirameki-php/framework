@@ -5,6 +5,7 @@ namespace Kirameki\Database\Schema\Builders;
 use Kirameki\Database\Connection;
 use Kirameki\Database\Schema\Statements\CreateIndexStatement;
 use Kirameki\Support\Arr;
+use RuntimeException;
 
 class CreateIndexBuilder extends StatementBuilder
 {
@@ -77,7 +78,22 @@ class CreateIndexBuilder extends StatementBuilder
      */
     public function toDdls(): array
     {
+        $this->validate();
         $formatter = $this->connection->getSchemaFormatter();
-        return [$formatter->statementForCreateIndex($this->statement)];
+        return [
+            $formatter->statementForCreateIndex($this->statement),
+        ];
+    }
+
+    /**
+     * @return void
+     */
+    public function validate(): void
+    {
+        $columns = $this->statement->columns;
+
+        if(empty($columns)) {
+            throw new RuntimeException('At least 1 column needs to be defined to create an index.');
+        }
     }
 }

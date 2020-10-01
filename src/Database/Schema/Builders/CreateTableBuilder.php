@@ -7,6 +7,8 @@ use Kirameki\Database\Schema\Statements\ColumnDefinition;
 use Kirameki\Database\Schema\Statements\CreateIndexStatement;
 use Kirameki\Database\Schema\Statements\CreateTableStatement;
 use Kirameki\Database\Support\Expr;
+use Kirameki\Support\Arr;
+use RuntimeException;
 
 class CreateTableBuilder extends StatementBuilder
 {
@@ -216,6 +218,7 @@ class CreateTableBuilder extends StatementBuilder
      */
     public function toDdls(): array
     {
+        $this->validate();
         $formatter = $this->connection->getSchemaFormatter();
         $ddls = [];
         $ddls[] = $formatter->statementForCreateTable($this->statement);
@@ -223,5 +226,21 @@ class CreateTableBuilder extends StatementBuilder
             $ddls[] = $formatter->statementForCreateIndex($indexStatement);
         }
         return $ddls;
+    }
+
+    /**
+     * @return void
+     */
+    public function validate(): void
+    {
+        $columns = $this->statement->columns;
+
+        if(empty($columns)) {
+            throw new RuntimeException('Table requires at least one column to be defined.');
+        }
+
+        if (Arr::notContains($columns, static fn(ColumnDefinition $c) => isset($c->primaryKey))) {
+            throw new RuntimeException('Table must have at least one primary key.');
+        }
     }
 }

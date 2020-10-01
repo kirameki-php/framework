@@ -42,4 +42,13 @@ abstract class StatementBuilder
      * @return string[]
      */
     abstract public function toDdls(): array;
+
+    /**
+     * @return string
+     */
+    public function toString(): string
+    {
+        return implode(PHP_EOL, $this->toDdls());
+    }
 }
+
