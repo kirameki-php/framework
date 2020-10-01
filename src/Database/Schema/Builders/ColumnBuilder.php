@@ -20,12 +20,11 @@ class ColumnBuilder
     }
 
     /**
-     * @param bool $toggle
      * @return $this
      */
-    public function primaryKey(bool $toggle = true)
+    public function primaryKey()
     {
-        $this->definition->primaryKey = $toggle;
+        $this->definition->primaryKey = true;
         return $this;
     }
 
@@ -39,12 +38,11 @@ class ColumnBuilder
     }
 
     /**
-     * @param bool $toggle
      * @return $this
      */
-    public function autoIncrement(bool $toggle = true)
+    public function autoIncrement()
     {
-        $this->definition->autoIncrement = $toggle;
+        $this->definition->autoIncrement = true;
         return $this;
     }
 

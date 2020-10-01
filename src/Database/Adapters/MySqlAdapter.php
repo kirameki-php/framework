@@ -20,7 +20,7 @@ class MySqlAdapter extends PdoAdapter
         }
         $database = isset($config['database']) ? 'dbname='.$config['database'] : '';
         $charset = isset($config['charset']) ? 'charset='.$config['charset'] : '';
-        $dsn = "mysql:{$hostOrSocket}{$database}{$charset}";
+        $dsn = "mysql:{$hostOrSocket};{$database};{$charset}";
         $username = $config['username'] ?? 'root';
         $password = $config['password'] ?? null;
         $options = $config['options'] ?? [];

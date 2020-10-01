@@ -30,6 +30,13 @@ class Formatter
         foreach ($statement->columns as $definition) {
             $columnParts[]= $this->column($definition);
         }
+        $pkParts = [];
+        foreach ($statement->primaryKey->columns as $column => $order) {
+            $pkParts[] = "$column $order";
+        }
+        if (!empty($pkParts)) {
+            $columnParts[] = 'PRIMARY KEY ('.implode(', ', $pkParts).')';
+        }
         $parts[] = '('.implode(', ', $columnParts).')';
         return implode(' ', $parts).';';
     }
@@ -159,6 +166,9 @@ class Formatter
         }
         if (is_string($value)) {
             return $this->stringLiteral($value);
+        }
+        if (is_bool($value)) {
+            return $value ? 'TRUE' : 'FALSE';
         }
         return $value;
     }

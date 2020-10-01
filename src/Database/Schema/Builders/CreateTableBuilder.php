@@ -6,6 +6,7 @@ use Kirameki\Database\Connection;
 use Kirameki\Database\Schema\Statements\ColumnDefinition;
 use Kirameki\Database\Schema\Statements\CreateIndexStatement;
 use Kirameki\Database\Schema\Statements\CreateTableStatement;
+use Kirameki\Database\Schema\Statements\PrimaryKeyConstraint;
 use Kirameki\Database\Support\Expr;
 use Kirameki\Support\Arr;
 use RuntimeException;
@@ -160,7 +161,7 @@ class CreateTableBuilder extends StatementBuilder
      * @param string $type
      * @return ColumnBuilder
      */
-    public function column(string $name, string $type)
+    public function column(string $name, string $type): ColumnBuilder
     {
         $definition = new ColumnDefinition($name, $type);
         $this->statement->columns ??= [];
@@ -169,10 +170,24 @@ class CreateTableBuilder extends StatementBuilder
     }
 
     /**
+     * @param $columns
+     * @return void
+     */
+    public function primaryKey($columns): void
+    {
+        $this->statement->primaryKey ??= new PrimaryKeyConstraint();
+        foreach (Arr::wrap($columns) as $column => $order) {
+            is_string($column)
+                ? $this->statement->primaryKey->columns[$column] = $order
+                : $this->statement->primaryKey->columns[$order] = 'ASC';
+        }
+    }
+
+    /**
      * @param string|string[] $columns
      * @return CreateIndexBuilder
      */
-    public function index($columns)
+    public function index($columns): CreateIndexBuilder
     {
         $statement = new CreateIndexStatement($this->statement->table);
         $this->statement->indexes ??= [];
@@ -218,7 +233,7 @@ class CreateTableBuilder extends StatementBuilder
      */
     public function toDdls(): array
     {
-        $this->validate();
+        $this->preprocess();
         $formatter = $this->connection->getSchemaFormatter();
         $ddls = [];
         $ddls[] = $formatter->statementForCreateTable($this->statement);
@@ -231,16 +246,32 @@ class CreateTableBuilder extends StatementBuilder
     /**
      * @return void
      */
-    public function validate(): void
+    public function preprocess(): void
     {
-        $columns = $this->statement->columns;
+        $statement = $this->statement;
 
-        if(empty($columns)) {
+        foreach ($statement->columns as $column) {
+            if ($column->primaryKey) {
+                if ($statement->primaryKey !== null) {
+                    throw new RuntimeException('Multiple primaryKey defined when only one is allowed.');
+                }
+                $statement->primaryKey = new PrimaryKeyConstraint();
+                $statement->primaryKey->columns[$column->name] = 'ASC';
+            }
+        }
+
+        foreach($statement->columns as $column) {
+            if ($column->type === 'int' && Arr::notContains([null, 1, 2, 4, 8], $column->size)) {
+                throw new RuntimeException('Size for integer must be 1, 2, 4, or 8 (bytes). '.$column->size.' given.');
+            }
+        }
+
+        if(empty($statement->columns)) {
             throw new RuntimeException('Table requires at least one column to be defined.');
         }
 
-        if (Arr::notContains($columns, static fn(ColumnDefinition $c) => isset($c->primaryKey))) {
-            throw new RuntimeException('Table must have at least one primary key.');
+        if ($statement->primaryKey === null) {
+            throw new RuntimeException('Table must have at least one column as primary key.');
         }
     }
 }

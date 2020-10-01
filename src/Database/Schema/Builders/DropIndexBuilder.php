@@ -56,7 +56,7 @@ class DropIndexBuilder extends StatementBuilder
      */
     public function toDdls(): array
     {
-        $this->validate();
+        $this->preprocess();
         $formatter = $this->connection->getSchemaFormatter();
         return [
             $formatter->statementForDropIndex($this->statement)
@@ -66,7 +66,7 @@ class DropIndexBuilder extends StatementBuilder
     /**
      * @return void
      */
-    public function validate(): void
+    public function preprocess(): void
     {
         $name = $this->statement->name;
         $columns = $this->statement->columns;

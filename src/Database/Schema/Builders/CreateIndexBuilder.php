@@ -54,16 +54,6 @@ class CreateIndexBuilder extends StatementBuilder
     }
 
     /**
-     * @param string $order
-     * @return $this
-     */
-    public function order(string $order)
-    {
-        $this->statement->order = $order;
-        return $this;
-    }
-
-    /**
      * @param string $comment
      * @return $this
      */
@@ -78,7 +68,7 @@ class CreateIndexBuilder extends StatementBuilder
      */
     public function toDdls(): array
     {
-        $this->validate();
+        $this->preprocess();
         $formatter = $this->connection->getSchemaFormatter();
         return [
             $formatter->statementForCreateIndex($this->statement),
@@ -88,7 +78,7 @@ class CreateIndexBuilder extends StatementBuilder
     /**
      * @return void
      */
-    public function validate(): void
+    public function preprocess(): void
     {
         $columns = $this->statement->columns;
 

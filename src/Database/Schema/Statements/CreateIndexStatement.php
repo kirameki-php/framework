@@ -22,18 +22,12 @@ class CreateIndexStatement extends BaseStatement
     public ?bool $unique;
 
     /**
-     * @var string
-     */
-    public string $order;
-
-    /**
      * @var string|null
      */
     public ?string $comment;
 
     /**
      * @param string|null $table
-     * @param string[] $columns
      */
     public function __construct(?string $table)
     {
@@ -41,7 +35,6 @@ class CreateIndexStatement extends BaseStatement
         $this->name = null;
         $this->columns = [];
         $this->unique = null;
-        $this->order = 'ASC';
         $this->comment = null;
     }
 }

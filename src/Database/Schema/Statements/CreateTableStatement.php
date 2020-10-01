@@ -13,6 +13,11 @@ class CreateTableStatement extends BaseStatement
     public array $columns;
 
     /**
+     * @var PrimaryKeyConstraint|null
+     */
+    public ?PrimaryKeyConstraint $primaryKey;
+
+    /**
      * @var CreateIndexStatement[]
      */
     public array $indexes;
@@ -24,6 +29,7 @@ class CreateTableStatement extends BaseStatement
     {
         parent::__construct($table);
         $this->columns = [];
+        $this->primaryKey = null;
         $this->indexes = [];
     }
 }

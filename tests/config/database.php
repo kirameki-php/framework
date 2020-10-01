@@ -2,7 +2,7 @@
 
 return [
     'connections' => [
-        'userdata' => [
+        'mysql' => [
             'adapter' => 'mysql',
             'host' => 'mysql',
         ],

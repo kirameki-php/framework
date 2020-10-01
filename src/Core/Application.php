@@ -8,6 +8,7 @@ use Kirameki\Container\Container;
 use Kirameki\Database\DatabaseInitializer;
 use Kirameki\Exception\ExceptionInitializer;
 use Kirameki\Logging\LogInitializer;
+use RuntimeException;
 
 class Application extends Container
 {
@@ -15,6 +16,11 @@ class Application extends Container
      * @var Application|null
      */
     protected static ?Application $instance;
+
+    /**
+     * @var string
+     */
+    protected string $name;
 
     /**
      * @var string
@@ -50,6 +56,7 @@ class Application extends Container
         $this->basePath = $basePath;
         $this->startTime = microtime(true) * 1000;
         $this->config = Config::fromDirectory($basePath.'/config');
+        $this->setName($this->config->get('app.name'));
         $this->setTimeZone($this->config->get('app.timezone'));
         $this->initialize();
     }
@@ -182,6 +189,17 @@ class Application extends Container
 
         $errorMessage = __METHOD__.'() should only have upto 2 arguments. '.$argCount.' given.';
         throw new InvalidArgumentException($errorMessage);
+    }
+
+    /**
+     * @param string $name
+     */
+    protected function setName(string $name): void
+    {
+        if (!preg_match('/^[a-zA-Z0-9_-]+$/', $name)) {
+            throw new RuntimeException('Invalid application name: "'.$name.'". Only alphanumeric characters, "_", and "-" are allowed.');
+        }
+        $this->name = $name;
     }
 
     /**

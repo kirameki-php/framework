@@ -39,7 +39,13 @@ class DatabaseManager
         }
 
         $config = config()->get('database.connections.'.$name);
+
+        if ($config === null) {
+            throw new RuntimeException('Undefined database connection: '.$name);
+        }
+
         $config['connection'] = $name;
+        $config['database'] ??= $name;
 
         $resolver = $this->getAdapterResolver($config['adapter']);
         $adapter = $resolver($config);

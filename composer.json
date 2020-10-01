@@ -16,11 +16,12 @@
     "nesbot/carbon": "^2.39",
     "psr/container": "^1.0",
     "ramsey/uuid": "^4.1",
-    "symfony/var-dumper": "^5.1",
     "vlucas/phpdotenv": "^5.1"
   },
   "require-dev": {
-    "phpunit/phpunit": "~9.0"
+    "phpunit/phpunit": "~9.0",
+    "roave/security-advisories": "dev-master",
+    "symfony/var-dumper": "^5.1"
   },
   "suggest": {
     "fiunchinho/phpunit-randomizer": "For randomizing phpunit tests",
