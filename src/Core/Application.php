@@ -8,24 +8,41 @@ use Kirameki\Container\Container;
 use Kirameki\Database\DatabaseInitializer;
 use Kirameki\Exception\ExceptionInitializer;
 use Kirameki\Logging\LogInitializer;
-use Kirameki\Core\Config;
-use Kirameki\Core\Env;
 
 class Application extends Container
 {
+    /**
+     * @var Application|null
+     */
     protected static ?Application $instance;
 
+    /**
+     * @var string
+     */
     protected string $basePath;
 
+    /**
+     * @var float
+     */
     protected float $startTime;
 
+    /**
+     * @var Config
+     */
     protected Config $config;
 
+    /**
+     * @return Application
+     */
     public static function instance(): Application
     {
         return static::$instance;
     }
 
+    /**
+     * @param string $basePath
+     * @param string|null $dotEnvPath
+     */
     public function __construct(string $basePath, string $dotEnvPath = null)
     {
         Dotenv::createImmutable([$dotEnvPath ?? $basePath])->load();
@@ -37,6 +54,9 @@ class Application extends Container
         $this->initialize();
     }
 
+    /**
+     * @return void
+     */
     protected function initialize(): void
     {
         $initializers = [
@@ -49,46 +69,75 @@ class Application extends Container
         }
     }
 
+    /**
+     * @return string
+     */
     public function version(): string
     {
         return file_get_contents(__DIR__.'/../VERSION');
     }
 
+    /**
+     * @return string
+     */
     public function env(): string
     {
         return Env::get('APP_ENV') ?? 'production';
     }
 
+    /**
+     * @param string ...$names
+     * @return bool
+     */
     public function isEnv(string ...$names): bool
     {
         return in_array($this->env(), $names, true);
     }
 
+    /**
+     * @return bool
+     */
     public function isProduction(): bool
     {
         return $this->isEnv('production');
     }
 
+    /**
+     * @return bool
+     */
     public function isNotProduction(): bool
     {
         return !$this->isProduction();
     }
 
+    /**
+     * @return bool
+     */
     public function runningInServer(): bool
     {
         return !$this->runningInConsole();
     }
 
+    /**
+     * @return bool
+     */
     public function runningInConsole(): bool
     {
         return PHP_SAPI === 'cli';
     }
 
+    /**
+     * @return bool
+     */
     public function inDebugMode(): bool
     {
         return (bool) $this->config->get('app.debug');
     }
 
+    /**
+     * @param string|null $relPath
+     * @return string
+     */
     public function getBasePath(string $relPath = null): string
     {
         $path = $this->basePath;
@@ -98,6 +147,10 @@ class Application extends Container
         return $path;
     }
 
+    /**
+     * @param string|null $relPath
+     * @return string
+     */
     public function getStoragePath(string $relPath = null): string
     {
         if ($relPath !== null) {
@@ -106,6 +159,9 @@ class Application extends Container
         return $this->getBasePath('/storage/'.$relPath);
     }
 
+    /**
+     * @return float
+     */
     public function startTime(): float
     {
         return $this->startTime;
@@ -128,6 +184,10 @@ class Application extends Container
         throw new InvalidArgumentException($errorMessage);
     }
 
+    /**
+     * @param string $timezone
+     * @return bool
+     */
     protected function setTimeZone(string $timezone): bool
     {
         return date_default_timezone_set($timezone);
