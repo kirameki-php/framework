@@ -10,8 +10,8 @@ RUN  apk add --no-cache bash coreutils git gmp libxml2 libstdc++ \
   && apk add --no-cache --virtual=.build-deps autoconf curl-dev gmp-dev libxml2-dev linux-headers gcc g++ make pcre-dev tzdata \
   && docker-php-ext-install -j$(nproc) bcmath gmp pdo pdo_mysql opcache pcntl \
   && if [ ! "${HTTP_PROXY}" = "" ]; then pear config-set http_proxy ${HTTP_PROXY}; fi \
-  && pecl install -o -f apcu msgpack redis yaml \
-  && docker-php-ext-enable apcu msgpack redis yaml \
+  && pecl install -o -f apcu igbinary msgpack redis \
+  && docker-php-ext-enable apcu igbinary msgpack redis \
   && apk del .build-deps \
   && docker-php-source delete \
   && rm -rf /tmp/* /var/tmp/* \
