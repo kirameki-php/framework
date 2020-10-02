@@ -3,9 +3,10 @@
 namespace Kirameki\Logging;
 
 use Kirameki\Core\Application;
+use Kirameki\Core\InitializerInterface;
 use Psr\Log\LoggerInterface;
 
-class LogInitializer
+class LogInitializer implements InitializerInterface
 {
     public function register(Application $app): void
     {

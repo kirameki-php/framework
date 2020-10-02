@@ -3,9 +3,10 @@
 namespace Kirameki\Exception;
 
 use Kirameki\Core\Application;
+use Kirameki\Core\InitializerInterface;
 use Kirameki\Exception\Handlers\LogHandler;
 
-class ExceptionInitializer
+class ExceptionInitializer implements InitializerInterface
 {
     public function register(Application $app): void
     {

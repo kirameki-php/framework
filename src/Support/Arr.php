@@ -307,6 +307,22 @@ class Arr
     }
 
     /**
+     * @param array $array
+     * @param $value
+     * @param int|null $limit
+     */
+    public static function remove(array &$array, $value, ?int $limit = null): void
+    {
+        $counter = 0;
+        foreach ($array as $key => $item) {
+            if ($counter < $limit && $item === $value) {
+                unset($array[$key]);
+                $counter++;
+            }
+        }
+    }
+
+    /**
      * @param iterable $iterable
      * @return mixed
      */

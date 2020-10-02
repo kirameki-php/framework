@@ -6,6 +6,7 @@ use Dotenv\Dotenv;
 use InvalidArgumentException;
 use Kirameki\Container\Container;
 use Kirameki\Database\DatabaseInitializer;
+use Kirameki\Event\EventInitializer;
 use Kirameki\Exception\ExceptionInitializer;
 use Kirameki\Logging\LogInitializer;
 use RuntimeException;
@@ -66,14 +67,10 @@ class Application extends Container
      */
     protected function initialize(): void
     {
-        $initializers = [
-            new ExceptionInitializer,
-            new LogInitializer,
-            new DatabaseInitializer,
-        ];
-        foreach ($initializers as $initializer) {
-            $initializer->register($this);
-        }
+        (new ExceptionInitializer)->register($this);
+        (new LogInitializer)->register($this);
+        (new EventInitializer)->register($this);
+        (new DatabaseInitializer)->register($this);
     }
 
     /**
