@@ -147,13 +147,7 @@ class Collection extends Enumerable implements ArrayAccess
      */
     public function remove($value, ?int $limit = null)
     {
-        $counter = 0;
-        foreach ($this->items as $key => $item) {
-            if ($counter < $limit && $item === $value) {
-                unset($this->items[$key]);
-                $counter++;
-            }
-        }
+        Arr::remove($this->items, $value, $limit);
         return $this;
     }
 

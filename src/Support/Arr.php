@@ -334,6 +334,31 @@ class Arr
 
     /**
      * @param iterable $iterable
+     * @param callable $condition
+     * @return bool
+     */
+    public static function satisfyAll(iterable $iterable, callable $condition): bool
+    {
+        foreach ($iterable as $item) {
+            if (Assert::isFalse($condition($item))) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * @param iterable $iterable
+     * @param callable $condition
+     * @return bool
+     */
+    public static function satisfyAny(iterable $iterable, callable $condition): bool
+    {
+        return static::contains($iterable, $condition);
+    }
+
+    /**
+     * @param iterable $iterable
      * @return array
      */
     public static function shuffle(iterable $iterable): array

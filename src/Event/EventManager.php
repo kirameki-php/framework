@@ -51,11 +51,14 @@ class EventManager
 
         $listeners = $this->events[$className] ?? [];
         foreach ($listeners as $index => $listener) {
-            if ($listener->invoke($event) === false) {
-                break;
-            }
+            $listener->invoke($event);
+
             if (!$listener->isListening()) {
                 unset($listeners[$index]);
+            }
+
+            if ($listener->isPropagationStopped()) {
+                break;
             }
         }
     }

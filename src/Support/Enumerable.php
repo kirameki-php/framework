@@ -628,12 +628,7 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
      */
     public function satisfyAll(callable $condition): bool
     {
-        foreach ($this->items as $item) {
-            if (Assert::isFalse($condition($item))) {
-                return false;
-            }
-        }
-        return true;
+        return Arr::satisfyAll($this->items, $condition);
     }
 
     /**
@@ -642,7 +637,7 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
      */
     public function satisfyAny(callable $condition): bool
     {
-        return $this->contains($condition);
+        return Arr::satisfyAny($this->items, $condition);
     }
 
     /**

@@ -2,6 +2,7 @@
 
 use Kirameki\Core\Application;
 use Kirameki\Database\DatabaseManager;
+use Kirameki\Event\EventManager;
 use Kirameki\Support\Collection;
 use Kirameki\Core\Config;
 use Kirameki\Core\Env;
@@ -30,6 +31,11 @@ function db(): DatabaseManager
 function env(string $name)
 {
     return Env::get($name);
+}
+
+function event(): EventManager
+{
+    return app()->get(EventManager::class);
 }
 
 function class_basename($class): string

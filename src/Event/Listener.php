@@ -22,6 +22,11 @@ class Listener
     protected bool $listening;
 
     /**
+     * @var bool
+     */
+    protected bool $propagate;
+
+    /**
      * @param Closure $listener
      * @param bool $once
      */
@@ -30,23 +35,20 @@ class Listener
         $this->listener = $listener;
         $this->once = $once;
         $this->listening = true;
+        $this->propagate = true;
     }
 
     /**
      * @param Event $event
-     * @return mixed
      */
-    public function invoke(Event $event)
+    public function invoke(Event $event): void
     {
         if ($this->listening) {
             if ($this->once) {
                 $this->stopListening();
             }
-
-            $listener = $this->listener;
-            return $listener($event, $this);
+            call_user_func($this->listener, $event, $this);
         }
-        return null;
     }
 
     /**
@@ -58,10 +60,26 @@ class Listener
     }
 
     /**
+     * @return void
+     */
+    public function stopPropagation(): void
+    {
+        $this->propagate = false;
+    }
+
+    /**
      * @return bool
      */
     public function isListening(): bool
     {
         return $this->listening;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isPropagationStopped(): bool
+    {
+        return !$this->propagate;
     }
 }
