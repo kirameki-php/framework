@@ -5,6 +5,7 @@ return [
         'mysql' => [
             'adapter' => 'mysql',
             'host' => 'mysql',
+            'database' => 'mysql-test',
         ],
     ],
 ];

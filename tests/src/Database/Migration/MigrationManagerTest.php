@@ -11,7 +11,6 @@ class MigrationManagerTest extends DatabaseTestCase
     public function testMigrateUp()
     {
         $manager = new MigrationManager(__DIR__.'/files');
-        dump($this->connection('mysql')->query('SHOW DATABASES like \'maysql\''));
 //        dump($manager->inspectUp());
     }
 }

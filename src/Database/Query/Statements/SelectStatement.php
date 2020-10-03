@@ -22,6 +22,11 @@ class SelectStatement extends ConditionsStatement
     public ?array $having = null;
 
     /**
+     * @var int|null
+     */
+    public ?int $offset = null;
+
+    /**
      * @var bool
      */
     public ?bool $distinct = null;

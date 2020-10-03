@@ -5,6 +5,7 @@ namespace Kirameki\Cache;
 use Closure;
 use DateInterval;
 use DateTimeInterface;
+use Kirameki\Support\Arr;
 
 abstract class AbstractStore implements StoreInterface
 {
@@ -37,7 +38,7 @@ abstract class AbstractStore implements StoreInterface
 
     public function formatKeys(array $keys): array
     {
-        return array_map(fn($key) => $this->formatKey($key), $keys);
+        return Arr::map($keys, fn($key) => $this->formatKey($key));
     }
 
     public function formatEntries(array $entries): array

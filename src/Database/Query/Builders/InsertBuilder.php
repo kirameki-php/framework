@@ -45,8 +45,8 @@ class InsertBuilder extends StatementBuilder
     {
         if (!empty($this->statement->dataset)) {
             $formatter = $this->connection->getQueryFormatter();
-            $statement = $formatter->statementForInsert($this->statement);
-            $bindings = $formatter->bindingsForInsert($this->statement);
+            $statement = $formatter->insertStatement($this->statement);
+            $bindings = $formatter->insertBindings($this->statement);
             $this->connection->affectingQuery($statement, $bindings);
         }
     }
@@ -57,8 +57,8 @@ class InsertBuilder extends StatementBuilder
     public function inspect(): array
     {
         $formatter = $this->connection->getQueryFormatter();
-        $statement = $formatter->statementForInsert($this->statement);
-        $bindings = $formatter->bindingsForInsert($this->statement);
+        $statement = $formatter->insertStatement($this->statement);
+        $bindings = $formatter->insertBindings($this->statement);
         return compact('statement', 'bindings');
     }
 }

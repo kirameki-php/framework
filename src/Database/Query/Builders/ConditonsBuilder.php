@@ -105,16 +105,6 @@ abstract class ConditonsBuilder extends StatementBuilder
     }
 
     /**
-     * @param int $skipRows
-     * @return $this
-     */
-    public function offset(int $skipRows)
-    {
-        $this->statement->offset = $skipRows;
-        return $this;
-    }
-
-    /**
      * @param string|ConditionBuilder $column
      * @param mixed|null $operator
      * @param mixed|null $value

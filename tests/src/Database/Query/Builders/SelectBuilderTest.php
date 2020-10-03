@@ -2,7 +2,6 @@
 
 namespace Kirameki\Tests\Database\Query\Builders;
 
-use Kirameki\Database\Query\Statements\ConditionDefinition;
 use Kirameki\Database\Support\Expr;
 use Kirameki\Database\Query\Support\Range;
 use Kirameki\Database\Query\Builders\ConditionBuilder;
@@ -10,6 +9,8 @@ use Kirameki\Tests\Database\Query\QueryTestCase;
 
 class SelectBuilderTest extends QueryTestCase
 {
+    protected string $connection = 'mysql';
+
     public function testPlain()
     {
         $sql = $this->selectBuilder()->columns(Expr::raw(1))->toSql();

@@ -22,8 +22,8 @@ class DeleteBuilder extends ConditonsBuilder
     public function execute()
     {
         $formatter = $this->connection->getQueryFormatter();
-        $statement = $formatter->statementForDelete($this->statement);
-        $bindings = $formatter->bindingsForDelete($this->statement);
+        $statement = $formatter->deleteStatement($this->statement);
+        $bindings = $formatter->deleteBindings($this->statement);
         return $this->connection->affectingQuery($statement, $bindings);
     }
 
@@ -33,8 +33,8 @@ class DeleteBuilder extends ConditonsBuilder
     public function inspect(): array
     {
         $formatter = $this->connection->getQueryFormatter();
-        $statement = $formatter->statementForDelete($this->statement);
-        $bindings = $formatter->bindingsForDelete($this->statement);
+        $statement = $formatter->deleteStatement($this->statement);
+        $bindings = $formatter->deleteBindings($this->statement);
         return compact('statement', 'bindings');
     }
 }

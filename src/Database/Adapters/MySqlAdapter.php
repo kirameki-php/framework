@@ -2,6 +2,8 @@
 
 namespace Kirameki\Database\Adapters;
 
+use Kirameki\Database\Query\Formatters\Formatter as QueryFormatter;
+use Kirameki\Database\Query\Formatters\MySqlFormatter as MySqlQueryFormatter;
 use PDO;
 
 class MySqlAdapter extends PdoAdapter
@@ -40,6 +42,14 @@ class MySqlAdapter extends PdoAdapter
     {
         $this->pdo = null;
         return $this;
+    }
+
+    /**
+     * @return MySqlQueryFormatter
+     */
+    public function getQueryFormatter(): MySqlQueryFormatter
+    {
+        return new MySqlQueryFormatter();
     }
 
     /**

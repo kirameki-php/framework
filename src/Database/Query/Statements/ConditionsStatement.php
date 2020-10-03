@@ -20,10 +20,8 @@ abstract class ConditionsStatement extends BaseStatement
     public ?int $limit = null;
 
     /**
-     * @var int|null
+     * @return void
      */
-    public ?int $offset = null;
-
     public function __clone()
     {
         $where = [];

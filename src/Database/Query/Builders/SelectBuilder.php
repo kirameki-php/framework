@@ -79,6 +79,16 @@ class SelectBuilder extends ConditonsBuilder
     }
 
     /**
+     * @param int $skipRows
+     * @return $this
+     */
+    public function offset(int $skipRows)
+    {
+        $this->statement->offset = $skipRows;
+        return $this;
+    }
+
+    /**
      * @return Collection
      */
     public function all(): Collection
@@ -188,8 +198,8 @@ class SelectBuilder extends ConditonsBuilder
     public function inspect(): array
     {
         $formatter = $this->connection->getQueryFormatter();
-        $statement = $formatter->statementForSelect($this->statement);
-        $bindings = $formatter->bindingsForSelect($this->statement);
+        $statement = $formatter->selectStatement($this->statement);
+        $bindings = $formatter->selectBindings($this->statement);
         return compact('statement', 'bindings');
     }
 
@@ -220,8 +230,8 @@ class SelectBuilder extends ConditonsBuilder
     protected function execSelect(): array
     {
         $formatter = $this->connection->getQueryFormatter();
-        $statement = $formatter->statementForSelect($this->statement);
-        $bindings = $formatter->bindingsForSelect($this->statement);
+        $statement = $formatter->selectStatement($this->statement);
+        $bindings = $formatter->selectBindings($this->statement);
         return $this->connection->query($statement, $bindings);
     }
 

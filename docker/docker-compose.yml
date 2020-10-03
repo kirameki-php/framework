@@ -16,5 +16,6 @@ services:
     environment:
       LANG: "C.UTF-8"
       MYSQL_ALLOW_EMPTY_PASSWORD: "true"
+      MYSQL_DATABASE: "mysql-test"
   redis:
     image: redis:alpine

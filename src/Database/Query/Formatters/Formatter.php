@@ -12,6 +12,8 @@ use Kirameki\Database\Query\Statements\DeleteStatement;
 use Kirameki\Database\Query\Statements\InsertStatement;
 use Kirameki\Database\Query\Statements\SelectStatement;
 use Kirameki\Database\Query\Statements\UpdateStatement;
+use Kirameki\Support\Arr;
+use Kirameki\Support\Util;
 use RuntimeException;
 
 class Formatter
@@ -22,20 +24,36 @@ class Formatter
      * @param SelectStatement $statement
      * @return string
      */
-    public function statementForSelect(SelectStatement $statement): string
+    public function selectStatement(SelectStatement $statement): string
     {
-        return implode(' ', array_filter([
-            $this->select($statement),
-            $this->from($statement),
-            $this->conditions($statement),
-        ]));
+        $parts = [];
+        $parts[] = $this->selectPart($statement);
+        if ($statement->table !== null) {
+            $parts[] = $this->fromPart($statement);
+        }
+        if ($statement->where !== null) {
+            $parts[] = $this->wherePart($statement);
+        }
+        if ($statement->groupBy !== null) {
+            $parts[] = $this->groupByPart($statement);
+        }
+        if ($statement->orderBy !== null) {
+            $parts[] = $this->orderByPart($statement);
+        }
+        if ($statement->limit !== null) {
+            $parts[] = 'LIMIT ' . $statement->limit;
+        }
+        if ($statement->offset !== null) {
+            $parts[] = 'OFFSET ' . $statement->offset;
+        }
+        return implode(' ', $parts);
     }
 
     /**
      * @param SelectStatement $statement
      * @return array
      */
-    public function bindingsForSelect(SelectStatement $statement): array
+    public function selectBindings(SelectStatement $statement): array
     {
         return $this->bindingsForCondition($statement);
     }
@@ -44,21 +62,11 @@ class Formatter
      * @param InsertStatement $statement
      * @return string
      */
-    public function statementForInsert(InsertStatement $statement): string
+    public function insertStatement(InsertStatement $statement): string
     {
-        $columnsAssoc = [];
-        $listSize = 0;
-        foreach ($statement->dataset as $data) {
-            foreach($data as $name => $value) {
-                if ($value !== null) {
-                    $columnsAssoc[$name] = null;
-                }
-            }
-            $listSize++;
-        }
-
-        $columnNames = array_keys($columnsAssoc);
-        $cloumnCount = count($columnNames);
+        $columns = $statement->columns();
+        $cloumnCount = count($columns);
+        $listSize = count($statement->dataset);
 
         $placeholders = [];
         for ($i = 0; $i < $listSize; $i++) {
@@ -66,13 +74,13 @@ class Formatter
             for ($j = 0; $j < $cloumnCount; $j++) {
                 $binders[] = $this->bindName();
             }
-            $placeholders[] = '('.implode(', ', $binders).')';
+            $placeholders[] = '(' . implode(', ', $binders) . ')';
         }
 
         return implode(' ', [
             'INSERT INTO',
             $this->tableName($statement->table),
-            '('.implode(', ', $columnNames).')',
+            '(' . implode(', ', Arr::map($columns, fn($c) => $this->addQuotes($c))) . ')',
             'VALUES',
             implode(', ', $placeholders),
         ]);
@@ -82,12 +90,17 @@ class Formatter
      * @param InsertStatement $statement
      * @return array
      */
-    public function bindingsForInsert(InsertStatement $statement): array
+    public function insertBindings(InsertStatement $statement): array
     {
+        $columns = $statement->columns();
+
         $bindings = [];
         foreach ($statement->dataset as $data) {
-            foreach ($data as $value) {
-                $bindings[] = $value;
+            if (!is_array($data)) {
+                throw new RuntimeException('Data should be an array but ' . Util::typeOf($data) . ' given.');
+            }
+            foreach ($columns as $column) {
+                $bindings[] = $data[$column] ?? null;
             }
         }
         return $bindings;
@@ -97,27 +110,27 @@ class Formatter
      * @param UpdateStatement $statement
      * @return string
      */
-    public function statementForUpdate(UpdateStatement $statement): string
+    public function updateStatement(UpdateStatement $statement): string
     {
         $assignments = [];
         foreach (array_keys($statement->data) as $name) {
-            $assignments[] = $name.' = ?';
+            $assignments[] = $this->addQuotes($name) . ' = ?';
         }
 
-        return implode(' ', [
+        return implode(' ', array_filter([
             'UPDATE',
             $this->tableName($statement->table),
             'SET',
             implode(', ', $assignments),
-            $this->conditions($statement),
-        ]);
+            $this->conditionsPart($statement),
+        ]));
     }
 
     /**
      * @param UpdateStatement $statement
      * @return array
      */
-    public function bindingsForUpdate(UpdateStatement $statement): array
+    public function updateBindings(UpdateStatement $statement): array
     {
         return array_merge($statement->data, $this->bindingsForCondition($statement));
     }
@@ -126,20 +139,20 @@ class Formatter
      * @param DeleteStatement $statement
      * @return string
      */
-    public function statementForDelete(DeleteStatement $statement): string
+    public function deleteStatement(DeleteStatement $statement): string
     {
-        return implode(' ', [
+        return implode(' ', array_filter([
             'DELETE FROM',
             $this->tableName($statement->table),
-            $this->conditions($statement),
-        ]);
+            $this->conditionsPart($statement),
+        ]));
     }
 
     /**
      * @param DeleteStatement $statement
      * @return array
      */
-    public function bindingsForDelete(DeleteStatement $statement): array
+    public function deleteBindings(DeleteStatement $statement): array
     {
         return $this->bindingsForCondition($statement);
     }
@@ -154,7 +167,7 @@ class Formatter
     public function interpolate(string $statement, array $bindings): string
     {
         $remains = count($bindings);
-        return preg_replace_callback('/\?\??/', function($matches) use (&$bindings, &$remains) {
+        return preg_replace_callback('/\?\??/', function ($matches) use (&$bindings, &$remains) {
             if ($matches[0] === '?' && $remains > 0) {
                 $current = current($bindings);
                 next($bindings);
@@ -172,7 +185,7 @@ class Formatter
      * @param SelectStatement $statement
      * @return string
      */
-    public function select(SelectStatement $statement): string
+    public function selectPart(SelectStatement $statement): string
     {
         if (empty($statement->columns)) {
             $statement->columns[] = '*';
@@ -192,7 +205,7 @@ class Formatter
 
             $segments = preg_split('/\s+as\s+/i', $name);
             if (count($segments) > 1) {
-                $exprs[] = $this->columnName($segments[0]).' AS '.$segments[1];
+                $exprs[] = $this->columnName($segments[0]) . ' AS ' . $segments[1];
                 continue;
             }
 
@@ -204,60 +217,40 @@ class Formatter
 
             $exprs[] = $segments[0];
         }
-        return 'SELECT '.$distinct.implode(', ', $exprs);
+        return 'SELECT ' . $distinct . implode(', ', $exprs);
     }
 
     /**
      * @param BaseStatement $statement
      * @return string
      */
-    public function from(BaseStatement $statement): string
+    public function fromPart(BaseStatement $statement): string
     {
         if (!isset($statement->table)) {
             return '';
         }
         $expr = $this->tableName($statement->table);
         if ($statement->tableAlias !== null) {
-            $expr.=' AS '.$statement->tableAlias;
+            $expr .= ' AS ' . $statement->tableAlias;
         }
-        return 'FROM '.$expr;
+        return 'FROM ' . $expr;
     }
 
     /**
      * @param ConditionsStatement $statement
      * @return string
      */
-    public function conditions(ConditionsStatement $statement): string
+    public function conditionsPart(ConditionsStatement $statement): string
     {
         $parts = [];
         if ($statement->where !== null) {
-            $clause = [];
-            foreach ($statement->where as $condition) {
-                $clause[] = $this->condition($condition, $statement->tableAlias);
-            }
-            $parts[]= 'WHERE '.implode(' AND ', $clause);
-        }
-        if ($statement instanceof SelectStatement) {
-            if ($statement->groupBy !== null) {
-                $clause = [];
-                foreach ($statement->groupBy as $column) {
-                    $clause[] = $this->columnName($column, $statement->tableAlias);
-                }
-                $parts[]= 'GROUP BY '.implode(', ', $clause);
-            }
+            $parts[] = $this->wherePart($statement);
         }
         if ($statement->orderBy !== null) {
-            $clause = [];
-            foreach ($statement->orderBy as $column => $sort) {
-                $clause[] = $this->columnName($column, $statement->tableAlias).' '.$sort;
-            }
-            $parts[]= 'ORDER BY '.implode(', ', $clause);
+            $parts[] = $this->orderByPart($statement);
         }
         if ($statement->limit !== null) {
-            $parts[]= 'LIMIT '.$statement->limit;
-        }
-        if ($statement->offset !== null) {
-            $parts[]= 'OFFSET '.$statement->offset;
+            $parts[] = 'LIMIT ' . $statement->limit;
         }
         return implode(' ', $parts);
     }
@@ -276,7 +269,7 @@ class Formatter
         if ($def->next !== null) {
             $logic = $def->nextLogic;
             while ($def = $def->next) {
-                $parts[]= $logic.' '.$this->conditionSegment($def, $table);
+                $parts[] = $logic.' '.$this->conditionSegment($def, $table);
                 $logic = $def->nextLogic;
             }
         }
@@ -361,6 +354,45 @@ class Formatter
     }
 
     /**
+     * @param ConditionsStatement $statement
+     * @return string
+     */
+    protected function wherePart(ConditionsStatement $statement)
+    {
+        $clause = [];
+        foreach ($statement->where as $condition) {
+            $clause[] = $this->condition($condition, $statement->tableAlias);
+        }
+        return 'WHERE ' . implode(' AND ', $clause);
+    }
+
+    /**
+     * @param SelectStatement $statement
+     * @return string
+     */
+    protected function groupByPart(SelectStatement $statement)
+    {
+        $clause = [];
+        foreach ($statement->groupBy as $column) {
+            $clause[] = $this->columnName($column, $statement->tableAlias);
+        }
+        return 'GROUP BY ' . implode(', ', $clause);
+    }
+
+    /**
+     * @param ConditionsStatement $statement
+     * @return string
+     */
+    protected function orderByPart(ConditionsStatement $statement)
+    {
+        $clause = [];
+        foreach ($statement->orderBy as $column => $sort) {
+            $clause[] = $this->columnName($column, $statement->tableAlias) . ' ' . $sort;
+        }
+        return 'ORDER BY ' . implode(', ', $clause);
+    }
+
+    /**
      * @param string $name
      * @return string
      */
@@ -395,7 +427,7 @@ class Formatter
     public function parameter($value)
     {
         if ($value instanceof DateTimeInterface) {
-            return '"'.$value->format(DateTimeInterface::RFC3339_EXTENDED).'"';
+            return '\''.$value->format(DateTimeInterface::RFC3339_EXTENDED).'\'';
         }
 
         return $value;

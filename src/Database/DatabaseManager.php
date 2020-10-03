@@ -57,6 +57,14 @@ class DatabaseManager
     }
 
     /**
+     * @return Connection[]
+     */
+    public function resolvedConnections(): array
+    {
+        return $this->connections;
+    }
+
+    /**
      * @param string $connection
      * @return array
      */
