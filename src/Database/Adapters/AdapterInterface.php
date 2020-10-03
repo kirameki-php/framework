@@ -52,7 +52,27 @@ interface AdapterInterface
     /**
      * @param string $statement
      */
-    public function execute(string $statement): void;
+    public function executeSchema(string $statement): void;
+
+    /**
+     * @return void
+     */
+    public function createDatabase(): void;
+
+    /**
+     * @return void
+     */
+    public function dropDatabase(): void;
+
+    /**
+     * @return bool
+     */
+    public function databaseExists(): bool;
+
+    /**
+     * @param string $table
+     */
+    public function truncate(string $table): void;
 
     /**
      * @return QueryFormatter

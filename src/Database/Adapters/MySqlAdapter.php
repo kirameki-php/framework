@@ -41,4 +41,36 @@ class MySqlAdapter extends PdoAdapter
         $this->pdo = null;
         return $this;
     }
+
+    /**
+     * @return void
+     */
+    public function createDatabase(): void
+    {
+        $this->executeSchema('CREATE DATABASE '.$this->config['database']);
+    }
+
+    /**
+     * @return void
+     */
+    public function dropDatabase(): void
+    {
+        $this->executeSchema('CREATE DATABASE '.$this->config['database']);
+    }
+
+    /**
+     * @return bool
+     */
+    public function databaseExists(): bool
+    {
+        return 'SHOW DATABASES LIKE '.str_replace("'", "''", $this->config['database']);
+    }
+
+    /**
+     * @param string $table
+     */
+    public function truncate(string $table): void
+    {
+        $this->executeSchema('TRUNCATE TABLE '.$table);
+    }
 }

@@ -49,22 +49,6 @@ abstract class PdoAdapter implements AdapterInterface
     }
 
     /**
-     * @return QueryFormatter
-     */
-    public function getQueryFormatter(): QueryFormatter
-    {
-        return new QueryFormatter();
-    }
-
-    /**
-     * @return SchemaFormatter
-     */
-    public function getSchemaFormatter(): SchemaFormatter
-    {
-        return new SchemaFormatter();
-    }
-
-    /**
      * @param string $statement
      * @param array|null $bindings
      * @return array
@@ -100,9 +84,25 @@ abstract class PdoAdapter implements AdapterInterface
     /**
      * @param string $statement
      */
-    public function execute(string $statement): void
+    public function executeSchema(string $statement): void
     {
         $this->getPdo()->exec($statement);
+    }
+
+    /**
+     * @return QueryFormatter
+     */
+    public function getQueryFormatter(): QueryFormatter
+    {
+        return new QueryFormatter();
+    }
+
+    /**
+     * @return SchemaFormatter
+     */
+    public function getSchemaFormatter(): SchemaFormatter
+    {
+        return new SchemaFormatter();
     }
 
     /**
@@ -112,7 +112,7 @@ abstract class PdoAdapter implements AdapterInterface
      */
     protected function execQuery(string $statement, ?array $bindings): PDOStatement
     {
-        $prepared = $this->getPdo()->prepare($statement)($statement);
+        $prepared = $this->getPdo()->prepare($statement);
         $prepared->execute($this->prepareBindings($bindings ?? []));
         return $prepared;
     }

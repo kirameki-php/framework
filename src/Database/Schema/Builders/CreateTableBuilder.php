@@ -28,7 +28,7 @@ class CreateTableBuilder extends StatementBuilder
      * @param int|null $size
      * @return ColumnBuilder
      */
-    public function int(string $column, ?int $size = null)
+    public function int(string $column, ?int $size = null): ColumnBuilder
     {
         return $this->sizeableColumn($column, __FUNCTION__, $size);
     }
@@ -37,7 +37,7 @@ class CreateTableBuilder extends StatementBuilder
      * @param string $column
      * @return ColumnBuilder
      */
-    public function float(string $column)
+    public function float(string $column): ColumnBuilder
     {
         return $this->column($column, __FUNCTION__);
     }
@@ -46,7 +46,7 @@ class CreateTableBuilder extends StatementBuilder
      * @param string $column
      * @return ColumnBuilder
      */
-    public function double(string $column)
+    public function double(string $column): ColumnBuilder
     {
         return $this->column($column, __FUNCTION__);
     }
@@ -57,7 +57,7 @@ class CreateTableBuilder extends StatementBuilder
      * @param int|null $scale
      * @return ColumnBuilder
      */
-    public function decimal(string $column, ?int $precision = null, ?int $scale = null)
+    public function decimal(string $column, ?int $precision = null, ?int $scale = null): ColumnBuilder
     {
         return $this->scalableColumn($column, __FUNCTION__, $precision, $scale);
     }
@@ -66,7 +66,7 @@ class CreateTableBuilder extends StatementBuilder
      * @param string $column
      * @return ColumnBuilder
      */
-    public function bool(string $column)
+    public function bool(string $column): ColumnBuilder
     {
         return $this->column($column, __FUNCTION__);
     }
@@ -75,7 +75,7 @@ class CreateTableBuilder extends StatementBuilder
      * @param string $column
      * @return ColumnBuilder
      */
-    public function date(string $column)
+    public function date(string $column): ColumnBuilder
     {
         return $this->column($column, __FUNCTION__);
     }
@@ -85,7 +85,7 @@ class CreateTableBuilder extends StatementBuilder
      * @param int|null $precision
      * @return ColumnBuilder
      */
-    public function datetime(string $column, ?int $precision = null)
+    public function datetime(string $column, ?int $precision = null): ColumnBuilder
     {
         return $this->sizeableColumn($column, __FUNCTION__, $precision);
     }
@@ -94,7 +94,7 @@ class CreateTableBuilder extends StatementBuilder
      * @param string $column
      * @return ColumnBuilder
      */
-    public function time(string $column)
+    public function time(string $column): ColumnBuilder
     {
         return $this->column($column, __FUNCTION__);
     }
@@ -104,7 +104,7 @@ class CreateTableBuilder extends StatementBuilder
      * @param int|null $size
      * @return ColumnBuilder
      */
-    public function string(string $column, ?int $size = null)
+    public function string(string $column, ?int $size = null): ColumnBuilder
     {
         return $this->sizeableColumn($column, __FUNCTION__, $size);
     }
@@ -113,7 +113,7 @@ class CreateTableBuilder extends StatementBuilder
      * @param string $column
      * @return ColumnBuilder
      */
-    public function text(string $column)
+    public function text(string $column): ColumnBuilder
     {
         return $this->column($column, __FUNCTION__);
     }
@@ -122,7 +122,7 @@ class CreateTableBuilder extends StatementBuilder
      * @param string $column
      * @return ColumnBuilder
      */
-    public function json(string $column)
+    public function json(string $column): ColumnBuilder
     {
         return $this->column($column, __FUNCTION__);
     }
@@ -131,7 +131,7 @@ class CreateTableBuilder extends StatementBuilder
      * @param string $column
      * @return ColumnBuilder
      */
-    public function binary(string $column)
+    public function binary(string $column): ColumnBuilder
     {
         return $this->column($column, __FUNCTION__);
     }
@@ -140,7 +140,7 @@ class CreateTableBuilder extends StatementBuilder
      * @param string $column
      * @return ColumnBuilder
      */
-    public function uuid(string $column)
+    public function uuid(string $column): ColumnBuilder
     {
         return $this->column($column, __FUNCTION__);
     }
@@ -148,7 +148,7 @@ class CreateTableBuilder extends StatementBuilder
     /**
      * @return ColumnBuilderAggregate
      */
-    public function timestamps()
+    public function timestamps(): ColumnBuilderAggregate
     {
         return new ColumnBuilderAggregate([
             $this->datetime('createdAt')->default(Expr::raw('CURRENT_TIMESTAMP')),

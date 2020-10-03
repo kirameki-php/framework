@@ -33,7 +33,7 @@ class CreateTableBuilderTest extends DatabaseTestCase
         $builder = new CreateTableBuilder($this->connection('mysql'), 'users');
         $builder->uuid('id')->primaryKey();
         $schema = $builder->toString();
-        $this->connection('mysql')->execute($schema);
+        $this->connection('mysql')->executeSchema($schema);
         static::assertEquals('CREATE TABLE users (id VARCHAR(36), PRIMARY KEY (id ASC));', $schema);
     }
 

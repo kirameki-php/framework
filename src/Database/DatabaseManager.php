@@ -38,15 +38,7 @@ class DatabaseManager
             return $this->connections[$name];
         }
 
-        $config = config()->get('database.connections.'.$name);
-
-        if ($config === null) {
-            throw new RuntimeException('Undefined database connection: '.$name);
-        }
-
-        $config['connection'] = $name;
-        $config['database'] ??= $name;
-
+        $config = $this->getConfig($name);
         $resolver = $this->getAdapterResolver($config['adapter']);
         $adapter = $resolver($config);
 
@@ -62,6 +54,24 @@ class DatabaseManager
     {
         $this->adapters[$name] = $deferred;
         return $this;
+    }
+
+    /**
+     * @param string $connection
+     * @return array
+     */
+    protected function getConfig(string $connection): array
+    {
+        $config = config()->get('database.connections.'.$connection);
+
+        if ($config === null) {
+            throw new RuntimeException('Undefined database connection: '.$connection);
+        }
+
+        $config['connection'] = $connection;
+        $config['database'] ??= $connection;
+
+        return $config;
     }
 
     /**

@@ -5,7 +5,7 @@ namespace Kirameki\Testing;
 use Kirameki\Core\Application;
 use PHPUnit\Framework\TestCase as BaseTestCase;
 
-class TestCase extends BaseTestCase
+abstract class TestCase extends BaseTestCase
 {
     protected static bool $booted = false;
 
@@ -27,15 +27,9 @@ class TestCase extends BaseTestCase
         register_shutdown_function(fn() => $this->beforeShutdown());
     }
 
-    protected function beforeBoot(): void
-    {
-    }
+    abstract protected function beforeBoot(): void;
 
-    protected function afterBoot(): void
-    {
-    }
+    abstract protected function afterBoot(): void;
 
-    protected function beforeShutdown(): void
-    {
-    }
+    abstract protected function beforeShutdown(): void;
 }

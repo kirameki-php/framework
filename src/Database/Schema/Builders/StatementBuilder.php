@@ -6,7 +6,7 @@ use Kirameki\Database\Connection;
 use Kirameki\Database\Schema\Statements\BaseStatement;
 use Kirameki\Support\Concerns\Tappable;
 
-abstract class StatementBuilder
+abstract class StatementBuilder implements BuilderInterface
 {
     use Tappable;
 

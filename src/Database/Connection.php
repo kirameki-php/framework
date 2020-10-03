@@ -180,8 +180,16 @@ class Connection
     /**
      * @param string $statement
      */
-    public function execute(string $statement): void
+    public function executeSchema(string $statement): void
     {
-        $this->adapter->execute($statement);
+        $this->adapter->executeSchema($statement);
+    }
+
+    /**
+     * @param string $table
+     */
+    public function truncate(string $table)
+    {
+        $this->adapter->truncate($table);
     }
 }

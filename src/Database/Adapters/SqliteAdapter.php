@@ -6,14 +6,19 @@ use PDO;
 
 class SqliteAdapter extends PdoAdapter
 {
+    public function __construct(array $config)
+    {
+        $config['path'] ??= app()->getStoragePath($config['connection'].'.db');
+        parent::__construct($config);
+    }
+
     /**
      * @return $this
      */
     public function connect()
     {
-        $config = $this->config;
-        $path = $config['path'] ?? app()->getStoragePath($config['connection'].'.db');
-        $dsn = 'sqlite:'.$path;
+        $config = $this->getConfig();
+        $dsn = 'sqlite:'.$config['path'];
         $options = $config['options'] ?? [];
         $options+= [
             PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
@@ -30,5 +35,39 @@ class SqliteAdapter extends PdoAdapter
     {
         $this->pdo = null;
         return $this;
+    }
+
+    /**
+     * @return void
+     */
+    public function createDatabase(): void
+    {
+        $this->config['path'];
+    }
+
+    /**
+     * @return void
+     */
+    public function dropDatabase(): void
+    {
+        if ($this->databaseExists()) {
+            unlink($this->config['path']);
+        }
+    }
+
+    /**
+     * @return bool
+     */
+    public function databaseExists(): bool
+    {
+        return file_exists($this->config['path']);
+    }
+
+    /**
+     * @param string $table
+     */
+    public function truncate(string $table): void
+    {
+        $this->executeSchema('DELETE FROM '.$table);
     }
 }
