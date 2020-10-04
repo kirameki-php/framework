@@ -93,7 +93,7 @@ abstract class Migration
      */
     public function apply(): void
     {
-        $this->using->query(implode(PHP_EOL, $this->toDdls()));
+        $this->using->executeSchema(implode(PHP_EOL, $this->toDdls()));
     }
 
     /**

@@ -16,6 +16,7 @@ class MySql_MigrationTestCase extends DatabaseTestCase
         $adapter = new MySqlAdapter(['host' => 'mysql', 'database' => 'migration_test']);
         $connection = new Connection('migration_test', $adapter);
         db()->addConnection($connection);
+        $adapter->dropDatabase();
         $adapter->createDatabase();
     }
 

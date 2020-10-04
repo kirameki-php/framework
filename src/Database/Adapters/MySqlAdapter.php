@@ -2,7 +2,6 @@
 
 namespace Kirameki\Database\Adapters;
 
-use Kirameki\Database\Query\Formatters\Formatter as QueryFormatter;
 use Kirameki\Database\Query\Formatters\MySqlFormatter as MySqlQueryFormatter;
 use PDO;
 
@@ -67,7 +66,7 @@ class MySqlAdapter extends PdoAdapter
         $copy->config['database'] = null;
         $copy->executeSchema(implode(' ', array_filter([
             'CREATE DATABASE',
-            $ifNotExist ? 'IF NOT EXISTS ' : null,
+            $ifNotExist ? 'IF NOT EXISTS' : null,
             $this->config['database'],
         ])));
     }
@@ -77,9 +76,11 @@ class MySqlAdapter extends PdoAdapter
      */
     public function dropDatabase(bool $ifNotExist = true): void
     {
-        $this->executeSchema(implode(' ', array_filter([
+        $copy = (clone $this);
+        $copy->config['database'] = null;
+        $copy->executeSchema(implode(' ', array_filter([
             'DROP DATABASE',
-            $ifNotExist ? 'IF NOT EXISTS ' : null,
+            $ifNotExist ? 'IF EXISTS' : null,
             $this->config['database'],
         ])));
     }
