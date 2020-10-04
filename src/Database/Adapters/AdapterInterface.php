@@ -55,14 +55,14 @@ interface AdapterInterface
     public function executeSchema(string $statement): void;
 
     /**
-     * @return void
+     * @param bool $ifNotExist
      */
-    public function createDatabase(): void;
+    public function createDatabase(bool $ifNotExist = true): void;
 
     /**
-     * @return void
+     * @param bool $ifNotExist
      */
-    public function dropDatabase(): void;
+    public function dropDatabase(bool $ifNotExist = true): void;
 
     /**
      * @return bool

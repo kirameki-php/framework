@@ -38,21 +38,23 @@ class SqliteAdapter extends PdoAdapter
     }
 
     /**
+     * @param bool $ifNotExist
      * @return void
      */
-    public function createDatabase(): void
+    public function createDatabase(bool $ifNotExist = true): void
     {
-        $this->config['path'];
+        // nothing necessary
     }
 
     /**
-     * @return void
+     * @param bool $ifNotExist
      */
-    public function dropDatabase(): void
+    public function dropDatabase(bool $ifNotExist = true): void
     {
-        if ($this->databaseExists()) {
-            unlink($this->config['path']);
+        if ($ifNotExist && !$this->databaseExists()) {
+            return;
         }
+        unlink($this->config['path']);
     }
 
     /**

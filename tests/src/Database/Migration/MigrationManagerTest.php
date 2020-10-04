@@ -6,11 +6,12 @@ use Kirameki\Database\Migration\MigrationManager;
 use Kirameki\Tests\Database\DatabaseTestCase;
 use Kirameki\Tests\TestCase;
 
-class MigrationManagerTest extends DatabaseTestCase
+class MigrationManagerTest extends MySql_MigrationTestCase
 {
     public function testMigrateUp()
     {
         $manager = new MigrationManager(__DIR__.'/files');
-//        dump($manager->inspectUp());
+        dump($manager->inspectUp());
+        $manager->up();
     }
 }

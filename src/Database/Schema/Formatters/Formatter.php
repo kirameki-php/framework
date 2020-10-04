@@ -2,6 +2,7 @@
 
 namespace Kirameki\Database\Schema\Formatters;
 
+use Closure;
 use Kirameki\Database\Schema\Statements\AlterColumnAction;
 use Kirameki\Database\Schema\Statements\AlterDropColumnAction;
 use Kirameki\Database\Schema\Statements\AlterRenameColumnAction;
@@ -9,6 +10,7 @@ use Kirameki\Database\Schema\Statements\AlterTableStatement;
 use Kirameki\Database\Schema\Statements\CreateIndexStatement;
 use Kirameki\Database\Schema\Statements\BaseStatement;
 use Kirameki\Database\Schema\Statements\DropIndexStatement;
+use Kirameki\Database\Schema\Support\CurrentTimestamp;
 use Kirameki\Database\Support\Expr;
 use Kirameki\Database\Schema\Statements\ColumnDefinition;
 use Kirameki\Database\Schema\Statements\CreateTableStatement;
@@ -162,12 +164,12 @@ class Formatter
     {
         $parts = [];
         $parts[] = $def->name;
-        $parts[] = $this->columnType($def->type, $def->size, $def->scale);
+        $parts[] = $this->columnType($def);
         if (!$def->nullable) {
             $parts[] = 'NOT NULL';
         }
         if ($def->default !== null) {
-            $parts[] = 'DEFAULT '.$this->value($def->type, $def->default);
+            $parts[] = 'DEFAULT '.$this->defaultValue($def);
         }
         if ($def->autoIncrement) {
             $parts[] = 'AUTO_INCREMENT';
@@ -179,35 +181,35 @@ class Formatter
     }
 
     /**
-     * @param string $type
-     * @param int|null $size
-     * @param int|null $scale
+     * @param ColumnDefinition $def
      * @return string
      */
-    protected function columnType(string $type, ?int $size, ?int $scale): string
+    protected function columnType(ColumnDefinition $def): string
     {
-        if ($type === 'int') {
-            if ($size === null) return 'BIGINT';
-            if ($size === 1) return 'TINYINT';
-            if ($size === 2) return 'SMALLINT';
-            if ($size === 4) return 'INT';
-            if ($size === 8) return 'BIGINT';
+        if ($def->type === 'int') {
+            if ($def->size === null) return 'BIGINT';
+            if ($def->size === 1) return 'TINYINT';
+            if ($def->size === 2) return 'SMALLINT';
+            if ($def->size === 4) return 'INT';
+            if ($def->size === 8) return 'BIGINT';
         }
-        if ($type === 'decimal') {
-            $args = Arr::compact([$size, $scale]);
+        if ($def->type === 'decimal') {
+            $args = Arr::compact([$def->size, $def->scale]);
             return 'DECIMAL'.(!empty($args) ? '('.implode(',', $args).')' : '');
         }
-        if ($type === 'datetime') {
-            return 'DATETIME('.($size ?? 6).')';
+        if ($def->type === 'datetime') {
+            $def->size ??= 6;
+            return 'DATETIME('.$def->size.')';
         }
-        if ($type === 'string') {
-            return 'VARCHAR('.($size ?? 191).')';
+        if ($def->type === 'string') {
+            $def->size ??= 191;
+            return 'VARCHAR('.$def->size.')';
         }
-        if ($type === 'uuid') {
+        if ($def->type === 'uuid') {
             return 'VARCHAR(36)';
         }
-        $args = Arr::compact([$size, $scale]);
-        return strtoupper($type).(!empty($args) ? '('.implode(',', $args).')' : '');
+        $args = Arr::compact([$def->size, $def->scale]);
+        return strtoupper($def->type).(!empty($args) ? '('.implode(',', $args).')' : '');
     }
 
     /**
@@ -223,20 +225,24 @@ class Formatter
     }
 
     /**
-     * @param string $type
-     * @param $value
+     * @param ColumnDefinition $def
      * @return string
      */
-    protected function value(string $type, $value): string
+    protected function defaultValue(ColumnDefinition $def): string
     {
-        if ($value instanceof Expr) {
-            return $value->toString();
-        }
+        $value = $def->default;
+
         if (is_string($value)) {
             return $this->stringLiteral($value);
         }
         if (is_bool($value)) {
             return $value ? 'TRUE' : 'FALSE';
+        }
+        if ($value instanceof Expr) {
+            $value = $value->toString();
+        }
+        if ($value instanceof CurrentTimestamp) {
+            $value = 'CURRENT_TIMESTAMP'.($def->size ? '('.$def->size.')' : '');
         }
         return $value;
     }

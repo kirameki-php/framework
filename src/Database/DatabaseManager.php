@@ -46,6 +46,16 @@ class DatabaseManager
     }
 
     /**
+     * @param Connection $connection
+     * @return $this
+     */
+    public function addConnection(Connection $connection)
+    {
+        $this->connections[$connection->getName()] = $connection;
+        return $this;
+    }
+
+    /**
      * @param string $name
      * @param Closure $deferred
      * @return $this

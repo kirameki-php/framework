@@ -146,13 +146,14 @@ class CreateTableBuilder extends StatementBuilder
     }
 
     /**
+     * @param int|null $precision
      * @return ColumnBuilderAggregate
      */
-    public function timestamps(): ColumnBuilderAggregate
+    public function timestamps(?int $precision = null): ColumnBuilderAggregate
     {
         return new ColumnBuilderAggregate([
-            $this->datetime('createdAt')->default(Expr::raw('CURRENT_TIMESTAMP')),
-            $this->datetime('updatedAt')->default(Expr::raw('CURRENT_TIMESTAMP')),
+            $this->datetime('createdAt', $precision)->currentAsDefault(),
+            $this->datetime('updatedAt', $precision)->currentAsDefault(),
         ]);
     }
 
@@ -191,7 +192,7 @@ class CreateTableBuilder extends StatementBuilder
      */
     protected function column(string $name, string $type, ?int $size = null, ?int $scale = null): ColumnBuilder
     {
-        $definition = new ColumnDefinition($name, $type);
+        $definition = new ColumnDefinition($name, $type, $size, $scale);
         $this->statement->columns[] = $definition;
         return new ColumnBuilder($definition);
     }

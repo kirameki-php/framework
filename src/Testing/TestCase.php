@@ -12,9 +12,10 @@ abstract class TestCase extends BaseTestCase
     protected Application $app;
 
     /**
+     * @private
      * @before
      */
-    private function setUpApplication(): void
+    protected function setUpApplication(): void
     {
         if (!static::$booted) $this->beforeBoot();
 

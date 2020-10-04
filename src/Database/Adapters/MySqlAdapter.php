@@ -14,15 +14,21 @@ class MySqlAdapter extends PdoAdapter
     public function connect()
     {
         $config = $this->config;
+        $parts = [];
         if (isset($config['socket'])) {
-            $hostOrSocket = 'unix_socket='.$config['socket'];
+            $parts[] = 'unix_socket='.$config['socket'];
         } else {
-            $hostOrSocket = 'host='.$config['host'];
-            $hostOrSocket.= isset($config['port']) ? 'port='.$config['port'] : '';
+            $host = 'host='.$config['host'];
+            $host.= isset($config['port']) ? 'port='.$config['port'] : '';
+            $parts[] = $host;
         }
-        $database = isset($config['database']) ? 'dbname='.$config['database'] : '';
-        $charset = isset($config['charset']) ? 'charset='.$config['charset'] : '';
-        $dsn = "mysql:{$hostOrSocket};{$database};{$charset}";
+        if (isset($config['database'])) {
+            $parts[] = 'dbname='.$config['database'];
+        }
+        if (isset($config['charset'])) {
+            $parts[] = 'charset='.$config['charset'];
+        }
+        $dsn = 'mysql:'.implode(';', $parts);
         $username = $config['username'] ?? 'root';
         $password = $config['password'] ?? null;
         $options = $config['options'] ?? [];
@@ -53,21 +59,29 @@ class MySqlAdapter extends PdoAdapter
     }
 
     /**
-     * @return void
+     * @param bool $ifNotExist
      */
-    public function createDatabase(): void
+    public function createDatabase(bool $ifNotExist = true): void
     {
         $copy = (clone $this);
         $copy->config['database'] = null;
-        $copy->executeSchema('CREATE DATABASE '.$this->config['database']);
+        $copy->executeSchema(implode(' ', array_filter([
+            'CREATE DATABASE',
+            $ifNotExist ? 'IF NOT EXISTS ' : null,
+            $this->config['database'],
+        ])));
     }
 
     /**
-     * @return void
+     * @param bool $ifNotExist
      */
-    public function dropDatabase(): void
+    public function dropDatabase(bool $ifNotExist = true): void
     {
-        $this->executeSchema('CREATE DATABASE '.$this->config['database']);
+        $this->executeSchema(implode(' ', array_filter([
+            'DROP DATABASE',
+            $ifNotExist ? 'IF NOT EXISTS ' : null,
+            $this->config['database'],
+        ])));
     }
 
     /**

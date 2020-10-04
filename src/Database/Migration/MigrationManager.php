@@ -46,7 +46,7 @@ class MigrationManager
      * @param DateTime|null $since
      * @return Migration[]
      */
-    public function inspectUp(?DateTime $since = null)
+    public function inspectUp(?DateTime $since = null): array
     {
         return $this->inspect('up', $since);
     }
@@ -55,7 +55,7 @@ class MigrationManager
      * @param DateTime|null $since
      * @return Migration[]
      */
-    public function inspectDown(?DateTime $since = null)
+    public function inspectDown(?DateTime $since = null): array
     {
         return $this->inspect('down', $since);
     }
@@ -65,7 +65,7 @@ class MigrationManager
      * @param DateTime|null $since
      * @return array
      */
-    public function inspect(string $direction, ?DateTime $since = null)
+    protected function inspect(string $direction, ?DateTime $since = null): array
     {
         $ddls = [];
         foreach ($this->readMigrations($since) as $migration) {
@@ -87,7 +87,7 @@ class MigrationManager
             $datetime = strstr(class_basename($file), '_', true);
             if ($datetime === null || $datetime >= $start) {
                 $className = rtrim(ltrim(strstr($file, '_'), '_'), '.php');
-                require $file;
+                require_once $file;
                 $migrations[] = new $className($datetime);
             }
         }

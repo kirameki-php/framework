@@ -3,6 +3,8 @@
 namespace Kirameki\Database\Schema\Builders;
 
 use Kirameki\Database\Schema\Statements\ColumnDefinition;
+use Kirameki\Database\Schema\Support\CurrentTimestamp;
+use Kirameki\Database\Support\Expr;
 
 class ColumnBuilder
 {
@@ -64,5 +66,13 @@ class ColumnBuilder
     {
         $this->definition->default = $value;
         return $this;
+    }
+
+    /**
+     * @return $this
+     */
+    public function currentAsDefault()
+    {
+        return $this->default(CurrentTimestamp::instance());
     }
 }
