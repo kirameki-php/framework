@@ -88,7 +88,7 @@ class MigrationManager
             if ($datetime === null || $datetime >= $start) {
                 $className = rtrim(ltrim(strstr($file, '_'), '_'), '.php');
                 require $file;
-                $migrations[]= new $className($datetime);
+                $migrations[] = new $className($datetime);
             }
         }
         return $migrations;

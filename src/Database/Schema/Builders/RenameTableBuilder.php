@@ -9,16 +9,33 @@ use Kirameki\Database\Schema\Statements\CreateTableStatement;
 use Kirameki\Database\Schema\Statements\BaseStatement;
 use Kirameki\Database\Support\Expr;
 
-class DropTableBuilder extends StatementBuilder
+class RenameTableBuilder implements BuilderInterface
 {
     /**
-     * @param Connection $connection
-     * @param string $table
+     * @var Connection
      */
-    public function __construct(Connection $connection, string $table)
+    protected Connection $connection;
+
+    /**
+     * @var string
+     */
+    protected string $from;
+
+    /**
+     * @var string
+     */
+    protected string $to;
+
+    /**
+     * @param Connection $connection
+     * @param string $from
+     * @param string $to
+     */
+    public function __construct(Connection $connection, string $from, string $to)
     {
         $this->connection = $connection;
-        $this->statement = new BaseStatement($table);
+        $this->from = $from;
+        $this->to = $to;
     }
 
     /**
@@ -28,7 +45,7 @@ class DropTableBuilder extends StatementBuilder
     {
         $formatter = $this->connection->getSchemaFormatter();
         return [
-            $formatter->dropTableStatement($this->statement)
+            $formatter->renameTableStatement($this->from, $this->to),
         ];
     }
 }

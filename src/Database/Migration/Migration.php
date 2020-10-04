@@ -5,6 +5,7 @@ namespace Kirameki\Database\Migration;
 use DateTime;
 use Kirameki\Database\Connection;
 use Kirameki\Database\Schema\Builders\DropTableBuilder;
+use Kirameki\Database\Schema\Builders\RenameTableBuilder;
 use Kirameki\Database\Schema\Builders\StatementBuilder;
 use Kirameki\Database\Schema\Builders\CreateIndexBuilder;
 use Kirameki\Database\Schema\Builders\CreateTableBuilder;
@@ -98,7 +99,7 @@ abstract class Migration
      */
     public function createTable(string $table): CreateTableBuilder
     {
-        return $this->builders[]= new CreateTableBuilder($this->connection, $table);
+        return $this->builders[] = new CreateTableBuilder($this->connection, $table);
     }
 
     /**
@@ -107,7 +108,12 @@ abstract class Migration
      */
     public function dropTable(string $table): DropTableBuilder
     {
-        return $this->builders[]= new DropTableBuilder($this->connection, $table);
+        return $this->builders[] = new DropTableBuilder($this->connection, $table);
+    }
+
+    public function renameTable(string $from, string $to)
+    {
+        return $this->builders[] = new RenameTableBuilder($this->connection, $from, $to);
     }
 
     /**
@@ -118,6 +124,6 @@ abstract class Migration
     {
         $statement = new CreateIndexStatement($table);
         $builder = new CreateIndexBuilder($this->connection, $statement);
-        return $this->builders[]= $builder;
+        return $this->builders[] = $builder;
     }
 }

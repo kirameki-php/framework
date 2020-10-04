@@ -236,9 +236,9 @@ class CreateTableBuilder extends StatementBuilder
         $this->preprocess();
         $formatter = $this->connection->getSchemaFormatter();
         $ddls = [];
-        $ddls[] = $formatter->statementForCreateTable($this->statement);
+        $ddls[] = $formatter->createTableStatement($this->statement);
         foreach ($this->statement->indexes as $indexStatement) {
-            $ddls[] = $formatter->statementForCreateIndex($indexStatement);
+            $ddls[] = $formatter->createIndexStatement($indexStatement);
         }
         return $ddls;
     }

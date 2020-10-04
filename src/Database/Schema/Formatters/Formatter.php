@@ -21,14 +21,14 @@ class Formatter
      * @param CreateTableStatement $statement
      * @return string
      */
-    public function statementForCreateTable(CreateTableStatement $statement): string
+    public function createTableStatement(CreateTableStatement $statement): string
     {
         $parts = [];
-        $parts[]= 'CREATE TABLE';
-        $parts[]= $statement->table;
+        $parts[] = 'CREATE TABLE';
+        $parts[] = $statement->table;
         $columnParts = [];
         foreach ($statement->columns as $definition) {
-            $columnParts[]= $this->column($definition);
+            $columnParts[] = $this->column($definition);
         }
         $pkParts = [];
         foreach ($statement->primaryKey->columns as $column => $order) {
@@ -45,7 +45,7 @@ class Formatter
      * @param BaseStatement $statement
      * @return string
      */
-    public function statementForDropTable(BaseStatement $statement): string
+    public function dropTableStatement(BaseStatement $statement): string
     {
         return 'DROP TABLE '.$statement->table.';';
     }
@@ -54,24 +54,24 @@ class Formatter
      * @param CreateIndexStatement $statement
      * @return string
      */
-    public function statementForCreateIndex(CreateIndexStatement $statement): string
+    public function createIndexStatement(CreateIndexStatement $statement): string
     {
         $parts = [];
-        $parts[]= 'CREATE';
+        $parts[] = 'CREATE';
         if ($statement->unique) {
             $parts[] = 'UNIQUE';
         }
-        $parts[]= 'INDEX';
-        $parts[]= $statement->name ?? implode('_', array_merge([$statement->table], array_keys($statement->columns)));
-        $parts[]= 'ON';
-        $parts[]= $statement->table;
+        $parts[] = 'INDEX';
+        $parts[] = $statement->name ?? implode('_', array_merge([$statement->table], array_keys($statement->columns)));
+        $parts[] = 'ON';
+        $parts[] = $statement->table;
         $columnParts = [];
         foreach ($statement->columns as $column => $order) {
             $columnParts[] = "$column $order";
         }
         $parts[] = '('.implode(', ', $columnParts).')';
         if ($statement->comment !== null) {
-            $parts[]= $this->stringLiteral($statement->comment);
+            $parts[] = $this->stringLiteral($statement->comment);
         }
         return implode(' ', $parts).';';
     }
@@ -80,10 +80,20 @@ class Formatter
      * @param DropIndexStatement $statement
      * @return string
      */
-    public function statementForDropIndex(DropIndexStatement $statement): string
+    public function dropIndexStatement(DropIndexStatement $statement): string
     {
         $name = $statement->name ?? implode('_', array_merge([$statement->table], $statement->columns));
         return 'DROP INDEX '.$name.' ON '.$statement->table.';';
+    }
+
+    /**
+     * @param string $from
+     * @param string $to
+     * @return string
+     */
+    public function renameTableStatement(string $from, string $to): string
+    {
+        return 'ALTER TABLE '.$this->addQuotes($from).' RENAME TO '.$this->addQuotes($to).';';
     }
 
     /**
