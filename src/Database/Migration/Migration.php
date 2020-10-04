@@ -33,7 +33,7 @@ abstract class Migration
     /**
      * @var Connection
      */
-    protected Connection $connection;
+    protected Connection $using;
 
     /**
      * @param string|null $time
@@ -60,7 +60,7 @@ abstract class Migration
      */
     public function using(string $connection)
     {
-        $this->connection = db()->using($connection);
+        $this->using = db()->using($connection);
         return $this;
     }
 
@@ -93,7 +93,7 @@ abstract class Migration
      */
     public function apply(): void
     {
-        $this->connection->query(implode(PHP_EOL, $this->toDdls()));
+        $this->using->query(implode(PHP_EOL, $this->toDdls()));
     }
 
     /**
@@ -102,7 +102,7 @@ abstract class Migration
      */
     public function createTable(string $table): CreateTableBuilder
     {
-        return $this->builders[] = new CreateTableBuilder($this->connection, $table);
+        return $this->builders[] = new CreateTableBuilder($this->using, $table);
     }
 
     /**
@@ -111,7 +111,7 @@ abstract class Migration
      */
     public function dropTable(string $table): DropTableBuilder
     {
-        return $this->builders[] = new DropTableBuilder($this->connection, $table);
+        return $this->builders[] = new DropTableBuilder($this->using, $table);
     }
 
     /**
@@ -120,7 +120,7 @@ abstract class Migration
      */
     public function alterTable(string $table): AlterTableBuilder
     {
-        return $this->builders[] = new AlterTableBuilder($this->connection, $table);
+        return $this->builders[] = new AlterTableBuilder($this->using, $table);
     }
 
     /**
@@ -130,7 +130,7 @@ abstract class Migration
      */
     public function renameTable(string $from, string $to): RenameTableBuilder
     {
-        return $this->builders[] = new RenameTableBuilder($this->connection, $from, $to);
+        return $this->builders[] = new RenameTableBuilder($this->using, $from, $to);
     }
 
     /**
@@ -140,12 +140,12 @@ abstract class Migration
     public function createIndex(string $table): CreateIndexBuilder
     {
         $statement = new CreateIndexStatement($table);
-        return $this->builders[] = new CreateIndexBuilder($this->connection, $statement);
+        return $this->builders[] = new CreateIndexBuilder($this->using, $statement);
     }
 
     public function dropIndex(string $table)
     {
         $statement = new DropIndexStatement($table);
-        return $this->builders[] = new DropIndexBuilder($this->connection, $statement);
+        return $this->builders[] = new DropIndexBuilder($this->using, $statement);
     }
 }

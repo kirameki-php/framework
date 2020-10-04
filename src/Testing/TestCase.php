@@ -7,14 +7,14 @@ use PHPUnit\Framework\TestCase as BaseTestCase;
 
 abstract class TestCase extends BaseTestCase
 {
-    protected static bool $booted = false;
+    private static bool $booted = false;
 
     protected Application $app;
 
     /**
      * @before
      */
-    protected function setUpApplication(): void
+    private function setUpApplication(): void
     {
         if (!static::$booted) $this->beforeBoot();
 

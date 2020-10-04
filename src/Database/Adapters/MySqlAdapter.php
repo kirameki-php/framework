@@ -57,7 +57,9 @@ class MySqlAdapter extends PdoAdapter
      */
     public function createDatabase(): void
     {
-        $this->executeSchema('CREATE DATABASE '.$this->config['database']);
+        $copy = (clone $this);
+        $copy->config['database'] = null;
+        $copy->executeSchema('CREATE DATABASE '.$this->config['database']);
     }
 
     /**
