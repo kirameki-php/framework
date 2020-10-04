@@ -30,7 +30,7 @@ class CreateTableBuilder extends StatementBuilder
      */
     public function int(string $column, ?int $size = null): ColumnBuilder
     {
-        return $this->sizeableColumn($column, __FUNCTION__, $size);
+        return $this->column($column, __FUNCTION__, $size);
     }
 
     /**
@@ -59,7 +59,7 @@ class CreateTableBuilder extends StatementBuilder
      */
     public function decimal(string $column, ?int $precision = null, ?int $scale = null): ColumnBuilder
     {
-        return $this->scalableColumn($column, __FUNCTION__, $precision, $scale);
+        return $this->column($column, __FUNCTION__, $precision, $scale);
     }
 
     /**
@@ -87,7 +87,7 @@ class CreateTableBuilder extends StatementBuilder
      */
     public function datetime(string $column, ?int $precision = null): ColumnBuilder
     {
-        return $this->sizeableColumn($column, __FUNCTION__, $precision);
+        return $this->column($column, __FUNCTION__, $precision);
     }
 
     /**
@@ -106,7 +106,7 @@ class CreateTableBuilder extends StatementBuilder
      */
     public function string(string $column, ?int $size = null): ColumnBuilder
     {
-        return $this->sizeableColumn($column, __FUNCTION__, $size);
+        return $this->column($column, __FUNCTION__, $size);
     }
 
     /**
@@ -157,19 +157,6 @@ class CreateTableBuilder extends StatementBuilder
     }
 
     /**
-     * @param string $name
-     * @param string $type
-     * @return ColumnBuilder
-     */
-    public function column(string $name, string $type): ColumnBuilder
-    {
-        $definition = new ColumnDefinition($name, $type);
-        $this->statement->columns ??= [];
-        $this->statement->columns[] = $definition;
-        return new ColumnBuilder($definition);
-    }
-
-    /**
      * @param $columns
      * @return void
      */
@@ -190,7 +177,6 @@ class CreateTableBuilder extends StatementBuilder
     public function index($columns): CreateIndexBuilder
     {
         $statement = new CreateIndexStatement($this->statement->table);
-        $this->statement->indexes ??= [];
         $this->statement->indexes[] = $statement;
         $builder = new CreateIndexBuilder($this->connection, $statement);
         return $builder->columns($columns);
@@ -200,30 +186,12 @@ class CreateTableBuilder extends StatementBuilder
      * @param string $name
      * @param string $type
      * @param int|null $size
-     * @return ColumnBuilder
-     */
-    protected function sizeableColumn(string $name, string $type, ?int $size)
-    {
-        $definition = new ColumnDefinition($name, $type);
-        $definition->size = $size;
-        $this->statement->columns ??= [];
-        $this->statement->columns[] = $definition;
-        return new ColumnBuilder($definition);
-    }
-
-    /**
-     * @param string $name
-     * @param string $type
-     * @param int|null $precision
      * @param int|null $scale
      * @return ColumnBuilder
      */
-    public function scalableColumn(string $name, string $type, ?int $precision, ?int $scale)
+    protected function column(string $name, string $type, ?int $size = null, ?int $scale = null): ColumnBuilder
     {
         $definition = new ColumnDefinition($name, $type);
-        $definition->size = $precision;
-        $definition->scale = $scale;
-        $this->statement->columns ??= [];
         $this->statement->columns[] = $definition;
         return new ColumnBuilder($definition);
     }

@@ -27,9 +27,9 @@ class CreateIndexStatement extends BaseStatement
     public ?string $comment;
 
     /**
-     * @param string|null $table
+     * @param string $table
      */
-    public function __construct(?string $table)
+    public function __construct(string $table)
     {
         parent::__construct($table);
         $this->name = null;

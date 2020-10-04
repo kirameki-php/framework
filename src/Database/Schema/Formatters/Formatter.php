@@ -2,6 +2,10 @@
 
 namespace Kirameki\Database\Schema\Formatters;
 
+use Kirameki\Database\Schema\Statements\AlterColumnAction;
+use Kirameki\Database\Schema\Statements\AlterDropColumnAction;
+use Kirameki\Database\Schema\Statements\AlterRenameColumnAction;
+use Kirameki\Database\Schema\Statements\AlterTableStatement;
 use Kirameki\Database\Schema\Statements\CreateIndexStatement;
 use Kirameki\Database\Schema\Statements\BaseStatement;
 use Kirameki\Database\Schema\Statements\DropIndexStatement;
@@ -39,6 +43,70 @@ class Formatter
         }
         $parts[] = '('.implode(', ', $columnParts).')';
         return implode(' ', $parts).';';
+    }
+
+    /**
+     * @param AlterColumnAction $action
+     * @return string
+     */
+    public function addColumnAction(AlterColumnAction $action): string
+    {
+        $parts = [];
+        $parts[] = 'ADD COLUMN';
+        $parts[] = $this->column($action->definition);
+        $parts[] = $action->positionType;
+        $parts[] = $action->positionColumn;
+        return implode(' ', array_filter($parts));
+    }
+
+    /**
+     * @param AlterColumnAction $action
+     * @return string
+     */
+    public function modifyColumnAction(AlterColumnAction $action): string
+    {
+        $parts = [];
+        $parts[] = 'MODIFY COLUMN';
+        $parts[] = $this->column($action->definition);
+        $parts[] = $action->positionType;
+        $parts[] = $action->positionColumn;
+        return implode(' ', array_filter($parts));
+    }
+
+    /**
+     * @param AlterDropColumnAction $action
+     * @return string
+     */
+    public function dropColumnAction(AlterDropColumnAction $action): string
+    {
+        $parts = [];
+        $parts[] = 'DROP COLUMN';
+        $parts[] = $this->addQuotes($action->column);
+        return implode(' ', $parts);
+    }
+
+    /**
+     * @param AlterRenameColumnAction $action
+     * @return string
+     */
+    public function renameColumnAction(AlterRenameColumnAction $action): string
+    {
+        $parts = [];
+        $parts[] = 'RENAME COLUMN';
+        $parts[] = $this->addQuotes($action->from);
+        $parts[] = 'TO';
+        $parts[] = $this->addQuotes($action->to);
+        return implode(' ', $parts);
+    }
+
+    /**
+     * @param string $from
+     * @param string $to
+     * @return string
+     */
+    public function renameTableStatement(string $from, string $to): string
+    {
+        return 'ALTER TABLE '.$this->addQuotes($from).' RENAME TO '.$this->addQuotes($to).';';
     }
 
     /**
@@ -84,16 +152,6 @@ class Formatter
     {
         $name = $statement->name ?? implode('_', array_merge([$statement->table], $statement->columns));
         return 'DROP INDEX '.$name.' ON '.$statement->table.';';
-    }
-
-    /**
-     * @param string $from
-     * @param string $to
-     * @return string
-     */
-    public function renameTableStatement(string $from, string $to): string
-    {
-        return 'ALTER TABLE '.$this->addQuotes($from).' RENAME TO '.$this->addQuotes($to).';';
     }
 
     /**

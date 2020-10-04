@@ -11,12 +11,12 @@ class DropIndexBuilder extends StatementBuilder
 {
     /**
      * @param Connection $connection
-     * @param string $table
+     * @param DropIndexStatement $statement
      */
-    public function __construct(Connection $connection, string $table)
+    public function __construct(Connection $connection, DropIndexStatement $statement)
     {
         $this->connection = $connection;
-        $this->statement = new DropIndexStatement($table);
+        $this->statement = $statement;
     }
 
     /**

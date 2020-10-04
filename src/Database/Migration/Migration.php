@@ -4,12 +4,15 @@ namespace Kirameki\Database\Migration;
 
 use DateTime;
 use Kirameki\Database\Connection;
+use Kirameki\Database\Schema\Builders\AlterTableBuilder;
+use Kirameki\Database\Schema\Builders\DropIndexBuilder;
 use Kirameki\Database\Schema\Builders\DropTableBuilder;
 use Kirameki\Database\Schema\Builders\RenameTableBuilder;
 use Kirameki\Database\Schema\Builders\StatementBuilder;
 use Kirameki\Database\Schema\Builders\CreateIndexBuilder;
 use Kirameki\Database\Schema\Builders\CreateTableBuilder;
 use Kirameki\Database\Schema\Statements\CreateIndexStatement;
+use Kirameki\Database\Schema\Statements\DropIndexStatement;
 use Kirameki\Support\Arr;
 use Kirameki\Support\Concerns\Tappable;
 
@@ -111,7 +114,21 @@ abstract class Migration
         return $this->builders[] = new DropTableBuilder($this->connection, $table);
     }
 
-    public function renameTable(string $from, string $to)
+    /**
+     * @param string $table
+     * @return AlterTableBuilder
+     */
+    public function alterTable(string $table): AlterTableBuilder
+    {
+        return $this->builders[] = new AlterTableBuilder($this->connection, $table);
+    }
+
+    /**
+     * @param string $from
+     * @param string $to
+     * @return RenameTableBuilder
+     */
+    public function renameTable(string $from, string $to): RenameTableBuilder
     {
         return $this->builders[] = new RenameTableBuilder($this->connection, $from, $to);
     }
@@ -123,7 +140,12 @@ abstract class Migration
     public function createIndex(string $table): CreateIndexBuilder
     {
         $statement = new CreateIndexStatement($table);
-        $builder = new CreateIndexBuilder($this->connection, $statement);
-        return $this->builders[] = $builder;
+        return $this->builders[] = new CreateIndexBuilder($this->connection, $statement);
+    }
+
+    public function dropIndex(string $table)
+    {
+        $statement = new DropIndexStatement($table);
+        return $this->builders[] = new DropIndexBuilder($this->connection, $statement);
     }
 }

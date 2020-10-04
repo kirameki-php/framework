@@ -6,7 +6,7 @@ class ColumnDefinition
 {
     public string $name;
 
-    public string $type;
+    public ?string $type;
 
     public ?int $size;
 
@@ -22,12 +22,33 @@ class ColumnDefinition
 
     public $default;
 
-    public function __construct(string $name, string $type)
+    public static function withSize(string $name, string $type, ?int $size)
+    {
+        $instance = new static($name, $type);
+        $instance->size = $size;
+        return $instance;
+    }
+
+    public static function withScale(string $name, string $type, ?int $precision, ?int $scale)
+    {
+        $instance = new static($name, $type);
+        $instance->size = $precision;
+        $instance->scale = $scale;
+        return $instance;
+    }
+
+    /**
+     * @param string $name
+     * @param string|null $type
+     * @param int|null $size
+     * @param int|null $scale
+     */
+    public function __construct(string $name, string $type = null, ?int $size = null, ?int $scale = null)
     {
         $this->name = $name;
         $this->type = $type;
-        $this->size = null;
-        $this->scale = null;
+        $this->size = $size;
+        $this->scale = $scale;
         $this->primaryKey = null;
         $this->nullable = true;
         $this->autoIncrement = null;
