@@ -50,6 +50,43 @@ interface AdapterInterface
     public function cursor(string $statement, array $bindings): Generator;
 
     /**
+     * @param callable $callable
+     * @param mixed ...$args
+     * @return mixed
+     */
+    public function transaction(callable $callable, ...$args);
+
+    /**
+     * @return void
+     */
+    public function beginTransaction(): void;
+
+    /**
+     * @return void
+     */
+    public function rollback(): void;
+
+    /**
+     * @return void
+     */
+    public function commit(): void;
+
+    /**
+     * @param string $id
+     */
+    public function setSavepoint(string $id): void;
+
+    /**
+     * @param string $id
+     */
+    public function rollbackSavepoint(string $id): void;
+
+    /**
+     * @return bool
+     */
+    public function inTransaction(): bool;
+
+    /**
      * @param string $statement
      */
     public function executeSchema(string $statement): void;
@@ -83,4 +120,9 @@ interface AdapterInterface
      * @return SchemaFormatter
      */
     public function getSchemaFormatter();
+
+    /**
+     * @return bool
+     */
+    public function supportsDdlTransaction(): bool;
 }

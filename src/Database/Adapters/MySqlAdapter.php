@@ -100,4 +100,12 @@ class MySqlAdapter extends PdoAdapter
     {
         $this->executeSchema('TRUNCATE TABLE '.$table);
     }
+
+    /**
+     * @return bool
+     */
+    public function supportsDdlTransaction(): bool
+    {
+        return false;
+    }
 }

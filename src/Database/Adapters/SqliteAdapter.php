@@ -72,4 +72,12 @@ class SqliteAdapter extends PdoAdapter
     {
         $this->executeSchema('DELETE FROM '.$table);
     }
+
+    /**
+     * @return bool
+     */
+    public function supportsDdlTransaction(): bool
+    {
+        return true;
+    }
 }

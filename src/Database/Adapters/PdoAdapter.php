@@ -8,6 +8,8 @@ use Kirameki\Database\Query\Formatters\Formatter as QueryFormatter;
 use Kirameki\Database\Schema\Formatters\Formatter as SchemaFormatter;
 use PDO;
 use PDOStatement;
+use RuntimeException;
+use Throwable;
 
 /**
  * @mixin Connection
@@ -82,6 +84,74 @@ abstract class PdoAdapter implements AdapterInterface
     }
 
     /**
+     * @param callable $callable
+     * @param mixed ...$args
+     * @return mixed
+     */
+    public function transaction(callable $callable, ...$args)
+    {
+        $pdo = $this->getPdo();
+        try {
+            $pdo->beginTransaction();
+            $result = $callable(...$args);
+            $pdo->commit();
+        }
+        catch (Throwable $throwable) {
+            $pdo->rollBack();
+            throw $throwable;
+        }
+        return $result;
+    }
+
+    /**
+     * @return void
+     */
+    public function beginTransaction(): void
+    {
+        $this->getPdo()->beginTransaction();
+    }
+
+    /**
+     * @return void
+     */
+    public function commit(): void
+    {
+        $this->getPdo()->commit();
+    }
+
+    /**
+     * @return void
+     */
+    public function rollback(): void
+    {
+        $this->getPdo()->rollBack();
+    }
+
+    /**
+     * @param string $id
+     */
+    public function setSavepoint(string $id): void
+    {
+        $this->getPdo()->exec('SAVEPOINT '.$this->alphanumeric($id));
+    }
+
+    /**
+     * @param string $id
+     */
+    public function rollbackSavepoint(string $id): void
+    {
+        $this->getPdo()->exec('ROLLBACK TO SAVEPOINT '.$this->alphanumeric($id));
+    }
+
+    /**
+     * @return bool
+     */
+    public function inTransaction(): bool
+    {
+        return $this->getPdo()->inTransaction();
+    }
+
+    /**
      * @param string $statement
      */
     public function executeSchema(string $statement): void
@@ -140,5 +210,17 @@ abstract class PdoAdapter implements AdapterInterface
             $this->connect();
         }
         return $this->pdo;
+    }
+
+    /**
+     * @param string $str
+     * @return string
+     */
+    protected function alphanumeric(string $str): string
+    {
+        if (!preg_match('/^[a-zA-Z0-9_-]+$/', $str)) {
+            throw new RuntimeException('Invalid string: "'.$str.'". Only alphanumeric characters, "_", and "-" are allowed.');
+        }
+        return $str;
     }
 }

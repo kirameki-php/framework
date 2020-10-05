@@ -93,7 +93,9 @@ abstract class Migration
      */
     public function apply(): void
     {
-        $this->using->executeSchema(implode(PHP_EOL, $this->toDdls()));
+        foreach ($$this->toDdls() as $ddl) {
+            $this->using->executeSchema($ddl);
+        }
     }
 
     /**
@@ -143,7 +145,11 @@ abstract class Migration
         return $this->builders[] = new CreateIndexBuilder($this->using, $statement);
     }
 
-    public function dropIndex(string $table)
+    /**
+     * @param string $table
+     * @return DropIndexBuilder
+     */
+    public function dropIndex(string $table): DropIndexBuilder
     {
         $statement = new DropIndexStatement($table);
         return $this->builders[] = new DropIndexBuilder($this->using, $statement);
