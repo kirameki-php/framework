@@ -2,9 +2,6 @@
 
 namespace Kirameki\Database\Events;
 
-use Kirameki\Event\Event;
-
-class AfterCommit extends Event
+class AfterCommit extends DatabaseEvent
 {
-
 }

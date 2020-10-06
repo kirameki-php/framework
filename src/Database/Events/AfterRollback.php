@@ -2,10 +2,10 @@
 
 namespace Kirameki\Database\Events;
 
-use Kirameki\Event\Event;
+use Kirameki\Database\Connection;
 use Throwable;
 
-class AfterRollback extends Event
+class AfterRollback extends DatabaseEvent
 {
     /**
      * @var Throwable
@@ -13,10 +13,12 @@ class AfterRollback extends Event
     public Throwable $throwable;
 
     /**
+     * @param Connection $connection
      * @param Throwable $throwable
      */
-    public function __construct(Throwable $throwable)
+    public function __construct(Connection $connection, Throwable $throwable)
     {
+        parent::__construct($connection);
         $this->throwable = $throwable;
     }
 }

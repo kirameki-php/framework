@@ -174,7 +174,7 @@ trait Transactions
     protected function dispatchEvent(string $class, ...$args): void
     {
         if ($this->events->hasListeners($class)) {
-            $this->events->dispatch(new $class(...$args));
+            $this->events->dispatch(new $class($this,...$args));
         }
     }
 }

@@ -2,10 +2,10 @@
 
 namespace Kirameki\Database\Events;
 
+use Kirameki\Database\Connection;
 use Kirameki\Database\Transaction\Transaction;
-use Kirameki\Event\Event;
 
-class AfterBegin extends Event
+class AfterBegin extends DatabaseEvent
 {
     /**
      * @var Transaction
@@ -13,10 +13,12 @@ class AfterBegin extends Event
     public Transaction $transaction;
 
     /**
+     * @param Connection $connection
      * @param Transaction $transaction
      */
-    public function __construct(Transaction $transaction)
+    public function __construct(Connection $connection, Transaction $transaction)
     {
+        parent::__construct($connection);
         $this->transaction = $transaction;
     }
 }

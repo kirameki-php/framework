@@ -2,10 +2,10 @@
 
 namespace Kirameki\Database\Events;
 
+use Kirameki\Database\Connection;
 use Kirameki\Database\Transaction\Savepoint;
-use Kirameki\Event\Event;
 
-class AfterSavepoint extends Event
+class AfterSavepoint extends DatabaseEvent
 {
     /**
      * @var Savepoint
@@ -13,10 +13,12 @@ class AfterSavepoint extends Event
     public Savepoint $savepoint;
 
     /**
+     * @param Connection $connection
      * @param Savepoint $savepoint
      */
-    public function __construct(Savepoint $savepoint)
+    public function __construct(Connection $connection, Savepoint $savepoint)
     {
+        parent::__construct($connection);
         $this->savepoint = $savepoint;
     }
 }
