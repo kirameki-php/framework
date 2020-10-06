@@ -22,11 +22,6 @@ class Listener
     protected bool $listening;
 
     /**
-     * @var bool
-     */
-    protected bool $propagate;
-
-    /**
      * @param Closure $listener
      * @param bool $once
      */
@@ -35,7 +30,6 @@ class Listener
         $this->listener = $listener;
         $this->once = $once;
         $this->listening = true;
-        $this->propagate = true;
     }
 
     /**
@@ -60,26 +54,10 @@ class Listener
     }
 
     /**
-     * @return void
-     */
-    public function stopPropagation(): void
-    {
-        $this->propagate = false;
-    }
-
-    /**
      * @return bool
      */
     public function isListening(): bool
     {
         return $this->listening;
-    }
-
-    /**
-     * @return bool
-     */
-    public function isPropagationStopped(): bool
-    {
-        return !$this->propagate;
     }
 }

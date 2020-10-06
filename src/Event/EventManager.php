@@ -39,17 +39,26 @@ class EventManager
     }
 
     /**
+     * @param string $class
+     * @return bool
+     */
+    public function hasListeners(string $class): bool
+    {
+        return isset($this->events[$class]);
+    }
+
+    /**
      * @param Event $event
      */
     public function dispatch(Event $event): void
     {
-        $className = get_class($event);
+        $class = get_class($event);
 
-        if (!isset($this->events[$className])) {
+        if (!$this->hasListeners($class)) {
             return;
         }
 
-        $listeners = $this->events[$className] ?? [];
+        $listeners = $this->events[$class] ?? [];
         foreach ($listeners as $index => $listener) {
             $listener->invoke($event);
 
@@ -57,7 +66,7 @@ class EventManager
                 unset($listeners[$index]);
             }
 
-            if ($listener->isPropagationStopped()) {
+            if ($event->isPropagationStopped()) {
                 break;
             }
         }
@@ -69,7 +78,7 @@ class EventManager
      */
     public function removeListener(string $class, Closure $targetListener): void
     {
-        if (!isset($this->events[$class])) {
+        if (!$this->hasListeners($class)) {
             return;
         }
 
@@ -78,6 +87,10 @@ class EventManager
             if ($listener === $targetListener) {
                 unset($listeners[$index]);
             }
+        }
+
+        if (empty($listeners)) {
+            $listeners = null;
         }
     }
 
