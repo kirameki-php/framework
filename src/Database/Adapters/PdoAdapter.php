@@ -84,26 +84,6 @@ abstract class PdoAdapter implements AdapterInterface
     }
 
     /**
-     * @param callable $callable
-     * @param mixed ...$args
-     * @return mixed
-     */
-    public function transaction(callable $callable, ...$args)
-    {
-        $pdo = $this->getPdo();
-        try {
-            $pdo->beginTransaction();
-            $result = $callable(...$args);
-            $pdo->commit();
-        }
-        catch (Throwable $throwable) {
-            $pdo->rollBack();
-            throw $throwable;
-        }
-        return $result;
-    }
-
-    /**
      * @return void
      */
     public function beginTransaction(): void

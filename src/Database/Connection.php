@@ -7,6 +7,7 @@ use Kirameki\Database\Query\Builders\DeleteBuilder;
 use Kirameki\Database\Query\Builders\InsertBuilder;
 use Kirameki\Database\Query\Builders\SelectBuilder;
 use Kirameki\Database\Query\Builders\UpdateBuilder;
+use Kirameki\Event\EventManager;
 
 class Connection
 {
@@ -25,13 +26,20 @@ class Connection
     protected AdapterInterface $adapter;
 
     /**
+     * @var EventManager
+     */
+    protected EventManager $events;
+
+    /**
      * @param string $name
      * @param AdapterInterface $adapter
+     * @param EventManager $events
      */
-    public function __construct(string $name, AdapterInterface $adapter)
+    public function __construct(string $name, AdapterInterface $adapter, EventManager $events)
     {
         $this->name = $name;
         $this->adapter = $adapter;
+        $this->events = $events;
     }
 
     /**

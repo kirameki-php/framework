@@ -50,13 +50,6 @@ interface AdapterInterface
     public function cursor(string $statement, array $bindings): Generator;
 
     /**
-     * @param callable $callable
-     * @param mixed ...$args
-     * @return mixed
-     */
-    public function transaction(callable $callable, ...$args);
-
-    /**
      * @return void
      */
     public function beginTransaction(): void;

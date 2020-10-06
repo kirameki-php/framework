@@ -5,6 +5,7 @@ namespace Kirameki\Database;
 use Closure;
 use Kirameki\Database\Adapters\MySqlAdapter;
 use Kirameki\Database\Adapters\SqliteAdapter;
+use Kirameki\Event\EventManager;
 use RuntimeException;
 
 class DatabaseManager
@@ -20,12 +21,18 @@ class DatabaseManager
     protected array $adapters;
 
     /**
-     *
+     * @var EventManager
      */
-    public function __construct()
+    protected EventManager $events;
+
+    /**
+     * @param EventManager $events
+     */
+    public function __construct(EventManager $events)
     {
         $this->connections = [];
         $this->adapters = [];
+        $this->events = $events;
     }
 
     /**
@@ -41,8 +48,8 @@ class DatabaseManager
         $config = $this->getConfig($name);
         $resolver = $this->getAdapterResolver($config['adapter']);
         $adapter = $resolver($config);
-
-        return $this->connections[$name] = new Connection($name, $adapter);
+        $connection = new Connection($name, $adapter, $this->events);
+        return $this->connections[$name] = $connection;
     }
 
     /**

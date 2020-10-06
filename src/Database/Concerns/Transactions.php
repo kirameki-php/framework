@@ -32,7 +32,10 @@ trait Transactions
             // Actual transaction
             if (!$this->inTransaction()) {
                 $tx = $this->txStack[] = new Transaction();
-                return $this->getAdapter()->transaction($callable, $tx);
+                $this->getAdapter()->beginTransaction();
+                $result = $callable($tx);
+                $this->getAdapter()->commit();
+                return $result;
             }
             // Savepoint if already in transaction and flag is set
             if ($useSavepoint) {
@@ -42,17 +45,24 @@ trait Transactions
                 return $callable($tx);
             }
             // Already in transaction so just execute callback
+            $this->txStack[] = null;
             return $callable($this->txStack[-1]);
         }
+
+        // This is thrown when user calls rollback() on Savepoint instance.
         catch (SavepointRollback $rollback) {
             $this->rollbackToSavepoint($rollback->id);
         }
+
+        // This is thrown when user calls rollback() on Transaction instances.
+        // We will propagate up to the first transaction block and do a rollback there.
         catch (Rollback $rollback) {
-            $this->rollbackTransaction();
+            $this->rollback($rollback);
         }
+
+        // We will propagate up to the first transaction block, rollback and then rethrow.
         catch (Throwable $throwable) {
-            $this->rollbackTransaction();
-            throw $throwable;
+            $this->rollbackAndThrow($throwable);
         }
         return null;
     }
@@ -74,20 +84,32 @@ trait Transactions
     }
 
     /**
-     * @return Transaction|null
+     * @param Throwable $throwable
      */
-    public function getCurrentTransaction(): ?Transaction
+    protected function rollbackAndThrow(Throwable $throwable): void
     {
-        return Arr::first($this->txStack);
+        array_pop($this->txStack);
+
+        if (empty($this->txStack)) {
+            $this->getAdapter()->rollback();
+        }
+
+        throw $throwable;
     }
 
     /**
-     * @return void
+     * @param Rollback $rollback
      */
-    protected function rollbackTransaction(): void
+    protected function rollback(Rollback $rollback): void
     {
-        $this->getAdapter()->rollback();
-        $this->txStack = [];
+        array_pop($this->txStack);
+
+        if (empty($this->txStack)) {
+            $this->getAdapter()->rollback();
+            return;
+        }
+
+        throw $rollback;
     }
 
     /**
