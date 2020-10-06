@@ -5,7 +5,7 @@ namespace Kirameki\Database\Events;
 use Kirameki\Event\Event;
 use Throwable;
 
-class AfterRollback implements Event
+class AfterRollback extends Event
 {
     /**
      * @var Throwable

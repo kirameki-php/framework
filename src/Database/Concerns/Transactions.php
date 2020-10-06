@@ -3,11 +3,15 @@
 namespace Kirameki\Database\Concerns;
 
 use Kirameki\Database\Connection;
+use Kirameki\Database\Events\AfterBegin;
+use Kirameki\Database\Events\AfterCommit;
+use Kirameki\Database\Events\AfterRollback;
+use Kirameki\Database\Events\AfterSavepoint;
+use Kirameki\Database\Events\AfterSavepointRollback;
 use Kirameki\Database\Transaction\Rollback;
 use Kirameki\Database\Transaction\Savepoint;
 use Kirameki\Database\Transaction\SavepointRollback;
 use Kirameki\Database\Transaction\Transaction;
-use Kirameki\Support\Arr;
 use RuntimeException;
 use Throwable;
 
@@ -22,36 +26,29 @@ trait Transactions
     protected array $txStack = [];
 
     /**
-     * @param callable $callable
+     * @param callable $callback
      * @param bool $useSavepoint
      * @return mixed
      */
-    public function transaction(callable $callable, bool $useSavepoint = false)
+    public function transaction(callable $callback, bool $useSavepoint = false)
     {
         try {
             // Actual transaction
             if (!$this->inTransaction()) {
-                $tx = $this->txStack[] = new Transaction();
-                $this->getAdapter()->beginTransaction();
-                $result = $callable($tx);
-                $this->getAdapter()->commit();
-                return $result;
+                $this->runInTransaction($callback);
             }
             // Savepoint if already in transaction and flag is set
             if ($useSavepoint) {
-                $savepointId = count($this->txStack) + 1;
-                $tx = $this->txStack[] = new Savepoint($savepointId);
-                $this->getAdapter()->setSavepoint($savepointId);
-                return $callable($tx);
+                $this->runInSavepoint($callback);
             }
             // Already in transaction so just execute callback
             $this->txStack[] = null;
-            return $callable($this->txStack[-1]);
+            return $callback($this->txStack[-1]);
         }
 
         // This is thrown when user calls rollback() on Savepoint instance.
         catch (SavepointRollback $rollback) {
-            $this->rollbackToSavepoint($rollback->id);
+            $this->rollbackToSavepoint($rollback);
         }
 
         // This is thrown when user calls rollback() on Transaction instances.
@@ -84,17 +81,59 @@ trait Transactions
     }
 
     /**
-     * @param Throwable $throwable
+     * @param callable $callback
+     * @return mixed
      */
-    protected function rollbackAndThrow(Throwable $throwable): void
+    protected function runInTransaction(callable $callback)
     {
-        array_pop($this->txStack);
+        $tx = $this->txStack[] = new Transaction();
 
-        if (empty($this->txStack)) {
-            $this->getAdapter()->rollback();
+        $this->getAdapter()->beginTransaction();
+
+        $this->dispatchEvent(AfterBegin::class, $tx);
+
+        $result = $callback($tx);
+
+        $this->getAdapter()->commit();
+
+        $this->dispatchEvent(AfterCommit::class);
+
+        return $result;
+    }
+
+    /**
+     * @param callable $callback
+     * @return mixed
+     */
+    protected function runInSavepoint(callable $callback)
+    {
+        $savepointId = count($this->txStack) + 1;
+
+        $tx = $this->txStack[] = new Savepoint($savepointId);
+
+        $this->getAdapter()->setSavepoint($savepointId);
+
+        $this->dispatchEvent(AfterSavepoint::class, $tx);
+
+        return $callback($tx);
+    }
+
+    /**
+     * @param SavepointRollback $rollback
+     */
+    protected function rollbackToSavepoint(SavepointRollback $rollback): void
+    {
+        $this->getAdapter()->rollbackSavepoint($rollback->id);
+
+        $this->dispatchEvent(AfterSavepointRollback::class, $rollback);
+
+        while($tx = array_pop($this->txStack)) {
+            if ($tx instanceof Savepoint && $tx->id === $rollback->id) {
+                return;
+            }
         }
 
-        throw $throwable;
+        throw new RuntimeException('Invalid Savepoint:'.$rollback->id);
     }
 
     /**
@@ -106,6 +145,7 @@ trait Transactions
 
         if (empty($this->txStack)) {
             $this->getAdapter()->rollback();
+            $this->dispatchEvent(AfterRollback::class, $rollback);
             return;
         }
 
@@ -113,18 +153,28 @@ trait Transactions
     }
 
     /**
-     * @param string $savepoint
+     * @param Throwable $throwable
      */
-    protected function rollbackToSavepoint(string $savepoint): void
+    protected function rollbackAndThrow(Throwable $throwable): void
     {
-        $this->getAdapter()->rollbackSavepoint($savepoint);
+        array_pop($this->txStack);
 
-        while($tx = array_pop($this->txStack)) {
-            if ($tx instanceof Savepoint && $tx->id === $savepoint) {
-                return;
-            }
+        if (empty($this->txStack)) {
+            $this->getAdapter()->rollback();
+            $this->dispatchEvent(AfterRollback::class, $throwable);
         }
 
-        throw new RuntimeException('Invalid Savepoint:'.$savepoint);
+        throw $throwable;
+    }
+
+    /**
+     * @param string $class
+     * @param mixed ...$args
+     */
+    protected function dispatchEvent(string $class, ...$args): void
+    {
+        if ($this->events->hasListeners($class)) {
+            $this->events->dispatch(new $class(...$args));
+        }
     }
 }

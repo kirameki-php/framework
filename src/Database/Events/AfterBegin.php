@@ -5,7 +5,7 @@ namespace Kirameki\Database\Events;
 use Kirameki\Database\Transaction\Transaction;
 use Kirameki\Event\Event;
 
-class AfterBegin implements Event
+class AfterBegin extends Event
 {
     /**
      * @var Transaction
