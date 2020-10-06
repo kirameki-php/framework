@@ -19,46 +19,47 @@ class EventManager
     }
 
     /**
-     * @param string $class
+     * @param string $name
      * @param Closure $listener
      */
-    public function listen(string $class, Closure $listener): void
+    public function listen(string $name, Closure $listener): void
     {
-        $this->events[$class] ??= [];
-        $this->events[$class][] = new Listener($listener);
+        $this->events[$name] ??= [];
+        $this->events[$name][] = new Listener($listener);
     }
 
     /**
-     * @param string $class
+     * @param string $name
      * @param Closure $listener
      */
-    public function listenOnce(string $class, Closure $listener): void
+    public function listenOnce(string $name, Closure $listener): void
     {
-        $this->events[$class] ??= [];
-        $this->events[$class][] = new Listener($listener, true);
+        $this->events[$name] ??= [];
+        $this->events[$name][] = new Listener($listener, true);
     }
 
     /**
-     * @param string $class
+     * @param string $name
      * @return bool
      */
-    public function hasListeners(string $class): bool
+    public function hasListeners(string $name): bool
     {
-        return isset($this->events[$class]);
+        return isset($this->events[$name]);
     }
 
     /**
      * @param Event $event
+     * @param string|null $name
      */
-    public function dispatch(Event $event): void
+    public function dispatch(Event $event, ?string $name = null): void
     {
-        $class = get_class($event);
+        $name ??= get_class($event);
 
-        if (!$this->hasListeners($class)) {
+        if (!$this->hasListeners($name)) {
             return;
         }
 
-        $listeners = $this->events[$class] ?? [];
+        $listeners = $this->events[$name] ?? [];
         foreach ($listeners as $index => $listener) {
             $listener->invoke($event);
 
@@ -73,16 +74,16 @@ class EventManager
     }
 
     /**
-     * @param string $class
+     * @param string $name
      * @param Closure $targetListener
      */
-    public function removeListener(string $class, Closure $targetListener): void
+    public function removeListener(string $name, Closure $targetListener): void
     {
-        if (!$this->hasListeners($class)) {
+        if (!$this->hasListeners($name)) {
             return;
         }
 
-        $listeners = &$this->events[$class];
+        $listeners = &$this->events[$name];
         foreach ($listeners as $index => $listener) {
             if ($listener === $targetListener) {
                 unset($listeners[$index]);
@@ -95,10 +96,10 @@ class EventManager
     }
 
     /**
-     * @param string $class
+     * @param string $name
      */
-    public function removeListeners(string $class): void
+    public function removeListeners(string $name): void
     {
-        $this->events[$class] = null;
+        $this->events[$name] = null;
     }
 }
