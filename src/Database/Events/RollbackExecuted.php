@@ -5,7 +5,7 @@ namespace Kirameki\Database\Events;
 use Kirameki\Database\Connection;
 use Throwable;
 
-class AfterRollback extends DatabaseEvent
+class RollbackExecuted extends DatabaseEvent
 {
     /**
      * @var Throwable

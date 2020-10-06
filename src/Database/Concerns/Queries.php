@@ -31,7 +31,10 @@ trait Queries
      */
     public function query(string $statement, ?array $bindings = null): array
     {
-        return $this->adapter->query($statement, $bindings);
+        $then = microtime(true);
+        $result = $this->adapter->query($statement, $bindings);
+        $this->dispatchEvent(Queries::class, $this, $statement, $bindings, microtime(true) - $then);
+        return $result;
     }
 
     /**
@@ -41,7 +44,10 @@ trait Queries
      */
     public function affectingQuery(string $statement, ?array $bindings = null): int
     {
-        return $this->adapter->affectingQuery($statement, $bindings);
+        $then = microtime(true);
+        $result = $this->adapter->affectingQuery($statement, $bindings);
+        $this->dispatchEvent(Queries::class, $this, $statement, $bindings, microtime(true) - $then);
+        return $result;
     }
 
     /**
@@ -51,6 +57,9 @@ trait Queries
      */
     public function cursor(string $statement, array $bindings): Generator
     {
-        return $this->adapter->cursor($statement, $bindings);
+        $then = microtime(true);
+        $result = $this->adapter->cursor($statement, $bindings);
+        $this->dispatchEvent(Queries::class, $this, $statement, $bindings, microtime(true) - $then);
+        return $result;
     }
 }

@@ -5,7 +5,7 @@ namespace Kirameki\Database\Events;
 use Kirameki\Database\Connection;
 use Kirameki\Database\Transaction\Savepoint;
 
-class AfterSavepoint extends DatabaseEvent
+class SavepointExecuted extends DatabaseEvent
 {
     /**
      * @var Savepoint

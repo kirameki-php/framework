@@ -3,11 +3,11 @@
 namespace Kirameki\Database\Concerns;
 
 use Kirameki\Database\Connection;
-use Kirameki\Database\Events\AfterBegin;
-use Kirameki\Database\Events\AfterCommit;
-use Kirameki\Database\Events\AfterRollback;
-use Kirameki\Database\Events\AfterSavepoint;
-use Kirameki\Database\Events\AfterSavepointRollback;
+use Kirameki\Database\Events\BeginExecuted;
+use Kirameki\Database\Events\CommitExecuted;
+use Kirameki\Database\Events\RollbackExecuted;
+use Kirameki\Database\Events\SavepointExecuted;
+use Kirameki\Database\Events\SavepointRollbackExecuted;
 use Kirameki\Database\Transaction\Rollback;
 use Kirameki\Database\Transaction\Savepoint;
 use Kirameki\Database\Transaction\SavepointRollback;
@@ -90,13 +90,13 @@ trait Transactions
 
         $this->getAdapter()->beginTransaction();
 
-        $this->dispatchEvent(AfterBegin::class, $tx);
+        $this->dispatchEvent(BeginExecuted::class, $tx);
 
         $result = $callback($tx);
 
         $this->getAdapter()->commit();
 
-        $this->dispatchEvent(AfterCommit::class);
+        $this->dispatchEvent(CommitExecuted::class);
 
         return $result;
     }
@@ -113,7 +113,7 @@ trait Transactions
 
         $this->getAdapter()->setSavepoint($savepointId);
 
-        $this->dispatchEvent(AfterSavepoint::class, $tx);
+        $this->dispatchEvent(SavepointExecuted::class, $tx);
 
         return $callback($tx);
     }
@@ -125,7 +125,7 @@ trait Transactions
     {
         $this->getAdapter()->rollbackSavepoint($rollback->id);
 
-        $this->dispatchEvent(AfterSavepointRollback::class, $rollback);
+        $this->dispatchEvent(SavepointRollbackExecuted::class, $rollback);
 
         while($tx = array_pop($this->txStack)) {
             if ($tx instanceof Savepoint && $tx->id === $rollback->id) {
@@ -145,7 +145,7 @@ trait Transactions
 
         if (empty($this->txStack)) {
             $this->getAdapter()->rollback();
-            $this->dispatchEvent(AfterRollback::class, $rollback);
+            $this->dispatchEvent(RollbackExecuted::class, $rollback);
             return;
         }
 
@@ -161,20 +161,9 @@ trait Transactions
 
         if (empty($this->txStack)) {
             $this->getAdapter()->rollback();
-            $this->dispatchEvent(AfterRollback::class, $throwable);
+            $this->dispatchEvent(RollbackExecuted::class, $throwable);
         }
 
         throw $throwable;
-    }
-
-    /**
-     * @param string $class
-     * @param mixed ...$args
-     */
-    protected function dispatchEvent(string $class, ...$args): void
-    {
-        if ($this->events->hasListeners($class)) {
-            $this->events->dispatch(new $class($this,...$args));
-        }
     }
 }
