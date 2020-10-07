@@ -101,15 +101,4 @@ class Connection
     {
         $this->adapter->truncate($table);
     }
-
-    /**
-     * @param string $class
-     * @param mixed ...$args
-     */
-    protected function dispatchEvent(string $class, ...$args): void
-    {
-        if ($this->events->hasListeners($class)) {
-            $this->events->dispatch(new $class($this,...$args));
-        }
-    }
 }

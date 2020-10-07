@@ -85,6 +85,18 @@ class EventManager
     }
 
     /**
+     * @private
+     * @param string $class
+     * @param mixed ...$args
+     */
+    public function dispatchClass(string $class, ...$args): void
+    {
+        if ($this->hasListeners($class)) {
+            $this->dispatch(new $class($this,...$args));
+        }
+    }
+
+    /**
      * @param string $name
      * @param Closure $targetListener
      */

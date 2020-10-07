@@ -90,13 +90,13 @@ trait Transactions
 
         $this->adapter->beginTransaction();
 
-        $this->dispatchEvent(BeginExecuted::class, $tx);
+        $this->events->dispatchClass(BeginExecuted::class, $tx);
 
         $result = $callback($tx);
 
         $this->adapter->commit();
 
-        $this->dispatchEvent(CommitExecuted::class);
+        $this->events->dispatchClass(CommitExecuted::class);
 
         return $result;
     }
@@ -113,7 +113,7 @@ trait Transactions
 
         $this->adapter->setSavepoint($savepointId);
 
-        $this->dispatchEvent(SavepointExecuted::class, $tx);
+        $this->events->dispatchClass(SavepointExecuted::class, $tx);
 
         return $callback($tx);
     }
@@ -125,7 +125,7 @@ trait Transactions
     {
         $this->adapter->rollbackSavepoint($rollback->id);
 
-        $this->dispatchEvent(SavepointRollbackExecuted::class, $rollback);
+        $this->events->dispatchClass(SavepointRollbackExecuted::class, $rollback);
 
         while($tx = array_pop($this->txStack)) {
             if ($tx instanceof Savepoint && $tx->id === $rollback->id) {
@@ -145,7 +145,7 @@ trait Transactions
 
         if (empty($this->txStack)) {
             $this->adapter->rollback();
-            $this->dispatchEvent(RollbackExecuted::class, $rollback);
+            $this->events->dispatchClass(RollbackExecuted::class, $rollback);
             return;
         }
 
@@ -161,7 +161,7 @@ trait Transactions
 
         if (empty($this->txStack)) {
             $this->adapter->rollback();
-            $this->dispatchEvent(RollbackExecuted::class, $throwable);
+            $this->events->dispatchClass(RollbackExecuted::class, $throwable);
         }
 
         throw $throwable;

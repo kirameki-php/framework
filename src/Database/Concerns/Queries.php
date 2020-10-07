@@ -35,7 +35,7 @@ trait Queries
         $then = microtime(true);
         $result = $this->adapter->query($statement, $bindings);
         $time = microtime(true) - $then;
-        $this->dispatchEvent(QueryExecuted::class, $this, $statement, $bindings, $time);
+        $this->events->dispatchClass(QueryExecuted::class, $this, $statement, $bindings, $time);
         return $result;
     }
 
@@ -49,7 +49,7 @@ trait Queries
         $then = microtime(true);
         $result = $this->adapter->affectingQuery($statement, $bindings);
         $time = microtime(true) - $then;
-        $this->dispatchEvent(QueryExecuted::class, $this, $statement, $bindings, $time);
+        $this->events->dispatchClass(QueryExecuted::class, $this, $statement, $bindings, $time);
         return $result;
     }
 
@@ -63,7 +63,7 @@ trait Queries
         $then = microtime(true);
         $result = $this->adapter->cursor($statement, $bindings);
         $time = microtime(true) - $then;
-        $this->dispatchEvent(QueryExecuted::class, $this, $statement, $bindings, $time);
+        $this->events->dispatchClass(QueryExecuted::class, $this, $statement, $bindings, $time);
         return $result;
     }
 }
