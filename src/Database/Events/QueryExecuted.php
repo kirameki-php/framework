@@ -34,4 +34,13 @@ class QueryExecuted extends DatabaseEvent
         $this->bindings = $bindings;
         $this->time = $time;
     }
+
+    /**
+     * @return string
+     */
+    public function toSql(): string
+    {
+        $formatter = $this->connection->getQueryFormatter();
+        return $formatter->interpolate($this->statement, $this->bindings);
+    }
 }
