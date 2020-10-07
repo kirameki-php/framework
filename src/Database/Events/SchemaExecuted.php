@@ -4,17 +4,12 @@ namespace Kirameki\Database\Events;
 
 use Kirameki\Database\Connection;
 
-class QueryExecuted extends DatabaseEvent
+class SchemaExecuted extends DatabaseEvent
 {
     /**
      * @var string
      */
     public string $statement;
-
-    /**
-     * @var array
-     */
-    public array $bindings;
 
     /**
      * @var float
@@ -24,14 +19,12 @@ class QueryExecuted extends DatabaseEvent
     /**
      * @param Connection $connection
      * @param string $statement
-     * @param array $bindings
      * @param float $time
      */
-    public function __construct(Connection $connection, string $statement, array $bindings, float $time)
+    public function __construct(Connection $connection, string $statement, float $time)
     {
         parent::__construct($connection);
         $this->statement = $statement;
-        $this->bindings = $bindings;
         $this->time = $time;
     }
 }

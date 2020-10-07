@@ -64,7 +64,7 @@ class MySqlAdapter extends PdoAdapter
     {
         $copy = (clone $this);
         $copy->config['database'] = null;
-        $copy->executeSchema(implode(' ', array_filter([
+        $copy->execute(implode(' ', array_filter([
             'CREATE DATABASE',
             $ifNotExist ? 'IF NOT EXISTS' : null,
             $this->config['database'],
@@ -78,7 +78,7 @@ class MySqlAdapter extends PdoAdapter
     {
         $copy = (clone $this);
         $copy->config['database'] = null;
-        $copy->executeSchema(implode(' ', array_filter([
+        $copy->execute(implode(' ', array_filter([
             'DROP DATABASE',
             $ifNotExist ? 'IF EXISTS' : null,
             $this->config['database'],
@@ -98,7 +98,7 @@ class MySqlAdapter extends PdoAdapter
      */
     public function truncate(string $table): void
     {
-        $this->executeSchema('TRUNCATE TABLE '.$table);
+        $this->execute('TRUNCATE TABLE '.$table);
     }
 
     /**

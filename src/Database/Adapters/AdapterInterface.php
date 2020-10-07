@@ -82,7 +82,7 @@ interface AdapterInterface
     /**
      * @param string $statement
      */
-    public function executeSchema(string $statement): void;
+    public function execute(string $statement): void;
 
     /**
      * @param bool $ifNotExist

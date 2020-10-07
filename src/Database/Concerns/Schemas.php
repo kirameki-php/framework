@@ -3,6 +3,8 @@
 namespace Kirameki\Database\Concerns;
 
 use Kirameki\Database\Connection;
+use Kirameki\Database\Events\QueryExecuted;
+use Kirameki\Database\Events\SchemaExecuted;
 use Kirameki\Database\Schema\Formatters\Formatter as SchemaFormatter;
 
 /**
@@ -28,6 +30,9 @@ trait Schemas
      */
     public function executeSchema(string $statement): void
     {
-        $this->adapter->executeSchema($statement);
+        $then = microtime(true);
+        $this->adapter->execute($statement);
+        $time = microtime(true) - $then;
+        $this->dispatchEvent(SchemaExecuted::class, $this, $statement, $time);
     }
 }

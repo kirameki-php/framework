@@ -88,13 +88,13 @@ trait Transactions
     {
         $tx = $this->txStack[] = new Transaction();
 
-        $this->getAdapter()->beginTransaction();
+        $this->adapter->beginTransaction();
 
         $this->dispatchEvent(BeginExecuted::class, $tx);
 
         $result = $callback($tx);
 
-        $this->getAdapter()->commit();
+        $this->adapter->commit();
 
         $this->dispatchEvent(CommitExecuted::class);
 
@@ -111,7 +111,7 @@ trait Transactions
 
         $tx = $this->txStack[] = new Savepoint($savepointId);
 
-        $this->getAdapter()->setSavepoint($savepointId);
+        $this->adapter->setSavepoint($savepointId);
 
         $this->dispatchEvent(SavepointExecuted::class, $tx);
 
@@ -123,7 +123,7 @@ trait Transactions
      */
     protected function rollbackToSavepoint(SavepointRollback $rollback): void
     {
-        $this->getAdapter()->rollbackSavepoint($rollback->id);
+        $this->adapter->rollbackSavepoint($rollback->id);
 
         $this->dispatchEvent(SavepointRollbackExecuted::class, $rollback);
 
@@ -144,7 +144,7 @@ trait Transactions
         array_pop($this->txStack);
 
         if (empty($this->txStack)) {
-            $this->getAdapter()->rollback();
+            $this->adapter->rollback();
             $this->dispatchEvent(RollbackExecuted::class, $rollback);
             return;
         }
@@ -160,7 +160,7 @@ trait Transactions
         array_pop($this->txStack);
 
         if (empty($this->txStack)) {
-            $this->getAdapter()->rollback();
+            $this->adapter->rollback();
             $this->dispatchEvent(RollbackExecuted::class, $throwable);
         }
 

@@ -4,6 +4,7 @@ namespace Kirameki\Database\Concerns;
 
 use Generator;
 use Kirameki\Database\Connection;
+use Kirameki\Database\Events\QueryExecuted;
 use Kirameki\Database\Query\Formatters\Formatter as QueryFormatter;
 
 /**
@@ -33,7 +34,8 @@ trait Queries
     {
         $then = microtime(true);
         $result = $this->adapter->query($statement, $bindings);
-        $this->dispatchEvent(Queries::class, $this, $statement, $bindings, microtime(true) - $then);
+        $time = microtime(true) - $then;
+        $this->dispatchEvent(QueryExecuted::class, $this, $statement, $bindings, $time);
         return $result;
     }
 
@@ -46,7 +48,8 @@ trait Queries
     {
         $then = microtime(true);
         $result = $this->adapter->affectingQuery($statement, $bindings);
-        $this->dispatchEvent(Queries::class, $this, $statement, $bindings, microtime(true) - $then);
+        $time = microtime(true) - $then;
+        $this->dispatchEvent(QueryExecuted::class, $this, $statement, $bindings, $time);
         return $result;
     }
 
@@ -59,7 +62,8 @@ trait Queries
     {
         $then = microtime(true);
         $result = $this->adapter->cursor($statement, $bindings);
-        $this->dispatchEvent(Queries::class, $this, $statement, $bindings, microtime(true) - $then);
+        $time = microtime(true) - $then;
+        $this->dispatchEvent(QueryExecuted::class, $this, $statement, $bindings, $time);
         return $result;
     }
 }
