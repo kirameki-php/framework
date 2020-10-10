@@ -1,9 +1,9 @@
 <?php
 
-namespace Kirameki\Database\Model\Concerns;
+namespace Kirameki\Model\Concerns;
 
 use Carbon\Carbon;
-use Kirameki\Database\Model\Model;
+use Kirameki\Model\Model;
 
 /**
  * @mixin Model

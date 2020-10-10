@@ -1,6 +1,6 @@
 <?php
 
-namespace Kirameki\Database\Model;
+namespace Kirameki\Model;
 
 use ArrayAccess;
 use JsonSerializable;
@@ -17,6 +17,12 @@ class Model implements ArrayAccess, JsonSerializable
     public static function basename(): string
     {
         return class_basename(static::class);
+    }
+
+
+    protected static function defined(): void
+    {
+
     }
 
     protected static function boot()

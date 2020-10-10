@@ -1,8 +1,8 @@
 <?php
 
-namespace Kirameki\Database\Model\Concerns;
+namespace Kirameki\Model\Concerns;
 
-use Kirameki\Database\Model\Model;
+use Kirameki\Model\Model;
 use Kirameki\Database\Query\Builders\StatementBuilder as BaseBuilder;
 
 /**
