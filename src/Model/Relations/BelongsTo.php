@@ -1,6 +1,6 @@
 <?php
 
-namespace Kirameki\Model\Associations;
+namespace Kirameki\Model\Relations;
 
 class BelongsTo extends Relation
 {

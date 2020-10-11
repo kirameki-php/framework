@@ -2,13 +2,13 @@
 
 namespace Kirameki\Model;
 
-use Kirameki\Model\Associations\BelongsTo;
+use Kirameki\Model\Relations\BelongsTo;
 
-class Definition
+class Reflection
 {
-    protected CastRegistrar $casts;
+    protected ModelManager $manager;
 
-    public Model $model;
+    public string $class;
 
     public string $connection;
 
@@ -18,18 +18,17 @@ class Definition
 
     public array $properties;
 
-    public array $associations;
+    public array $relations;
 
     /**
-     * @param CastRegistrar $casts
-     * @param Model $model
+     * @param ModelManager $manager
      */
-    public function __construct(CastRegistrar $casts, Model $model)
+    public function __construct(ModelManager $manager, string $class)
     {
-        $this->casts = $casts;
-        $this->model = $model;
+        $this->manager = $manager;
+        $this->class = $class;
         $this->properties = [];
-        $this->associations = [];
+        $this->relations = [];
     }
 
     /**
@@ -40,7 +39,7 @@ class Definition
      */
     public function property(string $name, string $cast, $default = null)
     {
-        $this->properties[$name] = new Property($name, $this->casts->get($cast), $default);
+        $this->properties[$name] = new Property($name, $this->manager->getCast($cast), $default);
         return $this;
     }
 
@@ -54,7 +53,7 @@ class Definition
      */
     public function belongsTo(string $name, ?string $class = null, ?string $foreignKey = null, ?string $referenceKey = null, ?string $inverseOf = null)
     {
-        $this->associations[$name]= new BelongsTo($name, $this->model, new $class, $foreignKey, $referenceKey, $inverseOf);
+        $this->relations[$name]= new BelongsTo($this->manager, $name, $this, $class, $foreignKey, $referenceKey, $inverseOf);
         return $this;
     }
 }

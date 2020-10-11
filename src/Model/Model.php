@@ -6,24 +6,11 @@ use ArrayAccess;
 use JsonSerializable;
 use Kirameki\Support\Json;
 
-class Model implements ArrayAccess, JsonSerializable
+abstract class Model implements ArrayAccess, JsonSerializable
 {
-    use Concerns\Attributes,
-        Concerns\Dirty,
-        Concerns\Events,
-        Concerns\Querying,
-        Concerns\Relations;
-
-    public static function basename(): string
-    {
-        return class_basename(static::class);
-    }
-
-
-    protected static function defined(): void
-    {
-
-    }
+    use Concerns\ArrayAccess,
+        Concerns\JsonSerialize,
+        Concerns\Reflection;
 
     protected static function boot()
     {
@@ -40,42 +27,6 @@ class Model implements ArrayAccess, JsonSerializable
         $this->exists = $exists;
         $this->bootIfNotBooted();
         $this->fill($attributes);
-        $this->triggerEvent($exists ? 'retrieved' : 'initialized');
-    }
-
-    /**
-     * @param mixed $offset
-     * @return bool
-     */
-    public function offsetExists($offset)
-    {
-        return isset($this->attributes[$offset]);
-    }
-
-    /**
-     * @param mixed $offset
-     * @return mixed
-     */
-    public function offsetGet($offset)
-    {
-        return $this->getAttribute($offset);
-    }
-
-    /**
-     * @param mixed $offset
-     * @param mixed $value
-     */
-    public function offsetSet($offset, $value)
-    {
-        $this->setAttribute($offset, $value);
-    }
-
-    /**
-     * @param mixed $offset
-     */
-    public function offsetUnset($offset)
-    {
-        unset($this->attributes[$offset]);
     }
 
     /**
@@ -116,14 +67,6 @@ class Model implements ArrayAccess, JsonSerializable
     }
 
     /**
-     * @return array
-     */
-    public function jsonSerialize(): array
-    {
-        return $this->toArray();
-    }
-
-    /**
      * @param array $attributes
      * @param false $exists
      * @return $this
@@ -141,19 +84,5 @@ class Model implements ArrayAccess, JsonSerializable
         foreach ($attributes as $name => $attribute) {
             $this->setAttribute($name, $attribute);
         }
-    }
-
-    public function toArray(): array
-    {
-        $array = [];
-        foreach (array_keys($this->getAttributes()) as $name) {
-            $array[$name] = $this->getAttribute($name);
-        }
-        return $array;
-    }
-
-    public function toJson($options = 0): string
-    {
-        return Json::encode($this, $options);
     }
 }

@@ -16,13 +16,13 @@ class ModelInitializer implements InitializerInterface
 {
     public function register(Application $app): void
     {
-        $registrar = new CastRegistrar();
-        $registrar->add('bool', static fn() => new BoolCast);
-        $registrar->add('int', static fn() => new IntCast);
-        $registrar->add('float', static fn() => new FloatCast);
-        $registrar->add('string', static fn() => new StringCast);
-        $registrar->add('datetime', static fn() => new DateTimeCast);
-        $registrar->add('json', static fn() => new JsonCast);
-        $app->singleton(CastRegistrar::class, $registrar);
+        $registrar = new ModelManager();
+        $registrar->setCast('bool', static fn() => new BoolCast);
+        $registrar->setCast('int', static fn() => new IntCast);
+        $registrar->setCast('float', static fn() => new FloatCast);
+        $registrar->setCast('string', static fn() => new StringCast);
+        $registrar->setCast('datetime', static fn() => new DateTimeCast);
+        $registrar->setCast('json', static fn() => new JsonCast);
+        $app->singleton(ModelManager::class, $registrar);
     }
 }
