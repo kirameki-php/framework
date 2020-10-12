@@ -451,7 +451,7 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
      */
     public function keys()
     {
-        return $this->newInstance(array_keys($this->toArray()));
+        return $this->newCollection(array_keys($this->toArray()));
     }
 
     /**
@@ -581,14 +581,14 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
     public function pluck(string $key)
     {
         if (static::isNotDottedKey($key)) {
-            return $this->newInstance(array_column($this->toArray(), $key));
+            return $this->newCollection(array_column($this->toArray(), $key));
         }
         $plucked = [];
         $segments = explode('.', $key);
         foreach ($this->items as $values) {
             $plucked[] = static::digTo($values, $segments);
         }
-        return $this->newInstance($plucked);
+        return $this->newCollection($plucked);
     }
 
     /**
@@ -781,7 +781,7 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
             $mapping[$item] ??= 0;
             $mapping[$item]++;
         }
-        return $this->newInstance($mapping);
+        return $this->newCollection($mapping);
     }
 
     /**
@@ -835,6 +835,15 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
     protected function asArray(iterable $items): array
     {
         return Arr::from($items);
+    }
+
+    /**
+     * @param iterable $items
+     * @return Collection
+     */
+    protected function newCollection(iterable $items): Collection
+    {
+        return new Collection($items);
     }
 
     /**
