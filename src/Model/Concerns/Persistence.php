@@ -2,9 +2,7 @@
 
 namespace Kirameki\Model\Concerns;
 
-use Carbon\Carbon;
 use Kirameki\Model\Model;
-use Kirameki\Support\Json;
 
 /**
  * @mixin Model
@@ -46,20 +44,17 @@ trait Persistence
     }
 
     /**
-     * @return $this
+     * @return bool
      */
-    protected function markAsPersisted()
+    public function delete(): bool
     {
-        $this->persisted = true;
-        return $this;
-    }
+        $count = $this->getConnection()
+            ->delete($this->getTable())
+            ->where($this->getPrimaryKeyName(), $this->getPrimaryKey())
+            ->execute();
 
-    /**
-     * @return $this
-     */
-    protected function markAsDeleted()
-    {
         $this->deleted = true;
-        return $this;
+
+        return $count === 1;
     }
 }

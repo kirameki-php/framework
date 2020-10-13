@@ -2,7 +2,6 @@
 
 namespace Kirameki\Model\Concerns;
 
-use Carbon\Carbon;
 use Kirameki\Model\Model;
 use Kirameki\Support\Json;
 

@@ -26,7 +26,7 @@ class QueryBuilder extends SelectBuilder
     {
         $reflection = $this->reflection;
         $results = $this->execSelect();
-        $models = Arr::map($results, static fn($props) => $reflection->makeModel($props));
+        $models = Arr::map($results, static fn($props) => $reflection->makeModel($props, true));
         return new ModelCollection($reflection, $models);
     }
 
@@ -37,7 +37,7 @@ class QueryBuilder extends SelectBuilder
     {
         $results = $this->copy()->limit(1)->execSelect();
         return isset($results[0])
-            ? $this->reflection->makeModel($results[0])
+            ? $this->reflection->makeModel($results[0], true)
             : null;
     }
 }

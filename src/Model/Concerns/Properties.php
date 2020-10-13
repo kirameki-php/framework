@@ -15,6 +15,26 @@ trait Properties
     protected array $rawProperties = [];
 
     /**
+     * @return string[]
+     */
+    public function getPropertyNames(): array
+    {
+        return array_keys($this->rawProperties);
+    }
+
+    /**
+     * @return array
+     */
+    public function getProperties(): array
+    {
+        $properties = [];
+        foreach ($this->getPropertyNames() as $name) {
+            $properties[$name] = $this->getProperty($name);
+        }
+        return $properties;
+    }
+
+    /**
      * @param string $name
      * @return mixed|null
      */
@@ -24,7 +44,7 @@ trait Properties
             return $this->resolved[$name];
         }
 
-        $property = $this->getReflection()->properties[$name];
+        $property = static::getReflection()->properties[$name];
         $value = $property->cast->get($this, $name, $this->rawProperties[$name]);
         $this->cacheResult($name, $value);
 
@@ -39,7 +59,7 @@ trait Properties
     public function setProperty(string $name, $value)
     {
         $this->cacheResult($name, $value);
-        $property = $this->getReflection()->properties[$name];
+        $property = static::getReflection()->properties[$name];
         $rawValue = $property->cast->set($this, $name, $value);
         $this->rawProperties[$name] = $rawValue;
 
@@ -52,7 +72,7 @@ trait Properties
      */
     public function isProperty(string $name): bool
     {
-        return isset($this->getReflection()->properties[$name]);
+        return isset(static::getReflection()->properties[$name]);
     }
 
     /**
@@ -72,7 +92,7 @@ trait Properties
      */
     protected function fillDefaults()
     {
-        $defined = $this->getReflection()->properties;
+        $defined = static::getReflection()->properties;
         $unused = array_diff_key($defined, $this->rawProperties);
         foreach ($unused as $name => $property) {
             $this->setProperty($name, $property->default);

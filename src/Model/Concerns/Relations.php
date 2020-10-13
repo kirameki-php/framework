@@ -16,7 +16,7 @@ trait Relations
      */
     public function isRelation(string $name): bool
     {
-        return isset($this->getReflection()->relations[$name]);
+        return isset(static::getReflection()->relations[$name]);
     }
 
     /**
@@ -34,7 +34,7 @@ trait Relations
      */
     protected function loadRelation(string $name)
     {
-        $reflection = $this->getReflection();
+        $reflection = static::getReflection();
         $relation = $reflection->relations[$name];
         return $this;
     }

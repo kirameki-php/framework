@@ -3,10 +3,16 @@
 namespace Kirameki\Model;
 
 use Closure;
+use Kirameki\Database\DatabaseManager;
 use Kirameki\Model\Casts\CastInterface;
 
 class ModelManager
 {
+    /**
+     * @var DatabaseManager
+     */
+    protected DatabaseManager $databaseManager;
+
     /**
      * @var Reflection[]
      */
@@ -21,6 +27,22 @@ class ModelManager
      * @var Closure[]
      */
     protected array $deferredCasts = [];
+
+    /**
+     * @param DatabaseManager $databaseManager
+     */
+    protected function __construct(DatabaseManager $databaseManager)
+    {
+        $this->databaseManager = $databaseManager;
+    }
+
+    /**
+     * @return DatabaseManager
+     */
+    public function getDatabaseManager(): DatabaseManager
+    {
+        return $this->databaseManager;
+    }
 
     /**
      * @param string $class

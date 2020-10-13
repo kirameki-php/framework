@@ -38,12 +38,22 @@ abstract class Model implements ArrayAccess, JsonSerializable
     }
 
     /**
+     * @return QueryBuilder
+     */
+    public static function query(): QueryBuilder
+    {
+        $database = static::getManager()->getDatabaseManager();
+        $reflection = static::getReflection();
+        return new QueryBuilder($database, $reflection);
+    }
+
+    /**
      * @param array $properties
      * @param bool $persisted
      */
     public function __construct(array $properties = [], bool $persisted = false)
     {
-        $this->reflectOnce();
+        $this->resolveReflection();
         $this->persisted = $persisted;
         $this->fill($properties);
         if ($this->isNewRecord()) {

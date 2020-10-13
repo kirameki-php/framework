@@ -24,7 +24,7 @@ trait ArrayAccess
      */
     public function offsetGet($offset)
     {
-        return $this->getAttribute($offset);
+        return $this->getProperty($offset);
     }
 
     /**
@@ -33,7 +33,7 @@ trait ArrayAccess
      */
     public function offsetSet($offset, $value)
     {
-        $this->setAttribute($offset, $value);
+        $this->setProperty($offset, $value);
     }
 
     /**
@@ -50,8 +50,8 @@ trait ArrayAccess
     public function toArray(): array
     {
         $array = [];
-        foreach (array_keys($this->getAttributes()) as $name) {
-            $array[$name] = $this->getAttribute($name);
+        foreach ($this->getPropertyNames() as $name) {
+            $array[$name] = $this->getProperty($name);
         }
         return $array;
     }
