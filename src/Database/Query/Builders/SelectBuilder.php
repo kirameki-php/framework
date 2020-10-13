@@ -97,11 +97,11 @@ class SelectBuilder extends ConditonsBuilder
     }
 
     /**
-     * @return array
+     * @return array|null
      */
-    public function one(): array
+    public function one()
     {
-        return $this->copy()->limit(1)->execSelect();
+        return $this->copy()->limit(1)->execSelect()[0] ?? null;
     }
 
     /**

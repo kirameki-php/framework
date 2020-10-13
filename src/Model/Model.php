@@ -4,29 +4,61 @@ namespace Kirameki\Model;
 
 use ArrayAccess;
 use JsonSerializable;
-use Kirameki\Support\Json;
+use RuntimeException;
 
 abstract class Model implements ArrayAccess, JsonSerializable
 {
     use Concerns\ArrayAccess,
+        Concerns\CacheResults,
+        Concerns\Reflect,
         Concerns\JsonSerialize,
-        Concerns\Reflection;
+        Concerns\Persistence,
+        Concerns\Properties,
+        Concerns\Relations;
 
-    protected static function boot()
+    /**
+     * @var ModelManager
+     */
+    protected static ModelManager $manager;
+
+    /**
+     * @param ModelManager $manager
+     */
+    protected static function setManager(ModelManager $manager): void
     {
-
+        static::$manager = $manager;
     }
 
-    public static function query()
+    /**
+     * @return ModelManager $manager
+     */
+    protected static function getManager(): ModelManager
     {
-        return (new static())->newQuery();
+        return static::$manager;
     }
 
-    public function __construct(array $attributes = [], bool $exists = false)
+    /**
+     * @param array $properties
+     * @param bool $persisted
+     */
+    public function __construct(array $properties = [], bool $persisted = false)
     {
-        $this->exists = $exists;
-        $this->bootIfNotBooted();
-        $this->fill($attributes);
+        $this->reflectOnce();
+        $this->persisted = $persisted;
+        $this->fill($properties);
+        if ($this->isNewRecord()) {
+            $this->fillDefaults();
+        }
+    }
+
+    /**
+     * @param array $attributes
+     * @param bool $persisted
+     * @return $this
+     */
+    public function newInstance(array $attributes = [], $persisted = false)
+    {
+        return new static($attributes, $persisted);
     }
 
     /**
@@ -35,10 +67,10 @@ abstract class Model implements ArrayAccess, JsonSerializable
      */
     public function __get(string $name)
     {
-        if ($this->rawAttributeExists($name)) {
-            return $this->getAttribute($name);
+        if ($this->isProperty($name)) {
+            return $this->getProperty($name);
         }
-        if ($this->relationExists($name)) {
+        if ($this->isRelation($name)) {
             return $this->getRelation($name);
         }
         return null;
@@ -50,11 +82,13 @@ abstract class Model implements ArrayAccess, JsonSerializable
      */
     public function __set(string $name, $value): void
     {
-        if ($this->relationExists($name)) {
+        if ($this->isRelation($name)) {
             $this->setRelation($name, $value);
-            return;
         }
-        $this->setAttribute($name, $value);
+        elseif ($this->isProperty($name)) {
+            $this->setProperty($name, $value);
+        }
+        throw new RuntimeException('Tried to set unknown property or relation: '.$name);
     }
 
     /**
@@ -64,25 +98,5 @@ abstract class Model implements ArrayAccess, JsonSerializable
     public function __isset(string $name)
     {
         return $this->offsetExists($name);
-    }
-
-    /**
-     * @param array $attributes
-     * @param false $exists
-     * @return $this
-     */
-    public function newInstance(array $attributes = [], $exists = false)
-    {
-        return new static($attributes, $exists);
-    }
-
-    /**
-     * @param array $attributes
-     */
-    public function fill(array $attributes = [])
-    {
-        foreach ($attributes as $name => $attribute) {
-            $this->setAttribute($name, $attribute);
-        }
     }
 }

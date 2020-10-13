@@ -3,6 +3,7 @@
 namespace Kirameki\Model;
 
 use Kirameki\Model\Relations\BelongsTo;
+use Kirameki\Model\Relations\Relation;
 
 class Reflection
 {
@@ -16,12 +17,19 @@ class Reflection
 
     public string $primaryKey;
 
+    /**
+     * @var Property[]
+     */
     public array $properties;
 
+    /**
+     * @var Relation[]
+     */
     public array $relations;
 
     /**
      * @param ModelManager $manager
+     * @param string $class
      */
     public function __construct(ModelManager $manager, string $class)
     {
@@ -29,6 +37,16 @@ class Reflection
         $this->class = $class;
         $this->properties = [];
         $this->relations = [];
+    }
+
+    /**
+     * @param array $properties
+     * @param bool $persisted
+     * @return Model
+     */
+    public function makeModel(array $properties = [], bool $persisted = false): Model
+    {
+        return new $this->class($properties, $persisted);
     }
 
     /**
