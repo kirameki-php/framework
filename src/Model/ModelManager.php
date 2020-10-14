@@ -31,7 +31,7 @@ class ModelManager
     /**
      * @param DatabaseManager $databaseManager
      */
-    protected function __construct(DatabaseManager $databaseManager)
+    public function __construct(DatabaseManager $databaseManager)
     {
         $this->databaseManager = $databaseManager;
     }

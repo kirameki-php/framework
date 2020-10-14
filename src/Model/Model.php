@@ -109,4 +109,12 @@ abstract class Model implements ArrayAccess, JsonSerializable
     {
         return $this->offsetExists($name);
     }
+
+    /**
+     * @param string $name
+     */
+    public function __unset(string $name)
+    {
+        $this->offsetUnset($name);
+    }
 }

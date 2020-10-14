@@ -53,6 +53,25 @@ class DatabaseManager
     }
 
     /**
+     * @param string $name
+     * @return $this
+     */
+    public function purge(string $name)
+    {
+        unset($this->connections[$name]);
+        return $this;
+    }
+
+    /**
+     * @return $this
+     */
+    public function purgeAll()
+    {
+        $this->connections = [];
+        return $this;
+    }
+
+    /**
      * @param Connection $connection
      * @return $this
      */

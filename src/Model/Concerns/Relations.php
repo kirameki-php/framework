@@ -3,13 +3,17 @@
 namespace Kirameki\Model\Concerns;
 
 use Kirameki\Model\Model;
-use Kirameki\Model\Relations\Relation;
 
 /**
  * @mixin Model
  */
 trait Relations
 {
+    /**
+     * @var array
+     */
+    protected array $relations;
+
     /**
      * @param string $name
      * @return bool
@@ -20,12 +24,20 @@ trait Relations
     }
 
     /**
+     * @return array
+     */
+    public function getRelations(): array
+    {
+        return $this->relations;
+    }
+
+    /**
      * @param string $name
      * @return mixed|null
      */
     public function getRelation(string $name)
     {
-        return $this->resolved[$name] ?? null;
+        return $this->resolved[$name] ?? $this->relations[$name] ?? null;
     }
 
     /**
@@ -41,12 +53,13 @@ trait Relations
 
     /**
      * @param string $name
-     * @param Relation $relation
+     * @param $models
      * @return $this
      */
-    public function setRelation(string $name, Relation $relation)
+    public function setRelation(string $name, $models)
     {
-        $this->resolved[$name] = $relation;
+        $this->resolved[$name] = $models;
+        $this->relations[$name] = $models;
         return $this;
     }
 }

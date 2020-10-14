@@ -20,6 +20,11 @@ class RelationCollection extends ModelCollection
     protected Model $parent;
 
     /**
+     * @var Model[]
+     */
+    protected iterable $items;
+
+    /**
      * @param Relation $relation
      * @param Model $parent
      * @param Reflection $reflection
@@ -75,7 +80,7 @@ class RelationCollection extends ModelCollection
      * @param Model $model
      * @return Model
      */
-    protected function setRelatedKeys(Model $model)
+    protected function setRelatedKeys(Model $model): Model
     {
         if ($this->parent) {
             $parentKeyName = $this->relation->getDestKey();
@@ -83,5 +88,15 @@ class RelationCollection extends ModelCollection
             $model->setProperty($parentKeyName, $parentKey);
         }
         return $model;
+    }
+
+    /**
+     * @return void
+     */
+    public function saveAll(): void
+    {
+        foreach ($this->items as $item) {
+            $item->save();
+        }
     }
 }

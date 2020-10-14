@@ -15,7 +15,7 @@ trait ArrayAccess
      */
     public function offsetExists($offset)
     {
-        return isset($this->attributes[$offset]);
+        return isset($this->rawProperties[$offset]);
     }
 
     /**
@@ -41,7 +41,7 @@ trait ArrayAccess
      */
     public function offsetUnset($offset)
     {
-        unset($this->attributes[$offset]);
+        unset($this->rawProperties[$offset]);
     }
 
     /**

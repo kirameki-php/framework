@@ -3,6 +3,7 @@
 namespace Kirameki\Model\Concerns;
 
 use Kirameki\Model\Model;
+use Kirameki\Model\Relations\RelationCollection;
 
 /**
  * @mixin Model
@@ -20,11 +21,38 @@ trait Persistence
     public bool $deleted = false;
 
     /**
+     * @return $this
+     */
+    public function save()
+    {
+        $conn = $this->getConnection();
+        if ($this->isNewRecord()) {
+            $conn->insertInto($this->getTable())
+                ->value($this->getProperties())
+                ->execute();
+        } else {
+            $conn->update($this->getTable())
+                ->set($this->getProperties())
+                ->execute();
+        }
+
+        foreach ($this->getRelations() as $name => $relation) {
+            if ($relation instanceof Model) {
+                $relation->save();
+            }
+            elseif ($relation instanceof RelationCollection) {
+                $relation->saveAll();
+            }
+        }
+        return $this;
+    }
+
+    /**
      * @return bool
      */
     public function isNewRecord(): bool
     {
-        return ! $this->persisted;
+        return !$this->persisted && !$this->deleted;
     }
 
     /**
@@ -38,16 +66,12 @@ trait Persistence
     /**
      * @return bool
      */
-    public function isDeleted(): bool
-    {
-        return $this->deleted;
-    }
-
-    /**
-     * @return bool
-     */
     public function delete(): bool
     {
+        if ($this->isDeleted()) {
+            return false;
+        }
+
         $count = $this->getConnection()
             ->delete($this->getTable())
             ->where($this->getPrimaryKeyName(), $this->getPrimaryKey())
@@ -56,5 +80,13 @@ trait Persistence
         $this->deleted = true;
 
         return $count === 1;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isDeleted(): bool
+    {
+        return $this->deleted;
     }
 }
