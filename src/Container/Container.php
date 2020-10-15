@@ -3,6 +3,7 @@
 namespace Kirameki\Container;
 
 use Closure;
+use Kirameki\Database\DatabaseManager;
 use Kirameki\Support\Collection;
 use Psr\Container\ContainerInterface;
 
@@ -13,7 +14,7 @@ class Container implements ContainerInterface
      */
     protected array $entries = [];
 
-    public function get($id)
+    public function get(mixed $id)
     {
         return $this->entries[$id]->getInstance();
     }

@@ -2,7 +2,9 @@
 
 namespace Kirameki\Model;
 
+use Closure;
 use Kirameki\Model\Relations\BelongsTo;
+use Kirameki\Model\Relations\HasMany;
 use Kirameki\Model\Relations\Relation;
 
 class Reflection
@@ -26,6 +28,11 @@ class Reflection
      * @var Relation[]
      */
     public array $relations;
+
+    /**
+     * @var Closure[]
+     */
+    public array $scopes;
 
     /**
      * @param ModelManager $manager
@@ -72,6 +79,31 @@ class Reflection
     public function belongsTo(string $name, ?string $class = null, ?string $foreignKey = null, ?string $referenceKey = null, ?string $inverseOf = null)
     {
         $this->relations[$name]= new BelongsTo($this->manager, $name, $this, $class, $foreignKey, $referenceKey, $inverseOf);
+        return $this;
+    }
+
+    /**
+     * @param string $name
+     * @param string|null $class
+     * @param string|null $foreignKey
+     * @param string|null $referenceKey
+     * @param string|null $inverseOf
+     * @return $this
+     */
+    public function hasMany(string $name, ?string $class = null, ?string $foreignKey = null, ?string $referenceKey = null, ?string $inverseOf = null)
+    {
+        $this->relations[$name]= new HasMany($this->manager, $name, $this, $class, $foreignKey, $referenceKey, $inverseOf);
+        return $this;
+    }
+
+    /**
+     * @param string $name
+     * @param Closure<QueryBuilder> $callback
+     * @return $this
+     */
+    public function scope(string $name, Closure $callback)
+    {
+        $this->scopes[$name] = $callback;
         return $this;
     }
 }

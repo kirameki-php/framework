@@ -2,14 +2,14 @@
 
 namespace Kirameki\Model\Relations;
 
-class BelongsTo extends Relation
+class HasMany extends Relation
 {
     /**
      * @return string
      */
     public function getSrcKey(): string
     {
-        return $this->srcKey ??= lcfirst(class_basename($this->getDest()->class)).'Id';
+        return $this->srcKey ??= $this->getSrc()->primaryKey;
     }
 
     /**
@@ -17,7 +17,7 @@ class BelongsTo extends Relation
      */
     public function getDestKey(): string
     {
-        return $this->destKey ??= $this->getDest()->primaryKey;
+        return $this->destKey ??= lcfirst(class_basename($this->getSrc()->class)).'Id';
     }
 
     /**
@@ -25,6 +25,6 @@ class BelongsTo extends Relation
      */
     public function returnsMany(): bool
     {
-        return false;
+        return true;
     }
 }

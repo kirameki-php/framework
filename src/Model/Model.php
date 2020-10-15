@@ -61,15 +61,6 @@ abstract class Model implements ArrayAccess, JsonSerializable
         }
     }
 
-    /**
-     * @param array $attributes
-     * @param bool $persisted
-     * @return $this
-     */
-    public function newInstance(array $attributes = [], $persisted = false)
-    {
-        return new static($attributes, $persisted);
-    }
 
     /**
      * @param string $name
@@ -116,5 +107,34 @@ abstract class Model implements ArrayAccess, JsonSerializable
     public function __unset(string $name)
     {
         $this->offsetUnset($name);
+    }
+
+    /**
+     * @param array $attributes
+     * @param bool $persisted
+     * @return $this
+     */
+    public function newInstance(array $attributes = [], $persisted = false)
+    {
+        return new static($attributes, $persisted);
+    }
+
+
+    /**
+     * @param Model $model
+     * @return bool
+     */
+    public function is(Model $model): bool
+    {
+        return $model instanceof $this && $this->getPrimaryKey() === $model->getPrimaryKey();
+    }
+
+    /**
+     * @param Model $model
+     * @return bool
+     */
+    public function isNot(Model $model): bool
+    {
+        return !$this->is($model);
     }
 }

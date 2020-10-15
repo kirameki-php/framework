@@ -2,6 +2,10 @@
 
 namespace Kirameki\Model\Relations;
 
+use Closure;
+use Kirameki\Model\Model;
+use Kirameki\Model\ModelCollection;
+use Kirameki\Model\QueryBuilder;
 use Kirameki\Model\Reflection;
 use Kirameki\Model\ModelManager;
 
@@ -46,6 +50,11 @@ abstract class Relation
      * @var string|null
      */
     protected ?string $inverse;
+
+    /**
+     * @var Closure[]
+     */
+    protected array $scopes;
 
     /**
      * @param ModelManager $manager
@@ -101,4 +110,65 @@ abstract class Relation
      * @return string
      */
     abstract public function getDestKey(): string;
+
+    /**
+     * @return string|null
+     */
+    public function getInverseName(): ?string
+    {
+        return $this->inverse;
+    }
+
+    /**
+     * @param string ...$names
+     * @return $this
+     */
+    public function scope(string ...$names)
+    {
+        foreach ($names as $name) {
+            $this->scopes[$name] = $this->getDest()->scopes[$name];
+        }
+        return $this;
+    }
+
+    /**
+     * @param Model $parent
+     * @return ModelCollection
+     */
+    public function executeQuery(Model $parent)
+    {
+        $models = $this->buildQuery()->all();
+        $models->each(function(Model $model) use ($parent) {
+            if ($inverse = $this->getInverseName()) {
+                $model->setRelation($inverse, $parent);
+            }
+        });
+        return $models;
+    }
+
+    /**
+     * @return QueryBuilder
+     */
+    public function buildQuery()
+    {
+        $db = $this->manager->getDatabaseManager();
+        $query = new QueryBuilder($db, $this->getDest());
+        foreach ($this->scopes as $scope) {
+            $scope($query);
+        }
+        return $query;
+    }
+
+    /**
+     * @return bool
+     */
+    public function returnsOne(): bool
+    {
+        return ! $this->returnsMany();
+    }
+
+    /**
+     * @return bool
+     */
+    abstract public function returnsMany(): bool;
 }

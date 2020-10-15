@@ -4,6 +4,9 @@ namespace Kirameki\Model;
 
 use Kirameki\Support\Collection;
 
+/**
+ * @method Model[] toArray() { @see Collection::toArray() }
+ */
 class ModelCollection extends Collection
 {
     /**
@@ -24,7 +27,7 @@ class ModelCollection extends Collection
     /**
      * @return Collection
      */
-    public function ids(): Collection
+    public function primaryKeys(): Collection
     {
         return $this->pluck($this->reflection->primaryKey);
     }
