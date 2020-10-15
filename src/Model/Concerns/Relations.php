@@ -49,14 +49,7 @@ trait Relations
     protected function loadRelation(string $name)
     {
         $relation = static::getReflection()->relations[$name];
-        $query = $relation->buildQuery();
-        if ($relation->returnsMany()) {
-            $models = $query->all();
-            $this->relations[$name] = $models;
-        } else {
-            $model = $query->one();
-            $this->relations[$name] = $model;
-        }
+        $relation->loadTo($this);
         return $this;
     }
 

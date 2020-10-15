@@ -14,16 +14,29 @@ class Container implements ContainerInterface
      */
     protected array $entries = [];
 
-    public function get(mixed $id)
+    /**
+     * @param string $id
+     * @return mixed
+     */
+    public function get($id)
     {
         return $this->entries[$id]->getInstance();
     }
 
+    /**
+     * @param string $id
+     * @return bool
+     */
     public function has($id): bool
     {
         return array_key_exists($id, $this->entries);
     }
 
+    /**
+     * @param string $id
+     * @param $entry
+     * @param bool $cached
+     */
     public function set(string $id, $entry, bool $cached = false): void
     {
         $this->entries[$id] = $entry instanceof Closure
@@ -31,11 +44,19 @@ class Container implements ContainerInterface
             : new InstanceEntry($id, $entry);
     }
 
+    /**
+     * @param string $id
+     * @param $entry
+     */
     public function singleton(string $id, $entry): void
     {
         $this->set($id, $entry, true);
     }
 
+    /**
+     * @param string $id
+     * @return bool
+     */
     public function remove(string $id): bool
     {
         if ($this->has($id)) {
@@ -45,6 +66,10 @@ class Container implements ContainerInterface
         return false;
     }
 
+    /**
+     * @param string $id
+     * @return EntryInterface
+     */
     public function entry(string $id): EntryInterface
     {
         return $this->entries[$id];
@@ -58,6 +83,10 @@ class Container implements ContainerInterface
         return new Collection($this->entries);
     }
 
+    /**
+     * @param string $id
+     * @param Closure $callback
+     */
     public function onResolved(string $id, Closure $callback): void
     {
         $entry = $this->entries[$id];

@@ -132,21 +132,6 @@ abstract class Relation
     }
 
     /**
-     * @param Model $parent
-     * @return ModelCollection
-     */
-    public function executeQuery(Model $parent)
-    {
-        $models = $this->buildQuery()->all();
-        $models->each(function(Model $model) use ($parent) {
-            if ($inverse = $this->getInverseName()) {
-                $model->setRelation($inverse, $parent);
-            }
-        });
-        return $models;
-    }
-
-    /**
      * @return QueryBuilder
      */
     public function buildQuery()
@@ -160,15 +145,7 @@ abstract class Relation
     }
 
     /**
-     * @return bool
+     * @param Model $target
      */
-    public function returnsOne(): bool
-    {
-        return ! $this->returnsMany();
-    }
-
-    /**
-     * @return bool
-     */
-    abstract public function returnsMany(): bool;
+    abstract public function loadTo(Model $target): void;
 }

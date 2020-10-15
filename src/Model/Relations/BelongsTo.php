@@ -2,6 +2,8 @@
 
 namespace Kirameki\Model\Relations;
 
+use Kirameki\Model\Model;
+
 class BelongsTo extends Relation
 {
     /**
@@ -21,10 +23,17 @@ class BelongsTo extends Relation
     }
 
     /**
-     * @return bool
+     * @param Model $target
      */
-    public function returnsMany(): bool
+    public function loadTo(Model $target): void
     {
-        return false;
+        $model = $this->buildQuery()->one();
+        $target->setRelation($this->name, $model);
+        if ($model === null) {
+            return;
+        }
+        if ($inverse = $this->getInverseName()) {
+            $model->setRelation($inverse, $target);
+        }
     }
 }

@@ -4,7 +4,7 @@ namespace Kirameki\Model\Relations;
 
 use Kirameki\Model\Model;
 
-class HasMany extends Relation
+class HasOne extends Relation
 {
     /**
      * @return string
@@ -27,12 +27,13 @@ class HasMany extends Relation
      */
     public function loadTo(Model $target): void
     {
-        $models = $this->buildQuery()->all();
-        $target->setRelation($this->getName(), $models);
-        $models->each(function(Model $model) use ($target) {
-            if ($inverse = $this->getInverseName()) {
-                $model->setRelation($inverse, $target);
-            }
-        });
+        $model = $this->buildQuery()->one();
+        $target->setRelation($this->name, $model);
+        if ($model === null) {
+            return;
+        }
+        if ($inverse = $this->getInverseName()) {
+            $model->setRelation($inverse, $target);
+        }
     }
 }
