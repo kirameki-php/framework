@@ -1,55 +1,35 @@
 <?php
 
-namespace Kirameki\Logging;
+namespace Kirameki\Logging\Loggers;
 
-use Closure;
 use Kirameki\Core\Config;
+use Kirameki\Logging\LogManager;
+use Kirameki\Support\Arr;
 use Psr\Log\LoggerInterface;
 use Psr\Log\LogLevel;
 
-class LogManager implements LoggerInterface
+class MultiLogger implements LoggerInterface
 {
-    protected Config $config;
+    /**
+     * @var LogManager
+     */
+    protected LogManager $logManager;
 
-    protected array $channels;
-
+    /**
+     * @var LoggerInterface[]
+     */
     protected array $loggers;
 
-    protected LoggerInterface $default;
-
-    public function __construct(Config $config)
+    public function __construct(array $loggers)
     {
-        $this->config = $config->dig('channels');
-        $this->channels = [];
-        $this->loggers = [];
+        $this->loggers = $loggers;
     }
 
-    public function setDefaultChannel(string $channel): void
+    public function log($level, $message, array $context = array()): void
     {
-        $this->default = $this->channel($channel);
-    }
-
-    public function channel(string $channel): LoggerInterface
-    {
-        return $this->channels[$channel] ??= $this->resolveChannel($channel);
-    }
-
-    protected function resolveChannel(string $name): LoggerInterface
-    {
-        $options = $this->config[$name];
-        $resolver = $this->loggers[$options['logger']];
-        return $resolver($options);
-    }
-
-    public function addLogger(string $name, Closure $resolver): self
-    {
-        $this->loggers[$name] = $resolver;
-        return $this;
-    }
-
-    public function log($level, $message, array $context = []): void
-    {
-        $this->default->log($level, $message, $context);
+        foreach ($this->loggers as $logger) {
+            $logger->log($level, $message, $context);
+        }
     }
 
     public function emergency($message, array $context = []): void

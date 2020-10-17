@@ -429,7 +429,6 @@ class Formatter
         if ($value instanceof DateTimeInterface) {
             return '\''.$value->format(DateTimeInterface::RFC3339_EXTENDED).'\'';
         }
-
         return $value;
     }
 
