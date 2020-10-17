@@ -4,7 +4,6 @@ namespace Kirameki\Model\Relations;
 
 use Closure;
 use Kirameki\Model\Model;
-use Kirameki\Model\ModelCollection;
 use Kirameki\Model\QueryBuilder;
 use Kirameki\Model\Reflection;
 use Kirameki\Model\ModelManager;

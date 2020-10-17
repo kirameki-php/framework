@@ -3,10 +3,12 @@
 use Kirameki\Core\Application;
 use Kirameki\Database\DatabaseManager;
 use Kirameki\Event\EventManager;
+use Kirameki\Logging\LogManager;
 use Kirameki\Support\Collection;
 use Kirameki\Core\Config;
 use Kirameki\Core\Env;
 use Psr\Log\LoggerInterface;
+use Ramsey\Uuid\Uuid;
 
 function app(): Application
 {
@@ -44,12 +46,17 @@ function class_basename($class): string
     return basename(str_replace('\\', '/', $class));
 }
 
-function logger(): LoggerInterface
+function logger(): LogManager
 {
-    return app()->get(LoggerInterface::class);
+    return app()->get(LogManager::class);
 }
 
 function storage_path(string $relPath = null): string
 {
     return app()->getBasePath('storage/'.$relPath);
+}
+
+function uuid(): string
+{
+    return Uuid::uuid4()->toString();
 }

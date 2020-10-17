@@ -50,12 +50,7 @@ class ModelManager
      */
     public function reflect(string $class): Reflection
     {
-        if (isset($this->reflections[$class])) {
-            $reflection = new Reflection($this, $class);
-            call_user_func("$class::define", $reflection);
-            $this->reflections[$class] = $reflection;
-        }
-        return $this->reflections[$class];
+        return $this->reflections[$class] ??= call_user_func("$class::getReflection");
     }
 
     /**

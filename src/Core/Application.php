@@ -174,20 +174,11 @@ class Application extends Container
     }
 
     /**
-     * @param string|null $key
-     * @param mixed|null $value
-     * @return Config|mixed|null
+     * @return Config
      */
-    public function config(string $key = null, $value = null)
+    public function config()
     {
-        $argCount = func_num_args();
-
-        if ($argCount === 0) return $this->config;
-        if ($argCount === 1) return $this->config->get($key);
-        if ($argCount === 2) return $this->config->set($key, $value);
-
-        $errorMessage = __METHOD__.'() should only have upto 2 arguments. '.$argCount.' given.';
-        throw new InvalidArgumentException($errorMessage);
+        return $this->config;
     }
 
     /**

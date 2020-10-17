@@ -50,9 +50,7 @@ class RelationCollection extends ModelCollection
      */
     public function getModelReflection(): Reflection
     {
-        /** @var ModelManager $manager */
-        $manager = app()->get(ModelManager::class);
-        return $manager->reflect($this->getModelClass());
+        return app()->get(ModelManager::class)->reflect($this->getModelClass());
     }
 
     /**

@@ -90,7 +90,7 @@ trait Properties
     /**
      * @return $this
      */
-    protected function fillDefaults()
+    protected function setDefaults()
     {
         $defined = static::getReflection()->properties;
         $unused = array_diff_key($defined, $this->rawProperties);

@@ -8,8 +8,15 @@ use Kirameki\Support\Arr;
 
 class QueryBuilder extends SelectBuilder
 {
+    /**
+     * @var Reflection 
+     */
     protected Reflection $reflection;
 
+    /**
+     * @param DatabaseManager $db
+     * @param Reflection $reflection
+     */
     public function __construct(DatabaseManager $db, Reflection $reflection)
     {
         $connection = $db->using($reflection->connection);
@@ -33,7 +40,7 @@ class QueryBuilder extends SelectBuilder
     /**
      * @return Model|null
      */
-    public function one()
+    public function first()
     {
         $results = $this->copy()->limit(1)->execSelect();
         return isset($results[0])

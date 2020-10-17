@@ -24,10 +24,12 @@ abstract class ConditionsStatement extends BaseStatement
      */
     public function __clone()
     {
-        $where = [];
-        foreach ($this->where as $condition) {
-            $where[] = clone $condition;
+        if ($this->where !== null) {
+            $where = [];
+            foreach ($this->where as $condition) {
+                $where[] = clone $condition;
+            }
+            $this->where = $where;
         }
-        $this->where = $where;
     }
 }

@@ -40,7 +40,7 @@ class Container implements ContainerInterface
     public function set(string $id, $entry, bool $cached = false): void
     {
         $this->entries[$id] = $entry instanceof Closure
-            ? new ClosureEntry($id, $entry, $cached)
+            ? new ClosureEntry($id, $entry, [$this], $cached)
             : new InstanceEntry($id, $entry);
     }
 

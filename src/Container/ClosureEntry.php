@@ -17,6 +17,11 @@ class ClosureEntry implements EntryInterface
     protected Closure $resolver;
 
     /**
+     * @var array
+     */
+    protected array $arguments;
+
+    /**
      * @var bool
      */
     protected bool $cacheable;
@@ -41,10 +46,11 @@ class ClosureEntry implements EntryInterface
      * @param Closure $resolver
      * @param bool $cacheable
      */
-    public function __construct(string $id, Closure $resolver, bool $cacheable)
+    public function __construct(string $id, Closure $resolver, array $arguments, bool $cacheable)
     {
         $this->id = $id;
         $this->resolver = $resolver;
+        $this->arguments = $arguments;
         $this->cacheable = $cacheable;
         $this->resolved = false;
     }
@@ -63,14 +69,14 @@ class ClosureEntry implements EntryInterface
     public function getInstance()
     {
         if (!$this->cacheable) {
-            $instance = call_user_func($this->resolver);
+            $instance = call_user_func_array($this->resolver, $this->arguments);
             $this->invokeOnResolved($instance);
             return $instance;
         }
 
         if (!$this->resolved) {
-            $this->instance = call_user_func($this->resolver);
             $this->resolved = true;
+            $this->instance = call_user_func_array($this->resolver, $this->arguments);
             $this->invokeOnResolved($this->instance);
         }
 

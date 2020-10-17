@@ -5,6 +5,7 @@ namespace Kirameki\Model\Concerns;
 use Kirameki\Database\Connection;
 use Kirameki\Model\Reflection;
 use Kirameki\Model\Model;
+use Kirameki\Model\ReflectionBuilder;
 
 /**
  * @mixin Model
@@ -14,36 +15,37 @@ trait Reflect
     /**
      * @var ?Reflection
      */
-    protected static ?Reflection $reflection;
+    protected static ?Reflection $reflection = null;
+
+    /**
+     * @internal only used for test
+     * @param Reflection $reflection
+     */
+    public static function setTestReflection(Reflection $reflection): void
+    {
+        static::$reflection = $reflection;
+    }
 
     /**
      * @return Reflection
      */
     protected static function getReflection(): Reflection
     {
-        // Creating a new instance will call $this->reflectOnce()
-        // which will resolve the reflection!
         if (static::$reflection === null) {
-            new static();
-        }
-        return static::$reflection;
-    }
+            $modelClass = static::class;
+            $reflection = new Reflection($modelClass);
 
-    /**
-     * @param Reflection $reflection
-     */
-    abstract public function define(Reflection $reflection): void;
+            if (method_exists($modelClass, 'define')) {
+                $builder = new ReflectionBuilder(static::getManager(), $reflection);
+                call_user_func($modelClass.'::define', $builder);
+                $builder->applyDefaultsIfOmitted();
+            } else {
+                // auto resolve from table info
+            }
 
-    /**
-     * @return void
-     */
-    public function resolveReflection(): void
-    {
-        if (static::$reflection === null) {
-            $reflection = new Reflection(static::getManager(), get_class($this));
-            $this->define($reflection);
             static::$reflection = $reflection;
         }
+        return static::$reflection;
     }
 
     /**
@@ -52,8 +54,8 @@ trait Reflect
     public function getConnection(): Connection
     {
         $db = static::getManager()->getDatabaseManager();
-        $refletion = static::getReflection();
-        return $db->using($refletion->connection);
+        $reflection = static::getReflection();
+        return $db->using($reflection->connection);
     }
 
     /**

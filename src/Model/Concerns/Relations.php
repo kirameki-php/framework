@@ -3,6 +3,8 @@
 namespace Kirameki\Model\Concerns;
 
 use Kirameki\Model\Model;
+use Kirameki\Model\ModelCollection;
+use Kirameki\Model\Relations\RelationCollection;
 
 /**
  * @mixin Model
@@ -24,11 +26,11 @@ trait Relations
     }
 
     /**
-     * @return array
+     * @return Model[]|RelationCollection[]
      */
     public function getRelations(): array
     {
-        return $this->relations;
+        return $this->relations ??= [];
     }
 
     /**

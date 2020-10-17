@@ -34,7 +34,7 @@ abstract class Model implements ArrayAccess, JsonSerializable
      */
     protected static function getManager(): ModelManager
     {
-        return static::$manager;
+        return static::$manager ??= app()->get(ModelManager::class);
     }
 
     /**
@@ -53,11 +53,11 @@ abstract class Model implements ArrayAccess, JsonSerializable
      */
     public function __construct(array $properties = [], bool $persisted = false)
     {
-        $this->resolveReflection();
+        static::getReflection();
         $this->persisted = $persisted;
-        $this->fill($properties);
+        $this->rawProperties = $properties;
         if ($this->isNewRecord()) {
-            $this->fillDefaults();
+            $this->setDefaults();
         }
     }
 
@@ -89,7 +89,9 @@ abstract class Model implements ArrayAccess, JsonSerializable
         elseif ($this->isProperty($name)) {
             $this->setProperty($name, $value);
         }
-        throw new RuntimeException('Tried to set unknown property or relation: '.$name);
+        else {
+            throw new RuntimeException('Tried to set unknown property or relation: '.$name);
+        }
     }
 
     /**

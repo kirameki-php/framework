@@ -72,6 +72,15 @@ class Config implements ArrayAccess
         unset($curr[$lastSegment]);
     }
 
+    /**
+     * @param string $name
+     * @return Config
+     */
+    public function dig(string $name)
+    {
+        return new Config($this->get($name) ?? []);
+    }
+
     public function offsetExists($offset)
     {
         return isset($this->entries);

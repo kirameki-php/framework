@@ -2,8 +2,11 @@
 
 namespace Kirameki\Model\Concerns;
 
+use Closure;
+use Kirameki\Database\Connection;
 use Kirameki\Model\Model;
 use Kirameki\Model\Relations\RelationCollection;
+use RuntimeException;
 
 /**
  * @mixin Model
@@ -21,29 +24,39 @@ trait Persistence
     public bool $deleted = false;
 
     /**
+     * @var bool
+     */
+    protected bool $processing = false;
+
+    /**
      * @return $this
      */
     public function save()
     {
-        $conn = $this->getConnection();
-        if ($this->isNewRecord()) {
-            $conn->insertInto($this->getTable())
-                ->value($this->getProperties())
-                ->execute();
-        } else {
-            $conn->update($this->getTable())
-                ->set($this->getProperties())
-                ->execute();
+        if ($this->isDeleted()) {
+            throw new RuntimeException(sprintf('Trying to save record which was deleted! (%s:%s)',
+                $this->getTable(),
+                $this->getPrimaryKey())
+            );
         }
 
-        foreach ($this->getRelations() as $name => $relation) {
-            if ($relation instanceof Model) {
-                $relation->save();
+        $this->processing(function(Connection $conn) {
+            $table = $this->getTable();
+            $properties = $this->getProperties();
+
+            $this->isNewRecord()
+                ? $conn->insertInto($table)->value($properties)->execute()
+                : $conn->update($table)->set($properties)->execute();
+
+            foreach ($this->getRelations() as $relation) {
+                if ($relation instanceof Model) {
+                    $relation->save();
+                }
+                elseif ($relation instanceof RelationCollection) {
+                    $relation->saveAll();
+                }
             }
-            elseif ($relation instanceof RelationCollection) {
-                $relation->saveAll();
-            }
-        }
+        });
         return $this;
     }
 
@@ -72,14 +85,15 @@ trait Persistence
             return false;
         }
 
-        $count = $this->getConnection()
-            ->delete($this->getTable())
-            ->where($this->getPrimaryKeyName(), $this->getPrimaryKey())
-            ->execute();
+        $this->processing(function(Connection $conn) {
+            $count = $conn->delete($this->getTable())
+                ->where($this->getPrimaryKeyName(), $this->getPrimaryKey())
+                ->execute();
 
-        $this->deleted = true;
+            $this->deleted = $count > 0;
+        });
 
-        return $count === 1;
+        return $this->deleted;
     }
 
     /**
@@ -88,5 +102,21 @@ trait Persistence
     public function isDeleted(): bool
     {
         return $this->deleted;
+    }
+
+    /**
+     * @param Closure $callback
+     */
+    protected function processing(Closure $callback)
+    {
+        try {
+            if (!$this->processing) {
+                $this->processing = true;
+                $callback($this->getConnection());
+            }
+        }
+        finally {
+            $this->processing = false;
+        }
     }
 }

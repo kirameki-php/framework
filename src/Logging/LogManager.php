@@ -2,36 +2,50 @@
 
 namespace Kirameki\Logging;
 
-use Kirameki\Container\Container;
+use Closure;
+use Kirameki\Core\Config;
 use Monolog\Logger;
 use Psr\Log\LoggerInterface;
 use Psr\Log\LogLevel;
 
 class LogManager implements LoggerInterface
 {
-    protected Container $loggers;
+    protected Config $config;
+
+    protected array $channels;
+
+    protected array $loggers;
 
     protected Logger $default;
 
-    public function __construct()
+    public function __construct(Config $config)
     {
-        $this->loggers = new Container();
+        $this->config = $config->dig('channels');
+        $this->channels = [];
+        $this->loggers = [];
     }
 
-    public function setDefaultLogger(string $channel): void
+    public function setDefaultChannel(string $channel): void
     {
         $this->default = $this->channel($channel);
     }
 
-    public function setLogger(string $channel, $logger): self
-    {
-        $this->loggers->singleton($channel, $logger);
-        return $this;
-    }
-
     public function channel(string $channel): Logger
     {
-        return $this->loggers->get($channel);
+        return $this->channels[$channel] ??= $this->resolveChannel($channel);
+    }
+
+    protected function resolveChannel(string $name): Logger
+    {
+        $options = $this->config[$name];
+        $resolver = $this->loggers[$options['logger']];
+        return $resolver($options);
+    }
+
+    public function setLogger(string $name, Closure $resolver): self
+    {
+        $this->loggers[$name] = $resolver;
+        return $this;
     }
 
     public function log($level, $message, array $context = []): void
