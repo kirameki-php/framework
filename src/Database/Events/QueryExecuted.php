@@ -19,20 +19,20 @@ class QueryExecuted extends DatabaseEvent
     /**
      * @var float
      */
-    public float $time;
+    public float $elapsedMs;
 
     /**
      * @param Connection $connection
      * @param string $statement
      * @param array $bindings
-     * @param float $time
+     * @param float $elapsedMs
      */
-    public function __construct(Connection $connection, string $statement, array $bindings, float $time)
+    public function __construct(Connection $connection, string $statement, array $bindings, float $elapsedMs)
     {
         parent::__construct($connection);
         $this->statement = $statement;
         $this->bindings = $bindings;
-        $this->time = $time;
+        $this->elapsedMs = $elapsedMs;
     }
 
     /**

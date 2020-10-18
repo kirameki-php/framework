@@ -92,7 +92,7 @@ class EventManager
     public function dispatchClass(string $class, ...$args): void
     {
         if ($this->hasListeners($class)) {
-            $this->dispatch(new $class($this,...$args));
+            $this->dispatch(new $class(...$args));
         }
     }
 

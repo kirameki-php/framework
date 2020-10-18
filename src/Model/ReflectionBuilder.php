@@ -60,9 +60,9 @@ class ReflectionBuilder
      * @param string|null $referenceKey
      * @param string|null $inverseOf
      */
-    public function belongsTo(string $name, ?string $class = null, ?string $foreignKey = null, ?string $referenceKey = null, ?string $inverseOf = null)
+    public function belongsTo(string $name, string $class, ?string $foreignKey = null, ?string $referenceKey = null, ?string $inverseOf = null)
     {
-        $this->reflection->relations[$name]= new BelongsTo($this->manager, $name, $this->reflection, $class, $foreignKey, $referenceKey, $inverseOf);
+        $this->reflection->relations[$name] = new BelongsTo($this->manager, $name, $this->reflection, $class, $foreignKey, $referenceKey, $inverseOf);
     }
 
     /**
@@ -72,9 +72,9 @@ class ReflectionBuilder
      * @param string|null $referenceKey
      * @param string|null $inverseOf
      */
-    public function hasMany(string $name, ?string $class = null, ?string $foreignKey = null, ?string $referenceKey = null, ?string $inverseOf = null)
+    public function hasMany(string $name, string $class, ?string $foreignKey = null, ?string $referenceKey = null, ?string $inverseOf = null)
     {
-        $this->reflection->relations[$name]= new HasMany($this->manager, $name, $this->reflection, $class, $foreignKey, $referenceKey, $inverseOf);
+        $this->reflection->relations[$name] = new HasMany($this->manager, $name, $this->reflection, $class, $foreignKey, $referenceKey, $inverseOf);
     }
 
     /**
