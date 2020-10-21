@@ -42,11 +42,17 @@ trait Persistence
 
         $this->processing(function(Connection $conn) {
             $table = $this->getTable();
-            $properties = $this->getProperties();
 
-            $this->isNewRecord()
-                ? $conn->insertInto($table)->value($properties)->execute()
-                : $conn->update($table)->set($properties)->execute();
+            if ($this->isNewRecord()) {
+                $properties = $this->getProperties();
+                $conn->insertInto($table)->value($properties)->execute();
+            }
+            else {
+                $properties = $this->getPropertiesForUpdate();
+                $conn->update($table)->set($properties)->execute();
+            }
+
+            $this->clearDirty();
 
             foreach ($this->getRelations() as $relation) {
                 if ($relation instanceof Model) {
@@ -118,5 +124,17 @@ trait Persistence
         finally {
             $this->processing = false;
         }
+    }
+
+    /**
+     * @return array
+     */
+    protected function getPropertiesForUpdate(): array
+    {
+        $properties = [];
+        foreach ($this->getDirtyProperties() as $name => $value) {
+            $properties[$name] = $this->getCast($name)->set($this, $name, $value);
+        }
+        return $properties;
     }
 }

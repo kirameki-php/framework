@@ -19,9 +19,27 @@ trait CacheResults
      * @param $value
      * @return $this
      */
-    protected function cacheResult(string $name, $value)
+    protected function cacheResolved(string $name, $value)
     {
         $this->resolved[$name] = $value;
         return $this;
+    }
+
+    /**
+     * @return $this
+     */
+    public function clearResultCache()
+    {
+        $this->resolved = [];
+        return $this;
+    }
+
+    /**
+     * @param string $name
+     * @return bool
+     */
+    public function isResultCached(string $name): bool
+    {
+        return array_key_exists($name, $this->resolved);
     }
 }

@@ -14,7 +14,7 @@ class MySql_MigrationTestCase extends DatabaseTestCase
     protected function setUpDatabase(): void
     {
         $adapter = new MySqlAdapter(['host' => 'mysql', 'database' => 'migration_test']);
-        $connection = new Connection('migration_test', $adapter);
+        $connection = new Connection('migration_test', $adapter, event());
         db()->addConnection($connection);
         $adapter->dropDatabase();
         $adapter->createDatabase();

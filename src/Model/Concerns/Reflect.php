@@ -3,6 +3,7 @@
 namespace Kirameki\Model\Concerns;
 
 use Kirameki\Database\Connection;
+use Kirameki\Model\Casts\CastInterface;
 use Kirameki\Model\Reflection;
 use Kirameki\Model\Model;
 use Kirameki\Model\ReflectionBuilder;
@@ -64,6 +65,15 @@ trait Reflect
     public function getTable(): string
     {
         return static::getReflection()->table;
+    }
+
+    /**
+     * @param string $name
+     * @return CastInterface
+     */
+    public function getCast(string $name): CastInterface
+    {
+        return static::getReflection()->properties[$name]->cast;
     }
 
     /**

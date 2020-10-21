@@ -55,7 +55,7 @@ class ReflectionBuilder
 
     /**
      * @param string $name
-     * @param string|null $class
+     * @param string $class
      * @param string|null $foreignKey
      * @param string|null $referenceKey
      * @param string|null $inverseOf
@@ -67,7 +67,7 @@ class ReflectionBuilder
 
     /**
      * @param string $name
-     * @param string|null $class
+     * @param string $class
      * @param string|null $foreignKey
      * @param string|null $referenceKey
      * @param string|null $inverseOf

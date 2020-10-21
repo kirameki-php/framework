@@ -14,7 +14,8 @@ abstract class Model implements ArrayAccess, JsonSerializable
         Concerns\JsonSerialize,
         Concerns\Persistence,
         Concerns\Properties,
-        Concerns\Relations;
+        Concerns\Relations,
+        Concerns\TracksChanges;
 
     /**
      * @var ModelManager
@@ -49,13 +50,25 @@ abstract class Model implements ArrayAccess, JsonSerializable
 
     /**
      * @param array $properties
+     * @return static
+     * @internal
+     */
+    public static function buildFromQuery(array $properties = [])
+    {
+        $instance = new static([], true);
+        $instance->originalProperties = $properties;
+        return $instance;
+    }
+
+    /**
+     * @param array $properties
      * @param bool $persisted
      */
     public function __construct(array $properties = [], bool $persisted = false)
     {
         static::getReflection();
         $this->persisted = $persisted;
-        $this->rawProperties = $properties;
+        $this->setProperties($properties);
         if ($this->isNewRecord()) {
             $this->setDefaults();
         }

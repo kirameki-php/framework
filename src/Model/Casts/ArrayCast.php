@@ -5,7 +5,7 @@ namespace Kirameki\Model\Casts;
 use Kirameki\Model\Model;
 use Kirameki\Support\Json;
 
-class JsonCast implements CastInterface
+class ArrayCast implements CastInterface
 {
     /**
      * @param Model $model

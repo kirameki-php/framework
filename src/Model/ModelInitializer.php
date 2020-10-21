@@ -9,9 +9,8 @@ use Kirameki\Model\Casts\BoolCast;
 use Kirameki\Model\Casts\DateTimeCast;
 use Kirameki\Model\Casts\FloatCast;
 use Kirameki\Model\Casts\IntCast;
-use Kirameki\Model\Casts\JsonCast;
+use Kirameki\Model\Casts\ArrayCast;
 use Kirameki\Model\Casts\StringCast;
-use Psr\Log\LoggerInterface;
 
 class ModelInitializer implements InitializerInterface
 {
@@ -25,7 +24,7 @@ class ModelInitializer implements InitializerInterface
             $registrar->setCast('float', static fn() => new FloatCast);
             $registrar->setCast('string', static fn() => new StringCast);
             $registrar->setCast('datetime', static fn() => new DateTimeCast);
-            $registrar->setCast('json', static fn() => new JsonCast);
+            $registrar->setCast('array', static fn() => new ArrayCast);
             return $registrar;
         });
     }

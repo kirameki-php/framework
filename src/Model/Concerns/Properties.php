@@ -12,14 +12,14 @@ trait Properties
     /**
      * @var array
      */
-    protected array $rawProperties = [];
+    protected array $originalProperties = [];
 
     /**
      * @return string[]
      */
     public function getPropertyNames(): array
     {
-        return array_keys($this->rawProperties);
+        return array_keys(static::getReflection()->properties);
     }
 
     /**
@@ -35,6 +35,18 @@ trait Properties
     }
 
     /**
+     * @param array $properties
+     * @return $this
+     */
+    public function setProperties(array $properties = [])
+    {
+        foreach ($properties as $name => $value) {
+            $this->setProperty($name, $value);
+        }
+        return $this;
+    }
+
+    /**
      * @param string $name
      * @return mixed|null
      */
@@ -45,8 +57,8 @@ trait Properties
         }
 
         $property = static::getReflection()->properties[$name];
-        $value = $property->cast->get($this, $name, $this->rawProperties[$name]);
-        $this->cacheResult($name, $value);
+        $value = $property->cast->get($this, $name, $this->originalProperties[$name]);
+        $this->cacheResolved($name, $value);
 
         return $value;
     }
@@ -58,11 +70,8 @@ trait Properties
      */
     public function setProperty(string $name, $value)
     {
-        $this->cacheResult($name, $value);
-        $property = static::getReflection()->properties[$name];
-        $rawValue = $property->cast->set($this, $name, $value);
-        $this->rawProperties[$name] = $rawValue;
-
+        $this->markAsDirty($name, $this->getProperty($name));
+        $this->cacheResolved($name, $value);
         return $this;
     }
 
@@ -76,24 +85,12 @@ trait Properties
     }
 
     /**
-     * @param array $attributes
-     * @return $this
-     */
-    public function fill(array $attributes = [])
-    {
-        foreach ($attributes as $name => $attribute) {
-            $this->setProperty($name, $attribute);
-        }
-        return $this;
-    }
-
-    /**
      * @return $this
      */
     protected function setDefaults()
     {
         $defined = static::getReflection()->properties;
-        $unused = array_diff_key($defined, $this->rawProperties);
+        $unused = array_diff_key($defined, $this->originalProperties);
         foreach ($unused as $name => $property) {
             $this->setProperty($name, $property->default);
         }
