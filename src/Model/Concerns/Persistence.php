@@ -29,6 +29,10 @@ trait Persistence
     protected bool $processing = false;
 
     /**
+     * This has raw values that come directly from the database.
+     * For example, the datetime values are stored as string
+     * and will not be casted until it is actually used.
+     *
      * @var array
      */
     protected array $persistedProperties = [];
@@ -59,16 +63,15 @@ trait Persistence
             $table = $this->getTable();
 
             if ($this->isNewRecord()) {
-                $properties = $this->getProperties();
+                $properties = $this->getPropertiesForInsert();
                 $conn->insertInto($table)->value($properties)->execute();
             }
             else {
                 $properties = $this->getPropertiesForUpdate();
                 $conn->update($table)->set($properties)->execute();
-                // ORDER MATTERS: assign it only after the query has been executed!
-                $this->setPersistedProperties($properties);
             }
 
+            $this->setPersistedProperties($properties);
             $this->clearDirty();
 
             foreach ($this->getRelations() as $relation) {
@@ -143,6 +146,17 @@ trait Persistence
         }
     }
 
+    /**
+     * @return array
+     */
+    protected function getPropertiesForInsert(): array
+    {
+        $properties = [];
+        foreach ($this->getProperties() as $name => $value) {
+            $properties[$name] = $this->getCast($name)->set($this, $name, $value);
+        }
+        return $properties;
+    }
     /**
      * @return array
      */

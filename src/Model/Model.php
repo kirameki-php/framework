@@ -59,6 +59,8 @@ abstract class Model implements ArrayAccess, JsonSerializable
         $this->persisted = $persisted;
 
         if ($persisted) {
+            // persisted properties are set directly as raw uncasted value
+            // and are not deserialized until `getProperty` is called
             $this->setPersistedProperties($properties);
         } else {
             $this->setProperties($properties);
