@@ -50,26 +50,18 @@ abstract class Model implements ArrayAccess, JsonSerializable
 
     /**
      * @param array $properties
-     * @return static
-     * @internal
-     */
-    public static function buildFromQuery(array $properties = [])
-    {
-        $instance = new static([], true);
-        $instance->originalProperties = $properties;
-        return $instance;
-    }
-
-    /**
-     * @param array $properties
      * @param bool $persisted
      */
     public function __construct(array $properties = [], bool $persisted = false)
     {
         static::getReflection();
+
         $this->persisted = $persisted;
-        $this->setProperties($properties);
-        if ($this->isNewRecord()) {
+
+        if ($persisted) {
+            $this->setPersistedProperties($properties);
+        } else {
+            $this->setProperties($properties);
             $this->setDefaults();
         }
     }

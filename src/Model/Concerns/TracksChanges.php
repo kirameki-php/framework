@@ -10,11 +10,16 @@ use Kirameki\Model\Model;
 trait TracksChanges
 {
     /**
+     * Stores initial values for properties that were changed.
+     *
      * @var array
      */
     protected array $changedProperties = [];
 
     /**
+     * Stores previous value of properties.
+     * It will get cleared when the model is saved.
+     *
      * @var array
      */
     protected array $previousProperties = [];
@@ -26,7 +31,9 @@ trait TracksChanges
      */
     protected function markAsDirty(string $name, $oldValue)
     {
-        $this->changedProperties[$name] ??= $oldValue;
+        if (!array_key_exists($name, $this->changedProperties)) {
+            $this->changedProperties[$name] = $oldValue;
+        }
         $this->previousProperties[$name] = $oldValue;
         return $this;
     }
@@ -37,7 +44,9 @@ trait TracksChanges
      */
     public function getInitialProperty(string $name = null): array
     {
-        return $this->changedProperties[$name] ?? $this->getProperty($name);
+        return array_key_exists($name, $this->changedProperties)
+            ? $this->changedProperties[$name]
+            : $this->getProperty($name);
     }
 
     /**

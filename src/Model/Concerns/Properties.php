@@ -10,11 +10,6 @@ use Kirameki\Model\Model;
 trait Properties
 {
     /**
-     * @var array
-     */
-    protected array $originalProperties = [];
-
-    /**
      * @return string[]
      */
     public function getPropertyNames(): array
@@ -57,7 +52,7 @@ trait Properties
         }
 
         $property = static::getReflection()->properties[$name];
-        $value = $property->cast->get($this, $name, $this->originalProperties[$name]);
+        $value = $property->cast->get($this, $name, $this->persistedProperties[$name]);
         $this->cacheResolved($name, $value);
 
         return $value;
@@ -90,7 +85,7 @@ trait Properties
     protected function setDefaults()
     {
         $defined = static::getReflection()->properties;
-        $unused = array_diff_key($defined, $this->originalProperties);
+        $unused = array_diff_key($defined, $this->persistedProperties);
         foreach ($unused as $name => $property) {
             $this->setProperty($name, $property->default);
         }

@@ -29,6 +29,21 @@ trait Persistence
     protected bool $processing = false;
 
     /**
+     * @var array
+     */
+    protected array $persistedProperties = [];
+
+    /**
+     * @param array $properties
+     * @return $this
+     */
+    protected function setPersistedProperties(array $properties)
+    {
+        $this->persistedProperties = $properties;
+        return $this;
+    }
+
+    /**
      * @return $this
      */
     public function save()
@@ -50,6 +65,8 @@ trait Persistence
             else {
                 $properties = $this->getPropertiesForUpdate();
                 $conn->update($table)->set($properties)->execute();
+                // ORDER MATTERS: assign it only after the query has been executed!
+                $this->setPersistedProperties($properties);
             }
 
             $this->clearDirty();
