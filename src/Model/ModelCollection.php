@@ -33,6 +33,14 @@ class ModelCollection extends Collection
     }
 
     /**
+     * @return static
+     */
+    public function keyByPrimaryKey()
+    {
+        return $this->keyBy($this->reflection->primaryKey);
+    }
+
+    /**
      * @return int
      */
     public function deleteAll(): int

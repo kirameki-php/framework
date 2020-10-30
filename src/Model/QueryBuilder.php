@@ -3,6 +3,7 @@
 namespace Kirameki\Model;
 
 use Kirameki\Database\DatabaseManager;
+use Kirameki\Database\Query\Builders\ConditionBuilder;
 use Kirameki\Database\Query\Builders\SelectBuilder;
 use Kirameki\Support\Arr;
 
@@ -46,5 +47,26 @@ class QueryBuilder extends SelectBuilder
         return isset($results[0])
             ? $this->reflection->makeModel($results[0], true)
             : null;
+    }
+
+    /**
+     * @param string|ConditionBuilder $column
+     * @param mixed|null $operator
+     * @param mixed|null $value
+     * @return $this
+     */
+    public function where($column, $operator = null, $value = null)
+    {
+        $num = func_num_args();
+        if ($num === 2) {
+            if ($relation = $this->reflection->relations[$column] ?? null) {
+                $column = $relation->getDestKeyName();
+                if ($operator instanceof Model) {
+                    $operator = $operator->getProperty($column);
+                }
+            }
+        }
+
+        return parent::where($column, $operator, $value);
     }
 }

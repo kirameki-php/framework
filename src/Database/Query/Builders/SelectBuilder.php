@@ -67,7 +67,7 @@ class SelectBuilder extends ConditonsBuilder
     }
 
     /**
-     * @param mixed $column
+     * @param string|ConditionBuilder $column
      * @param mixed $operator
      * @param mixed|null $value
      * @return $this

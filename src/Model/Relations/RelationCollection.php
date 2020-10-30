@@ -38,6 +38,14 @@ class RelationCollection extends ModelCollection
     }
 
     /**
+     * @return Relation
+     */
+    public function getRelation(): Relation
+    {
+        return $this->relation;
+    }
+
+    /**
      * @return string
      */
     public function getModelClass(): string
@@ -81,8 +89,8 @@ class RelationCollection extends ModelCollection
     protected function setRelatedKeys(Model $model): Model
     {
         if ($this->parent) {
-            $parentKeyName = $this->relation->getDestKey();
-            $parentKey = $this->parent->getProperty($this->relation->getSrcKey());
+            $parentKeyName = $this->relation->getDestKeyName();
+            $parentKey = $this->parent->getProperty($this->relation->getSrcKeyName());
             $model->setProperty($parentKeyName, $parentKey);
         }
         return $model;

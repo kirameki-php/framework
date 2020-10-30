@@ -3,8 +3,8 @@
 namespace Kirameki\Model\Concerns;
 
 use Kirameki\Model\Model;
-use Kirameki\Model\ModelCollection;
 use Kirameki\Model\Relations\RelationCollection;
+use Kirameki\Support\Arr;
 
 /**
  * @mixin Model
@@ -17,6 +17,35 @@ trait Relations
     protected array $relations;
 
     /**
+     * @param string|string[] $relationNames
+     * @return $this
+     */
+    public function preload(array $relationNames)
+    {
+        $this->preloadRecursive($this, $relationNames);
+        return $this;
+    }
+
+    /**
+     * @param Model|RelationCollection $target
+     * @param array $names
+     */
+    protected function preloadRecursive(RelationCollection|Model $target, array $names)
+    {
+        if (Arr::isSequential($names)) {
+            foreach ($names as $name) {
+                $this->loadRelation($target, $name);
+            }
+        }
+        else {
+            foreach ($names as $name => $inner) {
+                $model = $this->loadRelation($target, $name);
+                $this->preloadRecursive($model, Arr::wrap($inner));
+            }
+        }
+    }
+
+    /**
      * @param string $name
      * @return bool
      */
@@ -26,7 +55,16 @@ trait Relations
     }
 
     /**
-     * @return Model[]|RelationCollection[]
+     * @param string $name
+     * @return bool
+     */
+    public function isRelationLoaded(string $name): bool
+    {
+        return array_key_exists($name, $this->relations);
+    }
+
+    /**
+     * @return array<Model|RelationCollection>
      */
     public function getRelations(): array
     {
@@ -39,20 +77,26 @@ trait Relations
      */
     public function getRelation(string $name)
     {
-        return $this->resolved[$name]
-            ?? $this->relations[$name]
-            ?? $this->loadRelation($name);
+        if (!array_key_exists($name, $this->relations)) {
+            $this->loadRelation($this, $name);
+        }
+        return $this->relations[$name];
     }
 
     /**
+     * @param Model|RelationCollection $target
      * @param string $name
-     * @return $this
+     * @return Model|RelationCollection
      */
-    protected function loadRelation(string $name)
+    protected function loadRelation($target, string $name)
     {
-        $relation = static::getReflection()->relations[$name];
-        $relation->loadTo($this);
-        return $this;
+        if ($target instanceof RelationCollection) {
+            $relation = $target->getModelReflection()->relations[$name];
+            return $relation->loadOnCollection($target);
+        }
+
+        $relation = $target::getReflection()->relations[$name];
+        return $relation->loadOnModel($target);
     }
 
     /**
@@ -62,7 +106,6 @@ trait Relations
      */
     public function setRelation(string $name, $models)
     {
-        $this->resolved[$name] = $models;
         $this->relations[$name] = $models;
         return $this;
     }

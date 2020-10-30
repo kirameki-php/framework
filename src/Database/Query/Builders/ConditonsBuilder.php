@@ -15,7 +15,7 @@ abstract class ConditonsBuilder extends StatementBuilder
     protected $statement;
 
     /**
-     * @param $column
+     * @param string|ConditionBuilder $column
      * @param mixed|null $operator
      * @param mixed|null $value
      * @return $this

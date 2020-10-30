@@ -7,6 +7,7 @@ use Kirameki\Model\Model;
 use Kirameki\Model\QueryBuilder;
 use Kirameki\Model\Reflection;
 use Kirameki\Model\ModelManager;
+use Kirameki\Support\Collection;
 
 abstract class Relation
 {
@@ -95,7 +96,25 @@ abstract class Relation
     /**
      * @return string
      */
-    abstract public function getSrcKey(): string;
+    abstract public function getSrcKeyName(): string;
+
+    /**
+     * @param Model $model
+     * @return mixed|null
+     */
+    public function getSrcKey(Model $model)
+    {
+        return $model->getProperty($this->getSrcKeyName());
+    }
+
+    /**
+     * @param RelationCollection $models
+     * @return Collection
+     */
+    public function getSrcKeys(RelationCollection $models): Collection
+    {
+        return $models->pluck($this->getSrcKeyName());
+    }
 
     /**
      * @return Reflection
@@ -108,7 +127,7 @@ abstract class Relation
     /**
      * @return string
      */
-    abstract public function getDestKey(): string;
+    abstract public function getDestKeyName(): string;
 
     /**
      * @return string|null
@@ -133,18 +152,27 @@ abstract class Relation
     /**
      * @return QueryBuilder
      */
-    public function buildQuery()
+    public function buildQuery(): QueryBuilder
     {
         $db = $this->manager->getDatabaseManager();
         $query = new QueryBuilder($db, $this->getDest());
+
         foreach ($this->scopes as $scope) {
             $scope($query);
         }
+
         return $query;
     }
 
     /**
      * @param Model $target
+     * @return Model|Model[]|RelationCollection
      */
-    abstract public function loadTo(Model $target): void;
+    abstract public function loadOnModel(Model $target);
+
+    /**
+     * @param RelationCollection $targets
+     * @return Model|Model[]|RelationCollection
+     */
+    abstract public function loadOnCollection(RelationCollection $targets);
 }
