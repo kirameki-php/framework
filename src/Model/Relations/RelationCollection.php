@@ -54,14 +54,6 @@ class RelationCollection extends ModelCollection
     }
 
     /**
-     * @return Reflection
-     */
-    public function getModelReflection(): Reflection
-    {
-        return app()->get(ModelManager::class)->reflect($this->getModelClass());
-    }
-
-    /**
      * @param array $properties
      * @return Model
      */

@@ -424,7 +424,7 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
 
     /**
      * @param string|callable $key
-     * @return $this
+     * @return static
      */
     public function keyBy($key)
     {

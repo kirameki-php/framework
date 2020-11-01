@@ -25,6 +25,14 @@ class ModelCollection extends Collection
     }
 
     /**
+     * @return Reflection
+     */
+    public function getModelReflection()
+    {
+        return $this->reflection;
+    }
+
+    /**
      * @return Collection
      */
     public function primaryKeys(): Collection
@@ -38,6 +46,15 @@ class ModelCollection extends Collection
     public function keyByPrimaryKey()
     {
         return $this->keyBy($this->reflection->primaryKey);
+    }
+
+    /**
+     * @param int|string $key
+     * @return Model|null
+     */
+    public function get($key)
+    {
+        return parent::get($key);
     }
 
     /**

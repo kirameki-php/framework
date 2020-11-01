@@ -3,6 +3,7 @@
 namespace Kirameki\Model\Concerns;
 
 use Kirameki\Model\Model;
+use Kirameki\Model\ModelCollection;
 use Kirameki\Model\Relations\RelationCollection;
 use Kirameki\Support\Arr;
 
@@ -30,7 +31,7 @@ trait Relations
      * @param Model|RelationCollection $target
      * @param array $names
      */
-    protected function preloadRecursive(RelationCollection|Model $target, array $names)
+    protected function preloadRecursive($target, array $names)
     {
         if (Arr::isSequential($names)) {
             foreach ($names as $name) {
@@ -90,7 +91,7 @@ trait Relations
      */
     protected function loadRelation($target, string $name)
     {
-        if ($target instanceof RelationCollection) {
+        if ($target instanceof ModelCollection) {
             $relation = $target->getModelReflection()->relations[$name];
             return $relation->loadOnCollection($target);
         }

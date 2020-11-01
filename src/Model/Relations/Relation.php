@@ -4,6 +4,7 @@ namespace Kirameki\Model\Relations;
 
 use Closure;
 use Kirameki\Model\Model;
+use Kirameki\Model\ModelCollection;
 use Kirameki\Model\QueryBuilder;
 use Kirameki\Model\Reflection;
 use Kirameki\Model\ModelManager;
@@ -171,8 +172,8 @@ abstract class Relation
     abstract public function loadOnModel(Model $target);
 
     /**
-     * @param RelationCollection $targets
-     * @return Model|Model[]|RelationCollection
+     * @param ModelCollection $targets
+     * @return Model|Model[]|ModelCollection
      */
-    abstract public function loadOnCollection(RelationCollection $targets);
+    abstract public function loadOnCollection(ModelCollection $targets);
 }
