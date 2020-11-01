@@ -28,13 +28,19 @@ class RelationCollection extends ModelCollection
      * @param Relation $relation
      * @param Model $parent
      * @param Reflection $reflection
-     * @param array $models
+     * @param Model[] $models
      */
     public function __construct(Relation $relation, Model $parent, Reflection $reflection, array $models = [])
     {
         parent::__construct($reflection, $models);
         $this->relation = $relation;
         $this->parent = $parent;
+
+        if ($inverse = $relation->getInverseName()) {
+            foreach ($models as $model) {
+                $model->setRelation($inverse, $parent);
+            }
+        }
     }
 
     /**

@@ -3,6 +3,7 @@
 namespace Kirameki\Model\Relations;
 
 use Kirameki\Model\Model;
+use Kirameki\Model\ModelCollection;
 
 class HasOne extends Relation
 {
@@ -43,8 +44,23 @@ class HasOne extends Relation
         return $model;
     }
 
-    public function loadOnCollection(RelationCollection $targets)
+    public function loadOnCollection(ModelCollection $targets)
     {
-        // TODO: Implement loadToCollection() method.
+        $mappedTargets = $targets->keyBy($this->getSrcKeyName())->compact();
+
+        $relationModels = $this->buildQuery()->where($this->getDestKeyName(), $mappedTargets->keys())->all();
+        $groupedRelationModels = $relationModels->groupBy($this->getDestKeyName());
+
+        foreach ($groupedRelationModels as $keyName => $group) {
+            if ($target = $mappedTargets->get($keyName)) {
+                $relationModel = $group[0] ?? null;
+                $target->setRelation($this->getName(), $relationModel);
+                if ($relationModel !== null && $inverse = $this->getInverseName()) {
+                    $relationModel->setRelation($inverse, $target);
+                }
+            }
+        }
+
+        return $relationModels;
     }
 }

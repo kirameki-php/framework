@@ -3,6 +3,7 @@
 namespace Kirameki\Model\Relations;
 
 use Kirameki\Model\Model;
+use Kirameki\Model\ModelCollection;
 
 class BelongsTo extends Relation
 {
@@ -44,20 +45,26 @@ class BelongsTo extends Relation
     }
 
     /**
-     * @param RelationCollection $targets
-     * @return RelationCollection
+     * @param ModelCollection $targets
+     * @return ModelCollection
      */
-    public function loadOnCollection($targets)
+    public function loadOnCollection(ModelCollection $targets)
     {
-        $mappedParents = $targets
-            ->keyBy($targets->getRelation()->getDestKeyName())
-            ->compact();
+        $mappedTargets = $targets->keyBy($this->getSrcKeyName())->compact();
 
-        $models = $this->buildQuery()
-            ->where($this->getDestKeyName(), $this->getSrcKeys($targets)->compact())
-            ->all()
-            ->groupBy($this->getDestKeyName());
+        $relationModels = $this->buildQuery()->where($this->getDestKeyName(), $mappedTargets->keys())->all();
+        $groupedRelationModels = $relationModels->groupBy($this->getDestKeyName());
 
+        foreach ($groupedRelationModels as $keyName => $group) {
+            if ($target = $mappedTargets->get($keyName)) {
+                $relationModel = $group[0] ?? null;
+                $target->setRelation($this->getName(), $relationModel);
+                if ($relationModel !== null && $inverse = $this->getInverseName()) {
+                    $relationModel->setRelation($inverse, $target);
+                }
+            }
+        }
 
+        return $relationModels;
     }
 }

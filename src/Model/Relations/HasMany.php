@@ -3,6 +3,8 @@
 namespace Kirameki\Model\Relations;
 
 use Kirameki\Model\Model;
+use Kirameki\Model\ModelCollection;
+use Kirameki\Support\Collection;
 
 class HasMany extends Relation
 {
@@ -36,17 +38,27 @@ class HasMany extends Relation
 
         $target->setRelation($this->getName(), $collection);
 
-        $collection->each(function(Model $model) use ($target) {
-            if ($inverse = $this->getInverseName()) {
-                $model->setRelation($inverse, $target);
-            }
-        });
-
         return $collection;
     }
 
-    public function loadOnCollection(RelationCollection $targets)
+    /**
+     * @param ModelCollection $targets
+     * @return ModelCollection
+     */
+    public function loadOnCollection(ModelCollection $targets)
     {
+        $mappedTargets = $targets->keyBy($this->getSrcKeyName())->compact();
 
+        $relationModels = $this->buildQuery()->where($this->getDestKeyName(), $mappedTargets->keys())->all();
+        $groupedRelationModels = $relationModels->groupBy($this->getDestKeyName());
+
+        foreach ($mappedTargets->keys() as $key) {
+            if ($target = $mappedTargets->get($key)) {
+                $models = ($groupedRelationModels[$key] ?? new Collection())->toArray();
+                $target->setRelation($this->getName(), new RelationCollection($this, $target, $this->getDest(), $models));
+            }
+        }
+
+        return $relationModels;
     }
 }
