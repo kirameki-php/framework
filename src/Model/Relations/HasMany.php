@@ -13,7 +13,7 @@ class HasMany extends Relation
      */
     public function getSrcKeyName(): string
     {
-        return $this->srcKey ??= $this->getSrc()->primaryKey;
+        return $this->srcKey ??= $this->getSrcReflection()->primaryKey;
     }
 
     /**
@@ -21,7 +21,7 @@ class HasMany extends Relation
      */
     public function getDestKeyName(): string
     {
-        return $this->destKey ??= lcfirst(class_basename($this->getSrc()->class)).'Id';
+        return $this->destKey ??= lcfirst(class_basename($this->getSrcReflection()->class)).'Id';
     }
 
     /**
@@ -49,13 +49,15 @@ class HasMany extends Relation
     {
         $mappedTargets = $targets->keyBy($this->getSrcKeyName())->compact();
 
+        $relationName = $this->getName();
         $relationModels = $this->buildQuery()->where($this->getDestKeyName(), $mappedTargets->keys())->all();
         $groupedRelationModels = $relationModels->groupBy($this->getDestKeyName());
+        $destReflection = $this->getDestReflection();
 
         foreach ($mappedTargets->keys() as $key) {
             if ($target = $mappedTargets->get($key)) {
                 $models = ($groupedRelationModels[$key] ?? new Collection())->toArray();
-                $target->setRelation($this->getName(), new RelationCollection($this, $target, $this->getDest(), $models));
+                $target->setRelation($relationName, new RelationCollection($this, $target, $destReflection, $models));
             }
         }
 

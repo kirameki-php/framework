@@ -25,12 +25,12 @@ abstract class Relation
     /**
      * @var Reflection
      */
-    protected Reflection $src;
+    protected Reflection $srcReflection;
 
     /**
      * @var Reflection|null
      */
-    protected ?Reflection $dest;
+    protected ?Reflection $destReflection;
 
     /**
      * @var string
@@ -60,19 +60,19 @@ abstract class Relation
     /**
      * @param ModelManager $manager
      * @param string $name
-     * @param Reflection $src
+     * @param Reflection $srcReflection
      * @param string $destClass
      * @param string|null $srcKey
      * @param string|null $refKey
      * @param string|null $inverse
      */
-    public function __construct(ModelManager $manager, string $name, Reflection $src, string $destClass, ?string $srcKey = null, ?string $refKey = null, ?string $inverse = null)
+    public function __construct(ModelManager $manager, string $name, Reflection $srcReflection, string $destClass, ?string $srcKey = null, ?string $refKey = null, ?string $inverse = null)
     {
         $this->manager = $manager;
         $this->name = $name;
-        $this->src = $src;
+        $this->srcReflection = $srcReflection;
         $this->srcKey = $srcKey;
-        $this->dest = null;
+        $this->destReflection = null;
         $this->destClass = $destClass;
         $this->destKey = $refKey;
         $this->inverse = $inverse;
@@ -89,9 +89,9 @@ abstract class Relation
     /**
      * @return Reflection
      */
-    public function getSrc(): Reflection
+    public function getSrcReflection(): Reflection
     {
-        return $this->src;
+        return $this->srcReflection;
     }
 
     /**
@@ -120,9 +120,9 @@ abstract class Relation
     /**
      * @return Reflection
      */
-    public function getDest(): Reflection
+    public function getDestReflection(): Reflection
     {
-        return $this->dest ??= $this->manager->reflect($this->destClass);
+        return $this->destReflection ??= $this->manager->reflect($this->destClass);
     }
 
     /**
@@ -145,7 +145,7 @@ abstract class Relation
     public function scope(string ...$names)
     {
         foreach ($names as $name) {
-            $this->scopes[$name] = $this->getDest()->scopes[$name];
+            $this->scopes[$name] = $this->getDestReflection()->scopes[$name];
         }
         return $this;
     }
@@ -156,7 +156,7 @@ abstract class Relation
     public function buildQuery(): QueryBuilder
     {
         $db = $this->manager->getDatabaseManager();
-        $query = new QueryBuilder($db, $this->getDest());
+        $query = new QueryBuilder($db, $this->getDestReflection());
 
         foreach ($this->scopes as $scope) {
             $scope($query);

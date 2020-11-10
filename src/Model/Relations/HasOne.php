@@ -9,7 +9,7 @@ class HasOne extends OneToOne
      */
     public function getSrcKeyName(): string
     {
-        return $this->srcKey ??= $this->getSrc()->primaryKey;
+        return $this->srcKey ??= $this->getSrcReflection()->primaryKey;
     }
 
     /**
@@ -17,6 +17,6 @@ class HasOne extends OneToOne
      */
     public function getDestKeyName(): string
     {
-        return $this->destKey ??= lcfirst(class_basename($this->getSrc()->class)).'Id';
+        return $this->destKey ??= lcfirst(class_basename($this->getSrcReflection()->class)).'Id';
     }
 }

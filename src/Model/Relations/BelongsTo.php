@@ -9,7 +9,7 @@ class BelongsTo extends OneToOne
      */
     public function getSrcKeyName(): string
     {
-        return $this->srcKey ??= lcfirst(class_basename($this->getDest()->class)).'Id';
+        return $this->srcKey ??= lcfirst(class_basename($this->getDestReflection()->class)).'Id';
     }
 
     /**
@@ -17,6 +17,6 @@ class BelongsTo extends OneToOne
      */
     public function getDestKeyName(): string
     {
-        return $this->destKey ??= $this->getDest()->primaryKey;
+        return $this->destKey ??= $this->getDestReflection()->primaryKey;
     }
 }
