@@ -11,9 +11,9 @@ class DateTimeCast implements CastInterface
      * @param Model $model
      * @param string $key
      * @param $value
-     * @return mixed
+     * @return Carbon
      */
-    public function get(Model $model, string $key, $value)
+    public function get(Model $model, string $key, $value): Carbon
     {
         return new Carbon($value);
     }

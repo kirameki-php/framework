@@ -10,7 +10,7 @@ class MySqlAdapter extends PdoAdapter
     /**
      * @return $this
      */
-    public function connect()
+    public function connect(): static
     {
         $config = $this->config;
         $parts = [];
@@ -43,7 +43,7 @@ class MySqlAdapter extends PdoAdapter
     /**
      * @return $this
      */
-    public function disconnect()
+    public function disconnect(): static
     {
         $this->pdo = null;
         return $this;

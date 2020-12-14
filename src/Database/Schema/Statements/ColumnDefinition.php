@@ -22,14 +22,14 @@ class ColumnDefinition
 
     public $default;
 
-    public static function withSize(string $name, string $type, ?int $size)
+    public static function withSize(string $name, string $type, ?int $size): static
     {
         $instance = new static($name, $type);
         $instance->size = $size;
         return $instance;
     }
 
-    public static function withScale(string $name, string $type, ?int $precision, ?int $scale)
+    public static function withScale(string $name, string $type, ?int $precision, ?int $scale): static
     {
         $instance = new static($name, $type);
         $instance->size = $precision;

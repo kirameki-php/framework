@@ -19,7 +19,7 @@ trait CacheResults
      * @param $value
      * @return $this
      */
-    protected function cacheResolved(string $name, $value)
+    protected function cacheResolved(string $name, $value): static
     {
         $this->resolved[$name] = $value;
         return $this;
@@ -28,7 +28,7 @@ trait CacheResults
     /**
      * @return $this
      */
-    public function clearResultCache()
+    public function clearResultCache(): static
     {
         $this->resolved = [];
         return $this;

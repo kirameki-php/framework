@@ -20,7 +20,7 @@ class ColumnBuilderAggregate
     /**
      * @return $this
      */
-    public function notNull()
+    public function notNull(): static
     {
         foreach ($this->columns as $column) {
             $column->notNull();

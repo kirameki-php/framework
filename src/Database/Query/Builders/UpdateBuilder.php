@@ -20,7 +20,7 @@ class UpdateBuilder extends ConditonsBuilder
      * @param array $assignments
      * @return $this
      */
-    public function set(array $assignments)
+    public function set(array $assignments): static
     {
         $this->statement->data = $assignments;
         return $this;
@@ -29,7 +29,7 @@ class UpdateBuilder extends ConditonsBuilder
     /**
      * @return int
      */
-    public function execute()
+    public function execute(): int
     {
         $formatter = $this->connection->getQueryFormatter();
         $statement = $formatter->updateStatement($this->statement);

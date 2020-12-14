@@ -20,7 +20,7 @@ abstract class ConditonsBuilder extends StatementBuilder
      * @param mixed|null $value
      * @return $this
      */
-    public function where($column, $operator = null, $value = null)
+    public function where($column, $operator = null, $value = null): static
     {
         return $this->addWhereCondition($this->buildCondition(...func_get_args()));
     }
@@ -30,7 +30,7 @@ abstract class ConditonsBuilder extends StatementBuilder
      * @param mixed|null $value
      * @return $this
      */
-    public function whereNot($column, $value)
+    public function whereNot($column, $value): static
     {
         return $this->addWhereCondition($this->buildNotCondition($column, $value));
     }
@@ -39,7 +39,7 @@ abstract class ConditonsBuilder extends StatementBuilder
      * @param string $raw
      * @return $this
      */
-    public function whereRaw(string $raw)
+    public function whereRaw(string $raw): static
     {
         return $this->addWhereCondition(ConditionBuilder::raw($raw)->getDefinition());
     }
@@ -49,7 +49,7 @@ abstract class ConditonsBuilder extends StatementBuilder
      * @param string $sort
      * @return $this
      */
-    public function orderBy($column, string $sort = 'ASC')
+    public function orderBy($column, string $sort = 'ASC'): static
     {
         if (is_array($column)) {
             foreach ($column as $c => $s) {
@@ -71,7 +71,7 @@ abstract class ConditonsBuilder extends StatementBuilder
      * @param string $column
      * @return $this
      */
-    public function orderByAsc(string $column)
+    public function orderByAsc(string $column): static
     {
         return $this->orderBy($column, 'ASC');
     }
@@ -80,7 +80,7 @@ abstract class ConditonsBuilder extends StatementBuilder
      * @param string $column
      * @return $this
      */
-    public function orderByDesc(string $column)
+    public function orderByDesc(string $column): static
     {
         return $this->orderBy($column, 'DESC');
     }
@@ -88,7 +88,7 @@ abstract class ConditonsBuilder extends StatementBuilder
     /**
      * @return $this
      */
-    public function reorder()
+    public function reorder(): static
     {
         $this->statement->orderBy = null;
         return $this;
@@ -98,7 +98,7 @@ abstract class ConditonsBuilder extends StatementBuilder
      * @param int $count
      * @return $this
      */
-    public function limit(int $count)
+    public function limit(int $count): static
     {
         $this->statement->limit = $count;
         return $this;
@@ -145,7 +145,7 @@ abstract class ConditonsBuilder extends StatementBuilder
      * @param ConditionDefinition $definition
      * @return $this
      */
-    protected function addWhereCondition(ConditionDefinition $definition)
+    protected function addWhereCondition(ConditionDefinition $definition): static
     {
         $this->statement->where ??= [];
         $this->statement->where[] = $definition;

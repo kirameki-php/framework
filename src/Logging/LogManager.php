@@ -43,7 +43,7 @@ class LogManager implements LoggerInterface
         return $resolver($options);
     }
 
-    public function addLogger(string $name, Closure $resolver): self
+    public function addLogger(string $name, Closure $resolver): static
     {
         $this->loggers[$name] = $resolver;
         return $this;

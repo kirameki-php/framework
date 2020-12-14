@@ -8,7 +8,7 @@ class Config implements ArrayAccess
 {
     protected array $entries = [];
 
-    public static function fromDirectory(string $dir): self
+    public static function fromDirectory(string $dir): static
     {
         $entries = [];
         foreach (scandir($dir) as $file) {
@@ -74,14 +74,14 @@ class Config implements ArrayAccess
 
     /**
      * @param string $name
-     * @return Config
+     * @return static
      */
-    public function dig(string $name)
+    public function dig(string $name): static
     {
         return new Config($this->get($name) ?? []);
     }
 
-    public function offsetExists($offset)
+    public function offsetExists($offset): bool
     {
         return isset($this->entries);
     }

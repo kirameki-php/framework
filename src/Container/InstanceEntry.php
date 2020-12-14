@@ -37,7 +37,7 @@ class InstanceEntry implements EntryInterface
     /**
      * @return mixed
      */
-    public function getInstance()
+    public function getInstance(): mixed
     {
         return $this->instance;
     }

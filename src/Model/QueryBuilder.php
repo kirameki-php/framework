@@ -41,7 +41,7 @@ class QueryBuilder extends SelectBuilder
     /**
      * @return Model|null
      */
-    public function first()
+    public function first(): ?Model
     {
         $results = $this->copy()->limit(1)->execSelect();
         return isset($results[0])
@@ -55,7 +55,7 @@ class QueryBuilder extends SelectBuilder
      * @param mixed|null $value
      * @return $this
      */
-    public function where($column, $operator = null, $value = null)
+    public function where($column, $operator = null, $value = null): static
     {
         $num = func_num_args();
         if ($num === 2) {

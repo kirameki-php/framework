@@ -16,7 +16,7 @@ class Range
      * @param $upper
      * @return static
      */
-    public static function closed($lower, $upper)
+    public static function closed($lower, $upper): static
     {
         return new static($lower, true, $upper, true);
     }
@@ -26,7 +26,7 @@ class Range
      * @param $upper
      * @return static
      */
-    public static function open($lower, $upper)
+    public static function open($lower, $upper): static
     {
         return new static($lower, false, $upper, false);
     }
@@ -36,7 +36,7 @@ class Range
      * @param $upper
      * @return static
      */
-    public static function halfOpen($lower, $upper)
+    public static function halfOpen($lower, $upper): static
     {
         return new static($lower, true, $upper, false);
     }
@@ -47,7 +47,7 @@ class Range
      * @param $upper
      * @return static
      */
-    public static function included($lower, $upper)
+    public static function included($lower, $upper): static
     {
         return static::closed($lower, $upper);
     }
@@ -58,7 +58,7 @@ class Range
      * @param $upper
      * @return static
      */
-    public static function excluded($lower, $upper)
+    public static function excluded($lower, $upper): static
     {
         return static::open($lower, $upper);
     }
@@ -69,7 +69,7 @@ class Range
      * @param $upper
      * @return static
      */
-    public static function endExcluded($lower, $upper)
+    public static function endExcluded($lower, $upper): static
     {
         return static::halfOpen($lower, $upper);
     }
@@ -91,7 +91,7 @@ class Range
     /**
      * @return array
      */
-    public function getBounds()
+    public function getBounds(): array
     {
         return [
             $this->lowerBound,

@@ -105,7 +105,7 @@ trait Relations
      * @param $models
      * @return $this
      */
-    public function setRelation(string $name, $models)
+    public function setRelation(string $name, $models): static
     {
         $this->relations[$name] = $models;
         return $this;

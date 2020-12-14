@@ -33,7 +33,7 @@ trait Properties
      * @param array $properties
      * @return $this
      */
-    public function setProperties(array $properties = [])
+    public function setProperties(array $properties = []): static
     {
         foreach ($properties as $name => $value) {
             $this->setProperty($name, $value);
@@ -45,7 +45,7 @@ trait Properties
      * @param string $name
      * @return mixed|null
      */
-    public function getProperty(string $name)
+    public function getProperty(string $name): mixed
     {
         if (array_key_exists($name, $this->resolved)) {
             return $this->resolved[$name];
@@ -67,7 +67,7 @@ trait Properties
      * @param $value
      * @return $this
      */
-    public function setProperty(string $name, $value)
+    public function setProperty(string $name, $value): static
     {
         $this->markAsDirty($name, $this->getProperty($name));
         $this->cacheResolved($name, $value);
@@ -86,7 +86,7 @@ trait Properties
     /**
      * @return $this
      */
-    protected function setDefaults()
+    protected function setDefaults(): static
     {
         $defined = static::getReflection()->properties;
         $unused = array_diff_key($defined, $this->persistedProperties);

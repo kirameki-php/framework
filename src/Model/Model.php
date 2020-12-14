@@ -105,7 +105,7 @@ abstract class Model implements ArrayAccess, JsonSerializable
      * @param string $name
      * @return bool
      */
-    public function __isset(string $name)
+    public function __isset(string $name): bool
     {
         return $this->offsetExists($name);
     }
@@ -123,7 +123,7 @@ abstract class Model implements ArrayAccess, JsonSerializable
      * @param bool $persisted
      * @return $this
      */
-    public function newInstance(array $attributes = [], $persisted = false)
+    public function newInstance(array $attributes = [], $persisted = false): static
     {
         return new static($attributes, $persisted);
     }

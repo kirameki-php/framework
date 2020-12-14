@@ -176,7 +176,7 @@ class Application extends Container
     /**
      * @return Config
      */
-    public function config()
+    public function config(): Config
     {
         return $this->config;
     }

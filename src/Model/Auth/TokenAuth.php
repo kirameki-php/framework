@@ -40,7 +40,7 @@ class TokenAuth
     /**
      * @return Model|null
      */
-    public function validate()
+    public function validate(): Model|null
     {
         if (!$this->validated && $token = $this->getToken()) {
             $reflection = $this->modelManager->reflect($this->userClass);

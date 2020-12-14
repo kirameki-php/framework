@@ -14,7 +14,7 @@ use Kirameki\Model\ReflectionBuilder;
 trait Reflect
 {
     /**
-     * @var ?Reflection
+     * @var Reflection|null
      */
     protected static ?Reflection $reflection = null;
 
@@ -87,7 +87,7 @@ trait Reflect
     /**
      * @return string|int|null
      */
-    public function getPrimaryKey()
+    public function getPrimaryKey(): string|int|null
     {
         return $this->getProperty($this->getPrimaryKeyName());
     }

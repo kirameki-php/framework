@@ -18,7 +18,7 @@ class Collection extends Enumerable implements ArrayAccess
      * @param $items
      * @return static
      */
-    public function newInstance(?iterable $items = null)
+    public function newInstance(?iterable $items = null): static
     {
         return new static($items);
     }
@@ -61,7 +61,7 @@ class Collection extends Enumerable implements ArrayAccess
     /**
      * @return $this
      */
-    public function clear()
+    public function clear(): static
     {
         $this->items = [];
         return $this;
@@ -83,7 +83,7 @@ class Collection extends Enumerable implements ArrayAccess
      * @param $value
      * @return $this
      */
-    public function insertAt(int $index, $value)
+    public function insertAt(int $index, $value): static
     {
         array_splice($this->items, $index, 0, $value);
         return $this;
@@ -94,7 +94,7 @@ class Collection extends Enumerable implements ArrayAccess
      * @param $value
      * @return static
      */
-    public function pad(int $size, $value)
+    public function pad(int $size, $value): static
     {
         return $this->newInstance(array_pad($this->items, $size, $value));
     }

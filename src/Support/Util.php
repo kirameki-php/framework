@@ -6,7 +6,7 @@ use DateTimeInterface;
 
 class Util
 {
-    public static function toString($value)
+    public static function toString($value): string
     {
         if (is_null($value)) return 'null';
         if (is_bool($value)) return $value ? 'true' : 'false';
@@ -17,7 +17,7 @@ class Util
         return (string) $value;
     }
 
-    public static function typeOf($var)
+    public static function typeOf($var): string
     {
         if (is_null($var)) return "null";
         if (is_bool($var)) return "bool";

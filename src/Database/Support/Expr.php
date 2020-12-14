@@ -13,7 +13,7 @@ class Expr
      * @param string $value
      * @return static
      */
-    public static function raw(string $value)
+    public static function raw(string $value): static
     {
         return new static($value);
     }
@@ -29,7 +29,7 @@ class Expr
     /**
      * @return string
      */
-    public function toString()
+    public function toString(): string
     {
         return (string) $this;
     }
@@ -37,7 +37,7 @@ class Expr
     /**
      * @return string
      */
-    public function __toString()
+    public function __toString(): string
     {
         return $this->value;
     }

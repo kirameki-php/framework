@@ -10,9 +10,9 @@ class BoolCast implements CastInterface
      * @param Model $model
      * @param string $key
      * @param $value
-     * @return mixed
+     * @return bool
      */
-    public function get(Model $model, string $key, $value)
+    public function get(Model $model, string $key, $value): bool
     {
         return (bool) $value;
     }
@@ -21,9 +21,9 @@ class BoolCast implements CastInterface
      * @param Model $model
      * @param string $key
      * @param $value
-     * @return mixed
+     * @return bool
      */
-    public function set(Model $model, string $key, $value)
+    public function set(Model $model, string $key, $value): bool
     {
         return (bool) $value;
     }

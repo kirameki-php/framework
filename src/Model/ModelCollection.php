@@ -27,7 +27,7 @@ class ModelCollection extends Collection
     /**
      * @return Reflection
      */
-    public function getModelReflection()
+    public function getModelReflection(): Reflection
     {
         return $this->reflection;
     }
@@ -43,7 +43,7 @@ class ModelCollection extends Collection
     /**
      * @return static
      */
-    public function keyByPrimaryKey()
+    public function keyByPrimaryKey(): static
     {
         return $this->keyBy($this->reflection->primaryKey);
     }

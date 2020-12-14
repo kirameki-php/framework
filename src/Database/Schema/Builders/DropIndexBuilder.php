@@ -23,7 +23,7 @@ class DropIndexBuilder extends StatementBuilder
      * @param string $name
      * @return $this
      */
-    public function name(string $name)
+    public function name(string $name): static
     {
         $this->statement->name = $name;
         return $this;
@@ -33,7 +33,7 @@ class DropIndexBuilder extends StatementBuilder
      * @param string $column
      * @return $this
      */
-    public function column(string $column)
+    public function column(string $column): static
     {
         $this->statement->columns[] = $column;
         return $this;
@@ -43,7 +43,7 @@ class DropIndexBuilder extends StatementBuilder
      * @param string|string[] $columns
      * @return $this
      */
-    public function columns($columns)
+    public function columns($columns): static
     {
         foreach (Arr::wrap($columns) as $column) {
             $this->column($column);

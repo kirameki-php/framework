@@ -16,12 +16,12 @@ interface AdapterInterface
     /**
      * @return $this
      */
-    public function connect();
+    public function connect(): static;
 
     /**
      * @return $this
      */
-    public function disconnect();
+    public function disconnect(): static;
 
     /**
      * @return bool
@@ -107,12 +107,12 @@ interface AdapterInterface
     /**
      * @return QueryFormatter
      */
-    public function getQueryFormatter();
+    public function getQueryFormatter(): QueryFormatter;
 
     /**
      * @return SchemaFormatter
      */
-    public function getSchemaFormatter();
+    public function getSchemaFormatter(): SchemaFormatter;
 
     /**
      * @return bool

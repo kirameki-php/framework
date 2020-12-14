@@ -18,7 +18,7 @@ class Request
 
     protected ?string $body;
 
-    public static function fromServerVars()
+    public static function fromServerVars(): static
     {
         $components = parse_url($_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI']);
         $components['schema'] = $_SERVER['HTTP_X_FORWARDED_PROTO'] ?? $_SERVER['REQUEST_SCHEME'] ?? 'http';
@@ -43,7 +43,7 @@ class Request
         $this->body = $body;
     }
 
-    public function httpVersion()
+    public function httpVersion(): string
     {
         return substr($this->protocol, 5);
     }

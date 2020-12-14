@@ -84,7 +84,7 @@ trait Transactions
      * @param callable $callback
      * @return mixed
      */
-    protected function runInTransaction(callable $callback)
+    protected function runInTransaction(callable $callback): mixed
     {
         $tx = $this->txStack[] = new Transaction();
 
@@ -105,7 +105,7 @@ trait Transactions
      * @param callable $callback
      * @return mixed
      */
-    protected function runInSavepoint(callable $callback)
+    protected function runInSavepoint(callable $callback): mixed
     {
         $savepointId = count($this->txStack) + 1;
 

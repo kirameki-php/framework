@@ -19,7 +19,7 @@ class DeleteBuilder extends ConditonsBuilder
     /**
      * @return int
      */
-    public function execute()
+    public function execute(): int
     {
         $formatter = $this->connection->getQueryFormatter();
         $statement = $formatter->deleteStatement($this->statement);

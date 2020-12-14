@@ -9,7 +9,7 @@ class CurrentTimestamp
 {
     protected static CurrentTimestamp $instance;
 
-    public static function instance()
+    public static function instance(): static
     {
         return static::$instance ??= new static;
     }

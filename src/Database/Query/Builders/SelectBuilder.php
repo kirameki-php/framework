@@ -23,7 +23,7 @@ class SelectBuilder extends ConditonsBuilder
      * @param string|null $as
      * @return $this
      */
-    public function from(string $table, ?string $as = null)
+    public function from(string $table, ?string $as = null): static
     {
         return $this->table($table, $as);
     }
@@ -32,7 +32,7 @@ class SelectBuilder extends ConditonsBuilder
      * @param mixed ...$columns
      * @return $this
      */
-    public function columns(...$columns)
+    public function columns(...$columns): static
     {
         $this->statement->columns = $columns;
         return $this;
@@ -41,7 +41,7 @@ class SelectBuilder extends ConditonsBuilder
     /**
      * @return $this
      */
-    public function distinct()
+    public function distinct(): static
     {
         $this->statement->distinct = true;
         return $this;
@@ -50,7 +50,7 @@ class SelectBuilder extends ConditonsBuilder
     /**
      * @return $this
      */
-    public function lock()
+    public function lock(): static
     {
         $this->statement->lock = true;
         return $this;
@@ -60,7 +60,7 @@ class SelectBuilder extends ConditonsBuilder
      * @param string ...$columns
      * @return $this
      */
-    public function groupBy(string ...$columns)
+    public function groupBy(string ...$columns): static
     {
         $this->statement->groupBy = $columns;
         return $this;
@@ -72,7 +72,7 @@ class SelectBuilder extends ConditonsBuilder
      * @param mixed|null $value
      * @return $this
      */
-    public function having($column, $operator, $value = null)
+    public function having($column, $operator, $value = null): static
     {
         $this->addHavingCondition($this->buildCondition(...func_get_args()));
         return $this;
@@ -82,7 +82,7 @@ class SelectBuilder extends ConditonsBuilder
      * @param int $skipRows
      * @return $this
      */
-    public function offset(int $skipRows)
+    public function offset(int $skipRows): static
     {
         $this->statement->offset = $skipRows;
         return $this;
@@ -99,7 +99,7 @@ class SelectBuilder extends ConditonsBuilder
     /**
      * @return array|null
      */
-    public function one()
+    public function one(): ?array
     {
         return $this->copy()->limit(1)->execSelect()[0] ?? null;
     }
@@ -115,7 +115,7 @@ class SelectBuilder extends ConditonsBuilder
     /**
      * @return array|int
      */
-    public function count()
+    public function count(): array|int
     {
         // If GROUP BY exists but no SELECT is defined, use the first GROUP BY column that was defined.
         if ($this->statement->groupBy !== null &&
@@ -146,7 +146,7 @@ class SelectBuilder extends ConditonsBuilder
      * @param string $column
      * @return int|float
      */
-    public function sum(string $column)
+    public function sum(string $column): float|int
     {
         return $this->execAggregate($column, 'SUM');
     }
@@ -155,7 +155,7 @@ class SelectBuilder extends ConditonsBuilder
      * @param string $column
      * @return int|float
      */
-    public function avg(string $column)
+    public function avg(string $column): float|int
     {
         return $this->execAggregate($column, 'AVG');
     }
@@ -207,7 +207,7 @@ class SelectBuilder extends ConditonsBuilder
      * @param string $select
      * @return $this
      */
-    protected function addToSelect(string $select)
+    protected function addToSelect(string $select): static
     {
         $this->statement->columns[] = $select;
         return $this;
@@ -217,7 +217,7 @@ class SelectBuilder extends ConditonsBuilder
      * @param ConditionDefinition $condition
      * @return $this
      */
-    protected function addHavingCondition(ConditionDefinition $condition)
+    protected function addHavingCondition(ConditionDefinition $condition): static
     {
         $this->statement->having ??= [];
         $this->statement->having[] = $condition;

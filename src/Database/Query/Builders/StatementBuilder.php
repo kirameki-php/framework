@@ -31,7 +31,7 @@ abstract class StatementBuilder
      * @param string|null $as
      * @return $this
      */
-    public function table(string $table, ?string $as = null)
+    public function table(string $table, ?string $as = null): static
     {
         $this->statement->table = $table;
         $this->statement->tableAlias = $as;
@@ -41,7 +41,7 @@ abstract class StatementBuilder
     /**
      * @return static
      */
-    protected function copy()
+    protected function copy(): static
     {
         return clone $this;
     }

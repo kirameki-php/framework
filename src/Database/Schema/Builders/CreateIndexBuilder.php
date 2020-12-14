@@ -24,7 +24,7 @@ class CreateIndexBuilder extends StatementBuilder
      * @param string|null $order
      * @return $this
      */
-    public function column(string $column, ?string $order = null)
+    public function column(string $column, ?string $order = null): static
     {
         $this->statement->columns[$column] = $order ?? 'ASC';
         return $this;
@@ -34,7 +34,7 @@ class CreateIndexBuilder extends StatementBuilder
      * @param string|string[] $columns
      * @return $this
      */
-    public function columns($columns)
+    public function columns($columns): static
     {
         foreach (Arr::wrap($columns) as $column => $order) {
             is_string($column)
@@ -47,7 +47,7 @@ class CreateIndexBuilder extends StatementBuilder
     /**
      * @return $this
      */
-    public function unique()
+    public function unique(): static
     {
         $this->statement->unique = true;
         return $this;
@@ -57,7 +57,7 @@ class CreateIndexBuilder extends StatementBuilder
      * @param string $comment
      * @return $this
      */
-    public function comment(string $comment)
+    public function comment(string $comment): static
     {
         $this->statement->comment = $comment;
         return $this;

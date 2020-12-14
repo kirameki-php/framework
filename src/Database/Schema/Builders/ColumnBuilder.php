@@ -24,7 +24,7 @@ class ColumnBuilder
     /**
      * @return $this
      */
-    public function primaryKey()
+    public function primaryKey(): static
     {
         $this->definition->primaryKey = true;
         return $this;
@@ -33,7 +33,7 @@ class ColumnBuilder
     /**
      * @return $this
      */
-    public function notNull()
+    public function notNull(): static
     {
         $this->definition->nullable = false;
         return $this;
@@ -42,7 +42,7 @@ class ColumnBuilder
     /**
      * @return $this
      */
-    public function autoIncrement()
+    public function autoIncrement(): static
     {
         $this->definition->autoIncrement = true;
         return $this;
@@ -52,7 +52,7 @@ class ColumnBuilder
      * @param string $comment
      * @return $this
      */
-    public function comment(string $comment)
+    public function comment(string $comment): static
     {
         $this->definition->comment = $comment;
         return $this;
@@ -62,7 +62,7 @@ class ColumnBuilder
      * @param $value
      * @return $this
      */
-    public function default($value)
+    public function default($value): static
     {
         $this->definition->default = $value;
         return $this;
@@ -71,7 +71,7 @@ class ColumnBuilder
     /**
      * @return $this
      */
-    public function currentAsDefault()
+    public function currentAsDefault(): static
     {
         return $this->default(CurrentTimestamp::instance());
     }

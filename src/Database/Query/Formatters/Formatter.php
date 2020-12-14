@@ -424,7 +424,7 @@ class Formatter
      * @param $value
      * @return string
      */
-    public function parameter($value)
+    public function parameter($value): string
     {
         if ($value instanceof DateTimeInterface) {
             return '\''.$value->format(DateTimeInterface::RFC3339_EXTENDED).'\'';
@@ -461,7 +461,7 @@ class Formatter
      * @param string $text
      * @return string
      */
-    protected function addQuotes(string $text)
+    protected function addQuotes(string $text): string
     {
         $quoted = $this->quote;
         $quoted.= str_replace($this->quote, $this->quote.$this->quote, $text);
@@ -473,7 +473,7 @@ class Formatter
      * @param string $str
      * @return string
      */
-    protected function stringLiteral(string $str)
+    protected function stringLiteral(string $str): string
     {
         return "'".str_replace("'", "''", $str)."'";
     }

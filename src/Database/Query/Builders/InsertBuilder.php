@@ -21,7 +21,7 @@ class InsertBuilder extends StatementBuilder
      * @param array $data
      * @return $this
      */
-    public function value(array $data)
+    public function value(array $data): static
     {
         $this->statement->dataset = [$data];
         return $this;
@@ -31,7 +31,7 @@ class InsertBuilder extends StatementBuilder
      * @param iterable $dataset
      * @return $this
      */
-    public function values(iterable $dataset)
+    public function values(iterable $dataset): static
     {
         $dataset = ($dataset instanceof Traversable) ? iterator_to_array($dataset) : $dataset;
         $this->statement->dataset = $dataset;

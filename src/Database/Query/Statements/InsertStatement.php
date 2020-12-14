@@ -17,7 +17,7 @@ class InsertStatement extends BaseStatement
     /**
      * @return array
      */
-    public function columns()
+    public function columns(): array
     {
         if ($this->cachedColumns === null) {
             $columnsAssoc = [];

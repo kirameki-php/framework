@@ -31,7 +31,7 @@ class ConditionBuilder
      * @param string $column
      * @return static
      */
-    public static function for(string $column)
+    public static function for(string $column): static
     {
         return new static($column);
     }
@@ -40,7 +40,7 @@ class ConditionBuilder
      * @param string $raw
      * @return static
      */
-    public static function raw(string $raw)
+    public static function raw(string $raw): static
     {
         $instance = new static();
         $instance->parameter($raw);
@@ -74,7 +74,7 @@ class ConditionBuilder
      * @param string|null $column
      * @return static
      */
-    public function and(?string $column = null)
+    public function and(?string $column = null): static
     {
         $nextDefinition = new ConditionDefinition($column);
         $this->current->nextLogic = 'AND';
@@ -88,7 +88,7 @@ class ConditionBuilder
      * @param string|null $column
      * @return static
      */
-    public function or(?string $column = null)
+    public function or(?string $column = null): static
     {
         $nextDefinition = new ConditionDefinition($column ?? $this->current->column);
         $this->current->nextLogic = 'OR';
@@ -101,7 +101,7 @@ class ConditionBuilder
     /**
      * @return $this
      */
-    protected function negate()
+    protected function negate(): static
     {
         $this->current->negated = true;
         return $this;
@@ -112,7 +112,7 @@ class ConditionBuilder
      * @param $value
      * @return $this
      */
-    public function with(string $operator, $value)
+    public function with(string $operator, $value): static
     {
         if ($operator === '=') return $this->equals($value);
         if ($operator === '!=') return $this->notEquals($value);
@@ -135,7 +135,7 @@ class ConditionBuilder
      * @param $value
      * @return $this
      */
-    public function eq($value)
+    public function eq($value): static
     {
         return $this->equals($value);
     }
@@ -145,7 +145,7 @@ class ConditionBuilder
      * @param $value
      * @return $this
      */
-    public function ne($value)
+    public function ne($value): static
     {
         return $this->notEquals($value);
     }
@@ -155,7 +155,7 @@ class ConditionBuilder
      * @param $value
      * @return $this
      */
-    public function lt($value)
+    public function lt($value): static
     {
         return $this->lessThan($value);
     }
@@ -165,7 +165,7 @@ class ConditionBuilder
      * @param $value
      * @return $this
      */
-    public function lte($value)
+    public function lte($value): static
     {
         return $this->lessThanOrEquals($value);
     }
@@ -175,7 +175,7 @@ class ConditionBuilder
      * @param $value
      * @return $this
      */
-    public function gt($value)
+    public function gt($value): static
     {
         return $this->greaterThan($value);
     }
@@ -185,7 +185,7 @@ class ConditionBuilder
      * @param $value
      * @return $this
      */
-    public function gte($value)
+    public function gte($value): static
     {
         return $this->greaterThanOrEquals($value);
     }
@@ -195,7 +195,7 @@ class ConditionBuilder
      * @param $value
      * @return $this
      */
-    public function equals($value)
+    public function equals($value): static
     {
         $this->current->negated = false;
         $this->current->operator = '=';
@@ -208,7 +208,7 @@ class ConditionBuilder
      * @param $value
      * @return $this
      */
-    public function notEquals($value)
+    public function notEquals($value): static
     {
         return $this->equals($value)->negate();
     }
@@ -216,7 +216,7 @@ class ConditionBuilder
     /**
      * @return $this
      */
-    public function greaterThanOrEquals($value)
+    public function greaterThanOrEquals($value): static
     {
         $this->current->negated = false;
         $this->current->operator = '>=';
@@ -228,7 +228,7 @@ class ConditionBuilder
     /**
      * @return $this
      */
-    public function greaterThan($value)
+    public function greaterThan($value): static
     {
         $this->current->negated = false;
         $this->current->operator = '>';
@@ -241,7 +241,7 @@ class ConditionBuilder
      * @param $value
      * @return $this
      */
-    public function lessThanOrEquals($value)
+    public function lessThanOrEquals($value): static
     {
         $this->current->negated = false;
         $this->current->operator = '<=';
@@ -254,7 +254,7 @@ class ConditionBuilder
      * @param $value
      * @return $this
      */
-    public function lessThan($value)
+    public function lessThan($value): static
     {
         $this->current->negated = false;
         $this->current->operator = '<';
@@ -267,7 +267,7 @@ class ConditionBuilder
      * @param string $value
      * @return $this
      */
-    public function like(string $value)
+    public function like(string $value): static
     {
         $this->current->negated = false;
         $this->current->operator = 'LIKE';
@@ -280,7 +280,7 @@ class ConditionBuilder
      * @param string $value
      * @return $this
      */
-    public function notLike(string $value)
+    public function notLike(string $value): static
     {
         return $this->like($value)->negate();
     }
@@ -289,7 +289,7 @@ class ConditionBuilder
      * @param StatementBuilder|iterable $value
      * @return $this
      */
-    public function in($value)
+    public function in($value): static
     {
         $this->current->negated = false;
         $this->current->operator = 'IN';
@@ -307,7 +307,7 @@ class ConditionBuilder
      * @param $values
      * @return $this
      */
-    public function notIn($values)
+    public function notIn($values): static
     {
         return $this->in($values)->negate();
     }
@@ -317,7 +317,7 @@ class ConditionBuilder
      * @param $max
      * @return $this
      */
-    public function between($min, $max)
+    public function between($min, $max): static
     {
         $this->current->negated = false;
         $this->current->operator = 'BETWEEN';
@@ -331,7 +331,7 @@ class ConditionBuilder
      * @param $max
      * @return $this
      */
-    public function notBetween($min, $max)
+    public function notBetween($min, $max): static
     {
         return $this->between($min, $max)->negate();
     }
@@ -340,7 +340,7 @@ class ConditionBuilder
      * @param Range $range
      * @return $this
      */
-    public function inRange(Range $range)
+    public function inRange(Range $range): static
     {
         $this->current->negated = false;
         $this->current->operator = 'RANGE';
@@ -353,7 +353,7 @@ class ConditionBuilder
      * @param Range $range
      * @return $this
      */
-    public function notInRange(Range $range)
+    public function notInRange(Range $range): static
     {
         return $this->inRange($range)->negate();
     }
@@ -362,7 +362,7 @@ class ConditionBuilder
      * @param array|mixed $value
      * @return $this
      */
-    public function parameter($value)
+    public function parameter($value): static
     {
         $value = is_array($value) ? $value : [$value];
         $this->current->parameters = [];
@@ -377,7 +377,7 @@ class ConditionBuilder
     /**
      * @return ConditionDefinition
      */
-    public function getDefinition()
+    public function getDefinition(): ConditionDefinition
     {
         return $this->root;
     }
@@ -385,7 +385,7 @@ class ConditionBuilder
     /**
      * @return $this
      */
-    protected function markAsDefined()
+    protected function markAsDefined(): static
     {
         if ($this->defined) {
             throw new RuntimeException('Tried to set condition when it was already set!');

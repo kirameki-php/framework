@@ -12,7 +12,7 @@ trait States
     /**
      * @return $this
      */
-    public function reconnect()
+    public function reconnect(): static
     {
         $this->disconnect();
         $this->connect();
@@ -22,7 +22,7 @@ trait States
     /**
      * @return $this
      */
-    public function connect()
+    public function connect(): static
     {
         $this->adapter->connect();
         return $this;
@@ -31,7 +31,7 @@ trait States
     /**
      * @return $this
      */
-    public function disconnect()
+    public function disconnect(): static
     {
         $this->adapter->disconnect();
         return $this;

@@ -15,7 +15,7 @@ class SqliteAdapter extends PdoAdapter
     /**
      * @return $this
      */
-    public function connect()
+    public function connect(): static
     {
         $config = $this->getConfig();
         $dsn = 'sqlite:'.$config['path'];
@@ -31,7 +31,7 @@ class SqliteAdapter extends PdoAdapter
     /**
      * @return $this
      */
-    public function disconnect()
+    public function disconnect(): static
     {
         $this->pdo = null;
         return $this;

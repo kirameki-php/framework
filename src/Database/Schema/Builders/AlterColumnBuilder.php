@@ -135,7 +135,7 @@ class AlterColumnBuilder extends ColumnBuilder
      * @param int|null $scale
      * @return $this
      */
-    protected function columnType(string $type, ?int $size = null, ?int $scale = null)
+    protected function columnType(string $type, ?int $size = null, ?int $scale = null): static
     {
         $this->definition->type = $type;
         $this->definition->size = $size;
@@ -146,7 +146,7 @@ class AlterColumnBuilder extends ColumnBuilder
     /**
      * @return $this
      */
-    public function null()
+    public function null(): static
     {
         $this->definition->nullable = true;
         return $this;
@@ -155,7 +155,7 @@ class AlterColumnBuilder extends ColumnBuilder
     /**
      * @return $this
      */
-    public function first()
+    public function first(): static
     {
         $this->action->positionType = 'FIRST';
         return $this;
@@ -165,7 +165,7 @@ class AlterColumnBuilder extends ColumnBuilder
      * @param string $column
      * @return $this
      */
-    public function after(string $column)
+    public function after(string $column): static
     {
         $this->action->positionType = 'AFTER';
         $this->action->positionColumn = $column;
