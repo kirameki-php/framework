@@ -142,7 +142,7 @@ abstract class Relation
      * @param string ...$names
      * @return $this
      */
-    public function scope(string ...$names)
+    public function scope(string ...$names): static
     {
         foreach ($names as $name) {
             $this->scopes[$name] = $this->getDestReflection()->scopes[$name];

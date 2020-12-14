@@ -17,7 +17,7 @@ class TokenAuth
 
     protected string $propertyName;
 
-    protected $user;
+    protected ?AuthInterface $user;
 
     protected bool $validated;
 

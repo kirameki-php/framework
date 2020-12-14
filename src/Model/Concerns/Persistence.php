@@ -83,6 +83,7 @@ trait Persistence
                 }
             }
         });
+
         return $this;
     }
 

@@ -1,8 +1,6 @@
-FROM php:cli-alpine
+FROM php:8-cli-alpine
 
-ENV COMPOSER_ALLOW_SUPERUSER 1
-ENV PATH="/project/vendor/bin:${PATH}"
-ENV PHP_IDE_CONFIG serverName=host.docker.internal
+ENV PATH="${PATH}:/project/vendor/bin"
 ENV TERM xterm-256color
 ENV TZ Asia/Tokyo
 
@@ -16,7 +14,6 @@ RUN  apk add --no-cache bash coreutils git gmp libxml2 libstdc++ \
   && docker-php-source delete \
   && rm -rf /tmp/* /var/tmp/* \
   && curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin/ --filename=composer \
-  && composer global require hirak/prestissimo \
   && mkdir -p /project
 
 WORKDIR /project

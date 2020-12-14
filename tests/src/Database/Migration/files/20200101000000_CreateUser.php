@@ -12,7 +12,7 @@ class CreateUser extends Migration
                 $t->uuid('id')->primaryKey()->notNull();
                 $t->string('name', 100)->default('Anonymous');
                 $t->timestamps();
-                $t->index('index')->unique();
+                $t->index('name')->unique();
             });
     }
 

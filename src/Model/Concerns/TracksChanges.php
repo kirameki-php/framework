@@ -40,9 +40,9 @@ trait TracksChanges
 
     /**
      * @param string|null $name
-     * @return array
+     * @return mixed
      */
-    public function getInitialProperty(string $name = null): array
+    public function getInitialProperty(string $name = null): mixed
     {
         return array_key_exists($name, $this->changedProperties)
             ? $this->changedProperties[$name]
@@ -59,26 +59,6 @@ trait TracksChanges
             $props[$name] = $this->getInitialProperty($name);
         }
         return $props;
-    }
-
-    /**
-     * @param string|null $name
-     * @return bool
-     */
-    public function isDirty(string $name = null): bool
-    {
-        return $name !== null
-            ? array_key_exists($name, $this->previousProperties)
-            : !empty($this->previousProperties);
-    }
-
-    /**
-     * @return $this
-     */
-    public function clearDirty()
-    {
-        $this->previousProperties = [];
-        return $this;
     }
 
     /**
@@ -99,15 +79,35 @@ trait TracksChanges
     }
 
     /**
+     * @param string|null $name
+     * @return bool
+     */
+    public function isDirty(string $name = null): bool
+    {
+        return $name !== null
+            ? array_key_exists($name, $this->previousProperties)
+            : !empty($this->previousProperties);
+    }
+
+    /**
      * @return array
      */
-    public function getDirtyProperties()
+    public function getDirtyProperties(): array
     {
         $props = [];
         foreach ($this->previousProperties as $name => $_) {
             $props[$name] = $this->getProperty($name);
         }
         return $props;
+    }
+
+    /**
+     * @return $this
+     */
+    public function clearDirty()
+    {
+        $this->previousProperties = [];
+        return $this;
     }
 
     /**

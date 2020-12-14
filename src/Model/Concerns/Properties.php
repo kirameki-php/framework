@@ -52,7 +52,11 @@ trait Properties
         }
 
         $property = static::getReflection()->properties[$name];
-        $value = $property->cast->get($this, $name, $this->persistedProperties[$name]);
+
+        $value = isset($this->persistedProperties[$name])
+            ? $property->cast->get($this, $name, $this->persistedProperties[$name])
+            : null;
+
         $this->cacheResolved($name, $value);
 
         return $value;

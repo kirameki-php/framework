@@ -5,7 +5,6 @@ namespace Kirameki\Model;
 use Closure;
 use Kirameki\Model\Relations\BelongsTo;
 use Kirameki\Model\Relations\HasMany;
-use Kirameki\Model\Relations\Relation;
 
 class ReflectionBuilder
 {
@@ -27,7 +26,7 @@ class ReflectionBuilder
      * @param string $connection
      * @return $this
      */
-    public function connection(string $connection)
+    public function connection(string $connection): static
     {
         $this->reflection->connection = $connection;
         return $this;
@@ -37,7 +36,7 @@ class ReflectionBuilder
      * @param string $table
      * @return $this
      */
-    public function table(string $table)
+    public function table(string $table): static
     {
         $this->reflection->table = $table;
         return $this;

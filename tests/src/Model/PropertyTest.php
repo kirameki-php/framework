@@ -139,7 +139,7 @@ class PropertyTest extends ModelTestCase
         self::assertEquals($value, $propValue);
 
         // raw value
-        $rawValue = $model->getOriginalProperty('ids');
-        self::assertEquals($value, $propValue);
+        $rawValue = $model->getInitialProperty('ids');
+        self::assertNull($rawValue);
     }
 }

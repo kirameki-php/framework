@@ -6,6 +6,7 @@ use ErrorException;
 use Generator;
 use Kirameki\Support\Collection;
 use Kirameki\Tests\TestCase;
+use ValueError;
 
 class CollectionTest extends TestCase
 {
@@ -71,8 +72,8 @@ class CollectionTest extends TestCase
 
     public function testChunkInvalidSize()
     {
-        $this->expectException(ErrorException::class);
-        $this->expectExceptionMessage('array_chunk(): Size parameter expected to be greater than 0');
+        $this->expectException(ValueError::class);
+        $this->expectExceptionMessage('array_chunk(): Argument #2 ($length) must be greater than 0');
         $this->collect([1])->chunk(0);
     }
 
@@ -159,6 +160,9 @@ class CollectionTest extends TestCase
         self::assertTrue($assoc->contains(static fn($v, $k) => $k === 'b'));
     }
 
+    /**
+     * @group test
+     */
     public function testContainsKey()
     {
         // empty but not same instance
@@ -174,15 +178,15 @@ class CollectionTest extends TestCase
         self::assertTrue($seq->containsKey('1'));
         self::assertTrue($seq->containsKey('-2'));
         self::assertTrue($seq->containsKey(-2));
-        self::assertFalse($seq->containsKey(-1));
+        self::assertTrue($seq->containsKey(-1));
         self::assertFalse($seq->containsKey(999));
         self::assertFalse($seq->containsKey('0.3'));
         self::assertFalse($seq->containsKey('2.999'));
         self::assertFalse($seq->containsKey("1.1.1"));
-        self::assertTrue($seq->containsKey("2.2"));
-        self::assertTrue($seq->containsKey("2.2.2"));
-        self::assertFalse($seq->containsKey("2.2.2.-2"));
-        self::assertTrue($seq->containsKey("3"));
+        self::assertTrue($seq->containsKey("1.2"));
+        self::assertTrue($seq->containsKey("1.2.2"));
+        self::assertFalse($seq->containsKey("1.2.2.-2"));
+        self::assertTrue($seq->containsKey("2"));
 
         // copy assoc
         $assoc = $this->collect(['a' => [1, 2, 3], '-' => 'c', 'd' => ['e'], 'f' => null]);
