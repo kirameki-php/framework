@@ -127,7 +127,7 @@ class Arr
      * @param callable|null $condition
      * @return int|string|null
      */
-    public static function firstKey(iterable $iterable, ?callable $condition = null)
+    public static function firstKey(iterable $iterable, ?callable $condition = null): int|string|null
     {
         foreach ($iterable as $key => $item) {
             if ($condition === null || Assert::isTrue($condition($item, $key))) {
@@ -265,7 +265,7 @@ class Arr
      * @param callable|null $condition
      * @return int|string|null
      */
-    public static function lastKey(iterable $iterable, ?callable $condition = null)
+    public static function lastKey(iterable $iterable, ?callable $condition = null): int|string|null
     {
         $copy = static::from($iterable);
 

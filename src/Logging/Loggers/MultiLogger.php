@@ -11,11 +11,6 @@ class MultiLogger implements LoggerInterface
     use HandlesLevels;
 
     /**
-     * @var LogManager
-     */
-    protected LogManager $logManager;
-
-    /**
      * @var LoggerInterface[]
      */
     protected array $loggers;
