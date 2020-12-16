@@ -41,7 +41,7 @@ trait Reflect
                 call_user_func($modelClass.'::define', $builder);
                 $builder->applyDefaultsIfOmitted();
             } else {
-                // auto resolve from table info
+                // TODO: auto resolve from table info
             }
 
             static::$reflection = $reflection;

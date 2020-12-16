@@ -140,6 +140,21 @@ abstract class PdoAdapter implements AdapterInterface
     }
 
     /**
+     * @param string $table
+     * @return bool
+     */
+    public function tableExists(string $table): bool
+    {
+        try {
+            $this->query('SELECT 1 FROM '.$table.' LIMIT 1');
+            return true;
+        }
+        catch (Throwable) {
+            return false;
+        }
+    }
+
+    /**
      * @return QueryFormatter
      */
     public function getQueryFormatter(): QueryFormatter

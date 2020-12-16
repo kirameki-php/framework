@@ -8,12 +8,14 @@ use Kirameki\Database\Query\Builders\InsertBuilder;
 use Kirameki\Database\Query\Builders\SelectBuilder;
 use Kirameki\Database\Query\Builders\UpdateBuilder;
 use Kirameki\Event\EventManager;
+use Kirameki\Support\Concerns\Tappable;
 
 class Connection
 {
     use Concerns\Queries,
         Concerns\Schemas,
-        Concerns\Transactions;
+        Concerns\Transactions,
+        Tappable;
 
     /**
      * @var string
@@ -64,7 +66,7 @@ class Connection
      */
     public function select(...$columns): SelectBuilder
     {
-        return (new SelectBuilder($this))->columns($columns);
+        return (new SelectBuilder($this))->columns(...$columns);
     }
 
     /**
@@ -92,6 +94,15 @@ class Connection
     public function delete(string $table): DeleteBuilder
     {
         return (new DeleteBuilder($this))->table($table);
+    }
+
+    /**
+     * @param string $table
+     * @return bool
+     */
+    public function tableExists(string $table): bool
+    {
+        return $this->adapter->tableExists($table);
     }
 
     /**

@@ -2,8 +2,6 @@
 
 namespace Kirameki\Database\Query\Statements;
 
-use Kirameki\Database\Query\Builders\ConditionBuilder;
-
 class SelectStatement extends ConditionsStatement
 {
     /**

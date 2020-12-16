@@ -5,6 +5,7 @@ namespace Kirameki\Database\Query\Builders;
 use Kirameki\Database\Connection;
 use Kirameki\Database\Query\Statements\ConditionDefinition;
 use Kirameki\Database\Query\Statements\SelectStatement;
+use Kirameki\Database\Support\Expr;
 use Kirameki\Support\Collection;
 
 class SelectBuilder extends ConditonsBuilder
@@ -123,7 +124,7 @@ class SelectBuilder extends ConditonsBuilder
             $this->addToSelect(current($this->statement->groupBy));
         }
 
-        $results = $this->copy()->addToSelect('count(*) AS total')->execSelect();
+        $results = $this->copy()->addToSelect(Expr::raw('count(*) AS total'))->execSelect();
 
         // when GROUP BY is defined, return in [columnValue => count] format
         if ($this->statement->groupBy !== null) {
@@ -204,10 +205,10 @@ class SelectBuilder extends ConditonsBuilder
     }
 
     /**
-     * @param string $select
+     * @param string|Expr $select
      * @return $this
      */
-    protected function addToSelect(string $select): static
+    protected function addToSelect(string|Expr $select): static
     {
         $this->statement->columns[] = $select;
         return $this;

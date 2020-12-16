@@ -56,7 +56,7 @@ class DatabaseManager
      * @param string $name
      * @return $this
      */
-    public function purge(string $name)
+    public function purge(string $name): static
     {
         unset($this->connections[$name]);
         return $this;
@@ -65,7 +65,7 @@ class DatabaseManager
     /**
      * @return $this
      */
-    public function purgeAll()
+    public function purgeAll(): static
     {
         $this->connections = [];
         return $this;
@@ -75,7 +75,7 @@ class DatabaseManager
      * @param Connection $connection
      * @return $this
      */
-    public function addConnection(Connection $connection)
+    public function addConnection(Connection $connection): static
     {
         $this->connections[$connection->getName()] = $connection;
         return $this;
@@ -86,7 +86,7 @@ class DatabaseManager
      * @param Closure $deferred
      * @return $this
      */
-    public function addAdapter(string $name, Closure $deferred)
+    public function addAdapter(string $name, Closure $deferred): static
     {
         $this->adapters[$name] = $deferred;
         return $this;

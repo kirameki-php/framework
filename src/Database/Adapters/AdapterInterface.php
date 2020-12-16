@@ -101,6 +101,12 @@ interface AdapterInterface
 
     /**
      * @param string $table
+     * @return bool
+     */
+    public function tableExists(string $table): bool;
+
+    /**
+     * @param string $table
      */
     public function truncate(string $table): void;
 

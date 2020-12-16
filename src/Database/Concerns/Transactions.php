@@ -30,7 +30,7 @@ trait Transactions
      * @param bool $useSavepoint
      * @return mixed
      */
-    public function transaction(callable $callback, bool $useSavepoint = false)
+    public function transaction(callable $callback, bool $useSavepoint = false): mixed
     {
         try {
             // Actual transaction

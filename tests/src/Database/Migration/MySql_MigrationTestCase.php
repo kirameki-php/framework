@@ -13,9 +13,7 @@ class MySql_MigrationTestCase extends DatabaseTestCase
      */
     protected function setUpDatabase(): void
     {
-        $adapter = new MySqlAdapter(['host' => 'mysql', 'database' => 'migration_test']);
-        $connection = new Connection('migration_test', $adapter, event());
-        db()->addConnection($connection);
+        $adapter = $this->migrationConnection()->getAdapter();
         $adapter->dropDatabase();
         $adapter->createDatabase();
     }
@@ -25,6 +23,14 @@ class MySql_MigrationTestCase extends DatabaseTestCase
      */
     protected function tearDownDatabase(): void
     {
-        db()->using('migration_test')->getAdapter()->dropDatabase();
+        $this->migrationConnection()->getAdapter()->dropDatabase();
+    }
+
+    protected function migrationConnection(): Connection
+    {
+        $adapter = new MySqlAdapter(['host' => 'mysql', 'database' => 'migration_test']);
+        $connection = new Connection('migration_test', $adapter, event());
+        db()->addConnection($connection);
+        return $connection;
     }
 }

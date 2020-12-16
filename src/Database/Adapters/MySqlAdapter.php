@@ -90,7 +90,7 @@ class MySqlAdapter extends PdoAdapter
      */
     public function databaseExists(): bool
     {
-        return 'SHOW DATABASES LIKE '.str_replace("'", "''", $this->config['database']);
+        return !empty($this->query("SHOW DATABASES LIKE '".$this->config['database']."'"));
     }
 
     /**

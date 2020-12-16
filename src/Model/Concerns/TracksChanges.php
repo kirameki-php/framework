@@ -29,7 +29,7 @@ trait TracksChanges
      * @param $oldValue
      * @return $this
      */
-    protected function markAsDirty(string $name, $oldValue)
+    protected function markAsDirty(string $name, $oldValue): static
     {
         if (!array_key_exists($name, $this->changedProperties)) {
             $this->changedProperties[$name] = $oldValue;
@@ -63,9 +63,9 @@ trait TracksChanges
 
     /**
      * @param string $name
-     * @return mixed|null
+     * @return mixed
      */
-    public function getPreviousProperty(string $name)
+    public function getPreviousProperty(string $name): mixed
     {
         return $this->previousProperties[$name] ?? null;
     }
