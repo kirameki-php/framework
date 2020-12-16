@@ -67,7 +67,7 @@ class ModelManager
      * @param Closure $deferred
      * @return $this
      */
-    public function setCast(string $name, Closure $deferred)
+    public function setCast(string $name, Closure $deferred): static
     {
         $this->deferredCasts[$name] = $deferred;
         return $this;

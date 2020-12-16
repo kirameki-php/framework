@@ -16,9 +16,9 @@ class ModelCollection extends Collection
 
     /**
      * @param Reflection $reflection
-     * @param array<Model> $models
+     * @param iterable<Model> $models
      */
-    public function __construct(Reflection $reflection, array $models = [])
+    public function __construct(Reflection $reflection, iterable $models = [])
     {
         parent::__construct($models);
         $this->reflection = $reflection;
@@ -52,7 +52,7 @@ class ModelCollection extends Collection
      * @param int|string $key
      * @return Model|null
      */
-    public function get($key)
+    public function get(int|string $key): ?Model
     {
         return parent::get($key);
     }

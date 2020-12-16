@@ -71,7 +71,7 @@ class Collection extends Enumerable implements ArrayAccess
      * @param int|string $key
      * @return mixed|null
      */
-    public function get($key)
+    public function get(int|string $key)
     {
         return static::isDottedKey($key)
             ? static::digTo($this->items, explode('.', $key))
