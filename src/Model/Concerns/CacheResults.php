@@ -12,7 +12,7 @@ trait CacheResults
     /**
      * @var array
      */
-    protected array $resolved = [];
+    protected array $resolvedProperties = [];
 
     /**
      * @param string $name
@@ -21,7 +21,7 @@ trait CacheResults
      */
     protected function cacheResolved(string $name, $value): static
     {
-        $this->resolved[$name] = $value;
+        $this->resolvedProperties[$name] = $value;
         return $this;
     }
 
@@ -30,7 +30,7 @@ trait CacheResults
      */
     public function clearResultCache(): static
     {
-        $this->resolved = [];
+        $this->resolvedProperties = [];
         return $this;
     }
 
@@ -40,6 +40,6 @@ trait CacheResults
      */
     public function isResultCached(string $name): bool
     {
-        return array_key_exists($name, $this->resolved);
+        return array_key_exists($name, $this->resolvedProperties);
     }
 }

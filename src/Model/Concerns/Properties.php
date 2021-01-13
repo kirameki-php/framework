@@ -47,8 +47,8 @@ trait Properties
      */
     public function getProperty(string $name): mixed
     {
-        if (array_key_exists($name, $this->resolved)) {
-            return $this->resolved[$name];
+        if (array_key_exists($name, $this->resolvedProperties)) {
+            return $this->resolvedProperties[$name];
         }
 
         $property = static::getReflection()->properties[$name];

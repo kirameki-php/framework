@@ -20,7 +20,8 @@ class ApcuStore extends AbstractStore
     {
         $success = false;
         if($this->enabled) {
-            return apcu_fetch($this->formatKey($key), $success);
+            $value = apcu_fetch($this->formatKey($key), $success);
+            return $success ? $value : null;
         }
         return null;
     }
