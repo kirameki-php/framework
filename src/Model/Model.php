@@ -9,13 +9,12 @@ use RuntimeException;
 abstract class Model implements ArrayAccess, JsonSerializable
 {
     use Concerns\ArrayAccess,
-        Concerns\CacheResults,
+        Concerns\Compare,
         Concerns\Reflect,
         Concerns\JsonSerialize,
         Concerns\Persistence,
         Concerns\Properties,
-        Concerns\Relations,
-        Concerns\TracksChanges;
+        Concerns\Relations;
 
     /**
      * @var ModelManager
@@ -64,7 +63,7 @@ abstract class Model implements ArrayAccess, JsonSerializable
             $this->setPersistedProperties($properties);
         } else {
             $this->setProperties($properties);
-            $this->setDefaults();
+            $this->setDefaultProperties();
         }
     }
 
@@ -126,24 +125,5 @@ abstract class Model implements ArrayAccess, JsonSerializable
     public function newInstance(array $attributes = [], $persisted = false): static
     {
         return new static($attributes, $persisted);
-    }
-
-
-    /**
-     * @param Model $model
-     * @return bool
-     */
-    public function is(Model $model): bool
-    {
-        return $model instanceof $this && $this->getPrimaryKey() === $model->getPrimaryKey();
-    }
-
-    /**
-     * @param Model $model
-     * @return bool
-     */
-    public function isNot(Model $model): bool
-    {
-        return !$this->is($model);
     }
 }

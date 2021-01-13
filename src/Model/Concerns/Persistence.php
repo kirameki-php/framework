@@ -29,25 +29,6 @@ trait Persistence
     protected bool $processing = false;
 
     /**
-     * This has raw values that come directly from the database.
-     * For example, the datetime values are stored as string
-     * and will not be casted until it is actually used.
-     *
-     * @var array
-     */
-    protected array $persistedProperties = [];
-
-    /**
-     * @param array $properties
-     * @return $this
-     */
-    protected function setPersistedProperties(array $properties)
-    {
-        $this->persistedProperties = $properties;
-        return $this;
-    }
-
-    /**
      * @return $this
      */
     public function save()
