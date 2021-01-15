@@ -8,6 +8,7 @@ use Kirameki\Container\Container;
 use Kirameki\Database\DatabaseInitializer;
 use Kirameki\Event\EventInitializer;
 use Kirameki\Exception\ExceptionInitializer;
+use Kirameki\Http\HttpInitializer;
 use Kirameki\Logging\LogInitializer;
 use Kirameki\Model\ModelInitializer;
 use RuntimeException;
@@ -73,6 +74,7 @@ class Application extends Container
         (new EventInitializer)->register($this);
         (new DatabaseInitializer)->register($this);
         (new ModelInitializer)->register($this);
+        (new HttpInitializer)->register($this);
     }
 
     /**

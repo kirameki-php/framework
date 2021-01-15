@@ -23,9 +23,15 @@ class Request
         $components = parse_url($_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI']);
         $components['schema'] = $_SERVER['HTTP_X_FORWARDED_PROTO'] ?? $_SERVER['REQUEST_SCHEME'] ?? 'http';
         $url = new Url($components);
+
         $headers = new Headers(getallheaders());
-        $parameters = new Parameters();
+
+        /** @var HttpManager $httpManager */
+        $httpManager = app()->get(HttpManager::class);
+        $contentType = $_SERVER['HTTP_CONTENT_TYPE'] ?? 'application/x-www-form-urlencoded';
         $body = file_get_contents('php://input');
+        $data = $httpManager->getContentHandler($contentType)->receive($body);
+        $parameters = new Parameters($data);
 
         $protocol = $_SERVER['SERVER_PROTOCOL'] ?? 'HTTP/1.1';
         $method = $parameters->get('_method') ?? $_SERVER['REQUEST_METHOD'];

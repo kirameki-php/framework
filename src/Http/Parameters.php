@@ -8,7 +8,18 @@ use IteratorAggregate;
 
 class Parameters implements Countable, IteratorAggregate
 {
+    /**
+     * @var array
+     */
     protected array $entries;
+
+    /**
+     * @param array $entries
+     */
+    public function __construct(array $entries = [])
+    {
+        $this->entries = $entries;
+    }
 
     public function all(): array
     {
