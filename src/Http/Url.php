@@ -20,7 +20,7 @@ class Url
 
     public function schema(): string
     {
-        return $this->components['schema'] ?? 'http';
+        return $this->components['scheme'] ?? 'http';
     }
 
     public function userinfo(): ?string
@@ -72,6 +72,13 @@ class Url
     public function query(): ?string
     {
         return $this->components['query'] ?? null;
+    }
+
+    public function queryAsData(): array
+    {
+        $result = [];
+        parse_str($this->query() ?? '', $result);
+        return $result;
     }
 
     public function pathAndQuery(): ?string

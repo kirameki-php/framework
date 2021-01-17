@@ -19,7 +19,7 @@ class UrlEncodedHandler implements HandlerInterface
      */
     public function receive(string $content): array
     {
-        $result = null;
+        $result = [];
         parse_str($content, $result);
         return $result;
     }

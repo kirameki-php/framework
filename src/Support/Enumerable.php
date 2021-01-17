@@ -25,9 +25,9 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
     abstract public function newInstance(?iterable $items = null): static;
 
     /**
-     * @return array|mixed
+     * @return array
      */
-    public function jsonSerialize(): mixed
+    public function jsonSerialize(): array
     {
         $values = [];
         foreach ($this->items as $key => $item) {
