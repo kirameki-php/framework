@@ -1,2 +1,2 @@
-# exelion
-Complete Web Application Framework for PHP
+# Kirameki Framework
+Complete RESTful Application Framework for PHP
