@@ -1,4 +1,4 @@
-DOCKER_COMPOSE_COMMAND=cd docker && docker-compose -p $(shell basename $(CURDIR))
+DOCKER_COMPOSE_COMMAND=cd docker && docker compose -p $(shell basename $(CURDIR))
 
 .PHONY: build
 build:
@@ -13,8 +13,12 @@ down:
 	$(DOCKER_COMPOSE_COMMAND) down --remove-orphans
 
 .PHONY: test
+logs:
+	$(DOCKER_COMPOSE_COMMAND) logs
+
+.PHONY: test
 test:
-	$(DOCKER_COMPOSE_COMMAND) exec app cd tests && phpunit
+	$(DOCKER_COMPOSE_COMMAND) run app phpunit
 
 .PHONY: bash
 bash:
