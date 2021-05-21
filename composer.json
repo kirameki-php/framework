@@ -1,5 +1,6 @@
 {
   "name": "kirameki/framework",
+  "description": "API Framework for PHP",
   "bin": ["bin/kirameki"],
   "type": "project",
   "require": {
@@ -16,7 +17,7 @@
     "nesbot/carbon": "^2.39",
     "psr/container": "^1.0",
     "ramsey/uuid": "^4.1",
-    "vlucas/phpdotenv": "^5.1"
+    "vlucas/phpdotenv": "^5.2"
   },
   "require-dev": {
     "phpunit/phpunit": "~9.0",
@@ -37,7 +38,7 @@
   },
   "autoload-dev": {
     "psr-4": {
-      "Kirameki\\Tests\\": "tests/src/"
+      "Tests\\Kirameki\\": "tests/src/"
     }
   },
   "config": {
