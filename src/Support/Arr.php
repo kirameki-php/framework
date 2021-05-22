@@ -310,6 +310,7 @@ class Arr
      * @param array $array
      * @param mixed $value
      * @param int|null $limit
+     * @return void
      */
     public static function remove(array &$array, mixed $value, ?int $limit = null): void
     {
@@ -366,6 +367,32 @@ class Arr
         $copy = static::from($iterable);
         shuffle($copy);
         return $copy;
+    }
+
+    /**
+     * @param array $array
+     * @param callable $callback
+     * @return array
+     */
+    public static function transformKeys(array $array, callable $callback): array
+    {
+        foreach ($array as $key => $item) {
+            $array[$callback($key, $item)] = $item;
+        }
+        return $array;
+    }
+
+    /**
+     * @param array $array
+     * @param callable $callback
+     * @return array
+     */
+    public static function transformValues(array $array, callable $callback): array
+    {
+        foreach ($array as $key => $item) {
+            $array[$key] = $callback($item, $key);
+        }
+        return $array;
     }
 
     /**

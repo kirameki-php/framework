@@ -7,7 +7,7 @@ use Countable;
 use Generator;
 use IteratorAggregate;
 use JsonSerializable;
-use Kirameki\Exception\MethodArgumentException;
+use Kirameki\Exception\UnexpectedArgumentException;
 
 abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializable
 {
@@ -32,9 +32,7 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
     {
         $values = [];
         foreach ($this->items as $key => $item) {
-            $values[$key]= ($item instanceof JsonSerializable)
-                ? $item->jsonSerialize()
-                : $item;
+            $values[$key] = ($item instanceof JsonSerializable) ? $item->jsonSerialize() : $item;
         }
         return $values;
     }
@@ -52,7 +50,7 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
      */
     public function average(): float|int
     {
-        return (float) $this->sum() / $this->count();
+        return (float)$this->sum() / $this->count();
     }
 
     /**
@@ -193,7 +191,7 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
     public function drop(int $amount): static
     {
         if ($amount < 0) {
-            throw new MethodArgumentException(0, 'does not allow negative value: '.$amount);
+            throw new UnexpectedArgumentException(0, 'positive value', $amount);
         }
         return $this->slice($amount);
     }
@@ -214,11 +212,11 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
      */
     public function dropWhile(callable $condition): static
     {
-        $index = $this->firstIndex(static function($item, $key) use ($condition) {
-            $result = $condition($item, $key);
-            Assert::bool($result);
-            return !$result;
-        }) ?? PHP_INT_MAX;
+        $index = $this->firstIndex(static function ($item, $key) use ($condition) {
+                $result = $condition($item, $key);
+                Assert::bool($result);
+                return !$result;
+            }) ?? PHP_INT_MAX;
         return $this->drop($index);
     }
 
@@ -565,7 +563,7 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
      */
     public function notEquals($items): bool
     {
-        return ! $this->equals($items);
+        return !$this->equals($items);
     }
 
     /**
@@ -602,9 +600,9 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
     /**
      * @param callable $callback
      * @param null $initial
-     * @return mixed|null
+     * @return mixed
      */
-    public function reduce(callable $callback, $initial = null)
+    public function reduce(callable $callback, $initial = null): mixed
     {
         $result = $initial ?? $this->newInstance();
         foreach ($this->items as $key => $item) {
@@ -801,6 +799,14 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
     }
 
     /**
+     * @return array
+     */
+    public function toArrayRecursive(): array
+    {
+        return $this->asArrayRecursive($this->items);
+    }
+
+    /**
      * @param int $options
      * @param int $depth
      * @return string
@@ -847,6 +853,17 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
 
     /**
      * @param iterable $items
+     * @return array
+     */
+    protected function asArrayRecursive(iterable $items): array
+    {
+        return Arr::transformValues(Arr::from($items), function ($item) {
+            return is_iterable($item) ? $this->asArrayRecursive($item) : $item;
+        });
+    }
+
+    /**
+     * @param iterable $items
      * @return Collection
      */
     protected function newCollection(iterable $items): Collection
@@ -873,7 +890,7 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
     }
 
     /**
-     * @param $array
+     * @param array $array
      * @param array $keys
      * @return mixed
      */

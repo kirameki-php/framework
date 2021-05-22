@@ -231,9 +231,7 @@ class Collection extends Enumerable implements ArrayAccess
      */
     public function transformKeys(callable $callback): static
     {
-        foreach ($this->items as $key => $item) {
-            $this->items[$callback($key, $item)] = $item;
-        }
+        $this->items = Arr::transformKeys($this->items, $callback);
         return $this;
     }
 
@@ -243,9 +241,7 @@ class Collection extends Enumerable implements ArrayAccess
      */
     public function transformValues(callable $callback): static
     {
-        foreach ($this->items as $key => $item) {
-            $this->items[$key] = $callback($item, $key);
-        }
+        $this->items = Arr::transformValues($this->items, $callback);
         return $this;
     }
 

@@ -4,10 +4,11 @@ namespace Tests\Kirameki\Support;
 
 use ErrorException;
 use Generator;
-use Kirameki\Exception\MethodArgumentException;
+use Kirameki\Exception\UnexpectedArgumentException;
 use Kirameki\Exception\ReturnValueException;
 use Kirameki\Support\Collection;
 use Tests\Kirameki\TestCase;
+use TypeError;
 use ValueError;
 
 class CollectionTest extends TestCase
@@ -15,6 +16,40 @@ class CollectionTest extends TestCase
     protected function collect(?iterable $items = null): Collection
     {
         return new Collection($items);
+    }
+
+    /**
+     * @group test
+     */
+    public function test__Construct()
+    {
+        // empty
+        $empty = new Collection();
+        self::assertEquals([], $empty->toArray());
+
+        // ordinal
+        $ordinal = new Collection([1, 2]);
+        self::assertEquals([1, 2], $ordinal->toArray());
+
+        // assoc
+        $assoc = new Collection(['a' => 1, 'b' => 2]);
+        self::assertEquals(['a' => 1, 'b' => 2], $assoc->toArray());
+
+        // array in collection
+        $inner = new Collection([1]);
+        $collection = new Collection([$inner]);
+        self::assertEquals([$inner], $collection->toArray());
+
+        // iterable in collection
+        $collection = new Collection(new Collection([1, 2]));
+        self::assertEquals([1, 2], $collection->toArray());
+    }
+
+    public function test__Construct_BadArgument()
+    {
+        self::expectException(TypeError::class);
+        self::expectExceptionMessage('Argument #1 ($items) must be of type ?iterable, int given');
+        new Collection(1);
     }
 
     public function testAverage()
@@ -326,8 +361,8 @@ class CollectionTest extends TestCase
 
         // negative
         $assoc = $this->collect(['a' => 1]);
-        self::expectException(MethodArgumentException::class);
-        self::expectExceptionMessage('[Kirameki\Support\Collection::drop] $amount does not allow negative value: -1');
+        self::expectException(UnexpectedArgumentException::class);
+        self::expectExceptionMessage('Kirameki\Support\Collection::drop() Argument #0 ($amount) must be positive value, -1 given.');
         $assoc->drop(-1)->toArray();
     }
 
@@ -361,9 +396,6 @@ class CollectionTest extends TestCase
         $assoc->dropWhile(fn($v, $k) => null)->toArray();
     }
 
-    /**
-     * @group test
-     */
     public function testEach()
     {
         $assoc = $this->collect(['a' => 1, 'b' => 2]);
