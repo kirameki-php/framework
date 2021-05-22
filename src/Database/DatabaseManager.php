@@ -136,10 +136,9 @@ class DatabaseManager
      */
     protected function getDefaultAdapterResolver(string $adapter): Closure
     {
-        switch ($adapter) {
-            case 'mysql' : return static fn(array $config) => new MySqlAdapter($config);
-            case 'sqlite': return static fn(array $config) => new SqliteAdapter($config);
-        }
-        throw new RuntimeException('Undefined adapter: '.$adapter);
+        return match ($adapter) {
+            'mysql' => static fn(array $config) => new MySqlAdapter($config),
+            'sqlite' => static fn(array $config) => new SqliteAdapter($config),
+        };
     }
 }

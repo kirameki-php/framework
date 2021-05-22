@@ -7,6 +7,7 @@ use Countable;
 use Generator;
 use IteratorAggregate;
 use JsonSerializable;
+use Kirameki\Exception\MethodArgumentException;
 
 abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializable
 {
@@ -191,6 +192,9 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
      */
     public function drop(int $amount): static
     {
+        if ($amount < 0) {
+            throw new MethodArgumentException(0, 'does not allow negative value: '.$amount);
+        }
         return $this->slice($amount);
     }
 
@@ -210,7 +214,11 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
      */
     public function dropWhile(callable $condition): static
     {
-        $index = $this->firstIndex(static fn($item, $key) => !$condition($item, $key)) ?? PHP_INT_MAX;
+        $index = $this->firstIndex(static function($item, $key) use ($condition) {
+            $result = $condition($item, $key);
+            Assert::bool($result);
+            return !$result;
+        }) ?? PHP_INT_MAX;
         return $this->drop($index);
     }
 
@@ -847,19 +855,19 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
     }
 
     /**
-     * @param $key
+     * @param int|string $key
      * @return bool
      */
-    protected static function isDottedKey($key): bool
+    protected static function isDottedKey(int|string $key): bool
     {
         return is_string($key) && str_contains($key, '.');
     }
 
     /**
-     * @param $key
+     * @param int|string $key
      * @return bool
      */
-    protected static function isNotDottedKey($key): bool
+    protected static function isNotDottedKey(int|string $key): bool
     {
         return !static::isDottedKey($key);
     }

@@ -15,7 +15,7 @@ class Collection extends Enumerable implements ArrayAccess
     }
 
     /**
-     * @param $items
+     * @param iterable|null $items
      * @return static
      */
     public function newInstance(?iterable $items = null): static
@@ -36,7 +36,7 @@ class Collection extends Enumerable implements ArrayAccess
      * @param mixed $offset
      * @return mixed
      */
-    public function offsetGet($offset)
+    public function offsetGet($offset): mixed
     {
         return $this->items[$offset];
     }
@@ -102,16 +102,16 @@ class Collection extends Enumerable implements ArrayAccess
     /**
      * @return mixed
      */
-    public function pop()
+    public function pop(): mixed
     {
         return array_pop($this->items);
     }
 
     /**
      * @param int|string $key
-     * @return mixed|null
+     * @return mixed
      */
-    public function pull($key)
+    public function pull(int|string $key): mixed
     {
         if (static::isNotDottedKey($key)) {
             $value = $this->items[$key] ?? null;
@@ -132,7 +132,7 @@ class Collection extends Enumerable implements ArrayAccess
      * @param mixed ...$value
      * @return $this
      */
-    public function push(...$value)
+    public function push(...$value): static
     {
         foreach ($value as $v) {
             $this->items[] = $v;
@@ -145,7 +145,7 @@ class Collection extends Enumerable implements ArrayAccess
      * @param int|null $limit
      * @return $this
      */
-    public function remove($value, ?int $limit = null)
+    public function remove($value, ?int $limit = null): static
     {
         Arr::remove($this->items, $value, $limit);
         return $this;
@@ -155,7 +155,7 @@ class Collection extends Enumerable implements ArrayAccess
      * @param int|string $key
      * @return bool
      */
-    public function removeKey($key): bool
+    public function removeKey(int|string $key): bool
     {
         $copy = $this->toArray();
         if (static::isNotDottedKey($key)) {
@@ -177,7 +177,7 @@ class Collection extends Enumerable implements ArrayAccess
     /**
      * @return $this
      */
-    public function reorder()
+    public function reorder(): static
     {
         uasort($this->items, static fn () => 0);
         return $this;
@@ -188,7 +188,7 @@ class Collection extends Enumerable implements ArrayAccess
      * @param $value
      * @return $this
      */
-    public function set($key, $value)
+    public function set(int|string $key, $value): static
     {
         if (static::isNotDottedKey($key)) {
             $this->items[$key] = $value;
@@ -209,7 +209,7 @@ class Collection extends Enumerable implements ArrayAccess
      * @param $value
      * @return $this
      */
-    public function setIfNotExists($key, $value)
+    public function setIfNotExists($key, $value): static
     {
         if ($this->containsKey($key)) {
             $this->set($key, $value);
@@ -220,7 +220,7 @@ class Collection extends Enumerable implements ArrayAccess
     /**
      * @return mixed
      */
-    public function shift()
+    public function shift(): mixed
     {
         return array_shift($this->items);
     }
@@ -229,7 +229,7 @@ class Collection extends Enumerable implements ArrayAccess
      * @param callable $callback
      * @return $this
      */
-    public function transformKeys(callable $callback)
+    public function transformKeys(callable $callback): static
     {
         foreach ($this->items as $key => $item) {
             $this->items[$callback($key, $item)] = $item;
@@ -241,7 +241,7 @@ class Collection extends Enumerable implements ArrayAccess
      * @param callable $callback
      * @return $this
      */
-    public function transformValues(callable $callback)
+    public function transformValues(callable $callback): static
     {
         foreach ($this->items as $key => $item) {
             $this->items[$key] = $callback($item, $key);
@@ -253,7 +253,7 @@ class Collection extends Enumerable implements ArrayAccess
      * @param mixed ...$value
      * @return $this
      */
-    public function unshift(...$value)
+    public function unshift(...$value): static
     {
         foreach ($value as $v) {
             array_unshift($this->items, $v);

@@ -21,11 +21,11 @@ class Arr
      * @param mixed|callable $value
      * @return bool
      */
-    public static function contains(iterable $iterable, $value): bool
+    public static function contains(iterable $iterable, mixed $value): bool
     {
         $call = is_callable($value) ? $value : static fn($item) => $item === $value;
         foreach ($iterable as $key => $item) {
-            if (Assert::isTrue($call($item, $key))) {
+            if (Check::isTrue($call($item, $key))) {
                 return true;
             }
         }
@@ -41,7 +41,7 @@ class Arr
     {
         $counter = 0;
         foreach ($iterable as $key => $item) {
-            if (Assert::isTrue($condition($item, $key))) {
+            if (Check::isTrue($condition($item, $key))) {
                 $counter++;
             }
         }
@@ -83,7 +83,7 @@ class Arr
         $values = [];
         foreach ($iterable as $key => $item) {
             $result = $condition($item, $key);
-            if (Assert::isTrue($result)) {
+            if (Check::isTrue($result)) {
                 $values[$key] = $item;
             }
         }
@@ -98,7 +98,7 @@ class Arr
     public static function first(iterable $iterable, ?callable $condition = null)
     {
         foreach ($iterable as $key => $item) {
-            if ($condition === null || Assert::isTrue($condition($item, $key))) {
+            if ($condition === null || Check::isTrue($condition($item, $key))) {
                 return $item;
             }
         }
@@ -114,7 +114,7 @@ class Arr
     {
         $count = 0;
         foreach ($iterable as $key => $item) {
-            if (Assert::isTrue($condition($item, $key))) {
+            if (Check::isTrue($condition($item, $key))) {
                 return $count;
             }
             $count++;
@@ -130,7 +130,7 @@ class Arr
     public static function firstKey(iterable $iterable, ?callable $condition = null): int|string|null
     {
         foreach ($iterable as $key => $item) {
-            if ($condition === null || Assert::isTrue($condition($item, $key))) {
+            if ($condition === null || Check::isTrue($condition($item, $key))) {
                 return $key;
             }
         }
@@ -235,7 +235,7 @@ class Arr
             return end($copy);
         }
         foreach (array_reverse($copy, true) as $key => $item) {
-            if (Assert::isTrue($condition($item, $key))) {
+            if (Check::isTrue($condition($item, $key))) {
                 return $item;
             }
         }
@@ -253,7 +253,7 @@ class Arr
         $count = count($copy) - 1;
         foreach (array_reverse($copy) as $key => $item) {
             $count--;
-            if (Assert::isTrue($condition($item, $key))) {
+            if (Check::isTrue($condition($item, $key))) {
                 return $count;
             }
         }
@@ -274,7 +274,7 @@ class Arr
         }
 
         foreach(array_reverse($copy, true) as $key => $item) {
-            if (Assert::isTrue($condition($item, $key))) {
+            if (Check::isTrue($condition($item, $key))) {
                 return $key;
             }
         }
@@ -301,17 +301,17 @@ class Arr
      * @param mixed|callable $value
      * @return bool
      */
-    public static function notContains(iterable $iterable, $value): bool
+    public static function notContains(iterable $iterable, mixed $value): bool
     {
         return !static::contains($iterable, $value);
     }
 
     /**
      * @param array $array
-     * @param $value
+     * @param mixed $value
      * @param int|null $limit
      */
-    public static function remove(array &$array, $value, ?int $limit = null): void
+    public static function remove(array &$array, mixed $value, ?int $limit = null): void
     {
         $counter = 0;
         foreach ($array as $key => $item) {
@@ -326,7 +326,7 @@ class Arr
      * @param iterable $iterable
      * @return mixed
      */
-    public static function sample(iterable $iterable)
+    public static function sample(iterable $iterable): mixed
     {
         $arr = static::from($iterable);
         return $arr[array_rand($arr)];
@@ -340,7 +340,7 @@ class Arr
     public static function satisfyAll(iterable $iterable, callable $condition): bool
     {
         foreach ($iterable as $item) {
-            if (Assert::isFalse($condition($item))) {
+            if (Check::isFalse($condition($item))) {
                 return false;
             }
         }

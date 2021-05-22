@@ -2,40 +2,17 @@
 
 namespace Kirameki\Support;
 
-use RuntimeException;
+use Kirameki\Exception\ReturnValueException;
 
 class Assert
 {
     /**
-     * @param $value
-     * @return bool
+     * @param mixed $value
      */
-    public static function isTrue($value): bool
-    {
-        return static::boolCheck($value, true);
-    }
-
-    /**
-     * @param $value
-     * @return bool
-     */
-    public static function isFalse($value): bool
-    {
-        return static::boolCheck($value, false);
-    }
-
-    /**
-     * @param $value
-     * @param bool $expected
-     * @return bool
-     */
-    protected static function boolCheck($value, bool $expected): bool
+    public static function bool(mixed $value): void
     {
         if (!is_bool($value)) {
-            $result = Util::toString($value);
-            $message = "Invalid return value: $result. Call must return a boolean value";
-            throw new RuntimeException($message);
+            throw new ReturnValueException($value, "Call must return a bool value.");
         }
-        return $value === $expected;
     }
 }
