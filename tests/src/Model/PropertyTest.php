@@ -1,9 +1,8 @@
 <?php
 
-namespace Kirameki\Tests\Model;
+namespace Tests\Kirameki\Model;
 
 use Kirameki\Model\Reflection;
-use Ramsey\Uuid\Uuid;
 
 class PropertyTest extends ModelTestCase
 {

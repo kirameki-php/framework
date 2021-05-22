@@ -1,24 +1,29 @@
 <?php declare(strict_types=1);
 
-namespace Kirameki\Tests\Database;
+namespace Tests\Kirameki\Database;
 
 use Kirameki\Database\Connection;
 use Kirameki\Database\Schema\Builders\CreateTableBuilder;
-use Kirameki\Tests\TestCase;
+use Kirameki\Support\Arr;
+use Kirameki\Testing\Concerns\UsesDatabases;
+use Tests\Kirameki\TestCase;
 
 class DatabaseTestCase extends TestCase
 {
-    /**
-     * @param string $name
-     * @return Connection
-     */
-    public function connection(string $name): Connection
+    use UsesDatabases;
+
+    protected array $connections = [];
+
+    public function mysqlConnection(): Connection
     {
-        return db()->using($name);
+        return $this->connections['mysql'] ??= $this->createTempConnection('mysql');
     }
 
-    public function createTable(string $connection, string $table): CreateTableBuilder
+    public function createTable(string $table, callable $callback): void
     {
-        return new CreateTableBuilder($this->connection($connection), $table);
+        $connection = $this->mysqlConnection();
+        $builder = new CreateTableBuilder($connection, $table);
+        $callback($builder);
+        Arr::map($builder->toDdls(), fn($ddl) => $connection->executeSchema($ddl));
     }
 }

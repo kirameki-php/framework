@@ -1,6 +1,6 @@
 <?php
 
-namespace Kirameki\Tests\Database\Migration;
+namespace Tests\Kirameki\Database\Migration;
 
 use Kirameki\Database\Migration\MigrationManager;
 

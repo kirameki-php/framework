@@ -1,12 +1,12 @@
 <?php
 
-namespace Kirameki\Tests\Database\Query;
+namespace Tests\Kirameki\Database\Query;
 
 use Kirameki\Database\Query\Builders\DeleteBuilder;
 use Kirameki\Database\Query\Builders\InsertBuilder;
 use Kirameki\Database\Query\Builders\SelectBuilder;
 use Kirameki\Database\Query\Builders\UpdateBuilder;
-use Kirameki\Tests\Database\DatabaseTestCase;
+use Tests\Kirameki\Database\DatabaseTestCase;
 
 class QueryTestCase extends DatabaseTestCase
 {
@@ -14,21 +14,21 @@ class QueryTestCase extends DatabaseTestCase
 
     protected function selectBuilder()
     {
-        return new SelectBuilder($this->connection($this->connection));
+        return new SelectBuilder($this->mysqlConnection($this->connection));
     }
 
     protected function insertBuilder()
     {
-        return new InsertBuilder($this->connection($this->connection));
+        return new InsertBuilder($this->mysqlConnection($this->connection));
     }
 
     protected function updateBuilder()
     {
-        return new UpdateBuilder($this->connection($this->connection));
+        return new UpdateBuilder($this->mysqlConnection($this->connection));
     }
 
     protected function deleteBuilder()
     {
-        return new DeleteBuilder($this->connection($this->connection));
+        return new DeleteBuilder($this->mysqlConnection($this->connection));
     }
 }

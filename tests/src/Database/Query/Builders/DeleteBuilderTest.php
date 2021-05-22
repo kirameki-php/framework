@@ -1,8 +1,8 @@
 <?php
 
-namespace Kirameki\Tests\Database\Query\Builders;
+namespace Tests\Kirameki\Database\Query\Builders;
 
-use Kirameki\Tests\Database\Query\QueryTestCase;
+use Tests\Kirameki\Database\Query\QueryTestCase;
 
 class DeleteBuilderTest extends QueryTestCase
 {

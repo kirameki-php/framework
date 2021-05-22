@@ -1,6 +1,6 @@
 <?php
 
-namespace Kirameki\Tests\Model;
+namespace Tests\Kirameki\Model;
 
 use Kirameki\Model\Model;
 use Kirameki\Model\Reflection;

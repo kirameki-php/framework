@@ -1,10 +1,10 @@
 <?php
 
-namespace Kirameki\Tests\Database\Migration;
+namespace Tests\Kirameki\Database\Migration;
 
 use Kirameki\Database\Adapters\MySqlAdapter;
 use Kirameki\Database\Connection;
-use Kirameki\Tests\Database\DatabaseTestCase;
+use Tests\Kirameki\Database\DatabaseTestCase;
 
 class MySql_MigrationTestCase extends DatabaseTestCase
 {

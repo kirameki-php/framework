@@ -1,11 +1,13 @@
 <?php
 
-namespace Kirameki\Tests\Support;
+namespace Tests\Kirameki\Support;
 
 use ErrorException;
 use Generator;
+use Kirameki\Exception\MethodArgumentException;
+use Kirameki\Exception\ReturnValueException;
 use Kirameki\Support\Collection;
-use Kirameki\Tests\TestCase;
+use Tests\Kirameki\TestCase;
 use ValueError;
 
 class CollectionTest extends TestCase
@@ -160,9 +162,6 @@ class CollectionTest extends TestCase
         self::assertTrue($assoc->contains(static fn($v, $k) => $k === 'b'));
     }
 
-    /**
-     * @group test
-     */
     public function testContainsKey()
     {
         // empty but not same instance
@@ -314,5 +313,65 @@ class CollectionTest extends TestCase
 
         $dug = $assoc->dig('one.four');
         self::assertEquals([], $dug->toArray());
+    }
+
+    public function testDrop()
+    {
+        $assoc = $this->collect(['a' => 1, 'b' => 2, 'c' => 3]);
+        self::assertEquals(['b' => 2, 'c' => 3], $assoc->drop(1)->toArray());
+
+        // over value
+        $assoc = $this->collect(['a' => 1]);
+        self::assertEquals([], $assoc->drop(2)->toArray());
+
+        // negative
+        $assoc = $this->collect(['a' => 1]);
+        self::expectException(MethodArgumentException::class);
+        self::expectExceptionMessage('[Kirameki\Support\Collection::drop] $amount does not allow negative value: -1');
+        $assoc->drop(-1)->toArray();
+    }
+
+    public function testDropUntil()
+    {
+        // look at value
+        $assoc = $this->collect(['a' => 1, 'b' => 2, 'c' => 3]);
+        self::assertEquals(['c' => 3], $assoc->dropUntil(fn($v) => $v >= 3)->toArray());
+
+        // look at key
+        self::assertEquals(['c' => 3], $assoc->dropUntil(fn($v, $k) => $k === 'c')->toArray());
+
+        // drop until null does not work
+        self::expectException(ReturnValueException::class);
+        self::expectExceptionMessage('Invalid return value: null. Call must return a bool value.');
+        $assoc->dropUntil(fn($v, $k) => null)->toArray();
+    }
+
+    public function testDropWhile()
+    {
+        // look at value
+        $assoc = $this->collect(['a' => 1, 'b' => 2, 'c' => 3]);
+        self::assertEquals(['c' => 3], $assoc->dropWhile(fn($v) => $v < 3)->toArray());
+
+        // look at key
+        self::assertEquals(['c' => 3], $assoc->dropWhile(fn($v, $k) => $k !== 'c')->toArray());
+
+        // drop until null does not work
+        self::expectException(ReturnValueException::class);
+        self::expectExceptionMessage('Invalid return value: null. Call must return a bool value.');
+        $assoc->dropWhile(fn($v, $k) => null)->toArray();
+    }
+
+    /**
+     * @group test
+     */
+    public function testEach()
+    {
+        $assoc = $this->collect(['a' => 1, 'b' => 2]);
+        $assoc->each(function($v, $k) {
+            switch ($k) {
+                case 'a': self::assertEquals(['a' => 1], [$k => $v]); break;
+                case 'b': self::assertEquals(['b' => 2], [$k => $v]); break;
+            }
+        });
     }
 }

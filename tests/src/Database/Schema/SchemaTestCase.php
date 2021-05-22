@@ -1,9 +1,9 @@
 <?php
 
-namespace Kirameki\Tests\Database\Schema;
+namespace Tests\Kirameki\Database\Schema;
 
 use Kirameki\Database\Schema\Builders\CreateTableBuilder;
-use Kirameki\Tests\Database\DatabaseTestCase;
+use Tests\Kirameki\Database\DatabaseTestCase;
 
 class SchemaTestCase extends DatabaseTestCase
 {
@@ -11,6 +11,6 @@ class SchemaTestCase extends DatabaseTestCase
 
     protected function createTableBuilder(string $table)
     {
-        return new CreateTableBuilder($this->connection($this->connection), $table);
+        return new CreateTableBuilder($this->mysqlConnection($this->connection), $table);
     }
 }

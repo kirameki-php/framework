@@ -1,12 +1,11 @@
 <?php declare(strict_types=1);
 
-namespace Kirameki\Tests\Model;
+namespace Tests\Kirameki\Model;
 
-use Kirameki\Database\Connection;
 use Kirameki\Model\ModelManager;
 use Kirameki\Model\Reflection;
 use Kirameki\Model\ReflectionBuilder;
-use Kirameki\Tests\TestCase;
+use Tests\Kirameki\TestCase;
 
 class ModelTestCase extends TestCase
 {

@@ -1,10 +1,10 @@
 <?php
 
-namespace Kirameki\Tests\Database\Schema;
+namespace Tests\Kirameki\Database\Schema;
 
 use Kirameki\Database\Schema\Builders\CreateTableBuilder;
 use Kirameki\Database\Support\Expr;
-use Kirameki\Tests\Database\DatabaseTestCase;
+use Tests\Kirameki\Database\DatabaseTestCase;
 use RuntimeException;
 
 class MySql_CreateTableBuilderTest extends SchemaTestCase

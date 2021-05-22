@@ -1,11 +1,11 @@
 <?php
 
-namespace Kirameki\Tests\Database\Query\Builders;
+namespace Tests\Kirameki\Database\Query\Builders;
 
 use Kirameki\Database\Support\Expr;
 use Kirameki\Database\Query\Support\Range;
 use Kirameki\Database\Query\Builders\ConditionBuilder;
-use Kirameki\Tests\Database\Query\QueryTestCase;
+use Tests\Kirameki\Database\Query\QueryTestCase;
 
 class SelectBuilderTest extends QueryTestCase
 {

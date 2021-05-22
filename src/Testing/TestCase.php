@@ -7,9 +7,13 @@ use PHPUnit\Framework\TestCase as BaseTestCase;
 
 abstract class TestCase extends BaseTestCase
 {
-    private static bool $booted = false;
-
     protected Application $app;
+
+    private array $beforeSetupCallbacks = [];
+    private array $afterSetupCallbacks = [];
+
+    private array $beforeTearDownCallbacks = [];
+    private array $afterTearDownCallbacks = [];
 
     /**
      * @private
@@ -17,20 +21,40 @@ abstract class TestCase extends BaseTestCase
      */
     protected function setUpApplication(): void
     {
-        if (!static::$booted) $this->beforeBoot();
-
         $this->app = new Application(__DIR__ . '/../../tests');
-
-        if (!static::$booted) $this->afterBoot();
-
-        static::$booted = true;
-
-        register_shutdown_function(fn() => $this->beforeShutdown());
     }
 
-    abstract protected function beforeBoot(): void;
+    protected function runBeforeSetup(callable $callback): void
+    {
+        $this->beforeSetupCallbacks[] = $callback;
+    }
 
-    abstract protected function afterBoot(): void;
+    protected function runAfterSetup(callable $callback): void
+    {
+        $this->afterSetupCallbacks[] = $callback;
+    }
 
-    abstract protected function beforeShutdown(): void;
+    protected function runBeforeTearDown(callable $callback): void
+    {
+        $this->beforeTearDownCallbacks[]= $callback;
+    }
+
+    protected function runAfterTearDown(callable $callback): void
+    {
+        $this->afterTearDownCallbacks[]= $callback;
+    }
+
+    protected function setUp(): void
+    {
+        array_map(fn($callback) => $callback(), $this->beforeSetupCallbacks);
+        parent::setUp();
+        array_map(fn($callback) => $callback(), $this->afterSetupCallbacks);
+    }
+
+    protected function tearDown(): void
+    {
+        array_map(fn($callback) => $callback(), $this->beforeTearDownCallbacks);
+        parent::tearDown();
+        array_map(fn($callback) => $callback(), $this->afterTearDownCallbacks);
+    }
 }
