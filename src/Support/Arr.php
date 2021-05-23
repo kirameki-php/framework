@@ -8,12 +8,22 @@ use Traversable;
 class Arr
 {
     /**
-     * @param array $iterable
+     * @param iterable $iterable
+     * @param int $depth
      * @return array
      */
-    public static function compact(iterable $iterable): array
+    public static function compact(iterable $iterable, int $depth = PHP_INT_MAX): array
     {
-        return array_filter(static::from($iterable), static fn($s) => $s !== null);
+        $result = [];
+        foreach ($iterable as $key => $value) {
+            if (is_iterable($value) && $depth > 1) {
+                $value = static::compact($value, $depth - 1);
+            }
+            if ($value !== null) {
+                $result[$key] = $value;
+            }
+        }
+        return $result;
     }
 
     /**
@@ -93,9 +103,9 @@ class Arr
     /**
      * @param iterable $iterable
      * @param callable|null $condition
-     * @return mixed|null
+     * @return mixed
      */
-    public static function first(iterable $iterable, ?callable $condition = null)
+    public static function first(iterable $iterable, ?callable $condition = null): mixed
     {
         foreach ($iterable as $key => $item) {
             if ($condition === null || Check::isTrue($condition($item, $key))) {
@@ -152,7 +162,7 @@ class Arr
      * @param int $depth
      * @return array
      */
-    public static function flatten(iterable $iterable, int $depth = PHP_INT_MAX): array
+    public static function flatten(iterable $iterable, int $depth = INF): array
     {
         $results = [];
         $func = static function($values, int $depth) use (&$func, &$results) {
@@ -226,9 +236,9 @@ class Arr
     /**
      * @param iterable $iterable
      * @param callable|null $condition
-     * @return mixed|null
+     * @return mixed
      */
-    public static function last(iterable $iterable, ?callable $condition = null)
+    public static function last(iterable $iterable, ?callable $condition = null): mixed
     {
         $copy = static::from($iterable);
         if ($condition === null) {
@@ -291,9 +301,22 @@ class Arr
     {
         $values = [];
         foreach ($iterable as $key => $item) {
-            $values[] = $callback($item, $key);
+            $values[$key] = $callback($item, $key);
         }
         return $values;
+    }
+
+    /**
+     * @param array $array
+     * @param callable $callback
+     * @return array
+     */
+    public static function mapKeys(array $array, callable $callback): array
+    {
+        foreach ($array as $key => $item) {
+            $array[$callback($key, $item)] = $item;
+        }
+        return $array;
     }
 
     /**
@@ -370,32 +393,6 @@ class Arr
     }
 
     /**
-     * @param array $array
-     * @param callable $callback
-     * @return array
-     */
-    public static function transformKeys(array $array, callable $callback): array
-    {
-        foreach ($array as $key => $item) {
-            $array[$callback($key, $item)] = $item;
-        }
-        return $array;
-    }
-
-    /**
-     * @param array $array
-     * @param callable $callback
-     * @return array
-     */
-    public static function transformValues(array $array, callable $callback): array
-    {
-        foreach ($array as $key => $item) {
-            $array[$key] = $callback($item, $key);
-        }
-        return $array;
-    }
-
-    /**
      * @param iterable $iterable
      * @param string|null $namespace
      * @return string
@@ -408,11 +405,23 @@ class Arr
     }
 
     /**
-     * @param $value
+     * @param mixed $value
      * @return array
      */
-    public static function wrap($value): array
+    public static function wrap(mixed $value): array
     {
         return is_array($value) ? $value : [$value];
+    }
+
+    /**
+     * @param mixed $iterable
+     * @return mixed
+     */
+    protected static function clone(mixed $iterable): mixed
+    {
+        if (is_object($iterable)) {
+            return clone $iterable;
+        }
+        return $iterable;
     }
 }

@@ -2,7 +2,7 @@
 
 namespace Kirameki\Support;
 
-use Kirameki\Exception\ReturnValueException;
+use Kirameki\Exception\InvalidValueException;
 
 class Assert
 {
@@ -12,7 +12,30 @@ class Assert
     public static function bool(mixed $value): void
     {
         if (!is_bool($value)) {
-            throw new ReturnValueException($value, "Call must return a bool value.");
+            throw new InvalidValueException('bool', $value);
         }
+    }
+
+    /**
+     * @param mixed $value
+     */
+    public static function positiveInt(mixed $value): void
+    {
+        if (is_int($value) && $value > 0) {
+            return;
+        }
+        throw new InvalidValueException('positive int', $value);
+    }
+
+    /**
+     * @param int $expected
+     * @param mixed $value
+     */
+    public static function greaterThan(int $expected, mixed $value): void
+    {
+        if (is_int($value) && $value > 1) {
+            return;
+        }
+        throw new InvalidValueException('greater than '.$expected, $value);
     }
 }
