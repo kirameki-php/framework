@@ -180,7 +180,18 @@ class Arr
      */
     public static function flatMap(iterable $iterable, callable $callback): array
     {
-        return static::flatten(static::map(static::from($iterable), $callback), 1);
+        $results = [];
+        foreach ($iterable as $value) {
+            $result = $callback($value);
+            if (is_iterable($result)) {
+                foreach ($result as $each) {
+                    $results[] = $each;
+                }
+            } else {
+                $results[] = $result;
+            }
+        }
+        return $results;
     }
 
     /**
@@ -188,15 +199,15 @@ class Arr
      * @param int $depth
      * @return array
      */
-    public static function flatten(iterable $iterable, int $depth = INF): array
+    public static function flatten(iterable $iterable, int $depth = PHP_INT_MAX): array
     {
         $results = [];
         $func = static function($values, int $depth) use (&$func, &$results) {
             foreach ($values as $value) {
-                if (!is_iterable($value) || $depth === 0) {
-                    $results[] = $value;
-                } else {
+                if (is_iterable($value) && $depth > 0) {
                     $func($value, $depth - 1);
+                } else {
+                    $results[] = $value;
                 }
             }
         };
@@ -333,19 +344,6 @@ class Arr
     }
 
     /**
-     * @param array $array
-     * @param callable $callback
-     * @return array
-     */
-    public static function mapKeys(array $array, callable $callback): array
-    {
-        foreach ($array as $key => $item) {
-            $array[$callback($key, $item)] = $item;
-        }
-        return $array;
-    }
-
-    /**
      * @param iterable $iterable
      * @param mixed|callable $value
      * @return bool
@@ -428,6 +426,19 @@ class Arr
         $arr = static::from($iterable);
         $data = $namespace !== null ? [$namespace => $arr] : $arr;
         return http_build_query($data, '&', PHP_QUERY_RFC3986);
+    }
+
+    /**
+     * @param array $array
+     * @param callable $callback
+     * @return array
+     */
+    public static function transformKeys(array $array, callable $callback): array
+    {
+        foreach ($array as $key => $item) {
+            $array[$callback($key, $item)] = $item;
+        }
+        return $array;
     }
 
     /**

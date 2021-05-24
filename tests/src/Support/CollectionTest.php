@@ -513,7 +513,7 @@ class CollectionTest extends TestCase
 
     public function testFlatMap()
     {
-        $assoc = $this->collect(['a' => ['b' => 1], 'b' => 2]);
-        $flat = $assoc->flatMap(fn($a) => $a)->toArray();
+        $assoc = $this->collect([['a'], ['b']]);
+        self::assertEquals(['a1', 'b1'], $assoc->flatMap(fn($a) => $a.'1')->toArray());
     }
 }

@@ -90,16 +90,6 @@ class Collection extends Enumerable implements ArrayAccess
     }
 
     /**
-     * @param callable $callback
-     * @return $this
-     */
-    public function mapKeys(callable $callback): static
-    {
-        $this->items = Arr::mapKeys($this->items, $callback);
-        return $this;
-    }
-
-    /**
      * @param int $size
      * @param mixed $value
      * @return static
@@ -233,6 +223,16 @@ class Collection extends Enumerable implements ArrayAccess
     public function shift(): mixed
     {
         return array_shift($this->items);
+    }
+
+    /**
+     * @param callable $callback
+     * @return $this
+     */
+    public function transformKeys(callable $callback): static
+    {
+        $this->items = Arr::transformKeys($this->items, $callback);
+        return $this;
     }
 
     /**

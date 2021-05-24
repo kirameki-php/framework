@@ -318,19 +318,18 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
 
     /**
      * @param callable $callable
-     * @param int $depth
      * @return static
      */
-    public function flatMap(callable $callable, int $depth = PHP_INT_MAX): static
+    public function flatMap(callable $callable): static
     {
-        return $this->map($callable)->flatten($depth);
+        return $this->newInstance(Arr::flatMap($this->items, $callable));
     }
 
     /**
      * @param int $depth
      * @return static
      */
-    public function flatten(int $depth = PHP_INT_MAX): static
+    public function flatten(int $depth = 1): static
     {
         Assert::positiveInt($depth);
         return $this->newInstance(Arr::flatten($this->items, $depth));
