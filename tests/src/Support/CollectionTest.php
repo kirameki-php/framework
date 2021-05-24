@@ -515,6 +515,5 @@ class CollectionTest extends TestCase
     {
         $assoc = $this->collect(['a' => ['b' => 1], 'b' => 2]);
         $flat = $assoc->flatMap(fn($a) => $a)->toArray();
-        dump($flat);
     }
 }

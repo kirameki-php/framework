@@ -68,7 +68,8 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
     }
 
     /**
-     * @return static
+     * @param int $depth
+     * @return $this
      */
     public function compact(int $depth = PHP_INT_MAX): static
     {
@@ -244,23 +245,9 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
      */
     public function eachChunk(int $size, callable $callback): void
     {
-        Assert::positiveInt($size);
-        $count = 0;
-        $remaining = $size;
-        $chunk = $this->newInstance();
-        foreach ($this->items as $key => $item) {
-            $chunk[$key] = $item;
-            $remaining--;
-            if ($remaining === 0) {
-                $callback($chunk, $count);
-                $count += 1;
-                $remaining = $size;
-                $chunk = $this->newInstance();
-            }
-        }
-        if ($chunk->isNotEmpty()) {
-            $callback($chunk, $count);
-        }
+        Arr::eachChunk($this->items, $size, function(array $items, int $count) use ($callback) {
+            $callback($this->newInstance($items), $count);
+        });
     }
 
     /**

@@ -69,9 +69,9 @@ class Collection extends Enumerable implements ArrayAccess
 
     /**
      * @param int|string $key
-     * @return mixed|null
+     * @return mixed
      */
-    public function get(int|string $key)
+    public function get(int|string $key): mixed
     {
         return static::isDottedKey($key)
             ? static::digTo($this->items, explode('.', $key))
@@ -80,10 +80,10 @@ class Collection extends Enumerable implements ArrayAccess
 
     /**
      * @param int $index
-     * @param $value
+     * @param mixed $value
      * @return $this
      */
-    public function insertAt(int $index, $value): static
+    public function insertAt(int $index, mixed $value): static
     {
         array_splice($this->items, $index, 0, $value);
         return $this;
@@ -101,10 +101,10 @@ class Collection extends Enumerable implements ArrayAccess
 
     /**
      * @param int $size
-     * @param $value
+     * @param mixed $value
      * @return static
      */
-    public function pad(int $size, $value): static
+    public function pad(int $size, mixed $value): static
     {
         return $this->newInstance(array_pad($this->items, $size, $value));
     }
@@ -142,7 +142,7 @@ class Collection extends Enumerable implements ArrayAccess
      * @param mixed ...$value
      * @return $this
      */
-    public function push(...$value): static
+    public function push(mixed ...$value): static
     {
         foreach ($value as $v) {
             $this->items[] = $v;
@@ -151,11 +151,11 @@ class Collection extends Enumerable implements ArrayAccess
     }
 
     /**
-     * @param $value
+     * @param mixed $value
      * @param int|null $limit
      * @return $this
      */
-    public function remove($value, ?int $limit = null): static
+    public function remove(mixed $value, ?int $limit = null): static
     {
         Arr::remove($this->items, $value, $limit);
         return $this;
@@ -195,10 +195,10 @@ class Collection extends Enumerable implements ArrayAccess
 
     /**
      * @param int|string $key
-     * @param $value
+     * @param mixed $value
      * @return $this
      */
-    public function set(int|string $key, $value): static
+    public function set(int|string $key, mixed $value): static
     {
         if (static::isNotDottedKey($key)) {
             $this->items[$key] = $value;
@@ -215,11 +215,11 @@ class Collection extends Enumerable implements ArrayAccess
     }
 
     /**
-     * @param $key
-     * @param $value
+     * @param int|string $key
+     * @param mixed $value
      * @return $this
      */
-    public function setIfNotExists($key, $value): static
+    public function setIfNotExists(int|string $key, mixed $value): static
     {
         if ($this->containsKey($key)) {
             $this->set($key, $value);
@@ -236,10 +236,27 @@ class Collection extends Enumerable implements ArrayAccess
     }
 
     /**
+     * @param iterable $iterable
+     * @return $this
+     */
+    public function union(iterable $iterable): static
+    {
+        return $this->unionRecursive($iterable, 1);
+    }
+
+    /**
+     * @return $this
+     */
+    public function unionRecursive(iterable $iterable, int $depth = PHP_INT_MAX): static
+    {
+        return $this->newInstance(Arr::unionRecursive($this->items, $iterable, $depth));
+    }
+
+    /**
      * @param mixed ...$value
      * @return $this
      */
-    public function unshift(...$value): static
+    public function unshift(mixed ...$value): static
     {
         foreach ($value as $v) {
             array_unshift($this->items, $v);

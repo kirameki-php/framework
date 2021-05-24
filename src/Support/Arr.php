@@ -71,6 +71,32 @@ class Arr
 
     /**
      * @param iterable $iterable
+     * @param int $size
+     * @param callable $callback
+     */
+    public static function eachChunk(iterable $iterable, int $size, callable $callback)
+    {
+        Assert::positiveInt($size);
+        $count = 0;
+        $remaining = $size;
+        $chunk = [];
+        foreach ($iterable as $key => $item) {
+            $chunk[$key] = $item;
+            $remaining--;
+            if ($remaining === 0) {
+                $callback($chunk, $count);
+                $count += 1;
+                $remaining = $size;
+                $chunk = [];
+            }
+        }
+        if (!empty($chunk)) {
+            $callback($chunk, $count);
+        }
+    }
+
+    /**
+     * @param iterable $iterable
      * @param callable $callback
      */
     public static function eachWithIndex(iterable $iterable, callable $callback): void
@@ -402,6 +428,36 @@ class Arr
         $arr = static::from($iterable);
         $data = $namespace !== null ? [$namespace => $arr] : $arr;
         return http_build_query($data, '&', PHP_QUERY_RFC3986);
+    }
+
+    /**
+     * @param iterable $iterable1
+     * @param iterable $iterable2
+     * @return array
+     */
+    public static function union(iterable $iterable1, iterable $iterable2): array
+    {
+        return static::unionRecursive($iterable1, $iterable2);
+    }
+
+    /**
+     * @param iterable $iterable1
+     * @param iterable $iterable2
+     * @param int $depth
+     * @return array
+     */
+    public static function unionRecursive(iterable $iterable1, iterable $iterable2, int $depth = PHP_INT_MAX): array
+    {
+        $result = [];
+        $array1 = Arr::from($iterable1);
+        $array2 = Arr::from($iterable2);
+        foreach ($array2 as $key => $value) {
+            if ($depth >= 1 && is_array($array1[$key]) && is_array($value)) {
+                $value = static::unionRecursive($array1[$key], $array2[$key], $depth - 1);
+            }
+            $array1[$key] = $value;
+        }
+        return $result;
     }
 
     /**
