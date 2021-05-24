@@ -2,6 +2,7 @@
 
 namespace Tests\Kirameki\Support;
 
+use ArrayIterator;
 use ErrorException;
 use Exception;
 use Generator;
@@ -513,7 +514,197 @@ class CollectionTest extends TestCase
 
     public function testFlatMap()
     {
-        $assoc = $this->collect([['a'], ['b']]);
-        self::assertEquals(['a1', 'b1'], $assoc->flatMap(fn($a) => $a.'1')->toArray());
+        $seq = $this->collect([1, 2]);
+        self::assertEquals([1, -1, 2, -2], $seq->flatMap(fn($i) => [$i, -$i])->toArray());
+
+        $seq = $this->collect([['a'], ['b']]);
+        self::assertEquals(['a', 'b'], $seq->flatMap(fn($a) => $a)->toArray());
+
+        $assoc = $this->collect([['a' => 1], [2], 2]);
+        self::assertEquals([1, 2, 2], $assoc->flatMap(fn($a) => $a)->toArray());
     }
+
+    public function testFlatten()
+    {
+        // nothing to flatten
+        $seq = $this->collect([1, 2]);
+        self::assertEquals([1, 2], $seq->flatten()->toArray());
+
+        // flatten only 1 as default
+        $assoc = $this->collect([[1, [2, 2]], 3]);
+        self::assertEquals([1, [2, 2], 3], $assoc->flatten()->toArray());
+
+        // flatten more than 1
+        $assoc = $this->collect([['a' => 1], [1, [2, [3, 3], 2], 1]]);
+        self::assertEquals([1, 1, 2, [3, 3], 2, 1], $assoc->flatten(2)->toArray());
+
+        // assoc info is lost
+        $seq = $this->collect([['a'], 'b', ['c' => 'd']]);
+        self::assertEquals(['a', 'b', 'd'], $seq->flatten()->toArray());
+    }
+
+    public function testFlatten_ZeroDepth()
+    {
+        self::expectException(InvalidValueException::class);
+        self::expectExceptionMessage('Expected value to be positive int. 0 given.');
+        $seq = $this->collect([1, 2]);
+        self::assertEquals([1, 2], $seq->flatten(0)->toArray());
+    }
+    public function testFlatten_NegativeDepth()
+    {
+        self::expectException(InvalidValueException::class);
+        self::expectExceptionMessage('Expected value to be positive int. -1 given.');
+        $seq = $this->collect([1, 2]);
+        self::assertEquals([1, 2], $seq->flatten(-1)->toArray());
+    }
+
+    public function testFlip()
+    {
+        $seq = $this->collect([1,2]);
+        self::assertEquals([1 => 0, 2 => 1], $seq->flip()->toArray());
+
+        $seq = $this->collect(['a' => 'b', 'c' => 'd']);
+        self::assertEquals(['b' => 'a', 'd' => 'c'], $seq->flip()->toArray());
+    }
+
+    public function testGet()
+    {
+        $seq = $this->collect([1,2]);
+        self::assertEquals(2, $seq->get(1));
+
+        $assoc = $this->collect(['a' => [1, 'b' => 2], 'c' => 'd']);
+        // get existing data
+        self::assertEquals([1, 'b' => 2], $assoc->get('a'));
+        self::assertEquals('d', $assoc->get('c'));
+        // get non-existing data
+        self::assertEquals(null, $assoc->get('e'));
+        self::assertEquals(null, $assoc->get(0));
+        // get existing data with dot
+        self::assertEquals(1, $assoc->get('a.0'));
+        self::assertEquals(2, $assoc->get('a.b'));
+    }
+
+    public function testGetIterator()
+    {
+        $iterator = $this->collect()->getIterator();
+        self::assertInstanceOf(ArrayIterator::class, $iterator);
+    }
+
+    public function testGroupBy()
+    {
+        $seq = $this->collect([1, 2, 3, 4, 5, 6]);
+        self::assertEquals([[3, 6], [1, 4], [2, 5]], $seq->groupBy(fn($n) => $n % 3)->toArrayRecursive());
+
+        $assoc = $this->collect([
+            ['id' => 1],
+            ['id' => 1],
+            ['id' => 2],
+            ['dummy' => 3],
+        ]);
+        self::assertEquals([1 => [['id' => 1], ['id' => 1]], 2 => [['id' => 2]]], $assoc->groupBy('id')->toArrayRecursive());
+    }
+
+    public function testImplode()
+    {
+        $seq = $this->collect([1, 2]);
+        self::assertEquals('1, 2', $seq->implode(', '));
+        self::assertEquals('[1, 2', $seq->implode(', ', '['));
+        self::assertEquals('[1, 2]', $seq->implode(', ', '[', ']'));
+
+        $assoc = $this->collect(['a' => 1, 'b' => 2]);
+        self::assertEquals('1, 2', $assoc->implode(', '));
+        self::assertEquals('[1, 2', $assoc->implode(', ', '['));
+        self::assertEquals('[1, 2]', $assoc->implode(', ', '[', ']'));
+    }
+
+    public function testInsertAt()
+    {
+        $seq = $this->collect([1, 2]);
+        self::assertEquals(['a', 1, 2], $seq->insertAt(0, 'a')->toArray());
+
+        $seq = $this->collect([1, 2]);
+        self::assertEquals([1, 'a', 2], $seq->insertAt(1, 'a')->toArray());
+
+        $seq = $this->collect([1, 2]);
+        self::assertEquals([1, 2, 'a'], $seq->insertAt(10, 'a')->toArray());
+
+        $seq = $this->collect([1, 2, 3, 4]);
+        self::assertEquals([1, 2, 3, 4, 'a'], $seq->insertAt(-1, 'a')->toArray());
+
+        $seq = $this->collect([1, 2, 3, 4]);
+        self::assertEquals([1, 2, 3, 'a', 4], $seq->insertAt(-2, 'a')->toArray());
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+    public function testOffsetExists()
+    {
+        $seq = $this->collect([1, 2]);
+        self::assertTrue(isset($seq[0]));
+
+        $assoc = $this->collect(['a' => 1, 'b' => 2]);
+        self::assertTrue(isset($assoc['b']));
+
+        $assoc = $this->collect([]);
+        self::assertFalse(isset($assoc['a']));
+    }
+
+    public function testOffsetGet()
+    {
+        $seq = $this->collect([1, 2]);
+        self::assertEquals(1, $seq[0]);
+
+        $assoc = $this->collect(['a' => 1, 'b' => 2]);
+        self::assertEquals(2, $assoc['b']);
+    }
+
+    public function testOffsetGet_UndefinedKey()
+    {
+        self::expectException(ErrorException::class);
+        self::expectExceptionMessage('Undefined array key "e"');
+        $this->collect(['a' => 1, 'b' => 2])['e'];
+    }
+
+    public function testOffsetSet()
+    {
+        // push number
+        $seq = $this->collect([1, 2]);
+        $seq[] = 3;
+        self::assertEquals([1, 2, 3], $seq->toArray());
+
+        // jump offset number from 0, 1, 3
+        $seq = $this->collect([1, 2]);
+        $seq[3] = 3;
+        self::assertEquals([1, 2, 3 => 3], $seq->toArray());
+
+        // set offset with string
+        $assoc = $this->collect(['a' => 1, 'b' => 2]);
+        $assoc['c'] = 3;
+        self::assertEquals(3, $assoc['c']);
+    }
+
+    public function testOffsetUnset()
+    {
+        $seq = $this->collect([1, 2]);
+        unset($seq[0]);
+        self::assertEquals([1 => 2], $seq->toArray());
+
+        $assoc = $this->collect(['a' => 1, 'b' => 2]);
+        unset($assoc['b']);
+        self::assertEquals(['a' => 1], $assoc->toArray());
+
+        $assoc = $this->collect([]);
+        unset($assoc['b']);
+        self::assertEquals([], $assoc->toArray());
+    }
+
 }

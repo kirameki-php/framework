@@ -344,15 +344,25 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
     }
 
     /**
-     * @param string $name
+     * @param string|callable $key
      * @return static
      */
-    public function groupBy(string $name): static
+    public function groupBy(string|callable $key): static
     {
+        if (is_string($key)) {
+            $segments = explode('.', $key);
+            $call = static fn($v, $k) => static::digTo($v, $segments);
+        } else {
+            $call = $key;
+        }
+
         $map = [];
-        foreach ($this->items as $item) {
-            $map[$name] ??= new Collection();
-            $map[$name][] = $item[$name];
+        foreach ($this->items as $k => $item) {
+            $groupKey = $call($item, $k);
+            if (is_string($groupKey) || is_int($groupKey)) {
+                $map[$groupKey] ??= $this->newCollection([]);
+                $map[$groupKey][] = $item;
+            }
         }
         return $this->newInstance($map);
     }

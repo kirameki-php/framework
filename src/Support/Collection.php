@@ -47,7 +47,9 @@ class Collection extends Enumerable implements ArrayAccess
      */
     public function offsetSet($offset, $value): void
     {
-        $this->items[$offset] = $value;
+        $offset !== null
+            ? $this->items[$offset] = $value
+            : $this->items[] = $value;
     }
 
     /**
@@ -85,6 +87,12 @@ class Collection extends Enumerable implements ArrayAccess
      */
     public function insertAt(int $index, mixed $value): static
     {
+        // Offset is off by one for negative indexes (Ex: -2 inserts at 3rd element from right).
+        // So we add one to correct offset. If adding to one results in 0, we set it to max count
+        // to put it at the end.
+        if ($index < 0) {
+            $index = $index === -1 ? $this->count() : $index + 1;
+        }
         array_splice($this->items, $index, 0, $value);
         return $this;
     }
