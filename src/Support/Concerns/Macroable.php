@@ -17,7 +17,7 @@ trait Macroable
         static::$macros[$name] = $macro;
     }
 
-    public static function macroExists( string $name): bool
+    public static function macroExists(string $name): bool
     {
         return isset(static::$macros[$name]);
     }

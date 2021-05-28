@@ -7,6 +7,8 @@ use Countable;
 use Generator;
 use IteratorAggregate;
 use JsonSerializable;
+use Kirameki\Exception\DuplicateKeyException;
+use Kirameki\Exception\InvalidKeyException;
 use Kirameki\Exception\UnexpectedArgumentException;
 
 abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializable
@@ -409,7 +411,15 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
      */
     public function isEmpty(): bool
     {
-        return $this->count() === 0;
+        return Arr::isEmpty($this->items);
+    }
+
+    /**
+     * @return bool
+     */
+    public function isList(): bool
+    {
+        return Arr::isList($this->items);
     }
 
     /**
@@ -417,22 +427,15 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
      */
     public function isNotEmpty(): bool
     {
-        return !$this->isEmpty();
+        return Arr::isNotEmpty($this->items);
     }
 
     /**
-     * @return bool
+     * @param callable|string $key
+     * @param bool $overwrite
+     * @return $this
      */
-    public function isSequential(): bool
-    {
-        return Arr::isSequential($this->items);
-    }
-
-    /**
-     * @param string|callable $key
-     * @return static
-     */
-    public function keyBy(callable|string $key): static
+    public function keyBy(callable|string $key, bool $overwrite = false): static
     {
         if (is_string($key)) {
             $segments = explode('.', $key);
@@ -442,12 +445,11 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
         }
         $map = [];
         foreach ($this->items as $k => $item) {
-            if (is_array($item)) {
-                $newKey = $call($item, $k);
-                if (is_string($newKey) || is_int($newKey)) {
-                    $map[$newKey] = $item;
-                }
+            $newKey = $call($item, $k);
+            if (!$overwrite && array_key_exists($newKey, $map)) {
+                throw new DuplicateKeyException($newKey, $item);
             }
+            $map[$newKey] = $item;
         }
         return $this->newInstance($map);
     }
@@ -529,10 +531,10 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
         $min = null;
         $max = null;
         foreach ($this->items as $value) {
-            if ($min === null || $min < $value) {
+            if ($min === null || $min > $value) {
                 $min = $value;
             }
-            if ($max === null || $max > $value) {
+            if ($max === null || $max < $value) {
                 $max = $value;
             }
         }

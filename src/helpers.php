@@ -1,5 +1,6 @@
 <?php
 
+use JetBrains\PhpStorm\Pure;
 use Kirameki\Core\Application;
 use Kirameki\Database\DatabaseManager;
 use Kirameki\Event\EventManager;
@@ -15,9 +16,15 @@ function app(): Application
     return Application::instance();
 }
 
-function collect(?iterable $items = null)
+function collect(?iterable $items = null): Collection
 {
     return new Collection($items);
+}
+
+function class_basename($class): string
+{
+    $class = is_object($class) ? get_class($class) : $class;
+    return basename(str_replace('\\', '/', $class));
 }
 
 function config(): Config
@@ -30,7 +37,7 @@ function db(): DatabaseManager
     return app()->get(DatabaseManager::class);
 }
 
-function env(string $name)
+function env(string $name): bool|string|null
 {
     return Env::get($name);
 }
@@ -38,12 +45,6 @@ function env(string $name)
 function event(): EventManager
 {
     return app()->get(EventManager::class);
-}
-
-function class_basename($class): string
-{
-    $class = is_object($class) ? get_class($class) : $class;
-    return basename(str_replace('\\', '/', $class));
 }
 
 function logger(): LogManager

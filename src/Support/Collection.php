@@ -3,6 +3,7 @@
 namespace Kirameki\Support;
 
 use ArrayAccess;
+use Kirameki\Exception\InvalidKeyException;
 
 class Collection extends Enumerable implements ArrayAccess
 {
@@ -47,9 +48,13 @@ class Collection extends Enumerable implements ArrayAccess
      */
     public function offsetSet($offset, $value): void
     {
-        $offset !== null
-            ? $this->items[$offset] = $value
-            : $this->items[] = $value;
+        if (is_null($offset)) {
+            $this->items[] = $value;
+        } else if (is_string($offset) || is_int($offset)) {
+            $this->items[$offset] = $value;
+        } else {
+            throw new InvalidKeyException($offset);
+        }
     }
 
     /**
@@ -244,20 +249,33 @@ class Collection extends Enumerable implements ArrayAccess
     }
 
     /**
-     * @param iterable $iterable
+     * @param callable $callback
+     * @param int $depth
      * @return $this
      */
-    public function union(iterable $iterable): static
+    public function transformKeysRecursive(callable $callback, int $depth = PHP_INT_MAX): static
     {
-        return $this->unionRecursive($iterable, 1);
+        $this->items = Arr::transformKeysRecursive($this->items, $callback, $depth);
+        return $this;
     }
 
     /**
+     * @param iterable $iterable
      * @return $this
      */
-    public function unionRecursive(iterable $iterable, int $depth = PHP_INT_MAX): static
+    public function unionKeys(iterable $iterable): static
     {
-        return $this->newInstance(Arr::unionRecursive($this->items, $iterable, $depth));
+        return $this->newInstance(Arr::unionKeys($this->items, $iterable));
+    }
+
+    /**
+     * @param iterable $iterable
+     * @param int $depth
+     * @return $this
+     */
+    public function unionKeysRecursive(iterable $iterable, int $depth = PHP_INT_MAX): static
+    {
+        return $this->newInstance(Arr::unionKeysRecursive($this->items, $iterable, $depth));
     }
 
     /**

@@ -260,7 +260,24 @@ class Arr
      * @param iterable $iterable
      * @return bool
      */
-    public static function isSequential(iterable $iterable): bool
+    public static function isEmpty(iterable $iterable): bool
+    {
+        if (is_array($iterable)) {
+            return empty($iterable);
+        }
+
+        foreach ($iterable as $_) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * @param iterable $iterable
+     * @return bool
+     */
+    public static function isList(iterable $iterable): bool
     {
         foreach($iterable as $key => $value) {
             if (!is_int($key)) {
@@ -272,20 +289,35 @@ class Arr
 
     /**
      * @param iterable $iterable
+     * @return bool
+     */
+    public static function isNotEmpty(iterable $iterable): bool
+    {
+        return !static::isEmpty($iterable);
+    }
+
+    /**
+     * @param iterable $iterable
      * @param callable|null $condition
      * @return mixed
      */
     public static function last(iterable $iterable, ?callable $condition = null): mixed
     {
         $copy = static::from($iterable);
+        end($copy);
+
         if ($condition === null) {
-            return end($copy);
+            return current($copy);
         }
-        foreach (array_reverse($copy, true) as $key => $item) {
+
+        while(($key = key($copy)) !== null) {
+            $item = current($copy);
             if (Check::isTrue($condition($item, $key))) {
                 return $item;
             }
+            prev($copy);
         }
+
         return null;
     }
 
@@ -297,13 +329,19 @@ class Arr
     public static function lastIndex(iterable $iterable, callable $condition): ?int
     {
         $copy = static::from($iterable);
-        $count = count($copy) - 1;
-        foreach (array_reverse($copy) as $key => $item) {
+        end($copy);
+
+        $count = count($copy);
+
+        while(($key = key($copy)) !== null) {
             $count--;
+            $item = current($copy);
             if (Check::isTrue($condition($item, $key))) {
                 return $count;
             }
+            prev($copy);
         }
+
         return null;
     }
 
@@ -315,15 +353,18 @@ class Arr
     public static function lastKey(iterable $iterable, ?callable $condition = null): int|string|null
     {
         $copy = static::from($iterable);
+        end($copy);
 
         if ($condition === null) {
-            return array_key_last($copy);
+            return key($copy);
         }
 
-        foreach(array_reverse($copy, true) as $key => $item) {
+        while(($key = key($copy)) !== null) {
+            $item = current($copy);
             if (Check::isTrue($condition($item, $key))) {
                 return $key;
             }
+            prev($copy);
         }
 
         return null;
@@ -354,17 +395,17 @@ class Arr
     }
 
     /**
-     * @param array $array
+     * @param iterable $iterable
      * @param mixed $value
      * @param int|null $limit
      * @return void
      */
-    public static function remove(array &$array, mixed $value, ?int $limit = null): void
+    public static function remove(iterable &$iterable, mixed $value, ?int $limit = null): void
     {
         $counter = 0;
-        foreach ($array as $key => $item) {
+        foreach ($iterable as $key => $item) {
             if ($counter < $limit && $item === $value) {
-                unset($array[$key]);
+                unset($iterable[$key]);
                 $counter++;
             }
         }
@@ -435,10 +476,25 @@ class Arr
      */
     public static function transformKeys(array $array, callable $callback): array
     {
-        foreach ($array as $key => $item) {
-            $array[$callback($key, $item)] = $item;
+        return static::transformKeysRecursive($array, $callback, 1);
+    }
+
+    /**
+     * @param iterable $iterable
+     * @param callable $callback
+     * @param int $depth
+     * @return array
+     */
+    public static function transformKeysRecursive(iterable $iterable, callable $callback, int $depth = PHP_INT_MAX): array
+    {
+        $result = [];
+        foreach ($iterable as $key => $item) {
+            $newKey = $callback($key, $item);
+            $result[$newKey] = ($depth > 1 && is_iterable($item))
+                ? static::transformKeysRecursive($item, $callback, $depth - 1)
+                : $item;
         }
-        return $array;
+        return $result;
     }
 
     /**
@@ -446,9 +502,9 @@ class Arr
      * @param iterable $iterable2
      * @return array
      */
-    public static function union(iterable $iterable1, iterable $iterable2): array
+    public static function unionKeys(iterable $iterable1, iterable $iterable2): array
     {
-        return static::unionRecursive($iterable1, $iterable2);
+        return static::unionKeysRecursive($iterable1, $iterable2);
     }
 
     /**
@@ -457,18 +513,18 @@ class Arr
      * @param int $depth
      * @return array
      */
-    public static function unionRecursive(iterable $iterable1, iterable $iterable2, int $depth = PHP_INT_MAX): array
+    public static function unionKeysRecursive(iterable $iterable1, iterable $iterable2, int $depth = PHP_INT_MAX): array
     {
-        $result = [];
-        $array1 = Arr::from($iterable1);
-        $array2 = Arr::from($iterable2);
-        foreach ($array2 as $key => $value) {
-            if ($depth >= 1 && is_array($array1[$key]) && is_array($value)) {
-                $value = static::unionRecursive($array1[$key], $array2[$key], $depth - 1);
+        $array1 = static::from($iterable1);
+        foreach ($iterable2 as $key => $value) {
+            if ($depth >= 1 && is_iterable($array1[$key]) && is_iterable($value)) {
+                $value = static::unionKeysRecursive($array1[$key], $value, $depth - 1);
             }
-            $array1[$key] = $value;
+            if (!array_key_exists($key, $array1)) {
+                $array1[$key] = $value;
+            }
         }
-        return $result;
+        return $array1;
     }
 
     /**
@@ -478,17 +534,5 @@ class Arr
     public static function wrap(mixed $value): array
     {
         return is_array($value) ? $value : [$value];
-    }
-
-    /**
-     * @param mixed $iterable
-     * @return mixed
-     */
-    protected static function clone(mixed $iterable): mixed
-    {
-        if (is_object($iterable)) {
-            return clone $iterable;
-        }
-        return $iterable;
     }
 }

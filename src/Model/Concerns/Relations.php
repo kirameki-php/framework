@@ -33,7 +33,7 @@ trait Relations
      */
     protected function preloadRecursive($target, array $names)
     {
-        if (Arr::isSequential($names)) {
+        if (Arr::isList($names)) {
             foreach ($names as $name) {
                 $this->loadRelation($target, $name);
             }
