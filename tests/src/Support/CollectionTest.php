@@ -6,6 +6,7 @@ use ArrayIterator;
 use ErrorException;
 use Generator;
 use Kirameki\Exception\DuplicateKeyException;
+use Kirameki\Exception\InvalidKeyException;
 use Kirameki\Exception\UnexpectedArgumentException;
 use Kirameki\Exception\InvalidValueException;
 use Kirameki\Support\Collection;
@@ -800,7 +801,7 @@ class CollectionTest extends TestCase
         self::assertEquals([0, 1, 2], $collect->map(fn($i, $k) => $k)->toArray());
 
         $collect = $this->collect(['a' => 1, 'b' => 2, 'c' => 3]);
-        self::assertEquals([2, 4, 6], $collect->map(fn($i) => $i * 2)->toArray());
+        self::assertEquals(['a' => 2, 'b' => 4, 'c' => 6], $collect->map(fn($i) => $i * 2)->toArray());
     }
 
     public function testMax()
@@ -891,6 +892,18 @@ class CollectionTest extends TestCase
         $assoc = $this->collect(['a' => 1, 'b' => 2]);
         $assoc['c'] = 3;
         self::assertEquals(3, $assoc['c']);
+    }
+
+    public function testOffsetSet_BoolAsKey()
+    {
+        self::expectException(InvalidKeyException::class);
+        $this->collect([])->set(true, 1);
+    }
+
+    public function testOffsetSet_FloatAsKey()
+    {
+        self::expectException(InvalidKeyException::class);
+        $this->collect([])->set(1.1, 1);
     }
 
     public function testOffsetUnset()

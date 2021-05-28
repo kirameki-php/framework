@@ -488,12 +488,17 @@ class Arr
     public static function transformKeysRecursive(iterable $iterable, callable $callback, int $depth = PHP_INT_MAX): array
     {
         $result = [];
+
         foreach ($iterable as $key => $item) {
             $newKey = $callback($key, $item);
+
+            Assert::validKey($newKey);
+
             $result[$newKey] = ($depth > 1 && is_iterable($item))
                 ? static::transformKeysRecursive($item, $callback, $depth - 1)
                 : $item;
         }
+
         return $result;
     }
 

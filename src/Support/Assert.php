@@ -2,12 +2,14 @@
 
 namespace Kirameki\Support;
 
+use Kirameki\Exception\InvalidKeyException;
 use Kirameki\Exception\InvalidValueException;
 
 class Assert
 {
     /**
      * @param mixed $value
+     * @return void
      */
     public static function bool(mixed $value): void
     {
@@ -18,6 +20,7 @@ class Assert
 
     /**
      * @param mixed $value
+     * @return void
      */
     public static function positiveInt(mixed $value): void
     {
@@ -30,6 +33,7 @@ class Assert
     /**
      * @param int $expected
      * @param mixed $value
+     * @return void
      */
     public static function greaterThan(int $expected, mixed $value): void
     {
@@ -37,5 +41,17 @@ class Assert
             return;
         }
         throw new InvalidValueException('greater than '.$expected, $value);
+    }
+
+    /**
+     * @param int|string $key
+     * @return void
+     */
+    public static function validKey(mixed $key): void
+    {
+        if (is_string($key) || is_int($key)) {
+            return;
+        }
+        throw new InvalidKeyException($key);
     }
 }

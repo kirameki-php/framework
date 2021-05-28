@@ -8,12 +8,12 @@ use LogicException;
 class InvalidKeyException extends LogicException
 {
     /**
-     * @param mixed $value
+     * @param mixed $key
      */
-    public function __construct(mixed $value)
+    public function __construct(mixed $key)
     {
-        $type = Util::typeOf($value);
-        $valueAsString = Util::toString($value);
-        parent::__construct("Key for array must be a string or int. $type given. (value: $valueAsString)");
+        $type = Util::typeOf($key);
+        $keyAsString = Util::toString($key);
+        parent::__construct("Key for array must be a string or int. $type given. (value: $keyAsString)");
     }
 }

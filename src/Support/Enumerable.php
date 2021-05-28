@@ -8,7 +8,6 @@ use Generator;
 use IteratorAggregate;
 use JsonSerializable;
 use Kirameki\Exception\DuplicateKeyException;
-use Kirameki\Exception\InvalidKeyException;
 use Kirameki\Exception\UnexpectedArgumentException;
 
 abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializable
@@ -88,10 +87,10 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
     }
 
     /**
-     * @param int|string $key
+     * @param mixed $key
      * @return bool
      */
-    public function containsKey(int|string $key): bool
+    public function containsKey(mixed $key): bool
     {
         $copy = $this->toArray();
         if (static::isNotDottedKey($key)) {
@@ -179,11 +178,12 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
      * @param int|string $key
      * @return static|null
      */
-    public function dig(int|string $key): static|null
+    public function dig(mixed $key): static|null
     {
-        $copy = $this->toArray();
+        Assert::validKey($key);
+
         $keys = static::isDottedKey($key) ? explode('.', $key) : [$key];
-        $dug = static::digTo($copy, $keys);
+        $dug = static::digTo($this->toArray(), $keys);
         return is_iterable($dug) ? $this->newInstance($dug) : null;
     }
 
@@ -542,28 +542,28 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
     }
 
     /**
-     * @param int|string $value
+     * @param mixed $value
      * @return bool
      */
-    public function notContains(int|string $value): bool
+    public function notContains(mixed $value): bool
     {
         return Arr::notContains($this->items, $value);
     }
 
     /**
-     * @param int|string $key
+     * @param mixed $key
      * @return bool
      */
-    public function notContainsKey(int|string $key): bool
+    public function notContainsKey(mixed $key): bool
     {
         return !$this->containsKey($key);
     }
 
     /**
-     * @param mixed|null $items
+     * @param mixed $items
      * @return bool
      */
-    public function notEquals($items): bool
+    public function notEquals(mixed $items): bool
     {
         return !$this->equals($items);
     }
@@ -583,14 +583,17 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
     }
 
     /**
-     * @param string $key
+     * @param int|string $key
      * @return static
      */
-    public function pluck(string $key): static
+    public function pluck(mixed $key): static
     {
+        Assert::validKey($key);
+
         if (static::isNotDottedKey($key)) {
             return $this->newCollection(array_column($this->toArray(), $key));
         }
+
         $plucked = [];
         $segments = explode('.', $key);
         foreach ($this->items as $values) {

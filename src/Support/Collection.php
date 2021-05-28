@@ -50,10 +50,9 @@ class Collection extends Enumerable implements ArrayAccess
     {
         if (is_null($offset)) {
             $this->items[] = $value;
-        } else if (is_string($offset) || is_int($offset)) {
-            $this->items[$offset] = $value;
         } else {
-            throw new InvalidKeyException($offset);
+            Assert::validKey($offset);
+            $this->items[$offset] = $value;
         }
     }
 
@@ -78,8 +77,10 @@ class Collection extends Enumerable implements ArrayAccess
      * @param int|string $key
      * @return mixed
      */
-    public function get(int|string $key): mixed
+    public function get(mixed $key): mixed
     {
+        Assert::validKey($key);
+
         return static::isDottedKey($key)
             ? static::digTo($this->items, explode('.', $key))
             : $this->items[$key] ?? null;
@@ -124,7 +125,7 @@ class Collection extends Enumerable implements ArrayAccess
      * @param int|string $key
      * @return mixed
      */
-    public function pull(int|string $key): mixed
+    public function pull(mixed $key): mixed
     {
         if (static::isNotDottedKey($key)) {
             $value = $this->items[$key] ?? null;
@@ -168,8 +169,10 @@ class Collection extends Enumerable implements ArrayAccess
      * @param int|string $key
      * @return bool
      */
-    public function removeKey(int|string $key): bool
+    public function removeKey(mixed $key): bool
     {
+        Assert::validKey($key);
+
         $copy = $this->toArray();
         if (static::isNotDottedKey($key)) {
             if (array_key_exists($key, $copy)) {
@@ -201,11 +204,15 @@ class Collection extends Enumerable implements ArrayAccess
      * @param mixed $value
      * @return $this
      */
-    public function set(int|string $key, mixed $value): static
+    public function set(mixed $key, mixed $value): static
     {
+        Assert::validKey($key);
+
         if (static::isNotDottedKey($key)) {
             $this->items[$key] = $value;
+            return $this;
         }
+
         $ptr = &$this->items;
         $segments = explode('.', $key);
         $lastSegment = array_pop($segments);
@@ -214,6 +221,7 @@ class Collection extends Enumerable implements ArrayAccess
             $ptr = &$ptr[$segment];
         }
         $ptr[$lastSegment] = $value;
+
         return $this;
     }
 
@@ -222,7 +230,7 @@ class Collection extends Enumerable implements ArrayAccess
      * @param mixed $value
      * @return $this
      */
-    public function setIfNotExists(int|string $key, mixed $value): static
+    public function setIfNotExists(mixed $key, mixed $value): static
     {
         if ($this->containsKey($key)) {
             $this->set($key, $value);
