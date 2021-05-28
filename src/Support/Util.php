@@ -6,7 +6,11 @@ use DateTimeInterface;
 
 class Util
 {
-    public static function toString($value): string
+    /**
+     * @param mixed $value
+     * @return string
+     */
+    public static function toString(mixed $value): string
     {
         if (is_null($value)) return 'null';
         if (is_bool($value)) return $value ? 'true' : 'false';
@@ -17,7 +21,11 @@ class Util
         return (string) $value;
     }
 
-    public static function typeOf($var): string
+    /**
+     * @param mixed $var
+     * @return string
+     */
+    public static function typeOf(mixed $var): string
     {
         if (is_null($var)) return "null";
         if (is_bool($var)) return "bool";

@@ -61,6 +61,7 @@ class Arr
     /**
      * @param iterable $iterable
      * @param callable $callback
+     * @return void
      */
     public static function each(iterable $iterable, callable $callback): void
     {
@@ -73,8 +74,9 @@ class Arr
      * @param iterable $iterable
      * @param int $size
      * @param callable $callback
+     * @return void
      */
-    public static function eachChunk(iterable $iterable, int $size, callable $callback)
+    public static function eachChunk(iterable $iterable, int $size, callable $callback): void
     {
         Assert::positiveInt($size);
         $count = 0;
@@ -98,6 +100,7 @@ class Arr
     /**
      * @param iterable $iterable
      * @param callable $callback
+     * @return void
      */
     public static function eachWithIndex(iterable $iterable, callable $callback): void
     {

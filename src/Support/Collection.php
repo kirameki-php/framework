@@ -45,6 +45,7 @@ class Collection extends Enumerable implements ArrayAccess
     /**
      * @param mixed $offset
      * @param mixed $value
+     * @return void
      */
     public function offsetSet($offset, $value): void
     {
@@ -58,6 +59,7 @@ class Collection extends Enumerable implements ArrayAccess
 
     /**
      * @param mixed $offset
+     * @return void
      */
     public function offsetUnset($offset): void
     {

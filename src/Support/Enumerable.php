@@ -235,6 +235,7 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
 
     /**
      * @param callable $callback
+     * @return void
      */
     public function each(callable $callback): void
     {
@@ -244,6 +245,7 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
     /**
      * @param int $size
      * @param callable $callback
+     * @return void
      */
     public function eachChunk(int $size, callable $callback): void
     {
@@ -254,6 +256,7 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
 
     /**
      * @param callable $callback
+     * @return void
      */
     public function eachWithIndex(callable $callback): void
     {
