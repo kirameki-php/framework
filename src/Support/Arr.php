@@ -2,6 +2,9 @@
 
 namespace Kirameki\Support;
 
+use Closure;
+use Kirameki\Exception\DuplicateKeyException;
+use Kirameki\Exception\InvalidValueException;
 use RuntimeException;
 use Traversable;
 
@@ -44,6 +47,27 @@ class Arr
 
     /**
      * @param iterable $iterable
+     * @param int|string $key
+     * @return bool
+     */
+    public static function containsKey(iterable $iterable, mixed $key): bool
+    {
+        Assert::validKey($key);
+
+        $array = static::from($iterable);
+
+        if (static::isNotDottedKey($key)) {
+            return array_key_exists($key, $array);
+        }
+
+        $segments = explode('.', $key);
+        $lastSegment = array_pop($segments);
+        $ptr = static::digTo($array, $segments);
+        return is_array($ptr) && array_key_exists($lastSegment, $ptr);
+    }
+
+    /**
+     * @param iterable $iterable
      * @param callable $condition
      * @return int
      */
@@ -56,6 +80,58 @@ class Arr
             }
         }
         return $counter;
+    }
+
+    /**
+     * @param iterable $iterable
+     * @param int $amount
+     * @return array
+     */
+    public static function drop(iterable $iterable, int $amount): array
+    {
+        if ($amount < 0) {
+            throw new InvalidValueException('positive value', $amount);
+        }
+        return array_slice(static::from($iterable), $amount);
+    }
+
+    /**
+     * @param iterable $iterable
+     * @param callable $condition
+     * @return array
+     */
+    public static function dropUntil(iterable $iterable, callable $condition): array
+    {
+        $index = static::firstIndex($iterable, $condition) ?? PHP_INT_MAX;
+        return static::drop($iterable, $index);
+    }
+
+    /**
+     * @param iterable $iterable
+     * @param callable $condition
+     * @return array
+     */
+    public static function dropWhile(iterable $iterable, callable $condition): array
+    {
+        $index = static::firstIndex($iterable, static function ($item, $key) use ($condition) {
+                $result = $condition($item, $key);
+                Assert::bool($result);
+                return !$result;
+            }) ?? PHP_INT_MAX;
+        return static::drop($iterable, $index);
+    }
+
+    /**
+     * @param iterable $iterable
+     * @param int|string $key
+     * @return mixed
+     */
+    public static function get(iterable $iterable, mixed $key): mixed
+    {
+        Assert::validKey($key);
+
+        $keys = static::isDottedKey($key) ? explode('.', $key) : [$key];
+        return static::digTo(static::from($iterable), $keys);
     }
 
     /**
@@ -109,6 +185,20 @@ class Arr
             $callback($item, $key, $offset);
             $offset++;
         }
+    }
+
+    /**
+     * @param iterable $iterable
+     * @param int|string ...$key
+     * @return array
+     */
+    public static function except(iterable $iterable, ...$key): array
+    {
+        $copy = static::from($iterable);
+        foreach ($key as $k) {
+            unset($copy[$k]);
+        }
+        return $copy;
     }
 
     /**
@@ -204,6 +294,8 @@ class Arr
      */
     public static function flatten(iterable $iterable, int $depth = PHP_INT_MAX): array
     {
+        Assert::positiveInt($depth);
+
         $results = [];
         $func = static function($values, int $depth) use (&$func, &$results) {
             foreach ($values as $value) {
@@ -231,6 +323,24 @@ class Arr
             return iterator_to_array($iterable);
         }
         throw new RuntimeException('Unknown type:'.get_class($iterable));
+    }
+
+    /**
+     * @param string|callable $key
+     * @return array
+     */
+    public static function groupBy(iterable $iterable, string|callable $key): array
+    {
+        $call = is_string($key) ? static::createDigCallback($key) : $key;
+        $map = [];
+        foreach ($iterable as $k => $item) {
+            $groupKey = $call($item, $k);
+            if (is_string($groupKey) || is_int($groupKey)) {
+                $map[$groupKey] ??= [];
+                $map[$groupKey][] = $item;
+            }
+        }
+        return $map;
     }
 
     /**
@@ -297,6 +407,26 @@ class Arr
     public static function isNotEmpty(iterable $iterable): bool
     {
         return !static::isEmpty($iterable);
+    }
+
+    /**
+     * @param iterable $iterable
+     * @param string|callable $key
+     * @param bool $overwrite
+     * @return array
+     */
+    public static function keyBy(iterable $iterable, string|callable $key, bool $overwrite = false): array
+    {
+        $call = is_string($key) ? static::createDigCallback($key) : $key;
+        $map = [];
+        foreach ($iterable as $k => $item) {
+            $newKey = $call($item, $k);
+            if (!$overwrite && array_key_exists($newKey, $map)) {
+                throw new DuplicateKeyException($newKey, $item);
+            }
+            $map[$newKey] = $item;
+        }
+        return $map;
     }
 
     /**
@@ -375,16 +505,39 @@ class Arr
 
     /**
      * @param iterable $iterable
-     * @param callable $callback
+     * @param callable|string $callback
      * @return array
      */
-    public static function map(iterable $iterable, callable $callback): array
+    public static function map(iterable $iterable, callable|string $callback): array
     {
+        if (is_string($callback)) {
+            $callback = static::createDigCallback($callback);
+        }
+
         $values = [];
         foreach ($iterable as $key => $item) {
             $values[$key] = $callback($item, $key);
         }
         return $values;
+    }
+
+    /**
+     * @param iterable $iterable
+     * @return array
+     */
+    public static function minMax(iterable $iterable): array
+    {
+        $min = null;
+        $max = null;
+        foreach ($iterable as $value) {
+            if ($min === null || $min > $value) {
+                $min = $value;
+            }
+            if ($max === null || $max < $value) {
+                $max = $value;
+            }
+        }
+        return [$min, $max];
     }
 
     /**
@@ -395,6 +548,52 @@ class Arr
     public static function notContains(iterable $iterable, mixed $value): bool
     {
         return !static::contains($iterable, $value);
+    }
+
+    /**
+     * @param iterable $iterable
+     * @param mixed|callable $key
+     * @return bool
+     */
+    public static function notContainsKey(iterable $iterable, mixed $key): bool
+    {
+        return !static::containsKey($iterable, $key);
+    }
+
+    /**
+     * @param iterable $iterable
+     * @param int|string ...$key
+     * @return array
+     */
+    public static function only(iterable $iterable, ...$key): array
+    {
+        $copy = static::from($iterable);
+        $array = [];
+        foreach ($key as $k) {
+            $array[$k] = $copy[$k];
+        }
+        return $array;
+    }
+
+    /**
+     * @param iterable $iterable
+     * @param int|string $key
+     * @return array
+     */
+    public static function pluck(iterable $iterable, mixed $key): array
+    {
+        Assert::validKey($key);
+
+        if (static::isNotDottedKey($key)) {
+            return array_column(static::from($iterable), $key);
+        }
+
+        $plucked = [];
+        $segments = explode('.', $key);
+        foreach ($iterable as $values) {
+            $plucked[] = static::digTo($values, $segments);
+        }
+        return $plucked;
     }
 
     /**
@@ -458,6 +657,57 @@ class Arr
         $copy = static::from($iterable);
         shuffle($copy);
         return $copy;
+    }
+
+    /**
+     * @param iterable $iterable
+     * @param int $amount
+     * @return array
+     */
+    public static function take(iterable $iterable, int $amount): array
+    {
+        $array = static::from($iterable);
+        if ($amount < 0) {
+            throw new InvalidValueException('positive value', $amount);
+        }
+        return array_slice($array, 0, $amount);
+    }
+
+    /**
+     * @param iterable $iterable
+     * @param callable $callback
+     * @return array
+     */
+    public static function takeUntil(iterable $iterable, callable $callback): array
+    {
+        $index = static::firstIndex($iterable, $callback) ?? PHP_INT_MAX;
+        return static::take($iterable, $index);
+    }
+
+    /**
+     * @param iterable $iterable
+     * @param callable $condition
+     * @return array
+     */
+    public static function takeWhile(iterable $iterable, callable $condition): array
+    {
+        $index = static::firstIndex($iterable, static fn($item, $key) => !$condition($item, $key)) ?? PHP_INT_MAX;
+        return static::take($iterable, $index);
+    }
+
+    /**
+     * @param iterable $iterable
+     * @return array
+     */
+    public static function tally(iterable $iterable): array
+    {
+        $mapping = [];
+        foreach ($iterable as $item) {
+            Assert::validKey($item);
+            $mapping[$item] ??= 0;
+            $mapping[$item]++;
+        }
+        return $mapping;
     }
 
     /**
@@ -542,5 +792,57 @@ class Arr
     public static function wrap(mixed $value): array
     {
         return is_array($value) ? $value : [$value];
+    }
+
+    /**
+     * @param int|string $key
+     * @return bool
+     */
+    protected static function isDottedKey(int|string $key): bool
+    {
+        return is_string($key) && str_contains($key, '.');
+    }
+
+    /**
+     * @param int|string $key
+     * @return bool
+     */
+    protected static function isNotDottedKey(int|string $key): bool
+    {
+        return !static::isDottedKey($key);
+    }
+
+    /**
+     * @param array $array
+     * @param array $keys
+     * @return mixed
+     */
+    protected static function digTo(array $array, array $keys): mixed
+    {
+        foreach ($keys as $key) {
+            if (!isset($array[$key])) {
+                return null;
+            }
+            if (!is_array($array[$key])) {
+                // If at last key, return the referenced value
+                if ($key === $keys[array_key_last($keys)]) {
+                    return $array[$key];
+                }
+                return null;
+            }
+            $array = $array[$key];
+        }
+        return $array;
+    }
+
+    /**
+     * @private
+     * @param string $key
+     * @return Closure
+     */
+    protected static function createDigCallback(string $key): Closure
+    {
+        $segments = explode('.', $key);
+        return static fn($v, $k) => static::digTo($v, $segments);
     }
 }

@@ -3,7 +3,6 @@
 namespace Kirameki\Support;
 
 use ArrayAccess;
-use Kirameki\Exception\InvalidKeyException;
 
 class Collection extends Enumerable implements ArrayAccess
 {
@@ -73,19 +72,6 @@ class Collection extends Enumerable implements ArrayAccess
     {
         $this->items = [];
         return $this;
-    }
-
-    /**
-     * @param int|string $key
-     * @return mixed
-     */
-    public function get(mixed $key): mixed
-    {
-        Assert::validKey($key);
-
-        return static::isDottedKey($key)
-            ? static::digTo($this->items, explode('.', $key))
-            : $this->items[$key] ?? null;
     }
 
     /**

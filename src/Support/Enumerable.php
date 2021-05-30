@@ -7,8 +7,6 @@ use Countable;
 use Generator;
 use IteratorAggregate;
 use JsonSerializable;
-use Kirameki\Exception\DuplicateKeyException;
-use Kirameki\Exception\UnexpectedArgumentException;
 
 abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializable
 {
@@ -87,19 +85,12 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
     }
 
     /**
-     * @param mixed $key
+     * @param int|string $key
      * @return bool
      */
     public function containsKey(mixed $key): bool
     {
-        $copy = $this->toArray();
-        if (static::isNotDottedKey($key)) {
-            return array_key_exists($key, $copy);
-        }
-        $segments = explode('.', $key);
-        $lastSegment = array_pop($segments);
-        $ptr = static::digTo($copy, $segments);
-        return is_array($ptr) && array_key_exists($lastSegment, $ptr);
+        return Arr::containsKey($this->toArray(), $key);
     }
 
     /**
@@ -175,28 +166,12 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
     }
 
     /**
-     * @param int|string $key
-     * @return static|null
-     */
-    public function dig(mixed $key): static|null
-    {
-        Assert::validKey($key);
-
-        $keys = static::isDottedKey($key) ? explode('.', $key) : [$key];
-        $dug = static::digTo($this->toArray(), $keys);
-        return is_iterable($dug) ? $this->newInstance($dug) : null;
-    }
-
-    /**
      * @param int $amount
      * @return static
      */
     public function drop(int $amount): static
     {
-        if ($amount < 0) {
-            throw new UnexpectedArgumentException(0, 'positive value', $amount);
-        }
-        return $this->slice($amount);
+        return $this->newInstance(Arr::drop($this->items, $amount));
     }
 
     /**
@@ -205,8 +180,7 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
      */
     public function dropUntil(callable $condition): static
     {
-        $index = $this->firstIndex($condition) ?? PHP_INT_MAX;
-        return $this->drop($index);
+        return $this->newInstance(Arr::dropUntil($this->items, $condition));
     }
 
     /**
@@ -215,12 +189,7 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
      */
     public function dropWhile(callable $condition): static
     {
-        $index = $this->firstIndex(static function ($item, $key) use ($condition) {
-                $result = $condition($item, $key);
-                Assert::bool($result);
-                return !$result;
-            }) ?? PHP_INT_MAX;
-        return $this->drop($index);
+        return $this->newInstance(Arr::dropWhile($this->items, $condition));
     }
 
     /**
@@ -278,11 +247,7 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
      */
     public function except(...$key): static
     {
-        $copy = $this->toArray();
-        foreach ($key as $k) {
-            unset($copy[$k]);
-        }
-        return $this->newInstance($copy);
+        return $this->newInstance(Arr::except($this->items, ...$key));
     }
 
     /**
@@ -336,7 +301,6 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
      */
     public function flatten(int $depth = 1): static
     {
-        Assert::positiveInt($depth);
         return $this->newInstance(Arr::flatten($this->items, $depth));
     }
 
@@ -349,27 +313,21 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
     }
 
     /**
+     * @param int|string $key
+     * @return mixed
+     */
+    public function get(mixed $key): mixed
+    {
+        return Arr::get($this->items, $key);
+    }
+
+    /**
      * @param string|callable $key
      * @return static
      */
     public function groupBy(string|callable $key): static
     {
-        if (is_string($key)) {
-            $segments = explode('.', $key);
-            $call = static fn($v, $k) => static::digTo($v, $segments);
-        } else {
-            $call = $key;
-        }
-
-        $map = [];
-        foreach ($this->items as $k => $item) {
-            $groupKey = $call($item, $k);
-            if (is_string($groupKey) || is_int($groupKey)) {
-                $map[$groupKey] ??= $this->newCollection([]);
-                $map[$groupKey][] = $item;
-            }
-        }
-        return $this->newInstance($map);
+        return $this->newInstance(Arr::groupBy($this->items, $key))->map(fn($array) => $this->newCollection($array));
     }
 
     /**
@@ -434,27 +392,13 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
     }
 
     /**
-     * @param callable|string $key
+     * @param string|callable $key
      * @param bool $overwrite
      * @return $this
      */
-    public function keyBy(callable|string $key, bool $overwrite = false): static
+    public function keyBy(string|callable $key, bool $overwrite = false): static
     {
-        if (is_string($key)) {
-            $segments = explode('.', $key);
-            $call = static fn($v, $k) => static::digTo($v, $segments);
-        } else {
-            $call = $key;
-        }
-        $map = [];
-        foreach ($this->items as $k => $item) {
-            $newKey = $call($item, $k);
-            if (!$overwrite && array_key_exists($newKey, $map)) {
-                throw new DuplicateKeyException($newKey, $item);
-            }
-            $map[$newKey] = $item;
-        }
-        return $this->newInstance($map);
+        return $this->newInstance(Arr::keyBy($this->items, $key, $overwrite));
     }
 
     /**
@@ -493,10 +437,10 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
     }
 
     /**
-     * @param callable $callback
+     * @param callable|string $callback
      * @return static
      */
-    public function map(callable $callback): static
+    public function map(callable|string $callback): static
     {
         return $this->newInstance(Arr::map($this->items, $callback));
     }
@@ -531,17 +475,7 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
      */
     public function minMax(): array
     {
-        $min = null;
-        $max = null;
-        foreach ($this->items as $value) {
-            if ($min === null || $min > $value) {
-                $min = $value;
-            }
-            if ($max === null || $max < $value) {
-                $max = $value;
-            }
-        }
-        return [$min, $max];
+        return Arr::minMax($this->items);
     }
 
     /**
@@ -559,7 +493,7 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
      */
     public function notContainsKey(mixed $key): bool
     {
-        return !$this->containsKey($key);
+        return Arr::notContainsKey($this->items, $key);
     }
 
     /**
@@ -577,12 +511,7 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
      */
     public function only(...$key): static
     {
-        $copy = $this->toArray();
-        $array = [];
-        foreach ($key as $k) {
-            $array[$k] = $copy[$k];
-        }
-        return $this->newInstance($array);
+        return $this->newInstance(Arr::only($this->items, ...$key));
     }
 
     /**
@@ -591,18 +520,7 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
      */
     public function pluck(mixed $key): static
     {
-        Assert::validKey($key);
-
-        if (static::isNotDottedKey($key)) {
-            return $this->newCollection(array_column($this->toArray(), $key));
-        }
-
-        $plucked = [];
-        $segments = explode('.', $key);
-        foreach ($this->items as $values) {
-            $plucked[] = static::digTo($values, $segments);
-        }
-        return $this->newCollection($plucked);
+        return $this->newCollection(Arr::pluck($this->items, $key));
     }
 
     /**
@@ -762,20 +680,16 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
      */
     public function take(int $amount): static
     {
-        if ($amount < 0) {
-            throw new UnexpectedArgumentException(0, 'positive value', $amount);
-        }
-        return $this->slice(0, $amount);
+        return $this->newInstance(Arr::take($this->items, $amount));
     }
 
     /**
-     * @param callable $callback
+     * @param callable $condition
      * @return static
      */
-    public function takeUntil(callable $callback): static
+    public function takeUntil(callable $condition): static
     {
-        $index = $this->firstIndex($callback) ?? PHP_INT_MAX;
-        return $this->take($index);
+        return $this->newInstance(Arr::takeUntil($this->items, $condition));
     }
 
     /**
@@ -784,8 +698,7 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
      */
     public function takeWhile(callable $condition): static
     {
-        $index = $this->firstIndex(static fn($item, $key) => !$condition($item, $key)) ?? PHP_INT_MAX;
-        return $this->take($index);
+        return $this->newInstance(Arr::takeWhile($this->items, $condition));
     }
 
     /**
@@ -793,12 +706,7 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
      */
     public function tally(): static
     {
-        $mapping = [];
-        foreach ($this->items as $item) {
-            $mapping[$item] ??= 0;
-            $mapping[$item]++;
-        }
-        return $this->newCollection($mapping);
+        return $this->newCollection(Arr::tally($this->items));
     }
 
     /**
@@ -898,28 +806,5 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
     protected static function isNotDottedKey(int|string $key): bool
     {
         return !static::isDottedKey($key);
-    }
-
-    /**
-     * @param array $array
-     * @param array $keys
-     * @return mixed
-     */
-    protected static function digTo(array $array, array $keys): mixed
-    {
-        foreach ($keys as $key) {
-            if (!isset($array[$key])) {
-                return null;
-            }
-            if (!is_array($array[$key])) {
-                // If at last key, return the referenced value
-                if ($key === $keys[array_key_last($keys)]) {
-                    return $array[$key];
-                }
-                return null;
-            }
-            $array = $array[$key];
-        }
-        return $array;
     }
 }

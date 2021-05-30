@@ -7,7 +7,6 @@ use ErrorException;
 use Generator;
 use Kirameki\Exception\DuplicateKeyException;
 use Kirameki\Exception\InvalidKeyException;
-use Kirameki\Exception\UnexpectedArgumentException;
 use Kirameki\Exception\InvalidValueException;
 use Kirameki\Support\Collection;
 use Tests\Kirameki\TestCase;
@@ -328,29 +327,6 @@ class CollectionTest extends TestCase
         self::assertSame(['b' => 2, -10 => -10], $diffed->toArray());
     }
 
-    public function testDig()
-    {
-        $collect = $this->collect(['one' => ['two' => [1, 2], 'three' => 4, 'four' => []]]);
-        $dug = $collect->dig('nothing');
-        self::assertNull($dug);
-
-        $dug = $collect->dig('one.nothing');
-        self::assertNull($dug);
-
-        $dug = $collect->dig('one.two');
-        self::assertCount(2, $dug);
-        self::assertEquals([1, 2], $dug->toArray());
-
-        $dug = $collect->dig('one.two.three');
-        self::assertNull($dug);
-
-        $dug = $collect->dig('one.two.0');
-        self::assertNull($dug);
-
-        $dug = $collect->dig('one.four');
-        self::assertEquals([], $dug->toArray());
-    }
-
     public function testDrop()
     {
         $collect = $this->collect(['a' => 1, 'b' => 2, 'c' => 3]);
@@ -362,8 +338,8 @@ class CollectionTest extends TestCase
 
         // negative
         $collect = $this->collect(['a' => 1]);
-        self::expectException(UnexpectedArgumentException::class);
-        self::expectExceptionMessage('Kirameki\Support\Collection::drop() Argument #0 ($amount) must be positive value, -1 given.');
+        self::expectException(InvalidValueException::class);
+        self::expectExceptionMessage('Expected value to be positive value. -1 given.');
         $collect->drop(-1)->toArray();
     }
 
@@ -574,16 +550,18 @@ class CollectionTest extends TestCase
         $collect = $this->collect([1, 2]);
         self::assertEquals(2, $collect->get(1));
 
-        $collect = $this->collect(['a' => [1, 'b' => 2], 'c' => 'd']);
+        $collect = $this->collect(['a' => [1, 'b' => 2, 'c' => ['d' => 3]], 'c' => 'd', 'e' => []]);
         // get existing data
-        self::assertEquals([1, 'b' => 2], $collect->get('a'));
+        self::assertEquals([1, 'b' => 2, 'c' => ['d' => 3]], $collect->get('a'));
         self::assertEquals('d', $collect->get('c'));
         // get non-existing data
-        self::assertEquals(null, $collect->get('e'));
+        self::assertNull($collect->get('a.e'));
         self::assertEquals(null, $collect->get(0));
         // get existing data with dot
         self::assertEquals(1, $collect->get('a.0'));
         self::assertEquals(2, $collect->get('a.b'));
+        self::assertEquals(3, $collect->get('a.c.d'));
+        self::assertEquals([], $collect->get('e'));
     }
 
     public function testGetIterator()
