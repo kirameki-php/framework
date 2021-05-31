@@ -8,8 +8,14 @@ use RuntimeException;
 
 class Url
 {
+    /**
+     * @var array
+     */
     protected array $components = [];
 
+    /**
+     * @param array $components
+     */
     public function __construct(array $components)
     {
         $this->components = $components;
@@ -18,11 +24,17 @@ class Url
         }
     }
 
+    /**
+     * @return string
+     */
     public function schema(): string
     {
         return $this->components['scheme'] ?? 'http';
     }
 
+    /**
+     * @return string|null
+     */
     public function userinfo(): ?string
     {
         $userinfo = $this->username();
@@ -32,26 +44,41 @@ class Url
         return $userinfo;
     }
 
+    /**
+     * @return string|null
+     */
     public function username(): ?string
     {
         return $this->components['user'] ?? null;
     }
 
+    /**
+     * @return string|null
+     */
     public function password(): ?string
     {
         return $this->components['pass'] ?? null;
     }
 
+    /**
+     * @return string
+     */
     public function host(): string
     {
         return $this->components['host'];
     }
 
+    /**
+     * @return int|null
+     */
     public function port(): ?int
     {
         return $this->components['port'] ?? null;
     }
 
+    /**
+     * @return string
+     */
     public function authority(): string
     {
         $host = $this->host();
@@ -64,16 +91,25 @@ class Url
         return $authority;
     }
 
+    /**
+     * @return string|null
+     */
     public function path(): ?string
     {
         return $this->components['path'] ?? null;
     }
 
+    /**
+     * @return string|null
+     */
     public function query(): ?string
     {
         return $this->components['query'] ?? null;
     }
 
+    /**
+     * @return array
+     */
     public function queryAsData(): array
     {
         $result = [];
@@ -81,6 +117,9 @@ class Url
         return $result;
     }
 
+    /**
+     * @return string|null
+     */
     public function pathAndQuery(): ?string
     {
         $str = null;
@@ -95,11 +134,17 @@ class Url
         return $str;
     }
 
+    /**
+     * @return string|null
+     */
     public function fragment(): ?string
     {
         return $this->components['fragment'] ?? null;
     }
 
+    /**
+     * @return bool
+     */
     public function isDefaultPort(): bool
     {
         $schema = $this->schema();
@@ -110,11 +155,17 @@ class Url
         return false;
     }
 
+    /**
+     * @return string
+     */
     public function toString(): string
     {
         return $this->__toString();
     }
 
+    /**
+     * @return string
+     */
     public function __toString(): string
     {
         $str = $this->schema();

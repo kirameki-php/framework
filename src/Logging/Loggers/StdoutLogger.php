@@ -12,12 +12,19 @@ use Psr\Log\LogLevel;
 
 class StdoutLogger extends Logger
 {
+    /**
+     * @param array $options
+     */
     public function __construct(array $options = [])
     {
         $name = $options['name'] ?? '';
         parent::__construct($name, $this->createHandlers($options));
     }
 
+    /**
+     * @param array $options
+     * @return HandlerInterface[]
+     */
     protected function createHandlers(array $options): array
     {
         return [
@@ -25,6 +32,10 @@ class StdoutLogger extends Logger
         ];
     }
 
+    /**
+     * @param array $options
+     * @return HandlerInterface
+     */
     protected function createStreamHandler(array $options): HandlerInterface
     {
         $bubble = $options['bubble'] ?? true;

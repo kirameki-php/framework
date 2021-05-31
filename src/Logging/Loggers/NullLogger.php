@@ -9,10 +9,11 @@ class NullLogger implements LoggerInterface
 {
     use HandlesLevels;
 
-    public function __construct()
-    {
-    }
-
+    /**
+     * @param int $level
+     * @param string $message
+     * @param array $context
+     */
     public function log($level, $message, array $context = array()): void
     {
         // do nothing

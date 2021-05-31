@@ -15,12 +15,20 @@ class MultiLogger implements LoggerInterface
      */
     protected array $loggers;
 
+    /**
+     * @param array $loggers
+     */
     public function __construct(array $loggers)
     {
         $this->loggers = $loggers;
     }
 
-    public function log($level, $message, array $context = array()): void
+    /**
+     * @param int $level
+     * @param string $message
+     * @param array $context
+     */
+    public function log($level, $message, array $context = []): void
     {
         foreach ($this->loggers as $logger) {
             $logger->log($level, $message, $context);

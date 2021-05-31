@@ -13,6 +13,7 @@ class HttpManager
 
     /**
      * @param HandlerInterface $handler
+     * @return void
      */
     public function addContentHandler(HandlerInterface $handler)
     {
