@@ -13,6 +13,23 @@ class Arr
 {
     /**
      * @param iterable $iterable
+     * @param bool|null $allowEmpty
+     * @return float|int
+     */
+    public static function average(iterable $iterable, ?bool $allowEmpty = true): float|int
+    {
+        $array = Arr::from($iterable);
+        $size = count($array);
+
+        if ($size === 0 && $allowEmpty) {
+            return 0;
+        }
+
+        return array_sum($array) / $size;
+    }
+
+    /**
+     * @param iterable $iterable
      * @param int $depth
      * @return array
      */
@@ -39,7 +56,9 @@ class Arr
     {
         $call = is_callable($value) ? $value : static fn($item) => $item === $value;
         foreach ($iterable as $key => $item) {
-            if (Check::isTrue($call($item, $key))) {
+            $bool = $call($item, $key);
+            Assert::bool($bool);
+            if ($bool) {
                 return true;
             }
         }
@@ -76,7 +95,9 @@ class Arr
     {
         $counter = 0;
         foreach ($iterable as $key => $item) {
-            if (Check::isTrue($condition($item, $key))) {
+            $bool = $condition($item, $key);
+            Assert::bool($bool);
+            if ($bool) {
                 $counter++;
             }
         }
@@ -199,8 +220,9 @@ class Arr
         $condition ??= static fn($item, $key) => !empty($item);
         $values = [];
         foreach ($iterable as $key => $item) {
-            $result = $condition($item, $key);
-            if (Check::isTrue($result)) {
+            $bool = $condition($item, $key);
+            Assert::bool($bool);
+            if ($bool) {
                 $values[$key] = $item;
             }
         }
@@ -215,7 +237,12 @@ class Arr
     public static function first(iterable $iterable, ?callable $condition = null): mixed
     {
         foreach ($iterable as $key => $item) {
-            if ($condition === null || Check::isTrue($condition($item, $key))) {
+            if ($condition === null) {
+                return $item;
+            }
+            $bool = $condition($item, $key);
+            Assert::bool($bool);
+            if ($bool) {
                 return $item;
             }
         }
@@ -231,7 +258,9 @@ class Arr
     {
         $count = 0;
         foreach ($iterable as $key => $item) {
-            if (Check::isTrue($condition($item, $key))) {
+            $bool = $condition($item, $key);
+            Assert::bool($bool);
+            if ($bool) {
                 return $count;
             }
             $count++;
@@ -247,7 +276,12 @@ class Arr
     public static function firstKey(iterable $iterable, ?callable $condition = null): int|string|null
     {
         foreach ($iterable as $key => $item) {
-            if ($condition === null || Check::isTrue($condition($item, $key))) {
+            if ($condition === null) {
+                return $key;
+            }
+            $bool = $condition($item, $key);
+            Assert::bool($bool);
+            if ($bool) {
                 return $key;
             }
         }
@@ -450,7 +484,9 @@ class Arr
 
         while(($key = key($copy)) !== null) {
             $item = current($copy);
-            if (Check::isTrue($condition($item, $key))) {
+            $bool = $condition($item, $key);
+            Assert::bool($bool);
+            if ($bool) {
                 return $item;
             }
             prev($copy);
@@ -474,7 +510,9 @@ class Arr
         while(($key = key($copy)) !== null) {
             $count--;
             $item = current($copy);
-            if (Check::isTrue($condition($item, $key))) {
+            $bool = $condition($item, $key);
+            Assert::bool($bool);
+            if ($bool) {
                 return $count;
             }
             prev($copy);
@@ -499,7 +537,9 @@ class Arr
 
         while(($key = key($copy)) !== null) {
             $item = current($copy);
-            if (Check::isTrue($condition($item, $key))) {
+            $bool = $condition($item, $key);
+            Assert::bool($bool);
+            if ($bool) {
                 return $key;
             }
             prev($copy);
@@ -524,6 +564,24 @@ class Arr
             $values[$key] = $callback($item, $key);
         }
         return $values;
+    }
+
+    /**
+     * @param iterable $iterable
+     * @return mixed
+     */
+    public static function max(iterable $iterable): mixed
+    {
+        return max(static::from($iterable));
+    }
+
+    /**
+     * @param iterable $iterable
+     * @return mixed
+     */
+    public static function min(iterable $iterable): mixed
+    {
+        return min(static::from($iterable));
     }
 
     /**
@@ -739,7 +797,9 @@ class Arr
     public static function satisfyAll(iterable $iterable, callable $condition): bool
     {
         foreach ($iterable as $item) {
-            if (Check::isFalse($condition($item))) {
+            $bool = $condition($item);
+            Assert::bool($bool);
+            if ($bool === false) {
                 return false;
             }
         }
@@ -765,6 +825,15 @@ class Arr
         $copy = static::from($iterable);
         shuffle($copy);
         return $copy;
+    }
+
+    /**
+     * @param iterable $iterable
+     * @return float|int
+     */
+    public static function sum(iterable $iterable): float|int
+    {
+        return array_sum(static::from($iterable));
     }
 
     /**

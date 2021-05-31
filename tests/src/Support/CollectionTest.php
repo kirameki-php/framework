@@ -53,8 +53,26 @@ class CollectionTest extends TestCase
 
     public function testAverage()
     {
+        $average = $this->collect([])->average();
+        self::assertEquals(0, $average);
+
+        $average = $this->collect([1, 2])->average(allowEmpty: false);
+        self::assertEquals(1.5, $average);
+
         $average = $this->collect([1, 2])->average();
         self::assertEquals(1.5, $average);
+
+        $average = $this->collect([1, 2, 3])->average();
+        self::assertEquals(2, $average);
+
+        $average = $this->collect([0, 0, 0])->average();
+        self::assertEquals(0, $average);
+    }
+
+    public function testAverage_NotEmpty()
+    {
+        self::expectException(\DivisionByZeroError::class);
+        $this->collect([])->average(allowEmpty: false);
     }
 
     public function testChunk()

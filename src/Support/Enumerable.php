@@ -49,22 +49,23 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
     }
 
     /**
+     * @param bool|null $allowEmpty
      * @return float|int
      */
-    public function average(): float|int
+    public function average(?bool $allowEmpty = true): float|int
     {
-        return (float)$this->sum() / $this->count();
+        return Arr::average($this->items, $allowEmpty);
     }
 
     /**
      * @param int $size
-     * @param bool $preserveKeys
      * @return static
      */
-    public function chunk(int $size, bool $preserveKeys = true): static
+    public function chunk(int $size): static
     {
+        $array = $this->toArray();
         $chunks = [];
-        foreach (array_chunk($this->toArray(), $size, $preserveKeys) as $chunk) {
+        foreach (array_chunk($array, $size, Arr::isAssoc($array)) as $chunk) {
             $chunks[] = $this->newInstance($chunk);
         }
         return $this->newInstance($chunks);
@@ -450,6 +451,14 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
     }
 
     /**
+     * @return mixed
+     */
+    public function max(): mixed
+    {
+        return Arr::max($this->items);
+    }
+
+    /**
      * @param iterable $collection
      * @return static
      */
@@ -459,19 +468,11 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
     }
 
     /**
-     * @return int|float
+     * @return mixed
      */
-    public function max(): int|float
+    public function min(): mixed
     {
-        return max(...$this->toArray());
-    }
-
-    /**
-     * @return int|float
-     */
-    public function min(): int|float
-    {
-        return min(...$this->toArray());
+        return Arr::min($this->items);
     }
 
     /**
@@ -596,12 +597,12 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
     /**
      * @param int $offset
      * @param int|null $length
-     * @param bool $preserveKeys
      * @return static
      */
-    public function slice(int $offset, int $length = null, bool $preserveKeys = true): static
+    public function slice(int $offset, int $length = null): static
     {
-        $sliced = array_slice($this->toArray(), $offset, $length, $preserveKeys);
+        $array = $this->toArray();
+        $sliced = array_slice($array, $offset, $length, Arr::isAssoc($array));
         return $this->newInstance($sliced);
     }
 
@@ -694,7 +695,7 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
      */
     public function sum(): float|int
     {
-        return array_sum($this->toArray());
+        return Arr::sum($this->items);
     }
 
     /**
