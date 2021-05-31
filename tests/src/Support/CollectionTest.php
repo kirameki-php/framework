@@ -548,6 +548,7 @@ class CollectionTest extends TestCase
     public function testGet()
     {
         $collect = $this->collect([1, 2]);
+        $collect->pull("");
         self::assertEquals(2, $collect->get(1));
 
         $collect = $this->collect(['a' => [1, 'b' => 2, 'c' => ['d' => 3]], 'c' => 'd', 'e' => []]);

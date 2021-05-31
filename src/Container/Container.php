@@ -15,10 +15,11 @@ class Container implements ContainerInterface
     protected array $entries = [];
 
     /**
-     * @param string $id
-     * @return mixed
+     * @template TClass
+     * @param class-string<TClass> $id
+     * @return TClass
      */
-    public function get($id)
+    public function get(string $id)
     {
         return $this->entries[$id]->getInstance();
     }
@@ -27,7 +28,7 @@ class Container implements ContainerInterface
      * @param string $id
      * @return bool
      */
-    public function has($id): bool
+    public function has(string $id): bool
     {
         return array_key_exists($id, $this->entries);
     }
@@ -76,9 +77,9 @@ class Container implements ContainerInterface
     }
 
     /**
-     * @return Collection|EntryInterface[]
+     * @return Collection<EntryInterface>|EntryInterface[]
      */
-    public function entries()
+    public function entries(): Collection
     {
         return new Collection($this->entries);
     }

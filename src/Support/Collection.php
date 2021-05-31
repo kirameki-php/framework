@@ -4,6 +4,9 @@ namespace Kirameki\Support;
 
 use ArrayAccess;
 
+/**
+ * @template T
+ */
 class Collection extends Enumerable implements ArrayAccess
 {
     /**
@@ -111,7 +114,7 @@ class Collection extends Enumerable implements ArrayAccess
 
     /**
      * @param int|string $key
-     * @return mixed
+     * @return T
      */
     public function pull(mixed $key): mixed
     {
@@ -131,7 +134,7 @@ class Collection extends Enumerable implements ArrayAccess
     }
 
     /**
-     * @param mixed ...$value
+     * @param T ...$value
      * @return $this
      */
     public function push(mixed ...$value): static
@@ -143,7 +146,7 @@ class Collection extends Enumerable implements ArrayAccess
     }
 
     /**
-     * @param mixed $value
+     * @param T $value
      * @param int|null $limit
      * @return $this
      */
@@ -227,7 +230,7 @@ class Collection extends Enumerable implements ArrayAccess
     }
 
     /**
-     * @return mixed
+     * @return T
      */
     public function shift(): mixed
     {
@@ -240,8 +243,7 @@ class Collection extends Enumerable implements ArrayAccess
      */
     public function transformKeys(callable $callback): static
     {
-        $this->items = Arr::transformKeys($this->items, $callback);
-        return $this;
+        return $this->newInstance(Arr::transformKeys($this->items, $callback));
     }
 
     /**
@@ -251,8 +253,7 @@ class Collection extends Enumerable implements ArrayAccess
      */
     public function transformKeysRecursive(callable $callback, int $depth = PHP_INT_MAX): static
     {
-        $this->items = Arr::transformKeysRecursive($this->items, $callback, $depth);
-        return $this;
+        return $this->newInstance(Arr::transformKeysRecursive($this->items, $callback, $depth));
     }
 
     /**

@@ -8,6 +8,9 @@ use Generator;
 use IteratorAggregate;
 use JsonSerializable;
 
+/**
+ * @template T
+ */
 abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializable
 {
     use Concerns\Macroable;
@@ -242,12 +245,12 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
     }
 
     /**
-     * @param int|string ...$key
+     * @param int[]|string[] $keys
      * @return static
      */
-    public function except(...$key): static
+    public function except(iterable $keys): static
     {
-        return $this->newInstance(Arr::except($this->items, ...$key));
+        return $this->newInstance(Arr::except($this->items, $keys));
     }
 
     /**
@@ -261,7 +264,7 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
 
     /**
      * @param callable|null $condition
-     * @return mixed
+     * @return T
      */
     public function first(callable $condition = null): mixed
     {
@@ -305,7 +308,7 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
     }
 
     /**
-     * @return $this
+     * @return static
      */
     public function flip(): static
     {
@@ -411,7 +414,7 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
 
     /**
      * @param callable|null $condition
-     * @return mixed
+     * @return T
      */
     public function last(callable $condition = null): mixed
     {
@@ -506,12 +509,12 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
     }
 
     /**
-     * @param int|string ...$key
+     * @param iterable $keys
      * @return static
      */
-    public function only(...$key): static
+    public function only(iterable $keys): static
     {
-        return $this->newInstance(Arr::only($this->items, ...$key));
+        return $this->newInstance(Arr::only($this->items, $keys));
     }
 
     /**
@@ -524,11 +527,12 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
     }
 
     /**
+     * @template T_INIT
      * @param callable $callback
-     * @param null $initial
-     * @return mixed
+     * @param T_INIT|null $initial
+     * @return T_INIT
      */
-    public function reduce(callable $callback, $initial = null): mixed
+    public function reduce(callable $callback, mixed $initial = null): mixed
     {
         $result = $initial ?? $this->newInstance();
         foreach ($this->items as $key => $item) {
@@ -538,20 +542,28 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
     }
 
     /**
-     * @param bool $preserveKeys
      * @return static
      */
-    public function reverse(bool $preserveKeys = true): static
+    public function reverse(): static
     {
-        return $this->newInstance(array_reverse($this->toArray(), $preserveKeys));
+        return $this->newInstance(Arr::reverse($this->items));
     }
 
     /**
-     * @return mixed
+     * @return T
      */
     public function sample(): mixed
     {
         return Arr::sample($this->items);
+    }
+
+    /**
+     * @param int $amount
+     * @return static
+     */
+    public function sampleMany(int $amount): static
+    {
+        return $this->newInstance(Arr::sampleMany($this->items, $amount));
     }
 
     /**

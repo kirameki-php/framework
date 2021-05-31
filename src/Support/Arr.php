@@ -62,7 +62,7 @@ class Arr
 
         $segments = explode('.', $key);
         $lastSegment = array_pop($segments);
-        $ptr = static::digTo($array, $segments);
+        $ptr = static::dig($array, $segments);
         return is_array($ptr) && array_key_exists($lastSegment, $ptr);
     }
 
@@ -123,19 +123,6 @@ class Arr
 
     /**
      * @param iterable $iterable
-     * @param int|string $key
-     * @return mixed
-     */
-    public static function get(iterable $iterable, mixed $key): mixed
-    {
-        Assert::validKey($key);
-
-        $keys = static::isDottedKey($key) ? explode('.', $key) : [$key];
-        return static::digTo(static::from($iterable), $keys);
-    }
-
-    /**
-     * @param iterable $iterable
      * @param callable $callback
      * @return void
      */
@@ -189,14 +176,14 @@ class Arr
 
     /**
      * @param iterable $iterable
-     * @param int|string ...$key
+     * @param int[]|string[] $keys
      * @return array
      */
-    public static function except(iterable $iterable, ...$key): array
+    public static function except(iterable $iterable, iterable $keys): array
     {
         $copy = static::from($iterable);
-        foreach ($key as $k) {
-            unset($copy[$k]);
+        foreach ($keys as $key) {
+            unset($copy[$key]);
         }
         return $copy;
     }
@@ -326,20 +313,37 @@ class Arr
     }
 
     /**
+     * @param iterable $iterable
+     * @param int|string $key
+     * @return mixed
+     */
+    public static function get(iterable $iterable, mixed $key): mixed
+    {
+        Assert::validKey($key);
+
+        $keys = static::isDottedKey($key) ? explode('.', $key) : [$key];
+        return static::dig(static::from($iterable), $keys);
+    }
+
+    /**
+     * @param iterable $iterable
      * @param string|callable $key
      * @return array
      */
     public static function groupBy(iterable $iterable, string|callable $key): array
     {
-        $call = is_string($key) ? static::createDigCallback($key) : $key;
+        $call = is_string($key) ? static::createDigger($key) : $key;
+
         $map = [];
         foreach ($iterable as $k => $item) {
             $groupKey = $call($item, $k);
-            if (is_string($groupKey) || is_int($groupKey)) {
-                $map[$groupKey] ??= [];
-                $map[$groupKey][] = $item;
-            }
+
+            Assert::validKey($groupKey);
+
+            $map[$groupKey] ??= [];
+            $map[$groupKey][] = $item;
         }
+
         return $map;
     }
 
@@ -417,7 +421,7 @@ class Arr
      */
     public static function keyBy(iterable $iterable, string|callable $key, bool $overwrite = false): array
     {
-        $call = is_string($key) ? static::createDigCallback($key) : $key;
+        $call = is_string($key) ? static::createDigger($key) : $key;
         $map = [];
         foreach ($iterable as $k => $item) {
             $newKey = $call($item, $k);
@@ -511,7 +515,7 @@ class Arr
     public static function map(iterable $iterable, callable|string $callback): array
     {
         if (is_string($callback)) {
-            $callback = static::createDigCallback($callback);
+            $callback = static::createDigger($callback);
         }
 
         $values = [];
@@ -562,15 +566,15 @@ class Arr
 
     /**
      * @param iterable $iterable
-     * @param int|string ...$key
+     * @param iterable $keys
      * @return array
      */
-    public static function only(iterable $iterable, ...$key): array
+    public static function only(iterable $iterable, iterable $keys): array
     {
         $copy = static::from($iterable);
         $array = [];
-        foreach ($key as $k) {
-            $array[$k] = $copy[$k];
+        foreach ($keys as $key) {
+            $array[$key] = $copy[$key];
         }
         return $array;
     }
@@ -591,7 +595,7 @@ class Arr
         $plucked = [];
         $segments = explode('.', $key);
         foreach ($iterable as $values) {
-            $plucked[] = static::digTo($values, $segments);
+            $plucked[] = static::dig($values, $segments);
         }
         return $plucked;
     }
@@ -615,12 +619,36 @@ class Arr
 
     /**
      * @param iterable $iterable
-     * @return mixed
+     * @return array
+     */
+    public static function reverse(iterable $iterable): array
+    {
+        $array = static::from($iterable);
+        return array_reverse($array, static::isAssoc($array));
+    }
+
+    /**
+     * @template T
+     * @param iterable<T> $iterable
+     * @return T
      */
     public static function sample(iterable $iterable): mixed
     {
         $arr = static::from($iterable);
         return $arr[array_rand($arr)];
+    }
+
+    /**
+     * @template T
+     * @param iterable<T> $iterable
+     * @param int $amount
+     * @return T[]
+     */
+    public static function sampleMany(iterable $iterable, int $amount): array
+    {
+        $array = static::from($iterable);
+        $sampledKeys = array_rand($array, $amount);
+        return Arr::only($array, $sampledKeys);
     }
 
     /**
@@ -817,7 +845,7 @@ class Arr
      * @param array $keys
      * @return mixed
      */
-    protected static function digTo(array $array, array $keys): mixed
+    protected static function dig(array $array, array $keys): mixed
     {
         foreach ($keys as $key) {
             if (!isset($array[$key])) {
@@ -836,13 +864,26 @@ class Arr
     }
 
     /**
+     * @param array $array
+     * @param array $keys
+     * @return mixed
+     */
+    protected static function digStrict(array $array, array $keys): mixed
+    {
+        foreach ($keys as $key) {
+            $array = $array[$key];
+        }
+        return $array;
+    }
+
+    /**
      * @private
      * @param string $key
      * @return Closure
      */
-    protected static function createDigCallback(string $key): Closure
+    protected static function createDigger(string $key): Closure
     {
         $segments = explode('.', $key);
-        return static fn($v, $k) => static::digTo($v, $segments);
+        return static fn($v, $k) => static::dig($v, $segments);
     }
 }
