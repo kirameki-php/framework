@@ -36,7 +36,7 @@ class LogManager implements LoggerInterface
      */
     public function __construct(Config $config)
     {
-        $this->config = $config->extract('channels');
+        $this->config = $config->sub('channels');
         $this->channels = [];
         $this->loggers = [];
     }

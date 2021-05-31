@@ -118,19 +118,7 @@ class Collection extends Enumerable implements ArrayAccess
      */
     public function pull(mixed $key): mixed
     {
-        if (static::isNotDottedKey($key)) {
-            $value = $this->items[$key] ?? null;
-            unset($this->items[$key]);
-            return $value;
-        }
-        $segments = explode('.', $key);
-        $lastSegment = array_pop($segments);
-        if (is_array($array = static::digTo($this->items, $segments))) {
-            $value = $array[$lastSegment];
-            unset($array[$lastSegment]);
-            return $value;
-        }
-        return null;
+        return Arr::pull($this->items, $key);
     }
 
     /**
@@ -139,21 +127,18 @@ class Collection extends Enumerable implements ArrayAccess
      */
     public function push(mixed ...$value): static
     {
-        foreach ($value as $v) {
-            $this->items[] = $v;
-        }
+        Arr::push($this->items, $value);
         return $this;
     }
 
     /**
      * @param T $value
      * @param int|null $limit
-     * @return $this
+     * @return int
      */
-    public function remove(mixed $value, ?int $limit = null): static
+    public function remove(mixed $value, ?int $limit = null): int
     {
-        Arr::remove($this->items, $value, $limit);
-        return $this;
+        return Arr::remove($this->items, $value, $limit);
     }
 
     /**
@@ -162,23 +147,7 @@ class Collection extends Enumerable implements ArrayAccess
      */
     public function removeKey(mixed $key): bool
     {
-        Assert::validKey($key);
-
-        $copy = $this->toArray();
-        if (static::isNotDottedKey($key)) {
-            if (array_key_exists($key, $copy)) {
-                unset($copy[$key]);
-                return true;
-            }
-            return false;
-        }
-        $segments = explode('.', $key);
-        $lastSegment = array_pop($segments);
-        if (is_array($array = static::digTo($copy, $segments))) {
-            unset($array[$lastSegment]);
-            return true;
-        }
-        return false;
+        return Arr::removeKey($this->items, $key);
     }
 
     /**
@@ -281,9 +250,7 @@ class Collection extends Enumerable implements ArrayAccess
      */
     public function unshift(mixed ...$value): static
     {
-        foreach ($value as $v) {
-            array_unshift($this->items, $v);
-        }
+        Arr::unshift($this->items, ...$value);
         return $this;
     }
 }

@@ -441,10 +441,10 @@ class CollectionTest extends TestCase
     public function testExcept()
     {
         $collect = $this->collect(['a' => 1, 'b' => 2]);
-        self::assertEquals(['b' => 2], $collect->except('a')->toArray());
+        self::assertEquals(['b' => 2], $collect->except(['a'])->toArray());
 
         $collect = $this->collect(['a' => 1, 'b' => 2]);
-        self::assertEquals(['b' => 2], $collect->except('a', 'c')->toArray());
+        self::assertEquals(['b' => 2], $collect->except(['a', 'c'])->toArray());
     }
 
     public function testFilter()
@@ -823,7 +823,6 @@ class CollectionTest extends TestCase
         $collect = $this->collect([1, 10, -100]);
         self::assertEquals([-100, 10], $collect->minMax());
     }
-
 
 
 

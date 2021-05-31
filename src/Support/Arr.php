@@ -2,6 +2,7 @@
 
 namespace Kirameki\Support;
 
+use ArrayAccess;
 use Closure;
 use Kirameki\Exception\DuplicateKeyException;
 use Kirameki\Exception\InvalidValueException;
@@ -337,11 +338,11 @@ class Arr
         $map = [];
         foreach ($iterable as $k => $item) {
             $groupKey = $call($item, $k);
-
-            Assert::validKey($groupKey);
-
-            $map[$groupKey] ??= [];
-            $map[$groupKey][] = $item;
+            if ($groupKey !== null) {
+                Assert::validKey($groupKey);
+                $map[$groupKey] ??= [];
+                $map[$groupKey][] = $item;
+            }
         }
 
         return $map;
@@ -601,12 +602,58 @@ class Arr
     }
 
     /**
+     * @param array|ArrayAccess $array
+     * @param int|string $key
+     * @return mixed
+     */
+    public static function pull(array|ArrayAccess &$array, mixed $key): mixed
+    {
+        Assert::validKey($key);
+
+        if (static::isNotDottedKey($key)) {
+            $value = $array[$key] ?? null;
+            unset($array[$key]);
+            return $value;
+        }
+
+        $segments = explode('.', $key);
+        $lastSegment = array_pop($segments);
+        $ptr = $array;
+        foreach ($segments as $segment) {
+            if (!isset($segment, $ptr)) {
+                return null;
+            }
+            $ptr = &$ptr[$segment];
+        }
+
+        if (isset($ptr[$lastSegment])) {
+            $value = $ptr[$lastSegment];
+            unset($ptr[$lastSegment]);
+            return $value;
+        }
+
+        return null;
+    }
+
+    /**
+     * @param array|ArrayAccess $array
+     * @param mixed ...$value
+     * @return void
+     */
+    public static function push(array|ArrayAccess &$array, mixed ...$value): void
+    {
+        foreach ($value as $v) {
+            $array[] = $v;
+        }
+    }
+
+    /**
      * @param iterable $iterable
      * @param mixed $value
      * @param int|null $limit
-     * @return void
+     * @return int
      */
-    public static function remove(iterable &$iterable, mixed $value, ?int $limit = null): void
+    public static function remove(iterable &$iterable, mixed $value, ?int $limit = null): int
     {
         $counter = 0;
         foreach ($iterable as $key => $item) {
@@ -615,6 +662,39 @@ class Arr
                 $counter++;
             }
         }
+        return $counter;
+    }
+
+    /**
+     * @param array|ArrayAccess $array
+     * @param int|string $key
+     * @return bool
+     */
+    public static function removeKey(array|ArrayAccess &$array, mixed $key): bool
+    {
+        Assert::validKey($key);
+
+        if (static::isNotDottedKey($key)) {
+            unset($array[$key]);
+            return true;
+        }
+
+        $segments = explode('.', $key);
+        $lastSegment = array_pop($segments);
+        $ptr = $array;
+        foreach ($segments as $segment) {
+            if (!isset($segment, $ptr)) {
+                return false;
+            }
+            $ptr = &$ptr[$segment];
+        }
+
+        if (isset($ptr[$lastSegment])) {
+            unset($ptr[$lastSegment]);
+            return true;
+        }
+
+        return false;
     }
 
     /**
@@ -814,6 +894,18 @@ class Arr
     }
 
     /**
+     * @param array $array
+     * @param mixed ...$value
+     * @return void
+     */
+    public static function unshift(array &$array, mixed ...$value): void
+    {
+        foreach ($value as $v) {
+            array_unshift($array, $v);
+        }
+    }
+
+    /**
      * @param mixed $value
      * @return array
      */
@@ -858,19 +950,6 @@ class Arr
                 }
                 return null;
             }
-            $array = $array[$key];
-        }
-        return $array;
-    }
-
-    /**
-     * @param array $array
-     * @param array $keys
-     * @return mixed
-     */
-    protected static function digStrict(array $array, array $keys): mixed
-    {
-        foreach ($keys as $key) {
             $array = $array[$key];
         }
         return $array;

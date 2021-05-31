@@ -7,6 +7,7 @@ use Countable;
 use Generator;
 use IteratorAggregate;
 use JsonSerializable;
+use Kirameki\Exception\InvalidValueException;
 
 /**
  * @template T
@@ -676,6 +677,16 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
         $copy = $this->toArray();
         uasort($copy, $callback);
         return $this->newInstance($copy);
+    }
+
+    /**
+     * @param int|string $key
+     * @return static
+     */
+    public function sub(mixed $key): static
+    {
+        $array = Arr::get($this->items, $key) ?? throw new InvalidValueException('iterable', 'null');
+        return $this->newInstance($array);
     }
 
     /**

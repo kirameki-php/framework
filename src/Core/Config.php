@@ -101,7 +101,7 @@ class Config implements ArrayAccess
      * @param string $name
      * @return static
      */
-    public function extract(string $name): static
+    public function sub(string $name): static
     {
         return new Config($this->get($name) ?? []);
     }
