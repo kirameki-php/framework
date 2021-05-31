@@ -34,6 +34,7 @@ class Listener
 
     /**
      * @param Event $event
+     * @return void
      */
     public function invoke(Event $event): void
     {

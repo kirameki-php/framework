@@ -3,20 +3,31 @@
 namespace Kirameki\Cache;
 
 use APCuIterator;
-use Carbon\Carbon;
 use Closure;
+use DateInterval;
+use DateTimeInterface;
 
 class ApcuStore extends AbstractStore
 {
+    /**
+     * @var bool
+     */
     protected bool $enabled;
 
+    /**
+     * @param string $namespace
+     */
     public function __construct(string $namespace)
     {
         $this->enabled = apcu_enabled();
         $this->namespace = $namespace;
     }
 
-    public function get(string $key)
+    /**
+     * @param string $key
+     * @return false|mixed|null
+     */
+    public function get(string $key): mixed
     {
         $success = false;
         if($this->enabled) {
@@ -26,6 +37,11 @@ class ApcuStore extends AbstractStore
         return null;
     }
 
+    /**
+     * @param string $key
+     * @param $value
+     * @return bool
+     */
     public function tryGet(string $key, &$value): bool
     {
         if($this->enabled) {
@@ -40,34 +56,63 @@ class ApcuStore extends AbstractStore
         return false;
     }
 
+    /**
+     * @param string ...$keys
+     * @return array
+     */
     public function getMulti(string ...$keys): array
     {
         return $this->enabled ? apcu_fetch($this->formatKeys($keys)) : [];
     }
 
+    /**
+     * @param string $key
+     * @return bool
+     */
     public function exists(string $key): bool
     {
         return $this->enabled && apcu_exists($this->formatKey($key));
     }
 
+    /**
+     * @param string ...$keys
+     * @return array
+     */
     public function existsMulti(string ...$keys): array
     {
         return $this->enabled ? apcu_exists($this->formatKeys($keys)) : [];
     }
 
-    public function set(string $key, $value, ?int $ttl = null): bool
+    /**
+     * @param string $key
+     * @param $value
+     * @param DateTimeInterface|DateInterval|int|float|null $ttl
+     * @return bool
+     */
+    public function set(string $key, $value, DateTimeInterface|DateInterval|int|float|null $ttl = null): bool
     {
         return $this->enabled && apcu_store($this->formatKey($key), $value, $this->formatTtl($ttl));
     }
 
-    public function setMulti(array $entries, ?int $ttl = null): array
+    /**
+     * @param array $entries
+     * @param DateTimeInterface|DateInterval|int|float|null $ttl
+     * @return array
+     */
+    public function setMulti(array $entries, DateTimeInterface|DateInterval|int|float|null $ttl = null): array
     {
         return $this->enabled
             ? apcu_store($entries, null, $this->formatTtl($ttl))
             : array_keys($entries);
     }
 
-    public function increment(string $key, int $by = 1, $ttl = null): ?int
+    /**
+     * @param string $key
+     * @param int $by
+     * @param DateTimeInterface|DateInterval|int|float|null $ttl
+     * @return int|null
+     */
+    public function increment(string $key, int $by = 1, DateTimeInterface|DateInterval|int|float|null $ttl = null): ?int
     {
         if (!$this->enabled) {
             return null;
@@ -76,7 +121,13 @@ class ApcuStore extends AbstractStore
         return is_int($result) ? $result : null;
     }
 
-    public function decrement(string $key, int $by = 1, $ttl = null): ?int
+    /**
+     * @param string $key
+     * @param int $by
+     * @param DateTimeInterface|DateInterval|int|float|null $ttl
+     * @return int|null
+     */
+    public function decrement(string $key, int $by = 1, DateTimeInterface|DateInterval|int|float|null $ttl = null): ?int
     {
         if (!$this->enabled) {
             return null;
@@ -85,6 +136,10 @@ class ApcuStore extends AbstractStore
         return is_int($result) ? $result : null;
     }
 
+    /**
+     * @param string $key
+     * @return int|null
+     */
     public function ttl(string $key): ?int
     {
         if ($this->enabled && $data = apcu_key_info($key)) {
@@ -99,16 +154,28 @@ class ApcuStore extends AbstractStore
         return null;
     }
 
+    /**
+     * @param string $key
+     * @return bool
+     */
     public function remove(string $key): bool
     {
         return $this->enabled && apcu_delete($this->formatKey($key));
     }
 
+    /**
+     * @param string ...$keys
+     * @return string[]
+     */
     public function removeMulti(string ...$keys): array
     {
         return $this->enabled ? apcu_delete($this->formatKeys($keys)) : $keys;
     }
 
+    /**
+     * @param string $pattern
+     * @return array
+     */
     public function removeMatched(string $pattern): array
     {
         if (!$this->enabled) {
@@ -119,6 +186,9 @@ class ApcuStore extends AbstractStore
         return ['successful' => $matchedKeys, 'failed' => $failedKeys];
     }
 
+    /**
+     * @return array
+     */
     public function removeExpired(): array
     {
         if (!$this->enabled) {
@@ -137,11 +207,20 @@ class ApcuStore extends AbstractStore
         return array_diff($matchedKeys, $failedKeys);
     }
 
+    /**
+     * @return bool
+     */
     public function clear(): bool
     {
         return $this->enabled && apcu_clear_cache();
     }
 
+    /**
+     * @param string $search
+     * @param int $format
+     * @param Closure|null $filter
+     * @return array
+     */
     protected function scan(string $search, int $format = APC_ITER_KEY, Closure $filter = null): array
     {
         $keys = [];

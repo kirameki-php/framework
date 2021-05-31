@@ -14,13 +14,13 @@ class InstanceEntry implements EntryInterface
     /**
      * @var mixed
      */
-    protected $instance;
+    protected mixed $instance;
 
     /**
      * @param string $id
      * @param mixed $instance
      */
-    public function __construct(string $id, $instance)
+    public function __construct(string $id, mixed $instance)
     {
         $this->id = $id;
         $this->instance = $instance;
@@ -44,6 +44,7 @@ class InstanceEntry implements EntryInterface
 
     /**
      * @param Closure $callback
+     * @return void
      */
     public function onResolved(Closure $callback): void
     {

@@ -30,6 +30,7 @@ class EventManager
      * @param string $name
      * @param Closure $listener
      * @param bool $once
+     * @return void
      */
     public function listen(string $name, Closure $listener, bool $once = false): void
     {
@@ -41,6 +42,7 @@ class EventManager
     /**
      * @param string $name
      * @param Closure $listener
+     * @return void
      */
     public function listenOnce(string $name, Closure $listener): void
     {
@@ -59,6 +61,7 @@ class EventManager
     /**
      * @param Event $event
      * @param string|null $name
+     * @return void
      */
     public function dispatch(Event $event, ?string $name = null): void
     {
@@ -88,6 +91,7 @@ class EventManager
      * @private
      * @param string $class
      * @param mixed ...$args
+     * @return void
      */
     public function dispatchClass(string $class, ...$args): void
     {
@@ -99,6 +103,7 @@ class EventManager
     /**
      * @param string $name
      * @param Closure $targetListener
+     * @return void
      */
     public function removeListener(string $name, Closure $targetListener): void
     {
@@ -122,6 +127,7 @@ class EventManager
 
     /**
      * @param string $name
+     * @return void
      */
     public function removeListeners(string $name): void
     {
@@ -131,6 +137,7 @@ class EventManager
 
     /**
      * @param callable $callback
+     * @return void
      */
     public function onListenerAdded(callable $callback): void
     {
@@ -139,6 +146,7 @@ class EventManager
 
     /**
      * @param callable $callback
+     * @return void
      */
     public function onListenerRemoved(callable $callback): void
     {
@@ -147,6 +155,7 @@ class EventManager
 
     /**
      * @param callable $callback
+     * @return void
      */
     public function onDispatched(callable $callback): void
     {
@@ -156,6 +165,7 @@ class EventManager
     /**
      * @param array $callbacks
      * @param mixed ...$args
+     * @return void
      */
     protected function invokeCallbacks(array $callbacks, ...$args): void
     {

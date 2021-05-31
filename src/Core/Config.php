@@ -6,8 +6,15 @@ use ArrayAccess;
 
 class Config implements ArrayAccess
 {
+    /**
+     * @var array
+     */
     protected array $entries = [];
 
+    /**
+     * @param string $dir
+     * @return static
+     */
     public static function fromDirectory(string $dir): static
     {
         $entries = [];
@@ -19,17 +26,27 @@ class Config implements ArrayAccess
         return new static($entries);
     }
 
+    /**
+     * @param array $entries
+     */
     public function __construct(array $entries)
     {
         $this->entries = $entries;
     }
 
+    /**
+     * @return array
+     */
     public function all(): array
     {
         return $this->entries;
     }
 
-    public function get(string $key)
+    /**
+     * @param string $key
+     * @return mixed
+     */
+    public function get(string $key): mixed
     {
         if (!str_contains($key, '.')) {
             return $this->entries[$key] ?? null;
@@ -46,7 +63,11 @@ class Config implements ArrayAccess
         return $curr;
     }
 
-    public function set(string $key, $value)
+    /**
+     * @param string $key
+     * @param mixed $value
+     */
+    public function set(string $key, mixed $value)
     {
         $segments = explode('.', $key);
         $lastSegment = array_pop($segments);
@@ -58,6 +79,10 @@ class Config implements ArrayAccess
         $curr[$lastSegment] = $value;
     }
 
+    /**
+     * @param string $key
+     * @return void
+     */
     public function delete(string $key)
     {
         $segments = explode('.', $key);
@@ -76,26 +101,43 @@ class Config implements ArrayAccess
      * @param string $name
      * @return static
      */
-    public function dig(string $name): static
+    public function extract(string $name): static
     {
         return new Config($this->get($name) ?? []);
     }
 
+    /**
+     * @param mixed $offset
+     * @return bool
+     */
     public function offsetExists($offset): bool
     {
         return isset($this->entries);
     }
 
-    public function offsetGet($offset)
+    /**
+     * @param mixed $offset
+     * @return mixed
+     */
+    public function offsetGet($offset): mixed
     {
         return $this->entries[$offset];
     }
 
+    /**
+     * @param mixed $offset
+     * @param mixed $value
+     * @return void
+     */
     public function offsetSet($offset, $value)
     {
         $this->entries[$offset] = $value;
     }
 
+    /**
+     * @param mixed $offset
+     * @return void
+     */
     public function offsetUnset($offset)
     {
         unset($this->entries[$offset]);

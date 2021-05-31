@@ -6,7 +6,14 @@ use LogicException;
 
 class DuplicateKeyException extends LogicException
 {
+    /**
+     * @var string|int
+     */
     public string|int $key;
+
+    /**
+     * @var mixed
+     */
     public mixed $value;
 
     /**

@@ -3,35 +3,102 @@
 namespace Kirameki\Cache;
 
 use Closure;
+use DateInterval;
+use DateTimeInterface;
 
 interface StoreInterface
 {
-    public function get(string $key);
+    /**
+     * @param string $key
+     * @return mixed
+     */
+    public function get(string $key): mixed;
 
+    /**
+     * @param string $key
+     * @param $value
+     * @return bool
+     */
     public function tryGet(string $key, &$value): bool;
 
+    /**
+     * @param string ...$keys
+     * @return array
+     */
     public function getMulti(string ...$keys): array;
 
+    /**
+     * @param string $key
+     * @return bool
+     */
     public function exists(string $key): bool;
 
+    /**
+     * @param string ...$keys
+     * @return array
+     */
     public function existsMulti(string ...$keys): array;
 
-    public function set(string $key, $value, $ttl = null): bool;
+    /**
+     * @param string $key
+     * @param $value
+     * @param DateTimeInterface|DateInterval|int|float|null $ttl
+     * @return bool
+     */
+    public function set(string $key, $value, DateTimeInterface|DateInterval|int|float|null $ttl = null): bool;
 
-    public function setMulti(array $entries, $ttl = null): array;
+    /**
+     * @param array $entries
+     * @param DateTimeInterface|DateInterval|int|float|null $ttl
+     * @return array
+     */
+    public function setMulti(array $entries, DateTimeInterface|DateInterval|int|float|null $ttl = null): array;
 
-    public function increment(string $key, int $by = 1, $ttl = null): ?int;
+    /**
+     * @param string $key
+     * @param int $by
+     * @param DateTimeInterface|DateInterval|int|float|null $ttl
+     * @return int|null
+     */
+    public function increment(string $key, int $by = 1, DateTimeInterface|DateInterval|int|float|null $ttl = null): ?int;
 
-    public function decrement(string $key, int $by = 1, $ttl = null): ?int;
+    /**
+     * @param string $key
+     * @param int $by
+     * @param DateTimeInterface|DateInterval|float|int|null $ttl
+     * @return int|null
+     */
+    public function decrement(string $key, int $by = 1, DateTimeInterface|DateInterval|int|float|null $ttl = null): ?int;
 
-    public function remember(string $key, Closure $callback, $ttl = null);
+    /**
+     * @param string $key
+     * @param Closure $callback
+     * @param DateTimeInterface|DateInterval|float|int|null $ttl
+     * @return mixed
+     */
+    public function remember(string $key, Closure $callback, DateTimeInterface|DateInterval|int|float|null $ttl = null);
 
+    /**
+     * @param string $key
+     * @return bool
+     */
     public function remove(string $key): bool;
 
+    /**
+     * @param string ...$keys
+     * @return array
+     */
     public function removeMulti(string ...$keys): array;
 
+    /**
+     * @param string $pattern
+     * @return array
+     */
     public function removeMatched(string $pattern): array;
 
+    /**
+     * @return array
+     */
     public function removeExpired(): array;
 
     /**
@@ -40,9 +107,9 @@ interface StoreInterface
      * If the key does not exist, it will return null;
      *
      * @param string $key
-     * @return int|null
+     * @return float|int|null
      */
-    public function ttl(string $key): ?int;
+    public function ttl(string $key): int|float|null;
 
     /**
      * Clears all entries from cache

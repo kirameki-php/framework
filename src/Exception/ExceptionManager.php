@@ -10,6 +10,9 @@ use Throwable;
 
 class ExceptionManager
 {
+    /**
+     * @var Container
+     */
     protected Container $handlers;
 
     public function __construct()
@@ -27,16 +30,29 @@ class ExceptionManager
         $this->handlers = new Container();
     }
 
+    /**
+     * @param string $name
+     * @param $handler
+     * @return void
+     */
     public function setHandler(string $name, $handler): void
     {
         $this->handlers->singleton($name, $handler);
     }
 
+    /**
+     * @param string $name
+     * @return bool
+     */
     public function removeHandler(string $name): bool
     {
         return $this->handlers->remove($name);
     }
 
+    /**
+     * @param Throwable $exception
+     * @return void
+     */
     protected function handle(Throwable $exception): void
     {
         try {
@@ -49,16 +65,27 @@ class ExceptionManager
         }
     }
 
+    /**
+     * @return array
+     */
     protected function context(): array
     {
         return [];
     }
 
+    /**
+     * @param Throwable $exception
+     * @return void
+     */
     protected function fallback(Throwable $exception): void
     {
         error_log((string) $exception);
     }
 
+    /**
+     * @throws ErrorException
+     * @return void
+     */
     protected function setErrorHandling(): void
     {
         set_error_handler(function(int $no, string $msg, string $file, int $line) {
@@ -66,6 +93,9 @@ class ExceptionManager
         });
     }
 
+    /**
+     * @return void
+     */
     protected function setExceptionHandling(): void
     {
         set_exception_handler(function (Throwable $throwable) {
@@ -73,6 +103,9 @@ class ExceptionManager
         });
     }
 
+    /**
+     * @return void
+     */
     protected function setFatalHandling(): void
     {
         register_shutdown_function(function() {

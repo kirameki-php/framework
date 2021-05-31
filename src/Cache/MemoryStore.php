@@ -3,24 +3,29 @@
 namespace Kirameki\Cache;
 
 use Closure;
+use DateInterval;
+use DateTimeInterface;
 
 class MemoryStore extends AbstractStore
 {
     protected array $stored;
 
-    protected ?Closure $serializeCall;
+    protected Closure $serializeCall;
 
-    protected ?Closure $deserializeCall;
+    protected Closure $deserializeCall;
 
-    public function __construct(?string $namespace = null, array $options = [])
+    public function __construct(?string $namespace = null, Closure $serializer = null, Closure $deserializer = null)
     {
         $this->namespace = $namespace ?? '';
         $this->stored = [];
-        $this->serializeCall = $options['serializer'] ?? null;
-        $this->deserializeCall = $options['deserializer'] ?? null;
+        $this->serializeCall = $serializer ?? static fn($value) => msgpack_pack($value);
+        $this->deserializeCall = $deserializer ?? static fn($data) => msgpack_unpack($data);
     }
 
-    public function get(string $key)
+    /**
+     * @inheritDoc
+     */
+    public function get(string $key): mixed
     {
         if ($data = $this->fetchEntry($key)) {
             return $data['value'];
@@ -28,6 +33,9 @@ class MemoryStore extends AbstractStore
         return null;
     }
 
+    /**
+     * @inheritDoc
+     */
     public function tryGet(string $key, &$value): bool
     {
         if ($data = $this->fetchEntry($key)) {
@@ -38,6 +46,9 @@ class MemoryStore extends AbstractStore
         return false;
     }
 
+    /**
+     * @inheritDoc
+     */
     public function getMulti(string ...$keys): array
     {
         $result = [];
@@ -49,11 +60,17 @@ class MemoryStore extends AbstractStore
         return $result;
     }
 
+    /**
+     * @inheritDoc
+     */
     public function exists(string $key): bool
     {
         return (bool) $this->fetchEntry($key, false);
     }
 
+    /**
+     * @inheritDoc
+     */
     public function existsMulti(string ...$keys): array
     {
         $result = [];
@@ -63,14 +80,20 @@ class MemoryStore extends AbstractStore
         return $result;
     }
 
-    public function set(string $key, $value, $ttl = null): bool
+    /**
+     * @inheritDoc
+     */
+    public function set(string $key, $value, DateTimeInterface|DateInterval|int|float|null $ttl = null): bool
     {
         $now = time();
         $this->storeEntry($key, $value, $now, $this->formatTtl($ttl, $now));
         return true;
     }
 
-    public function setMulti(array $entries, $ttl = null): array
+    /**
+     * @inheritDoc
+     */
+    public function setMulti(array $entries, DateTimeInterface|DateInterval|int|float|null $ttl = null): array
     {
         $result = [];
         $now = time();
@@ -80,7 +103,10 @@ class MemoryStore extends AbstractStore
         return $result;
     }
 
-    public function increment(string $key, int $by = 1, $ttl = null): ?int
+    /**
+     * @inheritDoc
+     */
+    public function increment(string $key, int $by = 1, DateTimeInterface|DateInterval|int|float|null $ttl = null): ?int
     {
         $value = $this->get($key) ?? 0;
         $value += $by;
@@ -88,17 +114,26 @@ class MemoryStore extends AbstractStore
         return $value;
     }
 
-    public function decrement(string $key, int $by = 1, $ttl = null): ?int
+    /**
+     * @inheritDoc
+     */
+    public function decrement(string $key, int $by = 1, DateTimeInterface|DateInterval|int|float|null $ttl = null): ?int
     {
         return $this->increment($key, -$by, $ttl);
     }
 
+    /**
+     * @inheritDoc
+     */
     public function remove(string $key): bool
     {
         unset($this->stored[$key]);
         return true;
     }
 
+    /**
+     * @inheritDoc
+     */
     public function removeMulti(string ...$keys): array
     {
         $result = [];
@@ -108,6 +143,9 @@ class MemoryStore extends AbstractStore
         return $result;
     }
 
+    /**
+     * @inheritDoc
+     */
     public function removeMatched(string $pattern): array
     {
         $matchedKeys = [];
@@ -120,6 +158,9 @@ class MemoryStore extends AbstractStore
         return ['successful' => $matchedKeys, 'failed' => []];
     }
 
+    /**
+     * @inheritDoc
+     */
     public function removeExpired(): array
     {
         $removed = [];
@@ -142,12 +183,18 @@ class MemoryStore extends AbstractStore
         return null;
     }
 
+    /**
+     * @return bool
+     */
     public function clear(): bool
     {
         $this->stored = [];
         return true;
     }
 
+    /**
+     * @return array
+     */
     public function all(): array
     {
         $list = [];
@@ -157,6 +204,11 @@ class MemoryStore extends AbstractStore
         return $list;
     }
 
+    /**
+     * @param $key
+     * @param bool $deserialize
+     * @return array|null
+     */
     protected function fetchEntry($key, bool $deserialize = true): ?array
     {
         if ($data = $this->stored[$key] ?? null) {
@@ -172,11 +224,24 @@ class MemoryStore extends AbstractStore
         return null;
     }
 
+    /**
+     * @param string $key
+     * @param $value
+     * @param int|null $created
+     * @param int|null $ttl
+     * @return array
+     */
     protected function storeEntry(string $key, $value, ?int $created, ?int $ttl): array
     {
         return $this->stored[$key] = $this->makeEntry($value, $created, $ttl);
     }
 
+    /**
+     * @param $value
+     * @param int|null $created
+     * @param int|null $ttl
+     * @return array
+     */
     protected function makeEntry($value, ?int $created, ?int $ttl): array
     {
         return [
@@ -186,22 +251,30 @@ class MemoryStore extends AbstractStore
         ];
     }
 
+    /**
+     * @param array $data
+     * @return bool
+     */
     protected function calcRemainingTtl(array $data): bool
     {
         return ($data['created'] + $data['ttl']) - time();
     }
 
-    protected function serialize($value)
+    /**
+     * @param $value
+     * @return mixed
+     */
+    protected function serialize($value): mixed
     {
-        return $this->serializeCall !== null
-            ? call_user_func($this->serializeCall, $value)
-            : msgpack_pack($value);
+        return ($this->serializeCall)($value);
     }
 
-    protected function deserialize($serialized)
+    /**
+     * @param $serialized
+     * @return mixed
+     */
+    protected function deserialize($serialized): mixed
     {
-        return $this->deserializeCall !== null
-            ? call_user_func($this->deserializeCall, $serialized)
-            : msgpack_unpack($serialized);
+        return ($this->deserializeCall)($serialized);
     }
 }

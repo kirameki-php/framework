@@ -8,6 +8,10 @@ use Kirameki\Exception\Handlers\LogHandler;
 
 class ExceptionInitializer implements InitializerInterface
 {
+    /**
+     * @param Application $app
+     * @return void
+     */
     public function register(Application $app): void
     {
         $manager = new ExceptionManager;

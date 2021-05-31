@@ -37,6 +37,7 @@ class Container implements ContainerInterface
      * @param string $id
      * @param $entry
      * @param bool $cached
+     * @return void
      */
     public function set(string $id, $entry, bool $cached = false): void
     {
@@ -48,6 +49,7 @@ class Container implements ContainerInterface
     /**
      * @param string $id
      * @param $entry
+     * @return void
      */
     public function singleton(string $id, $entry): void
     {
@@ -87,6 +89,7 @@ class Container implements ContainerInterface
     /**
      * @param string $id
      * @param Closure $callback
+     * @return void
      */
     public function onResolved(string $id, Closure $callback): void
     {

@@ -3,22 +3,41 @@
 namespace Kirameki\Cache;
 
 use Carbon\Carbon;
+use DateInterval;
 use DateTimeInterface;
 use Kirameki\Support\Util;
 use RuntimeException;
 
 class DeferrableStore extends AbstractStore
 {
+    /**
+     * @var StoreInterface
+     */
     protected StoreInterface $actual;
 
+    /**
+     * @var DeferredPool
+     */
     protected DeferredPool $memory;
 
+    /**
+     * @var bool
+     */
     protected bool $deferred;
 
+    /**
+     * @var array
+     */
     protected array $queue = [];
 
+    /**
+     * @var array
+     */
     protected array $afterCommitCallbacks;
 
+    /**
+     * @param StoreInterface $store
+     */
     public function __construct(StoreInterface $store)
     {
         $this->actual = $store;
@@ -26,17 +45,26 @@ class DeferrableStore extends AbstractStore
         $this->afterCommitCallbacks = [];
     }
 
+    /**
+     * @return StoreInterface
+     */
     public function actual(): StoreInterface
     {
         return $this->actual;
     }
 
+    /**
+     * @return DeferredPool
+     */
     public function memory(): DeferredPool
     {
         return $this->memory;
     }
 
-    public function get(string $key)
+    /**
+     * @inheritDoc
+     */
+    public function get(string $key): mixed
     {
         $value = null;
         if ($this->deferred && $this->memory->tryGet($key, $value)) {
@@ -45,6 +73,9 @@ class DeferrableStore extends AbstractStore
         return $this->actual->get($key);
     }
 
+    /**
+     * @inheritDoc
+     */
     public function tryGet(string $key, &$value): bool
     {
         if ($this->deferred && $this->memory->tryGet($key, $value)) {
@@ -53,17 +84,23 @@ class DeferrableStore extends AbstractStore
         return $this->actual->tryGet($key, $value);
     }
 
+    /**
+     * @inheritDoc
+     */
     public function getMulti(string ...$keys): array
     {
-        $values = $this->memory->getMulti($keys);
+        $values = $this->memory->getMulti(...$keys);
         $remainingKeys = array_diff($keys, array_keys($values));
         if (!empty($remainingKeys)) {
-            $fromStore = $this->actual->getMulti($remainingKeys);
+            $fromStore = $this->actual->getMulti(...$remainingKeys);
             $values = array_merge($values, $fromStore);
         }
         return $values;
     }
 
+    /**
+     * @inheritDoc
+     */
     public function exists(string $key): bool
     {
         $result = null;
@@ -73,17 +110,23 @@ class DeferrableStore extends AbstractStore
         return $result || $this->actual->exists($key);
     }
 
+    /**
+     * @inheritDoc
+     */
     public function existsMulti(string ...$keys): array
     {
-        $exists = $this->memory->existsMulti($keys);
+        $exists = $this->memory->existsMulti(...$keys);
         $remainingKeys = array_diff($keys, array_keys($exists));
         if (!empty($remainingKeys)) {
-            $fromStore = $this->actual->existsMulti($remainingKeys);
+            $fromStore = $this->actual->existsMulti(...$remainingKeys);
             $exists = array_merge($exists, $fromStore);
         }
         return $exists;
     }
 
+    /**
+     * @inheritDoc
+     */
     public function set(string $key, $value, $ttl = null): bool
     {
         if ($this->deferred) {
@@ -93,7 +136,10 @@ class DeferrableStore extends AbstractStore
         return $this->actual->set($key, $value, $ttl);
     }
 
-    public function setMulti(array $entries, $ttl = null): array
+    /**
+     * @inheritDoc
+     */
+    public function setMulti(array $entries, DateTimeInterface|DateInterval|int|float|null $ttl = null): array
     {
         if ($this->deferred) {
             $this->enqueue(__FUNCTION__, $entries, $this->toAbsoluteTtl($ttl));
@@ -107,12 +153,9 @@ class DeferrableStore extends AbstractStore
      * it will get and store the results in the pool and any updates that has
      * occurred while it's in the pool will not be reflected.
      *
-     * @param string $key
-     * @param int $by
-     * @param null $ttl
-     * @return int|null
+     * @inheritDoc
      */
-    public function increment(string $key, int $by = 1, $ttl = null): ?int
+    public function increment(string $key, int $by = 1, DateTimeInterface|DateInterval|int|float|null $ttl = null): ?int
     {
         if ($this->deferred) {
             $this->memory->set($key, ($this->get($key) ?? 0) + $by, $ttl);
@@ -122,14 +165,9 @@ class DeferrableStore extends AbstractStore
     }
 
     /**
-     * @see DeferrableStore::increment($key, $by, $ttl)
-     *
-     * @param string $key
-     * @param int $by
-     * @param null $ttl
-     * @return int|null
+     * @inheritDoc
      */
-    public function decrement(string $key, int $by = 1, $ttl = null): ?int
+    public function decrement(string $key, int $by = 1, DateTimeInterface|DateInterval|int|float|null $ttl = null): ?int
     {
         if ($this->deferred) {
             $this->memory->set($key, ($this->get($key) ?? 0) - $by, $ttl);
@@ -138,6 +176,9 @@ class DeferrableStore extends AbstractStore
         return $this->actual->decrement($key, $by, $ttl);
     }
 
+    /**
+     * @inheritDoc
+     */
     public function ttl(string $key): ?int
     {
         $result = null;
@@ -147,6 +188,9 @@ class DeferrableStore extends AbstractStore
         return $result ?? $this->actual->ttl($key);
     }
 
+    /**
+     * @inheritDoc
+     */
     public function remove(string $key): bool
     {
         if ($this->deferred) {
@@ -157,16 +201,22 @@ class DeferrableStore extends AbstractStore
         return $this->actual->remove($key);
     }
 
+    /**
+     * @inheritDoc
+     */
     public function removeMulti(string ...$keys): array
     {
         if ($this->deferred) {
             $this->enqueue(__FUNCTION__, ...$keys);
-            $this->memory->removeMulti($keys);
+            $this->memory->removeMulti(...$keys);
             return [];
         }
-        return $this->actual->removeMulti($keys);
+        return $this->actual->removeMulti(...$keys);
     }
 
+    /**
+     * @inheritDoc
+     */
     public function removeMatched(string $pattern): array
     {
         if ($this->deferred) {
@@ -175,6 +225,9 @@ class DeferrableStore extends AbstractStore
         return $this->actual->removeMatched($pattern);
     }
 
+    /**
+     * @inheritDoc
+     */
     public function removeExpired(): array
     {
         if ($this->deferred) {
@@ -185,6 +238,9 @@ class DeferrableStore extends AbstractStore
         return $this->actual->removeExpired();
     }
 
+    /**
+     * @inheritDoc
+     */
     public function clear(): bool
     {
         if ($this->deferred) {
@@ -194,23 +250,35 @@ class DeferrableStore extends AbstractStore
         return $this->actual->clear();
     }
 
+    /**
+     * @return bool
+     */
     public function isDeferred(): bool
     {
         return $this->deferred;
     }
 
+    /**
+     * @return bool
+     */
     public function hasChanges(): bool
     {
         return !empty($this->queue);
     }
 
-    public function defer()
+    /**
+     * @return $this
+     */
+    public function defer(): static
     {
         $this->deferred = true;
         return $this;
     }
 
-    public function commit()
+    /**
+     * @return $this
+     */
+    public function commit(): static
     {
         if (!$this->deferred) {
             return $this;
@@ -234,22 +302,39 @@ class DeferrableStore extends AbstractStore
         return $this;
     }
 
+    /**
+     * @param callable $callback
+     * @return void
+     */
     public function afterCommit(callable $callback): void
     {
         $this->afterCommitCallbacks[] = $callback;
     }
 
+    /**
+     * @param $call
+     * @param ...$args
+     * @return void
+     */
     protected function enqueue($call, ...$args): void
     {
         $this->queue[] = compact('call', 'args');
     }
 
-    protected function executeTask(array $task)
+    /**
+     * @param array $task
+     * @return mixed
+     */
+    protected function executeTask(array $task): mixed
     {
         return $this->actual->{$task['call']}(...$task['args']);
     }
 
-    protected function toAbsoluteTtl($ttl)
+    /**
+     * @param $ttl
+     * @return Carbon|null
+     */
+    protected function toAbsoluteTtl($ttl): ?Carbon
     {
         if (is_null($ttl)) return null;
         if (is_int($ttl)) return Carbon::createFromTimestamp(time() + $ttl);

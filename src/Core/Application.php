@@ -185,6 +185,7 @@ class Application extends Container
 
     /**
      * @param string $name
+     * @return void
      */
     protected function setName(string $name): void
     {

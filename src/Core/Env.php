@@ -4,7 +4,11 @@ namespace Kirameki\Core;
 
 class Env
 {
-    public static function get(string $key)
+    /**
+     * @param string $key
+     * @return bool|string|null
+     */
+    public static function get(string $key): bool|string|null
     {
         $value = strtolower($_ENV[$key] ?? $_SERVER[$key]);
         if ($value === 'true') return true;

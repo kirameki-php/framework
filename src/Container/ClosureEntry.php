@@ -32,9 +32,9 @@ class ClosureEntry implements EntryInterface
     protected bool $resolved;
 
     /**
-     * @var mixed|null
+     * @var mixed
      */
-    protected $instance;
+    protected mixed $instance;
 
     /**
      * @var Closure[]
@@ -53,6 +53,7 @@ class ClosureEntry implements EntryInterface
         $this->arguments = $arguments;
         $this->cacheable = $cacheable;
         $this->resolved = false;
+        $this->instance = null;
     }
 
     /**
@@ -93,6 +94,7 @@ class ClosureEntry implements EntryInterface
 
     /**
      * @param Closure $callback
+     * @return void
      */
     public function onResolved(Closure $callback): void
     {
@@ -101,9 +103,10 @@ class ClosureEntry implements EntryInterface
     }
 
     /**
-     * @param mixed|null $instance
+     * @param mixed $instance
+     * @return void
      */
-    protected function invokeOnResolved($instance): void
+    protected function invokeOnResolved(mixed $instance): void
     {
         foreach ($this->onResolvedCallbacks as $callback) {
             $callback($instance);

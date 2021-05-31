@@ -2,10 +2,11 @@
 
 namespace Kirameki\Cache;
 
-use RuntimeException;
-
 class DeferredPool extends MemoryStore
 {
+    /**
+     * @param string|null $namespace
+     */
     public function __construct(?string $namespace = null)
     {
         parent::__construct($namespace);
@@ -52,6 +53,12 @@ class DeferredPool extends MemoryStore
         return $this->stored[$key] ?? null;
     }
 
+    /**
+     * @param $value
+     * @param int|null $created
+     * @param int|null $ttl
+     * @return bool[]
+     */
     protected function makeEntry($value, ?int $created, ?int $ttl): array
     {
         return parent::makeEntry($value, $created, $ttl) + ['exists' => true];

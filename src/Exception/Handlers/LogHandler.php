@@ -6,6 +6,10 @@ use Throwable;
 
 class LogHandler implements HandlerInterface
 {
+    /**
+     * @param Throwable $exception
+     * @return void
+     */
     public function handle(Throwable $exception): void
     {
         dump($exception);
@@ -17,11 +21,19 @@ class LogHandler implements HandlerInterface
         logger()->error($message, $context);
     }
 
+    /**
+     * @param Throwable $exception
+     * @return bool
+     */
     protected function shouldIgnore(Throwable $exception): bool
     {
         return false;
     }
 
+    /**
+     * @param Throwable $exception
+     * @return array
+     */
     protected function context(Throwable $exception): array
     {
         return [];

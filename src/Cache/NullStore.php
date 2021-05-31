@@ -3,6 +3,7 @@
 namespace Kirameki\Cache;
 
 use Closure;
+use DateTimeInterface;
 
 class NullStore extends AbstractStore
 {
@@ -11,16 +12,25 @@ class NullStore extends AbstractStore
         $this->namespace = $namespace ?? '';
     }
 
-    public function get(string $key)
+    /**
+     * @inheritDoc
+     */
+    public function get(string $key): mixed
     {
         return null;
     }
 
-    public function tryGet(string $key, &$value): bool
+    /**
+     * @inheritDoc
+     */
+    public function tryGet(string $key, mixed &$value): bool
     {
         return false;
     }
 
+    /**
+     * @inheritDoc
+     */
     public function getMulti(string ...$keys): array
     {
         $result = [];
@@ -30,11 +40,17 @@ class NullStore extends AbstractStore
         return $result;
     }
 
+    /**
+     * @inheritDoc
+     */
     public function exists(string $key): bool
     {
         return false;
     }
 
+    /**
+     * @inheritDoc
+     */
     public function existsMulti(string ...$keys): array
     {
         $result = [];
@@ -44,12 +60,18 @@ class NullStore extends AbstractStore
         return $result;
     }
 
+    /**
+     * @inheritDoc
+     */
     public function set(string $key, $value, $ttl = null): bool
     {
         return false;
     }
 
-    public function setMulti(array $entries, $ttl = null): array
+    /**
+     * @inheritDoc
+     */
+    public function setMulti(array $entries, DateTimeInterface|int|float|null $ttl = null): array
     {
         $result = [];
         foreach ($entries as $key => $entry) {
@@ -58,21 +80,33 @@ class NullStore extends AbstractStore
         return $result;
     }
 
-    public function increment(string $key, int $by = 1, $ttl = null): ?int
+    /**
+     * @inheritDoc
+     */
+    public function increment(string $key, int $by = 1, DateTimeInterface|int|float|null $ttl = null): ?int
     {
         return null;
     }
 
-    public function decrement(string $key, int $by = 1, $ttl = null): ?int
+    /**
+     * @inheritDoc
+     */
+    public function decrement(string $key, int $by = 1, DateTimeInterface|int|float|null $ttl = null): ?int
     {
         return null;
     }
 
+    /**
+     * @inheritDoc
+     */
     public function remove(string $key): bool
     {
         return true;
     }
 
+    /**
+     * @inheritDoc
+     */
     public function removeMulti(string ...$keys): array
     {
         $result = [];
@@ -82,11 +116,17 @@ class NullStore extends AbstractStore
         return $result;
     }
 
+    /**
+     * @inheritDoc
+     */
     public function removeMatched(string $pattern): array
     {
         return ['successful' => [], 'failed' => []];
     }
 
+    /**
+     * @inheritDoc
+     */
     public function removeExpired(): array
     {
         return [];
@@ -100,6 +140,9 @@ class NullStore extends AbstractStore
         return null;
     }
 
+    /**
+     * @inheritDoc
+     */
     public function clear(): bool
     {
         return true;
