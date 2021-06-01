@@ -431,11 +431,16 @@ class Arr
      */
     public static function isList(iterable $iterable): bool
     {
-        foreach($iterable as $key => $value) {
-            if (!is_int($key)) {
+        // TODO add array_is_list when php 8.1 is out
+
+        $current_key = 0;
+        foreach ($iterable as $key => $noop) {
+            if ($key !== $current_key) {
                 return false;
             }
+            ++$current_key;
         }
+
         return true;
     }
 

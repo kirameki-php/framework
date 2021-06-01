@@ -1,6 +1,6 @@
 <?php
 
-namespace Kirameki\Cache;
+namespace Kirameki\Cache\Stores;
 
 use Closure;
 use DateInterval;
@@ -43,16 +43,16 @@ interface StoreInterface
      * @param string $key
      * @param $value
      * @param DateTimeInterface|DateInterval|int|float|null $ttl
-     * @return bool
+     * @return void
      */
-    public function set(string $key, $value, DateTimeInterface|DateInterval|int|float|null $ttl = null): bool;
+    public function set(string $key, $value, DateTimeInterface|DateInterval|int|float|null $ttl = null): void;
 
     /**
      * @param array $entries
      * @param DateTimeInterface|DateInterval|int|float|null $ttl
-     * @return array
+     * @return void
      */
-    public function setMulti(array $entries, DateTimeInterface|DateInterval|int|float|null $ttl = null): array;
+    public function setMulti(array $entries, DateTimeInterface|DateInterval|int|float|null $ttl = null): void;
 
     /**
      * @param string $key
@@ -76,30 +76,30 @@ interface StoreInterface
      * @param DateTimeInterface|DateInterval|float|int|null $ttl
      * @return mixed
      */
-    public function remember(string $key, Closure $callback, DateTimeInterface|DateInterval|int|float|null $ttl = null);
+    public function remember(string $key, Closure $callback, DateTimeInterface|DateInterval|int|float|null $ttl = null): mixed;
 
     /**
      * @param string $key
-     * @return bool
+     * @return void
      */
-    public function remove(string $key): bool;
+    public function delete(string $key): void;
 
     /**
      * @param string ...$keys
-     * @return array
+     * @return void
      */
-    public function removeMulti(string ...$keys): array;
+    public function deleteMulti(string ...$keys): void;
 
     /**
      * @param string $pattern
      * @return array
      */
-    public function removeMatched(string $pattern): array;
+    public function deleteMatched(string $pattern): array;
 
     /**
-     * @return array
+     * @return void
      */
-    public function removeExpired(): array;
+    public function deleteExpired(): void;
 
     /**
      * Returns the remaining TTL (time-to-live) of cache entry in seconds.
@@ -114,9 +114,9 @@ interface StoreInterface
     /**
      * Clears all entries from cache
      *
-     * @return bool
+     * @return void
      */
-    public function clear(): bool;
+    public function clear(): void;
 
     /**
      * Returns the namespace set to store

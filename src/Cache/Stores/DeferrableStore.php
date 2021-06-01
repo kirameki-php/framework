@@ -1,6 +1,6 @@
 <?php
 
-namespace Kirameki\Cache;
+namespace Kirameki\Cache\Stores;
 
 use Carbon\Carbon;
 use DateInterval;
@@ -127,25 +127,27 @@ class DeferrableStore extends AbstractStore
     /**
      * @inheritDoc
      */
-    public function set(string $key, $value, $ttl = null): bool
+    public function set(string $key, $value, $ttl = null): void
     {
         if ($this->deferred) {
             $this->enqueue(__FUNCTION__, $key, $value, $this->toAbsoluteTtl($ttl));
-            return $this->memory->set($key, $value, $ttl);
+            $this->memory->set($key, $value, $ttl);
+        } else {
+            $this->actual->set($key, $value, $ttl);
         }
-        return $this->actual->set($key, $value, $ttl);
     }
 
     /**
      * @inheritDoc
      */
-    public function setMulti(array $entries, DateTimeInterface|DateInterval|int|float|null $ttl = null): array
+    public function setMulti(array $entries, DateTimeInterface|DateInterval|int|float|null $ttl = null): void
     {
         if ($this->deferred) {
             $this->enqueue(__FUNCTION__, $entries, $this->toAbsoluteTtl($ttl));
-            return $this->memory->setMulti($entries, $ttl);
+            $this->memory->setMulti($entries, $ttl);
+        } else {
+            $this->actual->setMulti($entries, $ttl);
         }
-        return $this->actual->setMulti($entries, $ttl);
     }
 
     /**
@@ -191,63 +193,63 @@ class DeferrableStore extends AbstractStore
     /**
      * @inheritDoc
      */
-    public function remove(string $key): bool
+    public function delete(string $key): void
     {
         if ($this->deferred) {
             $this->enqueue(__FUNCTION__, $key);
-            $this->memory->remove($key);
-            return true;
+            $this->memory->delete($key);
+        } else {
+            $this->actual->delete($key);
         }
-        return $this->actual->remove($key);
     }
 
     /**
      * @inheritDoc
      */
-    public function removeMulti(string ...$keys): array
+    public function deleteMulti(string ...$keys): void
     {
         if ($this->deferred) {
             $this->enqueue(__FUNCTION__, ...$keys);
-            $this->memory->removeMulti(...$keys);
-            return [];
+            $this->memory->deleteMulti(...$keys);
+        } else {
+            $this->actual->deleteMulti(...$keys);
         }
-        return $this->actual->removeMulti(...$keys);
     }
 
     /**
      * @inheritDoc
      */
-    public function removeMatched(string $pattern): array
+    public function deleteMatched(string $pattern): array
     {
         if ($this->deferred) {
             throw new RuntimeException('Fuzzy matching is not supported when deferred');
         }
-        return $this->actual->removeMatched($pattern);
+        return $this->actual->deleteMatched($pattern);
     }
 
     /**
      * @inheritDoc
      */
-    public function removeExpired(): array
+    public function deleteExpired(): void
     {
         if ($this->deferred) {
             $this->enqueue(__FUNCTION__);
-            $this->memory->removeExpired();
-            return [];
+            $this->memory->deleteExpired();
+        } else {
+            $this->actual->deleteExpired();
         }
-        return $this->actual->removeExpired();
     }
 
     /**
      * @inheritDoc
      */
-    public function clear(): bool
+    public function clear(): void
     {
         if ($this->deferred) {
             $this->enqueue(__FUNCTION__);
             $this->memory->clear();
         }
-        return $this->actual->clear();
+        $this->actual->clear();
     }
 
     /**

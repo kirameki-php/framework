@@ -1,6 +1,6 @@
 <?php
 
-namespace Kirameki\Cache;
+namespace Kirameki\Cache\Stores;
 
 class DeferredPool extends MemoryStore
 {
@@ -10,14 +10,14 @@ class DeferredPool extends MemoryStore
     public function __construct(?string $namespace = null)
     {
         parent::__construct($namespace);
+        $this->emitEvents(false);
     }
 
     /**
      * Since the pool keeps all removed data in the array until it's committed,
      * we need to check the extra [exists] metadata to see if it exists logically.
      *
-     * @param string $key
-     * @return bool
+     * @inheritDoc
      */
     public function exists(string $key): bool
     {
@@ -28,15 +28,13 @@ class DeferredPool extends MemoryStore
      * Instead of actually removing the keys, we will only mark it as gone so that
      * Deferred store knows it existed in pool at some point.
      *
-     * @param string $key
-     * @return bool
+     * @inheritDoc
      */
-    public function remove(string $key): bool
+    public function delete(string $key): void
     {
         if (isset($this->stored[$key])) {
             $this->stored[$key]['exists'] = false;
         }
-        return true;
     }
 
     /**
@@ -44,9 +42,7 @@ class DeferredPool extends MemoryStore
      * because if the record does not exist it will try to get it from the underlying
      * store where the data might still exist.
      *
-     * @param $key
-     * @param bool $deserialize
-     * @return array|null
+     * @inheritDoc
      */
     protected function fetchEntry($key, bool $deserialize = true): ?array
     {
@@ -54,10 +50,7 @@ class DeferredPool extends MemoryStore
     }
 
     /**
-     * @param $value
-     * @param int|null $created
-     * @param int|null $ttl
-     * @return bool[]
+     * @inheritDoc
      */
     protected function makeEntry($value, ?int $created, ?int $ttl): array
     {
