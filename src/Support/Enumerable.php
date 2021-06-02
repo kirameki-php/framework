@@ -147,15 +147,6 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
      * @param iterable $items
      * @return static
      */
-    public function deepMerge(iterable $items): static
-    {
-        return $this->newInstance(array_merge_recursive($this->toArray(), $this->asArray($items)));
-    }
-
-    /**
-     * @param iterable $items
-     * @return static
-     */
     public function diff(iterable $items): static
     {
         return $this->newInstance(array_diff($this->toArray(), $this->asArray($items)));

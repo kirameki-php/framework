@@ -281,23 +281,6 @@ class CollectionTest extends TestCase
         self::assertSame($array, iterator_to_array($simple->cursor()));
     }
 
-    public function testDeepMerge()
-    {
-        $empty = $this->collect();
-        $merged = $empty->deepMerge([1, [2]]);
-        self::assertNotSame($empty, $merged);
-        self::assertCount(0, $empty);
-        self::assertCount(2, $merged);
-        self::assertEquals([1, [2]], $merged->toArray());
-
-        $assoc = $this->collect([1, 'a' => [1, 2]]);
-        $merged = $assoc->deepMerge([1, 'a' => [3]]);
-        self::assertCount(2, $assoc);
-        self::assertCount(3, $merged);
-        self::assertNotSame($assoc, $merged);
-        self::assertSame([1, 'a' => [1, 2, 3], 1], $merged->toArray());
-    }
-
     public function testDiff()
     {
         $empty = $this->collect();
@@ -727,6 +710,15 @@ class CollectionTest extends TestCase
     {
         $collect = $this->collect([['id' => 'b', 1], ['id' => 'b', 2]])->keyBy(fn($v) => $v['id'], true);
         self::assertEquals(['b' => ['id' => 'b', 2]], $collect->toArray());
+
+        self::expectException(DuplicateKeyException::class);
+        $this->collect([['id' => 'b', 1], ['id' => 'b', 2]])->keyBy(fn($v) => $v['id'], false);
+    }
+
+    public function testKeyBy_WithInvalidKey()
+    {
+        self::expectException(InvalidKeyException::class);
+        $this->collect([['id' => 'b', 1], ['id' => 'b', 2]])->keyBy(fn($v) => false);
     }
 
     public function testKeys()
@@ -802,7 +794,16 @@ class CollectionTest extends TestCase
 
     public function testMerge()
     {
+        $empty = $this->collect();
+        $merged = $empty->merge([1, [2]]);
+        self::assertNotSame($empty, $merged);
+        self::assertCount(0, $empty);
+        self::assertEquals([1, [2]], $merged->toArray());
 
+        $assoc = $this->collect([1, 'a' => [1, 2]]);
+        $merged = $assoc->merge([1, 'a' => [3]]);
+        self::assertNotSame($assoc, $merged);
+        self::assertSame([1, 'a' => [3], 1], $merged->toArray());
     }
 
     public function testMin()
@@ -829,7 +830,68 @@ class CollectionTest extends TestCase
         self::assertEquals([-100, 10], $collect->minMax());
     }
 
+    public function testNewInstance()
+    {
+        $collect = $this->collect([]);
+        self::assertNotSame($collect, $collect->newInstance());
+        self::assertEquals($collect, $collect->newInstance());
 
+        $collect = $this->collect([]);
+        self::assertInstanceOf(Collection::class, $collect->newInstance());
+
+        $collect = $this->collect([1, 10]);
+        self::assertEquals([], $collect->newInstance()->toArray());
+    }
+
+    public function testNotContains()
+    {
+        self::assertTrue($this->collect([])->notContains(0));
+        self::assertTrue($this->collect([])->notContains(null));
+        self::assertTrue($this->collect([])->notContains([]));
+        self::assertTrue($this->collect([null, 0])->notContains(false));
+        self::assertTrue($this->collect([null, 0])->notContains(1));
+        self::assertTrue($this->collect(['a' => 1])->notContains('a'));
+        self::assertFalse($this->collect([null, 0])->notContains(null));
+        self::assertFalse($this->collect([null, []])->notContains([]));
+        self::assertFalse($this->collect(['a' => 1, 0])->notContains(1));
+    }
+
+    public function testNotContainsKey()
+    {
+        self::assertTrue($this->collect([])->notContainsKey(0));
+        self::assertTrue($this->collect([])->notContainsKey(1));
+        self::assertTrue($this->collect(['b' => 1])->notContainsKey('a'));
+        self::assertFalse($this->collect([1])->notContainsKey(0));
+        self::assertFalse($this->collect([11 => 1])->notContainsKey(11));
+        self::assertFalse($this->collect(['a' => 1, 0])->notContainsKey('a'));
+    }
+
+    public function testNotContainsKey_InvalidKey_Null()
+    {
+        self::expectException(InvalidKeyException::class);
+        self::assertTrue($this->collect([])->notContainsKey(null));
+    }
+
+    public function testNotContainsKey_InvalidKey_Bool()
+    {
+        self::expectException(InvalidKeyException::class);
+        self::assertTrue($this->collect([])->notContainsKey(false));
+    }
+
+    public function testNotContainsKey_InvalidKey_Float()
+    {
+        self::expectException(InvalidKeyException::class);
+        self::assertTrue($this->collect([])->notContainsKey(0.0));
+    }
+
+    public function testNotEquals()
+    {
+        self::assertTrue($this->collect([])->notEquals($this->collect([1])));
+        self::assertTrue($this->collect([])->notEquals($this->collect([null])));
+        self::assertTrue($this->collect(['b' => 1])->notEquals($this->collect(['a' => 1])));
+        self::assertFalse($this->collect([1])->notEquals($this->collect([1])));
+        self::assertFalse($this->collect(['a' => 1])->notEquals($this->collect(['a' => 1])));
+    }
 
     public function testOffsetExists()
     {
@@ -904,4 +966,41 @@ class CollectionTest extends TestCase
         self::assertEquals([], $assoc->toArray());
     }
 
+    public function testOnly()
+    {
+        // with list array
+        $collect = $this->collect([1, 2, 3]);
+        self::assertEquals([1 => 2], $collect->only([1])->toArray());
+
+        // with assoc array
+        $collect = $this->collect(['a' => 1, 'b' => 2, 'c' => 3]);
+        self::assertEquals(['a' => 1, 'b' => 2], $collect->only(['a', 'b'])->toArray());
+
+        // different order of keys
+        self::assertEquals(['c' => 3, 'b' => 2], $collect->only(['c', 'b'])->toArray());
+
+        // different order of keys
+        self::assertEquals(['c' => 3, 'b' => 2], $collect->only(['x' => 'c', 'b'])->toArray());
+    }
+
+    public function testPad()
+    {
+        $collect = $this->collect([1, 2]);
+        self::assertEquals([1, 2], $collect->pad(0, 9)->toArray());
+        self::assertEquals([1, 2], $collect->pad(2, 9)->toArray());
+        self::assertEquals([1, 2], $collect->pad(-1, 9)->toArray());
+        self::assertEquals([1, 2, 9], $collect->pad(3, 9)->toArray());
+
+        $collect = $this->collect(['a' => 1, 'b' => 2]);
+        self::assertEquals(['a' => 1, 'b' => 2, 0 => 9], $collect->pad(3, 9)->toArray());
+
+        self::assertEquals([9, 9, 9], $this->collect()->pad(3, 9)->toArray());
+    }
+
+    public function testOnly_WithUndefinedKey()
+    {
+        self::expectException(ErrorException::class);
+        self::expectExceptionMessage('Undefined array key "a"');
+        self::assertEquals([], $this->collect()->only(['a'])->toArray());
+    }
 }
