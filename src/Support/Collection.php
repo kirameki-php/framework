@@ -166,22 +166,7 @@ class Collection extends Enumerable implements ArrayAccess
      */
     public function set(mixed $key, mixed $value): static
     {
-        Assert::validKey($key);
-
-        if (static::isNotDottedKey($key)) {
-            $this->items[$key] = $value;
-            return $this;
-        }
-
-        $ptr = &$this->items;
-        $segments = explode('.', $key);
-        $lastSegment = array_pop($segments);
-        foreach ($segments as $segment) {
-            $ptr[$segment] ??= [];
-            $ptr = &$ptr[$segment];
-        }
-        $ptr[$lastSegment] = $value;
-
+        Arr::set($this->items, $key, $value);
         return $this;
     }
 
@@ -204,25 +189,6 @@ class Collection extends Enumerable implements ArrayAccess
     public function shift(): mixed
     {
         return array_shift($this->items);
-    }
-
-    /**
-     * @param iterable $iterable
-     * @return $this
-     */
-    public function unionKeys(iterable $iterable): static
-    {
-        return $this->newInstance(Arr::unionKeys($this->items, $iterable));
-    }
-
-    /**
-     * @param iterable $iterable
-     * @param int $depth
-     * @return $this
-     */
-    public function unionKeysRecursive(iterable $iterable, int $depth = PHP_INT_MAX): static
-    {
-        return $this->newInstance(Arr::unionKeysRecursive($this->items, $iterable, $depth));
     }
 
     /**

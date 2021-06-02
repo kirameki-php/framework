@@ -399,9 +399,9 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
     }
 
     /**
-     * @return static
+     * @return Collection
      */
-    public function keys(): static
+    public function keys(): Collection
     {
         return $this->newCollection(array_keys($this->toArray()));
     }
@@ -434,10 +434,10 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
     }
 
     /**
-     * @param callable|string $callback
+     * @param callable $callback
      * @return static
      */
-    public function map(callable|string $callback): static
+    public function map(callable $callback): static
     {
         return $this->newInstance(Arr::map($this->items, $callback));
     }
@@ -456,7 +456,7 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
      */
     public function merge(iterable $collection): static
     {
-        return $this->newInstance(array_merge($this->toArray(), $this->asArray($collection)));
+        return $this->newInstance(Arr::merge($this->items, $collection));
     }
 
     /**
@@ -513,9 +513,9 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
 
     /**
      * @param int|string $key
-     * @return static
+     * @return Collection
      */
-    public function pluck(mixed $key): static
+    public function pluck(mixed $key): Collection
     {
         return $this->newCollection(Arr::pluck($this->items, $key));
     }
@@ -528,11 +528,7 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
      */
     public function reduce(callable $callback, mixed $initial = null): mixed
     {
-        $result = $initial ?? $this->newInstance();
-        foreach ($this->items as $key => $item) {
-            $result = $callback($result, $item, $key);
-        }
-        return $result;
+        return Arr::reduce($this->items, $callback, $initial ?? $this->newInstance());
     }
 
     /**
@@ -721,9 +717,9 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
     }
 
     /**
-     * @return static
+     * @return Collection
      */
-    public function tally(): static
+    public function tally(): Collection
     {
         return $this->newCollection(Arr::tally($this->items));
     }
@@ -761,6 +757,25 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
     public function toUrlQuery(?string $namespace = null): string
     {
         return Arr::toUrlQuery($this->items, $namespace);
+    }
+
+    /**
+     * @param iterable $iterable
+     * @return $this
+     */
+    public function unionKeys(iterable $iterable): static
+    {
+        return $this->newInstance(Arr::unionKeys($this->items, $iterable));
+    }
+
+    /**
+     * @param iterable $iterable
+     * @param int $depth
+     * @return $this
+     */
+    public function unionKeysRecursive(iterable $iterable, int $depth = PHP_INT_MAX): static
+    {
+        return $this->newInstance(Arr::unionKeysRecursive($this->items, $iterable, $depth));
     }
 
     /**
@@ -807,23 +822,5 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
     protected function newCollection(iterable $items): Collection
     {
         return new Collection($items);
-    }
-
-    /**
-     * @param int|string $key
-     * @return bool
-     */
-    protected static function isDottedKey(int|string $key): bool
-    {
-        return is_string($key) && str_contains($key, '.');
-    }
-
-    /**
-     * @param int|string $key
-     * @return bool
-     */
-    protected static function isNotDottedKey(int|string $key): bool
-    {
-        return !static::isDottedKey($key);
     }
 }

@@ -592,15 +592,11 @@ class Arr
 
     /**
      * @param iterable $iterable
-     * @param callable|string $callback
+     * @param callable $callback
      * @return array
      */
-    public static function map(iterable $iterable, callable|string $callback): array
+    public static function map(iterable $iterable, callable $callback): array
     {
-        if (is_string($callback)) {
-            $callback = static::createDigger($callback);
-        }
-
         $values = [];
         foreach ($iterable as $key => $item) {
             $values[$key] = $callback($item, $key);
@@ -615,6 +611,16 @@ class Arr
     public static function max(iterable $iterable): mixed
     {
         return max(static::from($iterable));
+    }
+
+    /**
+     * @param iterable $iterable1
+     * @param iterable $iterable2
+     * @return array
+     */
+    public static function merge(iterable $iterable1, iterable $iterable2): array
+    {
+        return array_merge(static::from($iterable1), static::from($iterable2));
     }
 
     /**
@@ -748,6 +754,21 @@ class Arr
     }
 
     /**
+     * @template T
+     * @param callable $callback
+     * @param T|null $initial
+     * @return T
+     */
+    public static function reduce(iterable $iterable, callable $callback, mixed $initial = null): mixed
+    {
+        $result = $initial ?? [];
+        foreach ($iterable as $key => $item) {
+            $result = $callback($result, $item, $key);
+        }
+        return $result;
+    }
+
+    /**
      * @param iterable $iterable
      * @param mixed $value
      * @param int|null $limit
@@ -856,6 +877,30 @@ class Arr
     public static function satisfyAny(iterable $iterable, callable $condition): bool
     {
         return static::contains($iterable, $condition);
+    }
+
+    /**
+     * @param array|ArrayAccess $array
+     * @param int|string $key
+     * @param mixed $value
+     */
+    public static function set(array|ArrayAccess &$array, int|string $key, mixed $value)
+    {
+        Assert::validKey($key);
+
+        if (static::isNotDottedKey($key)) {
+            $array[$key] = $value;
+            return;
+        }
+
+        $ptr = &$array;
+        $segments = explode('.', $key);
+        $lastSegment = array_pop($segments);
+        foreach ($segments as $segment) {
+            $ptr[$segment] ??= [];
+            $ptr = &$ptr[$segment];
+        }
+        $ptr[$lastSegment] = $value;
     }
 
     /**
