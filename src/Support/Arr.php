@@ -334,6 +334,24 @@ class Arr
 
     /**
      * @param iterable $iterable
+     * @param bool $overwrite
+     * @return array
+     */
+    public static function flip(iterable $iterable, bool $overwrite = false): array
+    {
+        $flipped = [];
+        foreach ($iterable as $key => $value) {
+            Assert::validKey($value);
+            if (!$overwrite && array_key_exists($value, $flipped)) {
+                throw new DuplicateKeyException($value, $key);
+            }
+            $flipped[$value] = $key;
+        }
+        return $flipped;
+    }
+
+    /**
+     * @param iterable $iterable
      * @return array
      */
     public static function from(iterable $iterable): array
@@ -367,11 +385,11 @@ class Arr
      */
     public static function groupBy(iterable $iterable, string|callable $key): array
     {
-        $call = is_string($key) ? static::createDigger($key) : $key;
+        $callable = is_string($key) ? static::createDigger($key) : $key;
 
         $map = [];
         foreach ($iterable as $k => $item) {
-            $groupKey = $call($item, $k);
+            $groupKey = $callable($item, $k);
             if ($groupKey !== null) {
                 Assert::validKey($groupKey);
                 $map[$groupKey] ??= [];
@@ -461,16 +479,35 @@ class Arr
      */
     public static function keyBy(iterable $iterable, string|callable $key, bool $overwrite = false): array
     {
-        $call = is_string($key) ? static::createDigger($key) : $key;
-        $map = [];
-        foreach ($iterable as $k => $item) {
-            $newKey = $call($item, $k);
-            if (!$overwrite && array_key_exists($newKey, $map)) {
+        return static::keyByRecursive($iterable, $key, $overwrite, 1);
+    }
+
+    /**
+     * @param iterable $iterable
+     * @param string|callable $key
+     * @param int $depth
+     * @return array
+     */
+    public static function keyByRecursive(iterable $iterable, string|callable $key, bool $overwrite = false, int $depth = PHP_INT_MAX): array
+    {
+        $callable = is_string($key) ? static::createDigger($key) : $key;
+
+        $result = [];
+        foreach ($iterable as $key => $item) {
+            $newKey = $callable($item, $key);
+
+            Assert::validKey($newKey);
+
+            if (!$overwrite && array_key_exists($newKey, $result)) {
                 throw new DuplicateKeyException($newKey, $item);
             }
-            $map[$newKey] = $item;
+
+            $result[$newKey] = ($depth > 1 && is_iterable($item))
+                ? static::keyByRecursive($item, $callable, $depth - 1)
+                : $item;
         }
-        return $map;
+
+        return $result;
     }
 
     /**
@@ -902,39 +939,6 @@ class Arr
         $arr = static::from($iterable);
         $data = $namespace !== null ? [$namespace => $arr] : $arr;
         return http_build_query($data, '&', PHP_QUERY_RFC3986);
-    }
-
-    /**
-     * @param array $array
-     * @param callable $callback
-     * @return array
-     */
-    public static function transformKeys(array $array, callable $callback): array
-    {
-        return static::transformKeysRecursive($array, $callback, 1);
-    }
-
-    /**
-     * @param iterable $iterable
-     * @param callable $callback
-     * @param int $depth
-     * @return array
-     */
-    public static function transformKeysRecursive(iterable $iterable, callable $callback, int $depth = PHP_INT_MAX): array
-    {
-        $result = [];
-
-        foreach ($iterable as $key => $item) {
-            $newKey = $callback($key, $item);
-
-            Assert::validKey($newKey);
-
-            $result[$newKey] = ($depth > 1 && is_iterable($item))
-                ? static::transformKeysRecursive($item, $callback, $depth - 1)
-                : $item;
-        }
-
-        return $result;
     }
 
     /**

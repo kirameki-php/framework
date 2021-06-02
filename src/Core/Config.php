@@ -101,9 +101,9 @@ class Config implements ArrayAccess
      * @param string $name
      * @return static
      */
-    public function sub(string $name): static
+    public function for(string $name): static
     {
-        return new Config($this->get($name) ?? []);
+        return new Config($this->entries[$name] ?? []);
     }
 
     /**

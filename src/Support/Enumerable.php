@@ -310,11 +310,12 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
     }
 
     /**
-     * @return static
+     * @param bool $overwrite
+     * @return $this
      */
-    public function flip(): static
+    public function flip(bool $overwrite = false): static
     {
-        return $this->newInstance(array_flip($this->toArray()));
+        return $this->newInstance(Arr::flip($this->items, $overwrite));
     }
 
     /**
@@ -587,6 +588,19 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
     }
 
     /**
+     * @param int|string $key
+     * @return static
+     */
+    public function seek(mixed $key): static
+    {
+        $array = Arr::get($this->items, $key);
+        if (!is_iterable($array)) {
+            throw new InvalidValueException('iterable', Util::typeOf($array));
+        }
+        return $this->newInstance($array);
+    }
+
+    /**
      * @return $this
      */
     public function shuffle(): static
@@ -678,16 +692,6 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
         $copy = $this->toArray();
         uasort($copy, $callback);
         return $this->newInstance($copy);
-    }
-
-    /**
-     * @param int|string $key
-     * @return static
-     */
-    public function sub(mixed $key): static
-    {
-        $array = Arr::get($this->items, $key) ?? throw new InvalidValueException('iterable', 'null');
-        return $this->newInstance($array);
     }
 
     /**
@@ -800,7 +804,7 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
      */
     protected function asArrayRecursive(iterable $items): array
     {
-        return Arr::map(Arr::from($items), function ($item) {
+        return Arr::map($items, function($item) {
             return is_iterable($item) ? $this->asArrayRecursive($item) : $item;
         });
     }

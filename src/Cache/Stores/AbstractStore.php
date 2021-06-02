@@ -107,7 +107,7 @@ abstract class AbstractStore implements StoreInterface
      */
     public function unformatKeys(array $results): array
     {
-        return Arr::transformKeys($results, fn($key) => $this->unformatKey($key));
+        return Arr::keyBy($results, fn($_, $key) => $this->unformatKey($key));
     }
 
     /**

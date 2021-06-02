@@ -85,20 +85,13 @@ class CollectionTest extends TestCase
 
         $seq = $this->collect([1, 2, 3]);
 
-        // test preserveKeys: true
         $chunked = $seq->chunk(2);
-        self::assertCount(2, $chunked);
-        self::assertEquals([0 => 1, 1 => 2], $chunked[0]->toArray());
-        self::assertEquals([2 => 3], $chunked[1]->toArray());
-
-        // test preserveKeys: false
-        $chunked = $seq->chunk(2, false);
         self::assertCount(2, $chunked);
         self::assertEquals([1, 2], $chunked[0]->toArray());
         self::assertEquals([3], $chunked[1]->toArray());
 
         // size larger than items -> returns everything
-        $chunked = $seq->chunk(4, false);
+        $chunked = $seq->chunk(4);
         self::assertCount(1, $chunked);
         self::assertEquals([1, 2, 3], $chunked[0]->toArray());
         self::assertNotSame($chunked, $seq);
@@ -110,12 +103,6 @@ class CollectionTest extends TestCase
         self::assertCount(2, $chunked);
         self::assertEquals(['a' => 1, 'b' => 2], $chunked[0]->toArray());
         self::assertEquals(['c' => 3], $chunked[1]->toArray());
-
-        // test preserveKeys: false
-        $chunked = $assoc->chunk(2, false);
-        self::assertCount(2, $chunked);
-        self::assertEquals([1, 2], $chunked[0]->toArray());
-        self::assertEquals([3], $chunked[1]->toArray());
 
         // size larger than items -> returns everything
         $chunked = $assoc->chunk(4);

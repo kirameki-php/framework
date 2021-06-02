@@ -207,25 +207,6 @@ class Collection extends Enumerable implements ArrayAccess
     }
 
     /**
-     * @param callable $callback
-     * @return $this
-     */
-    public function transformKeys(callable $callback): static
-    {
-        return $this->newInstance(Arr::transformKeys($this->items, $callback));
-    }
-
-    /**
-     * @param callable $callback
-     * @param int $depth
-     * @return $this
-     */
-    public function transformKeysRecursive(callable $callback, int $depth = PHP_INT_MAX): static
-    {
-        return $this->newInstance(Arr::transformKeysRecursive($this->items, $callback, $depth));
-    }
-
-    /**
      * @param iterable $iterable
      * @return $this
      */

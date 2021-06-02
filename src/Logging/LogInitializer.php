@@ -10,7 +10,7 @@ class LogInitializer implements InitializerInterface
 {
     public function register(Application $app): void
     {
-        $config = $app->config()->sub('logging');
+        $config = $app->config()->for('logging');
         $manager = new LogManager($config);
         $manager->addLogger('file', fn($opt) => new Loggers\FileLogger($opt));
         $manager->addLogger('multi', fn($opt) => new Loggers\MultiLogger(Arr::map($opt['channels'], fn($c) => $manager->channel($c))));
