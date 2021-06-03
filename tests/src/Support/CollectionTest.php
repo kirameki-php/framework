@@ -9,6 +9,7 @@ use Kirameki\Exception\DuplicateKeyException;
 use Kirameki\Exception\InvalidKeyException;
 use Kirameki\Exception\InvalidValueException;
 use Kirameki\Support\Collection;
+use RuntimeException;
 use Tests\Kirameki\TestCase;
 use TypeError;
 use ValueError;
@@ -942,13 +943,13 @@ class CollectionTest extends TestCase
     public function testOffsetSet_BoolAsKey()
     {
         self::expectException(InvalidKeyException::class);
-        $this->collect([])->set(true, 1);
+        $this->collect([])[true]= 1;
     }
 
     public function testOffsetSet_FloatAsKey()
     {
         self::expectException(InvalidKeyException::class);
-        $this->collect([])->set(1.1, 1);
+        $this->collect([])[1.1]= 1;
     }
 
     public function testOffsetUnset()
@@ -983,6 +984,13 @@ class CollectionTest extends TestCase
         self::assertEquals(['c' => 3, 'b' => 2], $collect->only(['x' => 'c', 'b'])->toArray());
     }
 
+    public function testOnly_WithUndefinedKey()
+    {
+        self::expectException(ErrorException::class);
+        self::expectExceptionMessage('Undefined array key "a"');
+        self::assertEquals([], $this->collect()->only(['a'])->toArray());
+    }
+
     public function testPad()
     {
         $collect = $this->collect([1, 2]);
@@ -997,10 +1005,93 @@ class CollectionTest extends TestCase
         self::assertEquals([9, 9, 9], $this->collect()->pad(3, 9)->toArray());
     }
 
-    public function testOnly_WithUndefinedKey()
+    public function testPluck()
     {
-        self::expectException(ErrorException::class);
-        self::expectExceptionMessage('Undefined array key "a"');
-        self::assertEquals([], $this->collect()->only(['a'])->toArray());
+        $collect = $this->collect([['a'], ['b']]);
+        self::assertEquals(['a', 'b'], $collect->pluck(0)->toArray());
+
+        $collect = $this->collect([['id' => 'a'], ['id' => 'b'], ['a' => 1]]);
+        self::assertEquals(['a', 'b'], $collect->pluck('id')->toArray());
+
+        $collect = $this->collect([['id' => ['a' => 1]], ['id' => 'b'], ['a' => 1]]);
+        self::assertEquals([1, null, null], $collect->pluck('id.a')->toArray());
+    }
+
+    public function testPluck_WithInvalidKey_Bool()
+    {
+        self::expectException(InvalidKeyException::class);
+        $this->collect([['id' => 'a'], ['id' => 'b'], ['a' => 1]])->pluck(true);
+    }
+
+    public function testPluck_WithInvalidKey_Float()
+    {
+        self::expectException(InvalidKeyException::class);
+        $this->collect([['id' => 'a'], ['id' => 'b'], ['a' => 1]])->pluck(1.1);
+    }
+
+    public function testPop()
+    {
+        $collect = $this->collect([1, 2]);
+        self::assertEquals(2, $collect->pop());
+        self::assertEquals([1], $collect->toArray());
+
+        $collect = $this->collect(['a' => 1, 'b' => 2]);
+        self::assertEquals(2, $collect->pop());
+        self::assertEquals(['a' => 1], $collect->toArray());
+    }
+
+    public function testPull()
+    {
+        $collect = $this->collect();
+        self::assertEquals(null, $collect->pull(1));
+
+        $collect = $this->collect([1, 2]);
+        self::assertEquals(2, $collect->pull(1));
+        self::assertEquals([1], $collect->toArray());
+
+        $collect = $this->collect(['a' => 1, 'b' => 2]);
+        self::assertEquals(2, $collect->pull('b'));
+        self::assertEquals(['a' => 1], $collect->toArray());
+    }
+
+    public function testPush()
+    {
+        $collect = $this->collect([1, 2]);
+        self::assertSame($collect, $collect->push(3));
+        self::assertEquals([1, 2, 3], $collect->toArray());
+
+        $collect = $this->collect([1, 2]);
+        self::assertSame($collect, $collect->push(3));
+        self::assertEquals([1, 2, 3], $collect->toArray());
+
+        $collect = $this->collect(['a' => 1, 'b' => 2]);
+        self::assertSame($collect, $collect->push('b'));
+        self::assertEquals(['a' => 1, 'b' => 2, 'b'], $collect->toArray());
+    }
+
+    public function testReduce()
+    {
+        /** @var Collection $reduced */
+        $reduced = $this->collect()->reduce(fn(Collection $c) => $c->push(1));
+        self::assertEquals([], $reduced->toArray());
+
+        $reduced = $this->collect(['a' => 1])->reduce(fn(Collection $c, $i, $k) => $c->set($k, $i * 2));
+        self::assertEquals(['a' => 2], $reduced->toArray());
+
+        $reduced = $this->collect(['a' => 1, 'b' => 2])->reduce(fn(Collection $c, $i, $k) => $c->set($k, $i * 2));
+        self::assertEquals(['a' => 2, 'b' => 4], $reduced->toArray());
+
+        $reduced = $this->collect(['a' => 1, 'b' => 2])->reduce(fn($c, $i, $k) => tap($c, fn($c) => $c->$k = 0), (object)[]);
+        self::assertEquals(['a' => 0, 'b' => 0], (array) $reduced);
+
+        $reduced = $this->collect([1, 2, 3])->reduce(fn(int $c, $i, $k) => $c + $i);
+        self::assertEquals(6, $reduced);
+    }
+
+    public function testReduce_UnableToGuessInitial()
+    {
+        self::expectException(RuntimeException::class);
+        self::expectExceptionMessage('Initial value not set and not guessable.');
+        $this->collect([1, 2, 3])->reduce(fn($c, $i, $k) => $c + $i);
     }
 }

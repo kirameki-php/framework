@@ -528,7 +528,7 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
      */
     public function reduce(callable $callback, mixed $initial = null): mixed
     {
-        return Arr::reduce($this->items, $callback, $initial ?? $this->newInstance());
+        return Arr::reduce($this->items, $callback, $initial);
     }
 
     /**

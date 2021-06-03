@@ -6,6 +6,8 @@ use ArrayAccess;
 use Closure;
 use Kirameki\Exception\DuplicateKeyException;
 use Kirameki\Exception\InvalidValueException;
+use ReflectionFunction;
+use ReflectionMethod;
 use RuntimeException;
 use Traversable;
 
@@ -755,12 +757,33 @@ class Arr
 
     /**
      * @template T
+     * @param iterable $iterable
      * @param callable $callback
      * @param T|null $initial
      * @return T
      */
     public static function reduce(iterable $iterable, callable $callback, mixed $initial = null): mixed
     {
+        // Guess initial from first argument of closure if defined
+        if ($initial === null && $callback instanceof Closure) {
+            $ref = new ReflectionFunction($callback);
+            $refType = $ref->getParameters()[0]->getType();
+            $name = $refType ? $refType->getName() : null;
+            if ($name === 'int') {
+                $initial = 0;
+            } else if ($name === 'float') {
+                $initial = 0.0;
+            } else if ($name === 'string') {
+                $initial = '';
+            } else if ($name === 'array') {
+                $initial = [];
+            } else if (class_exists($name)) {
+                $initial = new $name;
+            } else {
+                throw new RuntimeException('Initial value not set and not guessable.');
+            }
+        }
+
         $result = $initial ?? [];
         foreach ($iterable as $key => $item) {
             $result = $callback($result, $item, $key);
@@ -884,7 +907,7 @@ class Arr
      * @param int|string $key
      * @param mixed $value
      */
-    public static function set(array|ArrayAccess &$array, int|string $key, mixed $value)
+    public static function set(array|ArrayAccess &$array, mixed $key, mixed $value)
     {
         Assert::validKey($key);
 

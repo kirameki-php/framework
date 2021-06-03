@@ -127,7 +127,7 @@ class Collection extends Enumerable implements ArrayAccess
      */
     public function push(mixed ...$value): static
     {
-        Arr::push($this->items, $value);
+        Arr::push($this->items, ...$value);
         return $this;
     }
 
