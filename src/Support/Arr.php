@@ -420,12 +420,10 @@ class Arr
      */
     public static function isAssoc(iterable $iterable): bool
     {
-        foreach($iterable as $key => $value) {
-            if (!is_string($key)) {
-                return false;
-            }
+        if (static::isEmpty($iterable)) {
+            return true;
         }
-        return true;
+        return !static::isList($iterable);
     }
 
     /**
@@ -726,7 +724,7 @@ class Arr
 
         $segments = explode('.', $key);
         $lastSegment = array_pop($segments);
-        $ptr = $array;
+        $ptr = &$array;
         foreach ($segments as $segment) {
             if (!isset($segment, $ptr)) {
                 return null;
@@ -800,6 +798,7 @@ class Arr
     public static function remove(iterable &$iterable, mixed $value, ?int $limit = null): int
     {
         $counter = 0;
+        $limit ??= PHP_INT_MAX;
         foreach ($iterable as $key => $item) {
             if ($counter < $limit && $item === $value) {
                 unset($iterable[$key]);
@@ -819,21 +818,25 @@ class Arr
         Assert::validKey($key);
 
         if (static::isNotDottedKey($key)) {
-            unset($array[$key]);
-            return true;
+            if (array_key_exists($key, $array)) {
+                unset($array[$key]);
+                return true;
+            }
+            return false;
         }
 
         $segments = explode('.', $key);
         $lastSegment = array_pop($segments);
-        $ptr = $array;
+        $ptr = &$array;
         foreach ($segments as $segment) {
-            if (!isset($segment, $ptr)) {
+            if (is_array($ptr) && array_key_exists($segment, $ptr)) {
+                $ptr = &$ptr[$segment];
+            } else {
                 return false;
             }
-            $ptr = &$ptr[$segment];
         }
 
-        if (isset($ptr[$lastSegment])) {
+        if (array_key_exists($lastSegment, $ptr)) {
             unset($ptr[$lastSegment]);
             return true;
         }
@@ -882,8 +885,8 @@ class Arr
      */
     public static function satisfyAll(iterable $iterable, callable $condition): bool
     {
-        foreach ($iterable as $item) {
-            $bool = $condition($item);
+        foreach ($iterable as $key => $item) {
+            $bool = $condition($item, $key);
             Assert::bool($bool);
             if ($bool === false) {
                 return false;
@@ -933,8 +936,16 @@ class Arr
     public static function shuffle(iterable $iterable): array
     {
         $copy = static::from($iterable);
-        shuffle($copy);
-        return $copy;
+        $isList = static::isList($copy);
+        $array = [];
+        while (!empty($copy)) {
+            $key = array_rand($copy);
+            $isList
+                ? $array[] = $copy[$key]
+                : $array[$key] = $copy[$key];
+            unset($copy[$key]);
+        }
+        return $array;
     }
 
     /**

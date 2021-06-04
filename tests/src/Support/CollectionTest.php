@@ -1052,6 +1052,10 @@ class CollectionTest extends TestCase
         $collect = $this->collect(['a' => 1, 'b' => 2]);
         self::assertEquals(2, $collect->pull('b'));
         self::assertEquals(['a' => 1], $collect->toArray());
+
+        $collect = $this->collect(['a' => ['id' => 1], 'b' => 2]);
+        self::assertEquals(1, $collect->pull('a.id'));
+        self::assertEquals(['a' => [], 'b' => 2], $collect->toArray());
     }
 
     public function testPush()
@@ -1094,4 +1098,153 @@ class CollectionTest extends TestCase
         self::expectExceptionMessage('Initial value not set and not guessable.');
         $this->collect([1, 2, 3])->reduce(fn($c, $i, $k) => $c + $i);
     }
+
+    public function testRemove()
+    {
+        $collect = $this->collect();
+        self::assertEquals(0, $collect->remove(1));
+
+        $collect = $this->collect([1]);
+        self::assertEquals(1, $collect->remove(1));
+        self::assertEquals([], $collect->toArray());
+
+        $collect = $this->collect([1, 1]);
+        self::assertEquals(2, $collect->remove(1));
+        self::assertEquals([], $collect->toArray());
+
+        $collect = $this->collect([1, 1]);
+        self::assertEquals(1, $collect->remove(1, 1));
+        self::assertEquals([1 => 1], $collect->toArray());
+
+        $collect = $this->collect(['a' => 1]);
+        self::assertEquals(1, $collect->remove(1));
+        self::assertEquals([], $collect->toArray());
+
+        $collect = $this->collect(['a' => 1]);
+        self::assertEquals(0, $collect->remove(1, -1));
+        self::assertEquals(['a' => 1], $collect->toArray());
+    }
+
+    public function testRemoveKey()
+    {
+        $collect = $this->collect();
+        self::assertEquals(false, $collect->removeKey(1));
+
+        $collect = $this->collect([1]);
+        self::assertEquals(true, $collect->removeKey(0));
+        self::assertEquals([], $collect->toArray());
+
+        $collect = $this->collect(['a' => 1]);
+        self::assertEquals(true, $collect->removeKey('a'));
+        self::assertEquals([], $collect->toArray());
+
+        $collect = $this->collect(['a' => 1]);
+        self::assertEquals(false, $collect->removeKey('b'));
+        self::assertEquals(['a' => 1], $collect->toArray());
+
+        $collect = $this->collect(['a' => ['id' => 1], 1]);
+        self::assertEquals(true, $collect->removeKey('a.id'));
+        self::assertEquals(false, $collect->removeKey('1.a'));
+        self::assertEquals(['a' => [], 1], $collect->toArray());
+    }
+
+    public function testReverse()
+    {
+        $collect = $this->collect([])->reverse();
+        self::assertEquals([], $collect->toArray());
+
+        $collect = $this->collect([1, 2])->reverse();
+        self::assertEquals([2, 1], $collect->toArray());
+
+        $collect = $this->collect([100 => 1, 200 => 2])->reverse();
+        self::assertEquals([200 => 2, 100 => 1], $collect->toArray());
+
+        $collect = $this->collect(['a' => 1, 'b' => 2, 3])->reverse();
+        self::assertEquals([3, 'b' => 2, 'a' => 1], $collect->toArray());
+
+        $collect = $this->collect(['a' => 1, 2, 3, 4])->reverse();
+        self::assertEquals([2 => 4, 1 => 3, 0 => 2, 'a' => 1], $collect->toArray());
+    }
+
+    public function testSample()
+    {
+        srand(100);
+        self::assertEquals(8, $this->collect(range(0, 10))->sample());
+    }
+
+    public function testSample_Empty()
+    {
+        self::expectException(ValueError::class);
+        self::expectExceptionMessage('array_rand(): Argument #1 ($array) cannot be empty');
+        $this->collect()->sample();
+    }
+
+    public function testSampleMany()
+    {
+        srand(100);
+        self::assertEquals([8 => 8, 9 => 9], $this->collect(range(0, 10))->sampleMany(2)->toArray());
+    }
+
+    public function testSatisfyAll()
+    {
+        $collect = $this->collect([]);
+        self::assertTrue($collect->satisfyAll(static fn($v) => is_int($v)));
+
+        $collect = $this->collect([1, 2, 3]);
+        self::assertTrue($collect->satisfyAll(static fn($v) => is_int($v)));
+
+        $collect = $this->collect(['a' => 1, 'b' => 2, 'c' => 3]);
+        self::assertTrue($collect->satisfyAll(static fn($v, $k) => is_string($k)));
+
+        $collect = $this->collect(['a' => 1, 'b' => 2, 'c' => 3, 4]);
+        self::assertFalse($collect->satisfyAll(static fn($k) => is_string($k)));
+    }
+
+    public function testSatisfyAny()
+    {
+        $empty = $this->collect();
+        self::assertFalse($empty->satisfyAny(static fn() => true));
+
+        $collect = $this->collect([1, null, 2, [3], false]);
+        self::assertTrue($collect->satisfyAny(static fn($v) => true));
+        self::assertFalse($collect->satisfyAny(static fn($v) => false));
+        self::assertTrue($collect->satisfyAny(static fn($v) => is_array($v)));
+
+        $collect = $this->collect(['a' => 1, 'b' => 2]);
+        self::assertTrue($collect->satisfyAny(static fn($v, $k) => true));
+        self::assertFalse($collect->satisfyAny(static fn($v) => false));
+        self::assertTrue($collect->satisfyAny(static fn($v, $k) => $k === 'b'));
+    }
+
+    public function testSet()
+    {
+        self::assertEquals(['a' => 1], $this->collect()->set('a', 1)->toArray());
+        self::assertEquals(['a' => 1], $this->collect()->set('a', 0)->set('a', 1)->toArray());
+        self::assertEquals(['a' => null], $this->collect()->set('a', null)->toArray());
+        self::assertEquals(['a' => ['b' => 1]], $this->collect()->set('a.b', 1)->toArray());
+    }
+
+    public function testSetIfNotExists()
+    {
+        self::assertEquals(['a' => 1], $this->collect()->setIfNotExists('a', 1)->toArray());
+        self::assertEquals(['a' => 0], $this->collect()->setIfNotExists('a', 0)->setIfNotExists('a', 1)->toArray());
+        self::assertEquals(['a' => null], $this->collect()->setIfNotExists('a', null)->toArray());
+        self::assertEquals(['a' => ['b' => 1]], $this->collect(['a' => ['b' => 1]])->setIfNotExists('a.b', 0)->toArray());
+    }
+
+    public function testShift()
+    {
+        self::assertEquals(1, $this->collect([1, 2])->shift());
+        self::assertEquals(null, $this->collect()->shift());
+        self::assertEquals(1, $this->collect(['a' => 1, 2])->shift());
+        self::assertEquals(['b' => 1], $this->collect(['a' => ['b' => 1]])->shift());
+    }
+
+    public function testShuffle()
+    {
+        srand(100);
+        self::assertEquals([1, 2, 4, 3, 2], $this->collect([1, 2, 2, 3, 4])->shuffle()->toArray());
+        self::assertSame(['a' => 1, 'c' => 3, 'b' => 2, 'd' => 4], $this->collect(['a' => 1, 'b' => 2, 'c' => 3, 'd' => 4])->shuffle()->toArray());
+    }
+
 }

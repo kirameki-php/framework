@@ -151,15 +151,6 @@ class Collection extends Enumerable implements ArrayAccess
     }
 
     /**
-     * @return $this
-     */
-    public function reorder(): static
-    {
-        uasort($this->items, static fn () => 0);
-        return $this;
-    }
-
-    /**
      * @param int|string $key
      * @param mixed $value
      * @return $this
@@ -177,7 +168,7 @@ class Collection extends Enumerable implements ArrayAccess
      */
     public function setIfNotExists(mixed $key, mixed $value): static
     {
-        if ($this->containsKey($key)) {
+        if (!$this->containsKey($key)) {
             $this->set($key, $value);
         }
         return $this;

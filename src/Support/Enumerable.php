@@ -575,19 +575,6 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
     }
 
     /**
-     * @param int|string $key
-     * @return static
-     */
-    public function seek(mixed $key): static
-    {
-        $array = Arr::get($this->items, $key);
-        if (!is_iterable($array)) {
-            throw new InvalidValueException('iterable', Util::typeOf($array));
-        }
-        return $this->newInstance($array);
-    }
-
-    /**
      * @return $this
      */
     public function shuffle(): static
