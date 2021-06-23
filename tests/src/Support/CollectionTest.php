@@ -326,10 +326,12 @@ class CollectionTest extends TestCase
         self::assertEquals([], $collect->drop(2)->toArray());
 
         // negative
+        $collect = $this->collect(['a' => 1, 'b' => 1]);
+        self::assertEquals(['a' => 1], $collect->drop(-1)->toArray());
+
+        // zero
         $collect = $this->collect(['a' => 1]);
-        self::expectException(InvalidValueException::class);
-        self::expectExceptionMessage('Expected value to be positive value. -1 given.');
-        $collect->drop(-1)->toArray();
+        self::assertEquals(['a' => 1], $collect->drop(0)->toArray());
     }
 
     public function testDropUntil()
@@ -1315,17 +1317,17 @@ class CollectionTest extends TestCase
 
     public function testSum()
     {
-        $collect = $this->collect(['b' => 1, 'a' => 3, 'c' => 2]);
-        self::assertEquals(6, $collect->sum());
+        $sum = $this->collect(['b' => 1, 'a' => 3, 'c' => 2])->sum();
+        self::assertEquals(6, $sum);
 
-        $collect = $this->collect([1, 1, 1]);
-        self::assertEquals(3, $collect->sum());
+        $sum = $this->collect([1, 1, 1])->sum();
+        self::assertEquals(3, $sum);
 
-        $collect = $this->collect([0.1, 0.2]);
-        self::assertEquals(0.3, $collect->sum());
+        $sum = $this->collect([0.1, 0.2])->sum();
+        self::assertEquals(0.3, $sum);
 
-        $collect = $this->collect([]);
-        self::assertEquals(0, $collect->sum());
+        $sum = $this->collect([])->sum();
+        self::assertEquals(0, $sum);
     }
 
     public function testSum_ThrowOnSumOfString()
@@ -1333,5 +1335,94 @@ class CollectionTest extends TestCase
         self::expectException(TypeError::class);
         self::expectExceptionMessage('Unsupported operand types: int + string');
         $this->collect(['a', 'b'])->sum();
+    }
+
+    public function testTake()
+    {
+        $collect = $this->collect([2, 3, 4])->take(2);
+        self::assertEquals([2, 3], $collect->toArray());
+
+        $collect = $this->collect([2, 3, 4])->take(-1);
+        self::assertEquals([4], $collect->toArray());
+
+        $collect = $this->collect([2, 3, 4])->take(0);
+        self::assertEquals([], $collect->toArray());
+
+        $collect = $this->collect(['b' => 1, 'a' => 3, 'c' => 2])->take(1);
+        self::assertEquals(['b' => 1], $collect->toArray());
+
+    }
+
+    public function testTakeUntil()
+    {
+        $collect = $this->collect(['b' => 1, 'a' => 3, 'c' => 2])->takeUntil(fn($v) => $v > 2);
+        self::assertEquals(['b' => 1], $collect->toArray());
+
+        $collect = $this->collect(['b' => 1, 'a' => 3, 'c' => 2])->takeUntil(fn($v) => false);
+        self::assertEquals(['b' => 1, 'a' => 3, 'c' => 2], $collect->toArray());
+
+        $collect = $this->collect(['b' => 1, 'a' => 3, 'c' => 2])->takeUntil(fn($v) => true);
+        self::assertEquals([], $collect->toArray());
+    }
+
+    public function testTakeWhile()
+    {
+        $collect = $this->collect(['b' => 1, 'a' => 3, 'c' => 4])->takeWhile(fn($v) => $v < 4);
+        self::assertEquals(['b' => 1, 'a' => 3], $collect->toArray());
+
+        $collect = $this->collect(['b' => 1, 'a' => 3, 'c' => 2])->takeWhile(fn($v) => false);
+        self::assertEquals([], $collect->toArray());
+
+        $collect = $this->collect(['b' => 1, 'a' => 3, 'c' => 2])->takeWhile(fn($v) => true);
+        self::assertEquals(['b' => 1, 'a' => 3, 'c' => 2], $collect->toArray());
+    }
+
+    public function testTally()
+    {
+        $collect = $this->collect([1, 1, 1, 2, 3, 3])->tally();
+        self::assertEquals([1 => 3, 2 => 1, 3 => 2], $collect->toArray());
+
+        $collect = $this->collect(['b' => 1, 'a' => 1, 'c' => 1])->tally();
+        self::assertEquals([1 => 3], $collect->toArray());
+    }
+
+    public function testTap()
+    {
+        $collect = $this->collect([1, 2])->tap(fn() => 100);
+        self::assertEquals([1, 2], $collect->toArray());
+
+        $cnt = 0;
+        $collect = $this->collect([])->tap(function() use (&$cnt) { $cnt+= 1; });
+        self::assertEquals([], $collect->toArray());
+        self::assertEquals(1, $cnt);
+    }
+
+    public function testToArray()
+    {
+        self::assertEquals([], $this->collect()->toArray());
+        self::assertEquals([1, 2], $this->collect([1, 2])->toArray());
+        self::assertEquals(['a' => 1], $this->collect(['a' => 1])->toArray());
+
+        $inner = $this->collect([1, 2]);
+        self::assertEquals(['a' => $inner], $this->collect(['a' => $inner])->toArray());
+    }
+
+    /**
+     * @group test
+     */
+    public function testToArrayRecursive()
+    {
+        // no depth defined
+        $inner = $this->collect([1, 2]);
+        $array = $this->collect(['a' => $inner])->toArrayRecursive();
+        self::assertEquals(['a' => [1, 2]], $array);
+
+        // test each depth
+        $inner1 = $this->collect([1]);
+        $inner2 = $this->collect([2, 3, $inner1]);
+        $collect = $this->collect(['a' => $inner2]);
+        self::assertEquals(['a' => $inner2], $collect->toArrayRecursive(1));
+        self::assertEquals(['a' => [2, 3, $inner1]], $collect->toArrayRecursive(2));
+        self::assertEquals(['a' => [2, 3, [1]]], $collect->toArrayRecursive(3));
     }
 }

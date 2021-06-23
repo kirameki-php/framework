@@ -113,10 +113,9 @@ class Arr
      */
     public static function drop(iterable $iterable, int $amount): array
     {
-        if ($amount < 0) {
-            throw new InvalidValueException('positive value', $amount);
-        }
-        return array_slice(static::from($iterable), $amount);
+        return $amount >= 0
+            ? array_slice(static::from($iterable), $amount)
+            : array_slice(static::from($iterable), 0, -$amount);
     }
 
     /**
@@ -968,11 +967,9 @@ class Arr
      */
     public static function take(iterable $iterable, int $amount): array
     {
-        $array = static::from($iterable);
-        if ($amount < 0) {
-            throw new InvalidValueException('positive value', $amount);
-        }
-        return array_slice($array, 0, $amount);
+        return $amount > 0
+            ? array_slice(static::from($iterable), 0, $amount)
+            : array_slice(static::from($iterable), $amount, -$amount);
     }
 
     /**

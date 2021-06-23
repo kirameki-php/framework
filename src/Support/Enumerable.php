@@ -742,11 +742,12 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
     }
 
     /**
+     * @param int|null $depth
      * @return array
      */
-    public function toArrayRecursive(): array
+    public function toArrayRecursive(?int $depth = null): array
     {
-        return $this->asArrayRecursive($this->items);
+        return $this->asArrayRecursive($this->items, $depth ?? PHP_INT_MAX, true);
     }
 
     /**
@@ -817,10 +818,14 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
      * @param iterable $items
      * @return array
      */
-    protected function asArrayRecursive(iterable $items): array
+    protected function asArrayRecursive(iterable $items, int $depth, bool $validate = false): array
     {
-        return Arr::map($items, function($item) {
-            return is_iterable($item) ? $this->asArrayRecursive($item) : $item;
+        if ($validate) {
+            Assert::positiveInt($depth);
+        }
+
+        return Arr::map($items, function($item) use ($depth) {
+            return (is_iterable($item) && $depth > 1) ? $this->asArrayRecursive($item, $depth - 1) : $item;
         });
     }
 
