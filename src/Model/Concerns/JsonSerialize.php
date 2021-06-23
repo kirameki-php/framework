@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Kirameki\Model\Concerns;
 
@@ -22,7 +22,7 @@ trait JsonSerialize
      * @param int $options
      * @return string
      */
-    public function toJson($options = 0): string
+    public function toJson(int $options = 0): string
     {
         return Json::encode($this, $options);
     }

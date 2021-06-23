@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Kirameki\Database\Query\Formatters;
 
@@ -422,9 +422,9 @@ class Formatter
 
     /**
      * @param $value
-     * @return string
+     * @return mixed
      */
-    public function parameter($value): string
+    public function parameter($value): mixed
     {
         if ($value instanceof DateTimeInterface) {
             return '\''.$value->format(DateTimeInterface::RFC3339_EXTENDED).'\'';

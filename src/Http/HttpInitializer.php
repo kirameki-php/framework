@@ -1,10 +1,9 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Kirameki\Http;
 
 use Kirameki\Core\Application;
 use Kirameki\Core\InitializerInterface;
-use Kirameki\Support\Arr;
 
 class HttpInitializer implements InitializerInterface
 {

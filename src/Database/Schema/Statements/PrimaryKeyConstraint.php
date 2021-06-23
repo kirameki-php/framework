@@ -1,9 +1,6 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Kirameki\Database\Schema\Statements;
-
-use Kirameki\Database\Schema\Builders\ColumnBuilder;
-use Kirameki\Database\Schema\Builders\CreateIndexBuilder;
 
 class PrimaryKeyConstraint
 {

@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 use JetBrains\PhpStorm\Pure;
 use Kirameki\Core\Application;

@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Kirameki\Model;
 
@@ -55,7 +55,7 @@ class QueryBuilder extends SelectBuilder
      * @param mixed|null $value
      * @return $this
      */
-    public function where($column, $operator = null, $value = null): static
+    public function where(ConditionBuilder|string $column, mixed $operator = null, mixed $value = null): static
     {
         $num = func_num_args();
         if ($num === 2) {

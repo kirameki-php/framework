@@ -595,17 +595,6 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
     }
 
     /**
-     * @param int $flag
-     * @return static
-     */
-    public function sort(int $flag = SORT_REGULAR): static
-    {
-        $copy = $this->toArray();
-        asort($copy, $flag);
-        return $this->newInstance($copy);
-    }
-
-    /**
      * @param callable $callback
      * @param int $flag
      * @return static
@@ -623,17 +612,6 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
     public function sortByDesc(callable $callback, int $flag = SORT_REGULAR): static
     {
         return $this->sortByInternal($callback, $flag, false);
-    }
-
-    /**
-     * @param int $flag
-     * @return static
-     */
-    public function sortByKeys(int $flag = SORT_REGULAR): static
-    {
-        $copy = $this->toArray();
-        ksort($copy, $flag);
-        return $this->newInstance($copy);
     }
 
     /**
@@ -658,13 +636,57 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
     }
 
     /**
-     * @param callable $callback
+     * @param int $flag
      * @return static
      */
-    public function sortWith(callable $callback): static
+    public function sortKeys(int $flag = SORT_REGULAR): static
     {
         $copy = $this->toArray();
-        uasort($copy, $callback);
+        ksort($copy, $flag);
+        return $this->newInstance($copy);
+    }
+
+    /**
+     * @param int $flag
+     * @return static
+     */
+    public function sortKeysDesc(int $flag = SORT_REGULAR): static
+    {
+        $copy = $this->toArray();
+        krsort($copy, $flag);
+        return $this->newInstance($copy);
+    }
+
+    /**
+     * @param int $flag
+     * @return static
+     */
+    public function sortValues(int $flag = SORT_REGULAR): static
+    {
+        $copy = $this->toArray();
+        asort($copy, $flag);
+        return $this->newInstance($copy);
+    }
+
+    /**
+     * @param int $flag
+     * @return static
+     */
+    public function sortValuesDesc(int $flag = SORT_REGULAR): static
+    {
+        $copy = $this->toArray();
+        arsort($copy, $flag);
+        return $this->newInstance($copy);
+    }
+
+    /**
+     * @param callable $comparison
+     * @return static
+     */
+    public function sortWith(callable $comparison): static
+    {
+        $copy = $this->toArray();
+        uasort($copy, $comparison);
         return $this->newInstance($copy);
     }
 

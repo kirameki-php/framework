@@ -1,9 +1,7 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Kirameki\Http;
 
-use Carbon\Carbon;
-use Kirameki\Core\Application;
 use RuntimeException;
 
 class Url

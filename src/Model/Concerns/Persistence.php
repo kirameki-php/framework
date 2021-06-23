@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Kirameki\Model\Concerns;
 
@@ -31,7 +31,7 @@ trait Persistence
     /**
      * @return $this
      */
-    public function save()
+    public function save(): static
     {
         if ($this->isDeleted()) {
             throw new RuntimeException(sprintf('Trying to save record which was deleted! (%s:%s)',

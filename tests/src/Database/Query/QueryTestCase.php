@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Tests\Kirameki\Database\Query;
 
@@ -10,25 +10,23 @@ use Tests\Kirameki\Database\DatabaseTestCase;
 
 class QueryTestCase extends DatabaseTestCase
 {
-    protected string $connection;
-
     protected function selectBuilder()
     {
-        return new SelectBuilder($this->mysqlConnection($this->connection));
+        return new SelectBuilder($this->mysqlConnection());
     }
 
     protected function insertBuilder()
     {
-        return new InsertBuilder($this->mysqlConnection($this->connection));
+        return new InsertBuilder($this->mysqlConnection());
     }
 
     protected function updateBuilder()
     {
-        return new UpdateBuilder($this->mysqlConnection($this->connection));
+        return new UpdateBuilder($this->mysqlConnection());
     }
 
     protected function deleteBuilder()
     {
-        return new DeleteBuilder($this->mysqlConnection($this->connection));
+        return new DeleteBuilder($this->mysqlConnection());
     }
 }

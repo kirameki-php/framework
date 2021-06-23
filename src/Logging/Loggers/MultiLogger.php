@@ -1,9 +1,8 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Kirameki\Logging\Loggers;
 
 use Kirameki\Logging\Concerns\HandlesLevels;
-use Kirameki\Logging\LogManager;
 use Psr\Log\LoggerInterface;
 
 class MultiLogger implements LoggerInterface

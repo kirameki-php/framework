@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Kirameki\Container;
 
@@ -79,7 +79,7 @@ class Container implements ContainerInterface
     }
 
     /**
-     * @return Collection<EntryInterface>|EntryInterface[]
+     * @return Collection<EntryInterface>
      */
     public function entries(): Collection
     {

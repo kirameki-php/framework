@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Kirameki\Model;
 
@@ -7,12 +7,24 @@ use Kirameki\Model\Relations\Relation;
 
 class Reflection
 {
+    /**
+     * @var string
+     */
     public string $class;
 
+    /**
+     * @var string
+     */
     public string $connection;
 
+    /**
+     * @var string
+     */
     public string $table;
 
+    /**
+     * @var string
+     */
     public string $primaryKey;
 
     /**

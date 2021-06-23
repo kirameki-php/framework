@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Kirameki\Database\Query\Builders;
 
@@ -20,7 +20,7 @@ abstract class ConditonsBuilder extends StatementBuilder
      * @param mixed|null $value
      * @return $this
      */
-    public function where($column, $operator = null, $value = null): static
+    public function where(ConditionBuilder|string $column, mixed $operator = null, mixed $value = null): static
     {
         return $this->addWhereCondition($this->buildCondition(...func_get_args()));
     }
@@ -30,7 +30,7 @@ abstract class ConditonsBuilder extends StatementBuilder
      * @param mixed|null $value
      * @return $this
      */
-    public function whereNot($column, $value): static
+    public function whereNot($column, mixed $value): static
     {
         return $this->addWhereCondition($this->buildNotCondition($column, $value));
     }
@@ -45,11 +45,11 @@ abstract class ConditonsBuilder extends StatementBuilder
     }
 
     /**
-     * @param string|array $column
+     * @param array|string $column
      * @param string $sort
      * @return $this
      */
-    public function orderBy($column, string $sort = 'ASC'): static
+    public function orderBy(array|string $column, string $sort = 'ASC'): static
     {
         if (is_array($column)) {
             foreach ($column as $c => $s) {
@@ -110,7 +110,7 @@ abstract class ConditonsBuilder extends StatementBuilder
      * @param mixed|null $value
      * @return ConditionDefinition
      */
-    protected function buildCondition($column, $operator = null, $value = null): ConditionDefinition
+    protected function buildCondition(ConditionBuilder|string $column, mixed $operator = null, mixed $value = null): ConditionDefinition
     {
         $num = func_num_args();
         if ($num === 1) {
@@ -130,11 +130,11 @@ abstract class ConditonsBuilder extends StatementBuilder
     }
 
     /**
-     * @param $column
+     * @param string $column
      * @param mixed|null $value
      * @return ConditionDefinition
      */
-    protected function buildNotCondition(string $column, $value): ConditionDefinition
+    protected function buildNotCondition(string $column, mixed $value): ConditionDefinition
     {
         if (is_array($value)) return ConditionBuilder::for($column)->notIn($value)->getDefinition();
         if ($value instanceof Range) return ConditionBuilder::for($column)->notInRange($value)->getDefinition();

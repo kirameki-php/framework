@@ -1,10 +1,9 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Kirameki\Event;
 
 use Kirameki\Core\Application;
 use Kirameki\Core\InitializerInterface;
-use Psr\Log\LoggerInterface;
 
 class EventInitializer implements InitializerInterface
 {

@@ -1,10 +1,9 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Kirameki\Logging\Loggers;
 
 use Bramus\Monolog\Formatter\ColoredLineFormatter;
 use Bramus\Monolog\Formatter\ColorSchemes\DefaultScheme;
-use Kirameki\Core\Application;
 use Monolog\Handler\HandlerInterface;
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger;

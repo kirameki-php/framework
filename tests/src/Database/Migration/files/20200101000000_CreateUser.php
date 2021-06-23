@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 use Kirameki\Database\Migration\Migration;
 use Kirameki\Database\Schema\Builders\CreateTableBuilder;

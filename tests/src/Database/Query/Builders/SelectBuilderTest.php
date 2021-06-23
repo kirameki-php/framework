@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Tests\Kirameki\Database\Query\Builders;
 
@@ -13,7 +13,7 @@ class SelectBuilderTest extends QueryTestCase
 
     public function testPlain()
     {
-        $sql = $this->selectBuilder()->columns(Expr::raw(1))->toSql();
+        $sql = $this->selectBuilder()->columns(Expr::raw('1'))->toSql();
         static::assertEquals("SELECT 1", $sql);
     }
 

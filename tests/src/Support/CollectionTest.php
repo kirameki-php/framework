@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Tests\Kirameki\Support;
 
@@ -1247,4 +1247,91 @@ class CollectionTest extends TestCase
         self::assertSame(['a' => 1, 'c' => 3, 'b' => 2, 'd' => 4], $this->collect(['a' => 1, 'b' => 2, 'c' => 3, 'd' => 4])->shuffle()->toArray());
     }
 
+    public function testSlice()
+    {
+        $collect = $this->collect([1, 2, 3])->slice(1);
+        self::assertEquals([2, 3], $collect->toArray());
+
+        $collect = $this->collect([1, 2, 3])->slice(0, -1);
+        self::assertEquals([1, 2], $collect->toArray());
+    }
+
+    public function testSortBy()
+    {
+        $collect = $this->collect([4, 2, 1, 3])->sortBy(fn($v) => $v)->values();
+        self::assertEquals([1, 2, 3, 4], $collect->toArray());
+
+        $collect = $this->collect(['b' => 0, 'a' => 1, 'c' => 2])->sortBy(fn($v, $k) => $k);
+        self::assertEquals(['a' => 1, 'b' => 0, 'c' => 2], $collect->toArray());
+    }
+
+    public function testSortByDesc()
+    {
+        $collect = $this->collect([4, 2, 1, 3])->sortByDesc(fn($v) => $v)->values();
+        self::assertEquals([4, 3, 2, 1], $collect->toArray());
+
+        $collect = $this->collect(['b' => 0, 'a' => 1, 'c' => 2])->sortBy(fn($v, $k) => $k);
+        self::assertEquals(['c' => 2, 'b' => 0, 'a' => 1], $collect->toArray());
+    }
+
+    public function testSortKeys()
+    {
+        $collect = $this->collect(['b' => 0, 'a' => 1, 'c' => 2])->sortKeys();
+        self::assertEquals(['a' => 1, 'b' => 0, 'c' => 2], $collect->toArray());
+
+        $collect = $this->collect(['2' => 0, '100' => 1, '30' => 2])->sortKeys(SORT_NATURAL);
+        self::assertEquals(['2' => 0, '30' => 2, '100' => 1], $collect->toArray());
+    }
+
+    public function testSortValues()
+    {
+        $collect = $this->collect([4, 2, 1, 3])->sortValues()->values();
+        self::assertEquals([1, 2, 3, 4], $collect->toArray());
+
+        $collect = $this->collect(['30', '2', '100'])->sortValues(SORT_NATURAL)->values();
+        self::assertEquals(['2', '30', '100'], $collect->toArray());
+
+        $collect = $this->collect(['a' => 3, 'b' => 1, 'c' => 2])->sortValues();
+        self::assertEquals(['b' => 1, 'c' => 2, 'a' => 3], $collect->toArray());
+    }
+
+    public function testSortValuesDesc()
+    {
+        $collect = $this->collect([4, 2, 1, 3])->sortValuesDesc()->values();
+        self::assertEquals([4, 3, 2, 1], $collect->toArray());
+
+        $collect = $this->collect(['30', '100', '2'])->sortValuesDesc(SORT_NATURAL)->values();
+        self::assertEquals(['100', '30', '2'], $collect->toArray());
+
+        $collect = $this->collect(['a' => 3, 'b' => 1, 'c' => 2])->sortValuesDesc();
+        self::assertEquals(['a' => 3, 'c' => 2, 'b' => 1], $collect->toArray());
+    }
+
+    public function testSortWith()
+    {
+        $collect = $this->collect(['b' => 1, 'a' => 3, 'c' => 2])->sortWith(fn($a, $b) => ($a === $b ? 0 : (($a < $b) ? -1 : 1)));
+        self::assertEquals(['b' => 1, 'c' => 2, 'a' => 3], $collect->toArray());
+    }
+
+    public function testSum()
+    {
+        $collect = $this->collect(['b' => 1, 'a' => 3, 'c' => 2]);
+        self::assertEquals(6, $collect->sum());
+
+        $collect = $this->collect([1, 1, 1]);
+        self::assertEquals(3, $collect->sum());
+
+        $collect = $this->collect([0.1, 0.2]);
+        self::assertEquals(0.3, $collect->sum());
+
+        $collect = $this->collect([]);
+        self::assertEquals(0, $collect->sum());
+    }
+
+    public function testSum_ThrowOnSumOfString()
+    {
+        self::expectException(TypeError::class);
+        self::expectExceptionMessage('Unsupported operand types: int + string');
+        $this->collect(['a', 'b'])->sum();
+    }
 }

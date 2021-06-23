@@ -1,11 +1,10 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Kirameki\Logging;
 
 use Closure;
 use Kirameki\Core\Config;
 use Psr\Log\LoggerInterface;
-use Psr\Log\LogLevel;
 
 class LogManager implements LoggerInterface
 {

@@ -954,7 +954,11 @@ class Arr
      */
     public static function sum(iterable $iterable): float|int
     {
-        return array_sum(static::from($iterable));
+        $total = 0;
+        foreach(static::from($iterable) as $num) {
+            $total += $num;
+        }
+        return $total;
     }
 
     /**

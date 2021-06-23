@@ -1,8 +1,6 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Kirameki\Database\Query\Support;
-
-use Kirameki\Database\Query\Formatters\Formatter;
 
 class Range
 {

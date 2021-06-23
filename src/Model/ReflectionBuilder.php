@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Kirameki\Model;
 
@@ -8,8 +8,14 @@ use Kirameki\Model\Relations\HasMany;
 
 class ReflectionBuilder
 {
+    /**
+     * @var ModelManager
+     */
     protected ModelManager $manager;
 
+    /**
+     * @var Reflection
+     */
     protected Reflection $reflection;
 
     /**
@@ -47,7 +53,7 @@ class ReflectionBuilder
      * @param string $cast
      * @param mixed|null $default
      */
-    public function property(string $name, string $cast, $default = null)
+    public function property(string $name, string $cast, mixed $default = null)
     {
         $this->reflection->properties[$name] = new Property($name, $this->manager->getCast($cast), $default);
     }
