@@ -2,8 +2,6 @@
 
 namespace Kirameki\Core;
 
-use Dotenv\Dotenv;
-use InvalidArgumentException;
 use Kirameki\Container\Container;
 use Kirameki\Database\DatabaseInitializer;
 use Kirameki\Event\EventInitializer;
@@ -54,7 +52,7 @@ class Application extends Container
      */
     public function __construct(string $basePath, string $dotEnvPath = null)
     {
-        Dotenv::createImmutable([$dotEnvPath ?? $basePath])->load();
+        Env::applyDotFile($dotEnvPath ?? $basePath.'/.env');
         static::$instance = $this;
         $this->basePath = $basePath;
         $this->startTime = microtime(true) * 1000;

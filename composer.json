@@ -13,16 +13,20 @@
     "ext-pdo": "*",
     "ext-posix": "*",
     "bramus/monolog-colored-line-formatter": "^3.0",
-    "monolog/monolog": "^2.1",
-    "nesbot/carbon": "^2.39",
-    "psr/container": "^1.0",
-    "ramsey/uuid": "^4.1",
-    "vlucas/phpdotenv": "^5.2"
+    "monolog/monolog": "^2.2",
+    "nesbot/carbon": "^2.49",
+    "psr/container": "^1.1",
+    "ramsey/uuid": "^4.1"
   },
   "require-dev": {
     "phpunit/phpunit": "~9.0",
     "roave/security-advisories": "dev-master",
     "symfony/var-dumper": "^5.1"
+  },
+  "replace": {
+    "symfony/polyfill-ctype": "*",
+    "symfony/polyfill-mbstring": "*",
+    "symfony/polyfill-php80": "*"
   },
   "suggest": {
     "fiunchinho/phpunit-randomizer": "For randomizing phpunit tests",
