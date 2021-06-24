@@ -804,15 +804,48 @@ class CollectionTest extends TestCase
         self::assertCount(0, $empty);
         self::assertEquals([1, [2]], $merged->toArray());
 
+        $empty = $this->collect();
+        $merged = $empty->merge([1, [2]]);
+        self::assertEquals([1, [2]], $merged->toArray());
+
+        $empty = $this->collect(['0' => 1]);
+        $merged = $empty->merge([1, [2]]);
+        self::assertEquals(['0' => 1, 1, [2]], $merged->toArray());
+
         $assoc = $this->collect([1, 'a' => [1, 2]]);
         $merged = $assoc->merge([1, 'a' => [3]]);
-        self::assertNotSame($assoc, $merged);
         self::assertSame([1, 'a' => [3], 1], $merged->toArray());
 
         $assoc = $this->collect([1, 'a' => [1, 2], 2]);
         $merged = $assoc->merge(['a' => [3], 3]);
-        self::assertNotSame($assoc, $merged);
         self::assertSame([1, 'a' => [3], 2, 3], $merged->toArray());
+    }
+
+    public function testMergeRecursive()
+    {
+        $collect = $this->collect([])->mergeRecursive([]);
+        self::assertEquals([], $collect->toArray());
+
+        $collect = $this->collect([1, 2])->mergeRecursive([3]);
+        self::assertEquals([1, 2, 3], $collect->toArray());
+
+        $collect = $this->collect(['a' => 1])->mergeRecursive(['a' => 2]);
+        self::assertEquals(['a' => 2], $collect->toArray());
+
+        $collect = $this->collect(['a' => 1])->mergeRecursive(['b' => 2, 'a' => 2]);
+        self::assertEquals(['a' => 2, 'b' => 2], $collect->toArray());
+
+        $collect = $this->collect(['a' => 1])->mergeRecursive(['b' => 2]);
+        self::assertEquals(['a' => 1, 'b' => 2], $collect->toArray());
+
+        $collect = $this->collect(['a' => 1])->mergeRecursive(['a' => ['c' => 1]]);
+        self::assertEquals(['a' => ['c' => 1]], $collect->toArray());
+
+        $collect = $this->collect(['a' => [1,2]])->mergeRecursive(['a' => ['c' => 1]]);
+        self::assertEquals(['a' => [1, 2, 'c' => 1]], $collect->toArray());
+
+        $collect = $this->collect(['a' => ['b' => 1], 'd' => 4])->mergeRecursive(['a' => ['c' => 2], 'b' => 3]);
+        self::assertEquals(['a' => ['b' => 1, 'c' => 2], 'b' => 3, 'd' => 4], $collect->toArray());
     }
 
     public function testMin()
@@ -1453,7 +1486,7 @@ class CollectionTest extends TestCase
         self::assertEquals("a=1&b=2", $query);
     }
 
-    public function testUnionKeys()
+    public function testUnion()
     {
         $collect = $this->collect([])->union([]);
         self::assertEquals([], $collect->toArray());
@@ -1465,10 +1498,7 @@ class CollectionTest extends TestCase
         self::assertEquals(['a' => ['b' => 1]], $collect->toArray());
     }
 
-    /**
-     * @group test
-     */
-    public function testUnionKeysRecursive()
+    public function testUnionRecursive()
     {
         $collect = $this->collect([])->unionRecursive([]);
         self::assertEquals([], $collect->toArray());

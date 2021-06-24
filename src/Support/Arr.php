@@ -632,9 +632,8 @@ class Arr
         foreach ($iterable2 as $key => $value) {
             if (\is_int($key)) {
                 $merged[] = $value;
-            } else if ($depth > 1 && \is_iterable($merged[$key]) && \is_iterable($value)) {
+            } else if ($depth > 1 && \array_key_exists($key, $merged) && \is_iterable($merged[$key]) && \is_iterable($value)) {
                 $merged[$key] = static::mergeRecursive($merged[$key], $value, $depth - 1);
-                continue;
             } else {
                 $merged[$key] = $value;
             }
