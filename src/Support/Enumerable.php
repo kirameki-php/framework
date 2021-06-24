@@ -7,7 +7,6 @@ use Countable;
 use Generator;
 use IteratorAggregate;
 use JsonSerializable;
-use Kirameki\Exception\InvalidValueException;
 
 /**
  * @template T
@@ -65,7 +64,7 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
     {
         $array = $this->toArray();
         $chunks = [];
-        foreach (array_chunk($array, $size, Arr::isAssoc($array)) as $chunk) {
+        foreach (\array_chunk($array, $size, Arr::isAssoc($array)) as $chunk) {
             $chunks[] = $this->newInstance($chunk);
         }
         return $this->newInstance($chunks);
@@ -111,7 +110,7 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
      */
     public function count(): int
     {
-        return count($this->toArray());
+        return \count($this->toArray());
     }
 
     /**
@@ -139,7 +138,7 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
      */
     public function dd(bool $asArray = false): static
     {
-        dd($asArray ? $this->toArray() : $this);
+        \dd($asArray ? $this->toArray() : $this);
         return $this;
     }
 
@@ -149,7 +148,7 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
      */
     public function diff(iterable $items): static
     {
-        return $this->newInstance(array_diff($this->toArray(), $this->asArray($items)));
+        return $this->newInstance(\array_diff($this->toArray(), $this->asArray($items)));
     }
 
     /**
@@ -158,7 +157,7 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
      */
     public function diffKeys(iterable $items): static
     {
-        return $this->newInstance(array_diff_key($this->toArray(), $this->asArray($items)));
+        return $this->newInstance(\array_diff_key($this->toArray(), $this->asArray($items)));
     }
 
     /**
@@ -194,7 +193,7 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
      */
     public function dump(bool $asArray = false): static
     {
-        dump($asArray ? $this->toArray() : $this);
+        \dump($asArray ? $this->toArray() : $this);
         return $this;
     }
 
@@ -234,7 +233,7 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
      */
     public function equals(iterable $items): bool
     {
-        return is_iterable($items) && $this->toArray() === $this->asArray($items);
+        return \is_iterable($items) && $this->toArray() === $this->asArray($items);
     }
 
     /**
@@ -451,12 +450,22 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
     }
 
     /**
-     * @param iterable $collection
+     * @param iterable $iterable
      * @return static
      */
-    public function merge(iterable $collection): static
+    public function merge(iterable $iterable): static
     {
-        return $this->newInstance(Arr::merge($this->items, $collection));
+        return $this->newInstance(Arr::merge($this->items, $iterable));
+    }
+
+    /**
+     * @param iterable $iterable
+     * @param int $depth
+     * @return static
+     */
+    public function mergeRecursive(iterable $iterable, int $depth = PHP_INT_MAX): static
+    {
+        return $this->newInstance(Arr::mergeRecursive($this->items, $iterable, $depth));
     }
 
     /**
@@ -773,9 +782,9 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
      * @param iterable $iterable
      * @return $this
      */
-    public function unionKeys(iterable $iterable): static
+    public function union(iterable $iterable): static
     {
-        return $this->newInstance(Arr::unionKeys($this->items, $iterable));
+        return $this->newInstance(Arr::union($this->items, $iterable));
     }
 
     /**
@@ -783,18 +792,18 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
      * @param int $depth
      * @return $this
      */
-    public function unionKeysRecursive(iterable $iterable, int $depth = PHP_INT_MAX): static
+    public function unionRecursive(iterable $iterable, int $depth = PHP_INT_MAX): static
     {
-        return $this->newInstance(Arr::unionKeysRecursive($this->items, $iterable, $depth));
+        return $this->newInstance(Arr::unionRecursive($this->items, $iterable, $depth));
     }
 
     /**
      * @param int $flag
      * @return static
      */
-    public function unique(int $flag = SORT_REGULAR): static
+    public function unique(int $flag = SORT_STRING): static
     {
-        return $this->newInstance(array_unique($this->toArray(), $flag));
+        return $this->newInstance(\array_unique($this->toArray(), $flag));
     }
 
     /**
@@ -802,7 +811,7 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
      */
     public function values(): static
     {
-        return $this->newInstance(array_values($this->toArray()));
+        return $this->newInstance(\array_values($this->toArray()));
     }
 
     /**
@@ -825,7 +834,7 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
         }
 
         return Arr::map($items, function($item) use ($depth) {
-            return (is_iterable($item) && $depth > 1) ? $this->asArrayRecursive($item, $depth - 1) : $item;
+            return (\is_iterable($item) && $depth > 1) ? $this->asArrayRecursive($item, $depth - 1) : $item;
         });
     }
 

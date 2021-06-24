@@ -90,7 +90,7 @@ class Collection extends Enumerable implements ArrayAccess
         if ($index < 0) {
             $index = $index === -1 ? $this->count() : $index + 1;
         }
-        array_splice($this->items, $index, 0, $value);
+        \array_splice($this->items, $index, 0, $value);
         return $this;
     }
 
@@ -101,7 +101,7 @@ class Collection extends Enumerable implements ArrayAccess
      */
     public function pad(int $size, mixed $value): static
     {
-        return $this->newInstance(array_pad($this->items, $size, $value));
+        return $this->newInstance(\array_pad($this->items, $size, $value));
     }
 
     /**
@@ -109,7 +109,7 @@ class Collection extends Enumerable implements ArrayAccess
      */
     public function pop(): mixed
     {
-        return array_pop($this->items);
+        return \array_pop($this->items);
     }
 
     /**
@@ -179,7 +179,7 @@ class Collection extends Enumerable implements ArrayAccess
      */
     public function shift(): mixed
     {
-        return array_shift($this->items);
+        return \array_shift($this->items);
     }
 
     /**

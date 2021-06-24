@@ -8,6 +8,7 @@ use Generator;
 use Kirameki\Exception\DuplicateKeyException;
 use Kirameki\Exception\InvalidKeyException;
 use Kirameki\Exception\InvalidValueException;
+use Kirameki\Support\Arr;
 use Kirameki\Support\Collection;
 use RuntimeException;
 use Tests\Kirameki\TestCase;
@@ -807,6 +808,11 @@ class CollectionTest extends TestCase
         $merged = $assoc->merge([1, 'a' => [3]]);
         self::assertNotSame($assoc, $merged);
         self::assertSame([1, 'a' => [3], 1], $merged->toArray());
+
+        $assoc = $this->collect([1, 'a' => [1, 2], 2]);
+        $merged = $assoc->merge(['a' => [3], 3]);
+        self::assertNotSame($assoc, $merged);
+        self::assertSame([1, 'a' => [3], 2, 3], $merged->toArray());
     }
 
     public function testMin()
@@ -1407,9 +1413,6 @@ class CollectionTest extends TestCase
         self::assertEquals(['a' => $inner], $this->collect(['a' => $inner])->toArray());
     }
 
-    /**
-     * @group test
-     */
     public function testToArrayRecursive()
     {
         // no depth defined
@@ -1424,5 +1427,107 @@ class CollectionTest extends TestCase
         self::assertEquals(['a' => $inner2], $collect->toArrayRecursive(1));
         self::assertEquals(['a' => [2, 3, $inner1]], $collect->toArrayRecursive(2));
         self::assertEquals(['a' => [2, 3, [1]]], $collect->toArrayRecursive(3));
+    }
+
+    public function testToJson()
+    {
+        $json = $this->collect([1, 2])->toJson();
+        self::assertEquals("[1,2]", $json);
+
+        $json = $this->collect(['a' => 1, 'b' => 2])->toJson();
+        self::assertEquals("{\"a\":1,\"b\":2}", $json);
+
+        $json = $this->collect(["あ"])->toJson();
+        self::assertEquals("[\"あ\"]", $json);
+
+        $json = $this->collect([1])->toJson(JSON_PRETTY_PRINT);
+        self::assertEquals("[\n    1\n]", $json);
+    }
+
+    public function testToUrlQuery()
+    {
+        $query = $this->collect(['a' => 1])->toUrlQuery('t');
+        self::assertEquals(urlencode('t[a]').'=1', $query);
+
+        $query = $this->collect(['a' => 1, 'b' => 2])->toUrlQuery();
+        self::assertEquals("a=1&b=2", $query);
+    }
+
+    public function testUnionKeys()
+    {
+        $collect = $this->collect([])->union([]);
+        self::assertEquals([], $collect->toArray());
+
+        $collect = $this->collect(['a' => 1])->union(['a' => 2]);
+        self::assertEquals(['a' => 1], $collect->toArray());
+
+        $collect = $this->collect(['a' => ['b' => 1]])->union(['a' => ['c' => 2]]);
+        self::assertEquals(['a' => ['b' => 1]], $collect->toArray());
+    }
+
+    /**
+     * @group test
+     */
+    public function testUnionKeysRecursive()
+    {
+        $collect = $this->collect([])->unionRecursive([]);
+        self::assertEquals([], $collect->toArray());
+
+        $collect = $this->collect([1, 2])->unionRecursive([3]);
+        self::assertEquals([1, 2, 3], $collect->toArray());
+
+        $collect = $this->collect(['a' => 1])->unionRecursive(['a' => 2]);
+        self::assertEquals(['a' => 1], $collect->toArray());
+
+        $collect = $this->collect(['a' => 1])->unionRecursive(['b' => 2, 'a' => 2]);
+        self::assertEquals(['a' => 1, 'b' => 2], $collect->toArray());
+
+        $collect = $this->collect(['a' => 1])->unionRecursive(['b' => 2]);
+        self::assertEquals(['a' => 1, 'b' => 2], $collect->toArray());
+
+        $collect = $this->collect(['a' => 1])->unionRecursive(['a' => ['c' => 1]]);
+        self::assertEquals(['a' => 1], $collect->toArray());
+
+        $collect = $this->collect(['a' => [1,2]])->unionRecursive(['a' => ['c' => 1]]);
+        self::assertEquals(['a' => [1, 2, 'c' => 1]], $collect->toArray());
+
+        $collect = $this->collect(['a' => ['b' => 1], 'd' => 4])->unionRecursive(['a' => ['c' => 2], 'b' => 3]);
+        self::assertEquals(['a' => ['b' => 1, 'c' => 2], 'b' => 3, 'd' => 4], $collect->toArray());
+    }
+
+    public function testUnique()
+    {
+        $collect = $this->collect([])->unique();
+        self::assertEquals([], $collect->toArray());
+
+        $collect = $this->collect([1, 1, 2, 2])->unique();
+        self::assertEquals([0 => 1, 2 => 2], $collect->toArray());
+
+        $collect = $this->collect(['a' => 1, 'b' => 2, 'c' => 2])->unique();
+        self::assertEquals(['a' => 1, 'b' => 2], $collect->toArray());
+    }
+
+    public function testUnshift()
+    {
+        $collect = $this->collect([])->unshift(1);
+        self::assertEquals([1], $collect->toArray());
+
+        $collect = $this->collect([1, 1])->unshift(0);
+        self::assertEquals([0, 1, 1], $collect->toArray());
+
+        $collect = $this->collect(['a' => 1])->unshift(1, 2);
+        self::assertEquals([1, 2, 'a' => 1], $collect->toArray());
+    }
+
+    public function testValues()
+    {
+        $collect = $this->collect([])->values();
+        self::assertEquals([], $collect->toArray());
+
+        $collect = $this->collect([1, 1, 2])->values()->reverse();
+        self::assertEquals([2, 1, 1], $collect->toArray());
+
+        $collect = $this->collect(['a' => 1, 'b' => 2])->values();
+        self::assertEquals([1, 2], $collect->toArray());
     }
 }

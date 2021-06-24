@@ -52,7 +52,7 @@ trait Macroable
     }
 
     /**
-     * @param $newThis
+     * @param Macroable $newThis
      * @param string $method
      * @param array $parameters
      * @return mixed
