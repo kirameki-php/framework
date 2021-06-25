@@ -3,11 +3,12 @@
 namespace Kirameki\Http;
 
 use Countable;
+use Stringable;
 
-class Headers implements Countable
+class Headers implements Countable, Stringable
 {
     /**
-     * @var array
+     * @var array<string, string>
      */
     protected array $entries;
 
@@ -21,7 +22,7 @@ class Headers implements Countable
     }
 
     /**
-     * @return array
+     * @return array<string, string>
      */
     public function all(): array
     {
@@ -110,7 +111,11 @@ class Headers implements Countable
      */
     public function toString(): string
     {
-        return $this->__toString();
+        $raw = '';
+        foreach ($this->entries as $data) {
+            $raw.= $data['name'].': '.$data['value'];
+        }
+        return $raw;
     }
 
     /**
@@ -118,10 +123,6 @@ class Headers implements Countable
      */
     public function __toString(): string
     {
-        $raw = '';
-        foreach ($this->entries as $data) {
-            $raw.= $data['name'].': '.$data['value'];
-        }
-        return $raw;
+        return $this->toString();
     }
 }

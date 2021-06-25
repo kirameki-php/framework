@@ -4,12 +4,13 @@ namespace Kirameki\Http;
 
 use Carbon\Carbon;
 use RuntimeException;
+use Stringable;
 
 /**
  * @property-read Headers $headers
  * @property-read Parameters $parameters
  */
-class Request
+class Request implements Stringable
 {
     /**
      * @var string
@@ -140,11 +141,17 @@ class Request
             : Parameters::blank();
     }
 
+    /**
+     * @return string
+     */
     public function toString(): string
     {
         return $this->__toString();
     }
 
+    /**
+     * @return string
+     */
     public function __toString(): string
     {
         $newline = "\r\n";
@@ -159,6 +166,9 @@ class Request
         return $raw;
     }
 
+    /**
+     * @return void
+     */
     public function __clone()
     {
         $this->url = clone $this->url;
@@ -166,16 +176,16 @@ class Request
         $this->parameters = clone $this->parameters;
     }
 
+    /**
+     * @param string $name
+     * @return mixed
+     */
     public function __get(string $name)
     {
-        if ($name === 'headers') {
-            return $this->_headers;
-        }
-
-        if ($name === 'parameters') {
-            return $this->_parameters ??= $this->resolveParameters();
-        }
-
-        throw new RuntimeException('Undefined Property: '.$name);
+        return match ($name) {
+            'headers' => $this->_headers,
+            'parameters' => $this->_parameters,
+            default => throw new RuntimeException('Undefined Property: '.$name),
+        };
     }
 }

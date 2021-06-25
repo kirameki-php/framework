@@ -11,11 +11,12 @@ class Env
     public static function get(string $key): bool|string|null
     {
         $value = getenv($key);
-        $lowered = strtolower($value);
-        if ($lowered === 'true') return true;
-        if ($lowered === 'false') return false;
-        if ($lowered === 'null') return null;
-        return $value;
+        return match (strtolower($value)) {
+            'true' => true,
+            'false' => false,
+            'null' => null,
+            default => $value,
+        };
     }
 
     /**
@@ -26,7 +27,6 @@ class Env
         $content = file_get_contents($filePath);
         $lines = preg_split("/(\r\n|\n|\r)/", rtrim($content));
         foreach ($lines as $line) {
-            dump($line);
             putenv($line);
         }
     }
