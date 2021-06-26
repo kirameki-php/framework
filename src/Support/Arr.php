@@ -70,10 +70,8 @@ class Arr
      * @param int|string $key
      * @return bool
      */
-    public static function containsKey(iterable $iterable, mixed $key): bool
+    public static function containsKey(iterable $iterable, int|string $key): bool
     {
-        Assert::validKey($key);
-
         $array = static::from($iterable);
 
         if (static::isNotDottedKey($key)) {
@@ -369,10 +367,8 @@ class Arr
      * @param int|string $key
      * @return mixed
      */
-    public static function get(iterable $iterable, mixed $key): mixed
+    public static function get(iterable $iterable, int|string $key): mixed
     {
-        Assert::validKey($key);
-
         $keys = static::isDottedKey($key) ? \explode('.', $key) : [$key];
         return static::dig(static::from($iterable), $keys);
     }
@@ -684,7 +680,7 @@ class Arr
      * @param mixed|callable $key
      * @return bool
      */
-    public static function notContainsKey(iterable $iterable, mixed $key): bool
+    public static function notContainsKey(iterable $iterable, int|string $key): bool
     {
         return !static::containsKey($iterable, $key);
     }
@@ -709,10 +705,8 @@ class Arr
      * @param int|string $key
      * @return array
      */
-    public static function pluck(iterable $iterable, mixed $key): array
+    public static function pluck(iterable $iterable, int|string $key): array
     {
-        Assert::validKey($key);
-
         if (static::isNotDottedKey($key)) {
             return \array_column(static::from($iterable), $key);
         }
@@ -730,10 +724,8 @@ class Arr
      * @param int|string $key
      * @return mixed
      */
-    public static function pull(array|ArrayAccess &$array, mixed $key): mixed
+    public static function pull(array|ArrayAccess &$array, int|string $key): mixed
     {
-        Assert::validKey($key);
-
         if (static::isNotDottedKey($key)) {
             $value = $array[$key] ?? null;
             unset($array[$key]);
@@ -831,10 +823,8 @@ class Arr
      * @param int|string $key
      * @return bool
      */
-    public static function removeKey(array|ArrayAccess &$array, mixed $key): bool
+    public static function removeKey(array|ArrayAccess &$array, int|string $key): bool
     {
-        Assert::validKey($key);
-
         if (static::isNotDottedKey($key)) {
             if (\array_key_exists($key, $array)) {
                 unset($array[$key]);
@@ -928,10 +918,8 @@ class Arr
      * @param int|string $key
      * @param mixed $value
      */
-    public static function set(array|ArrayAccess &$array, mixed $key, mixed $value)
+    public static function set(array|ArrayAccess &$array, int|string $key, mixed $value)
     {
-        Assert::validKey($key);
-
         if (static::isNotDottedKey($key)) {
             $array[$key] = $value;
             return;

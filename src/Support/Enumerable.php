@@ -92,7 +92,7 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
      * @param int|string $key
      * @return bool
      */
-    public function containsKey(mixed $key): bool
+    public function containsKey(int|string $key): bool
     {
         return Arr::containsKey($this->toArray(), $key);
     }
@@ -312,7 +312,7 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
      * @param int|string $key
      * @return mixed
      */
-    public function get(mixed $key): mixed
+    public function get(int|string $key): mixed
     {
         return Arr::get($this->items, $key);
     }
@@ -494,10 +494,10 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
     }
 
     /**
-     * @param mixed $key
+     * @param int|string $key
      * @return bool
      */
-    public function notContainsKey(mixed $key): bool
+    public function notContainsKey(int|string $key): bool
     {
         return Arr::notContainsKey($this->items, $key);
     }
@@ -524,7 +524,7 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
      * @param int|string $key
      * @return Collection
      */
-    public function pluck(mixed $key): Collection
+    public function pluck(int|string $key): Collection
     {
         return $this->newCollection(Arr::pluck($this->items, $key));
     }

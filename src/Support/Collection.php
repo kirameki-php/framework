@@ -116,7 +116,7 @@ class Collection extends Enumerable implements ArrayAccess
      * @param int|string $key
      * @return T
      */
-    public function pull(mixed $key): mixed
+    public function pull(int|string $key): mixed
     {
         return Arr::pull($this->items, $key);
     }
@@ -145,7 +145,7 @@ class Collection extends Enumerable implements ArrayAccess
      * @param int|string $key
      * @return bool
      */
-    public function removeKey(mixed $key): bool
+    public function removeKey(int|string $key): bool
     {
         return Arr::removeKey($this->items, $key);
     }
@@ -155,7 +155,7 @@ class Collection extends Enumerable implements ArrayAccess
      * @param mixed $value
      * @return $this
      */
-    public function set(mixed $key, mixed $value): static
+    public function set(int|string $key, mixed $value): static
     {
         Arr::set($this->items, $key, $value);
         return $this;
@@ -166,7 +166,7 @@ class Collection extends Enumerable implements ArrayAccess
      * @param mixed $value
      * @return $this
      */
-    public function setIfNotExists(mixed $key, mixed $value): static
+    public function setIfNotExists(int|string $key, mixed $value): static
     {
         if (!$this->containsKey($key)) {
             $this->set($key, $value);
