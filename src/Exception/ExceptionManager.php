@@ -17,12 +17,6 @@ class ExceptionManager
 
     public function __construct()
     {
-        // Report all PHP errors
-        error_reporting(-1);
-
-        // Don't show errors to user
-        //ini_set('display_errors', false);
-
         $this->setErrorHandling();
         $this->setExceptionHandling();
         $this->setFatalHandling();

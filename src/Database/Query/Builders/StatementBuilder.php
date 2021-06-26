@@ -15,7 +15,7 @@ abstract class StatementBuilder
     /**
      * @var BaseStatement
      */
-    protected $statement;
+    protected BaseStatement $statement;
 
     /**
      * Do a deep clone of object types

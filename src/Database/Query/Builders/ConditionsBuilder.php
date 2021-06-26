@@ -3,17 +3,12 @@
 namespace Kirameki\Database\Query\Builders;
 
 use Kirameki\Database\Query\Statements\ConditionDefinition;
-use Kirameki\Database\Query\Support\Range;
 use Kirameki\Database\Query\Statements\ConditionsStatement;
+use Kirameki\Database\Query\Support\Range;
 use RuntimeException;
 
-abstract class ConditonsBuilder extends StatementBuilder
+abstract class ConditionsBuilder extends StatementBuilder
 {
-    /**
-     * @var ConditionsStatement
-     */
-    protected $statement;
-
     /**
      * @param string|ConditionBuilder $column
      * @param mixed|null $operator
@@ -45,25 +40,26 @@ abstract class ConditonsBuilder extends StatementBuilder
     }
 
     /**
-     * @param array|string $column
+     * @param string $column
      * @param string $sort
      * @return $this
      */
-    public function orderBy(array|string $column, string $sort = 'ASC'): static
+    public function orderBy(string $column, string $sort = 'ASC'): static
     {
-        if (is_array($column)) {
-            foreach ($column as $c => $s) {
-                $this->orderBy($c, $s);
-            }
-            return $this;
-        }
-
         $sort = strtoupper($sort);
         if (! in_array($sort, ['ASC', 'DESC'])) {
             throw new RuntimeException('Invalid sorting: '.$sort. ' Only ASC or DESC is allowed.');
         }
-        $this->statement->orderBy ??= [];
-        $this->statement->orderBy[$column] = $sort;
+
+        if ($this->statement instanceof ConditionsStatement) {
+            $this->statement->orderBy ??= [];
+            $this->statement->orderBy[$column] = $sort;
+        } else {
+            $table = $this->statement->table;
+            $class = get_class($this->statement);
+            throw new RuntimeException("Invalid statement orderBy applied to $class for $table->$column.");
+        }
+
         return $this;
     }
 

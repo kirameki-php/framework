@@ -8,7 +8,7 @@ use Kirameki\Database\Query\Statements\SelectStatement;
 use Kirameki\Database\Support\Expr;
 use Kirameki\Support\Collection;
 
-class SelectBuilder extends ConditonsBuilder
+class SelectBuilder extends ConditionsBuilder
 {
     /**
      * @param Connection $connection

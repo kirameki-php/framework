@@ -52,14 +52,22 @@ class Application extends Container
      */
     public function __construct(string $basePath, string $dotEnvPath = null)
     {
-        Env::applyDotFile($dotEnvPath ?? $basePath.'/.env');
         static::$instance = $this;
+        static::setPhpRuntimeConfigs();
+        Env::applyDotFile($dotEnvPath ?? $basePath.'/.env');
+
         $this->basePath = $basePath;
         $this->startTime = microtime(true) * 1000;
         $this->config = Config::fromDirectory($basePath.'/config');
         $this->setName($this->config->get('app.name'));
         $this->setTimeZone($this->config->get('app.timezone'));
         $this->initialize();
+    }
+
+    public static function setPhpRuntimeConfigs()
+    {
+        error_reporting(E_ALL & ~E_NOTICE);
+        ini_set('display_errors', 'Off');
     }
 
     /**

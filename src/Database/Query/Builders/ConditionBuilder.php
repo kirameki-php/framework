@@ -114,20 +114,22 @@ class ConditionBuilder
      */
     public function with(string $operator, $value): static
     {
-        if ($operator === '=') return $this->equals($value);
-        if ($operator === '!=') return $this->notEquals($value);
-        if ($operator === '<>') return $this->notEquals($value);
-        if ($operator === '>') return $this->greaterThan($value);
-        if ($operator === '>=') return $this->greaterThanOrEquals($value);
-        if ($operator === '<') return $this->lessThan($value);
-        if ($operator === '<=') return $this->lessThanOrEquals($value);
-        if ($operator === 'IN') return $this->in($value);
-        if ($operator === 'NOT IN') return $this->notIn($value);
-        if ($operator === 'BETWEEN') return $this->between($value[0], $value[1]);
-        if ($operator === 'NOT BETWEEN') return $this->notBetween($value[0], $value[1]);
-        if ($operator === 'LIKE') return $this->like($value);
-        if ($operator === 'NOT LIKE') return $this->notLike($value);
-        throw new RuntimeException('Unknown operator:' . $operator);
+        return match (strtoupper($operator)) {
+            '=' => $this->equals($value),
+            '!=' => $this->notEquals($value),
+            '<>' => $this->notEquals($value),
+            '>' => $this->greaterThan($value),
+            '>=' => $this->greaterThanOrEquals($value),
+            '<' => $this->lessThan($value),
+            '<=' => $this->lessThanOrEquals($value),
+            'IN' => $this->in($value),
+            'NOT IN' => $this->notIn($value),
+            'BETWEEN' => $this->between($value[0], $value[1]),
+            'NOT BETWEEN' => $this->notBetween($value[0], $value[1]),
+            'LIKE' => $this->like($value),
+            'NOT LIKE' => $this->notLike($value),
+            default => throw new RuntimeException('Unknown operator:' . $operator),
+        };
     }
 
     /**
