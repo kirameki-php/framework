@@ -15,7 +15,7 @@ class HttpManager
      * @param Request $request
      * @return Response
      */
-    public function handle(Request $request): Response
+    public function process(Request $request): Response
     {
         $response = new Response($request);
         return $response;
