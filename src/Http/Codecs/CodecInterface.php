@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 
-namespace Kirameki\Http\Handlers;
+namespace Kirameki\Http\Codecs;
 
-interface HandlerInterface
+interface CodecInterface
 {
     public function getContentTypes(): array;
 

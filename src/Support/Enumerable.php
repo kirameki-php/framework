@@ -7,6 +7,15 @@ use Countable;
 use Generator;
 use IteratorAggregate;
 use JsonSerializable;
+use function array_chunk;
+use function array_diff;
+use function array_diff_key;
+use function array_unique;
+use function array_values;
+use function count;
+use function dd;
+use function dump;
+use function is_iterable;
 
 /**
  * @template T
@@ -64,7 +73,7 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
     {
         $array = $this->toArray();
         $chunks = [];
-        foreach (\array_chunk($array, $size, Arr::isAssoc($array)) as $chunk) {
+        foreach (array_chunk($array, $size, Arr::isAssoc($array)) as $chunk) {
             $chunks[] = $this->newInstance($chunk);
         }
         return $this->newInstance($chunks);
@@ -110,7 +119,7 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
      */
     public function count(): int
     {
-        return \count($this->toArray());
+        return count($this->toArray());
     }
 
     /**
@@ -138,7 +147,7 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
      */
     public function dd(bool $asArray = false): static
     {
-        \dd($asArray ? $this->toArray() : $this);
+        dd($asArray ? $this->toArray() : $this);
         return $this;
     }
 
@@ -148,7 +157,7 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
      */
     public function diff(iterable $items): static
     {
-        return $this->newInstance(\array_diff($this->toArray(), $this->asArray($items)));
+        return $this->newInstance(array_diff($this->toArray(), $this->asArray($items)));
     }
 
     /**
@@ -157,7 +166,7 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
      */
     public function diffKeys(iterable $items): static
     {
-        return $this->newInstance(\array_diff_key($this->toArray(), $this->asArray($items)));
+        return $this->newInstance(array_diff_key($this->toArray(), $this->asArray($items)));
     }
 
     /**
@@ -193,7 +202,7 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
      */
     public function dump(bool $asArray = false): static
     {
-        \dump($asArray ? $this->toArray() : $this);
+        dump($asArray ? $this->toArray() : $this);
         return $this;
     }
 
@@ -233,7 +242,7 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
      */
     public function equals(iterable $items): bool
     {
-        return \is_iterable($items) && $this->toArray() === $this->asArray($items);
+        return is_iterable($items) && $this->toArray() === $this->asArray($items);
     }
 
     /**
@@ -803,7 +812,7 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
      */
     public function unique(int $flag = SORT_STRING): static
     {
-        return $this->newInstance(\array_unique($this->toArray(), $flag));
+        return $this->newInstance(array_unique($this->toArray(), $flag));
     }
 
     /**
@@ -811,7 +820,7 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
      */
     public function values(): static
     {
-        return $this->newInstance(\array_values($this->toArray()));
+        return $this->newInstance(array_values($this->toArray()));
     }
 
     /**
@@ -834,7 +843,7 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
         }
 
         return Arr::map($items, function($item) use ($depth) {
-            return (\is_iterable($item) && $depth > 1) ? $this->asArrayRecursive($item, $depth - 1) : $item;
+            return (is_iterable($item) && $depth > 1) ? $this->asArrayRecursive($item, $depth - 1) : $item;
         });
     }
 

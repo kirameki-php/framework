@@ -8,6 +8,31 @@ use Kirameki\Exception\DuplicateKeyException;
 use ReflectionFunction;
 use RuntimeException;
 use Traversable;
+use function array_column;
+use function array_key_exists;
+use function array_key_last;
+use function array_pop;
+use function array_rand;
+use function array_reverse;
+use function array_slice;
+use function array_sum;
+use function class_exists;
+use function count;
+use function current;
+use function end;
+use function explode;
+use function http_build_query;
+use function implode;
+use function is_array;
+use function is_callable;
+use function is_int;
+use function is_iterable;
+use function is_string;
+use function iterator_to_array;
+use function max;
+use function min;
+use function prev;
+use function str_contains;
 
 class Arr
 {
@@ -19,13 +44,13 @@ class Arr
     public static function average(iterable $iterable, ?bool $allowEmpty = true): float|int
     {
         $array = Arr::from($iterable);
-        $size = \count($array);
+        $size = count($array);
 
         if ($size === 0 && $allowEmpty) {
             return 0;
         }
 
-        return \array_sum($array) / $size;
+        return array_sum($array) / $size;
     }
 
     /**
@@ -37,7 +62,7 @@ class Arr
     {
         $result = [];
         foreach ($iterable as $key => $value) {
-            if (\is_iterable($value) && $depth > 1) {
+            if (is_iterable($value) && $depth > 1) {
                 $value = static::compact($value, $depth - 1);
             }
             if ($value !== null) {
@@ -54,7 +79,7 @@ class Arr
      */
     public static function contains(iterable $iterable, mixed $value): bool
     {
-        $call = \is_callable($value) ? $value : static fn($item) => $item === $value;
+        $call = is_callable($value) ? $value : static fn($item) => $item === $value;
         foreach ($iterable as $key => $item) {
             $bool = $call($item, $key);
             Assert::bool($bool);
@@ -75,13 +100,13 @@ class Arr
         $array = static::from($iterable);
 
         if (static::isNotDottedKey($key)) {
-            return \array_key_exists($key, $array);
+            return array_key_exists($key, $array);
         }
 
-        $segments = \explode('.', $key);
-        $lastSegment = \array_pop($segments);
+        $segments = explode('.', $key);
+        $lastSegment = array_pop($segments);
         $ptr = static::dig($array, $segments);
-        return \is_array($ptr) && \array_key_exists($lastSegment, $ptr);
+        return is_array($ptr) && array_key_exists($lastSegment, $ptr);
     }
 
     /**
@@ -110,8 +135,8 @@ class Arr
     public static function drop(iterable $iterable, int $amount): array
     {
         return $amount >= 0
-            ? \array_slice(static::from($iterable), $amount)
-            : \array_slice(static::from($iterable), 0, -$amount);
+            ? array_slice(static::from($iterable), $amount)
+            : array_slice(static::from($iterable), 0, -$amount);
     }
 
     /**
@@ -295,7 +320,7 @@ class Arr
         $results = [];
         foreach ($iterable as $value) {
             $result = $callback($value);
-            if (\is_iterable($result)) {
+            if (is_iterable($result)) {
                 foreach ($result as $each) {
                     $results[] = $each;
                 }
@@ -318,7 +343,7 @@ class Arr
         $results = [];
         $func = static function($values, int $depth) use (&$func, &$results) {
             foreach ($values as $value) {
-                if (\is_iterable($value) && $depth > 0) {
+                if (is_iterable($value) && $depth > 0) {
                     $func($value, $depth - 1);
                 } else {
                     $results[] = $value;
@@ -339,7 +364,7 @@ class Arr
         $flipped = [];
         foreach ($iterable as $key => $value) {
             Assert::validKey($value);
-            if (!$overwrite && \array_key_exists($value, $flipped)) {
+            if (!$overwrite && array_key_exists($value, $flipped)) {
                 throw new DuplicateKeyException($value, $key);
             }
             $flipped[$value] = $key;
@@ -353,13 +378,13 @@ class Arr
      */
     public static function from(iterable $iterable): array
     {
-        if (\is_array($iterable)) {
+        if (is_array($iterable)) {
             return $iterable;
         }
         if ($iterable instanceof Traversable) {
-            return \iterator_to_array($iterable);
+            return iterator_to_array($iterable);
         }
-        throw new RuntimeException('Unknown type:'.\get_class($iterable));
+        throw new RuntimeException('Unknown type:'.get_class($iterable));
     }
 
     /**
@@ -369,7 +394,7 @@ class Arr
      */
     public static function get(iterable $iterable, int|string $key): mixed
     {
-        $keys = static::isDottedKey($key) ? \explode('.', $key) : [$key];
+        $keys = static::isDottedKey($key) ? explode('.', $key) : [$key];
         return static::dig(static::from($iterable), $keys);
     }
 
@@ -380,7 +405,7 @@ class Arr
      */
     public static function groupBy(iterable $iterable, string|callable $key): array
     {
-        $callable = \is_string($key) ? static::createDigger($key) : $key;
+        $callable = is_string($key) ? static::createDigger($key) : $key;
 
         $map = [];
         foreach ($iterable as $k => $item) {
@@ -404,7 +429,7 @@ class Arr
      */
     public static function implode(iterable $iterable, string $glue, ?string $prefix = null, ?string $suffix = null): string
     {
-        return $prefix.\implode($glue, static::from($iterable)).$suffix;
+        return $prefix.implode($glue, static::from($iterable)).$suffix;
     }
 
     /**
@@ -425,7 +450,7 @@ class Arr
      */
     public static function isEmpty(iterable $iterable): bool
     {
-        if (\is_array($iterable)) {
+        if (is_array($iterable)) {
             return empty($iterable);
         }
 
@@ -483,7 +508,7 @@ class Arr
      */
     public static function keyByRecursive(iterable $iterable, string|callable $key, bool $overwrite = false, int $depth = PHP_INT_MAX): array
     {
-        $callable = \is_string($key) ? static::createDigger($key) : $key;
+        $callable = is_string($key) ? static::createDigger($key) : $key;
 
         $result = [];
         foreach ($iterable as $key => $item) {
@@ -491,11 +516,11 @@ class Arr
 
             Assert::validKey($newKey);
 
-            if (!$overwrite && \array_key_exists($newKey, $result)) {
+            if (!$overwrite && array_key_exists($newKey, $result)) {
                 throw new DuplicateKeyException($newKey, $item);
             }
 
-            $result[$newKey] = ($depth > 1 && \is_iterable($item))
+            $result[$newKey] = ($depth > 1 && is_iterable($item))
                 ? static::keyByRecursive($item, $callable, $depth - 1)
                 : $item;
         }
@@ -511,20 +536,20 @@ class Arr
     public static function last(iterable $iterable, ?callable $condition = null): mixed
     {
         $copy = static::from($iterable);
-        \end($copy);
+        end($copy);
 
         if ($condition === null) {
-            return \current($copy);
+            return current($copy);
         }
 
-        while(($key = \key($copy)) !== null) {
-            $item = \current($copy);
+        while(($key = key($copy)) !== null) {
+            $item = current($copy);
             $bool = $condition($item, $key);
             Assert::bool($bool);
             if ($bool) {
                 return $item;
             }
-            \prev($copy);
+            prev($copy);
         }
 
         return null;
@@ -538,19 +563,19 @@ class Arr
     public static function lastIndex(iterable $iterable, callable $condition): ?int
     {
         $copy = static::from($iterable);
-        \end($copy);
+        end($copy);
 
-        $count = \count($copy);
+        $count = count($copy);
 
-        while(($key = \key($copy)) !== null) {
+        while(($key = key($copy)) !== null) {
             $count--;
-            $item = \current($copy);
+            $item = current($copy);
             $bool = $condition($item, $key);
             Assert::bool($bool);
             if ($bool) {
                 return $count;
             }
-            \prev($copy);
+            prev($copy);
         }
 
         return null;
@@ -564,20 +589,20 @@ class Arr
     public static function lastKey(iterable $iterable, ?callable $condition = null): int|string|null
     {
         $copy = static::from($iterable);
-        \end($copy);
+        end($copy);
 
         if ($condition === null) {
-            return \key($copy);
+            return key($copy);
         }
 
-        while(($key = \key($copy)) !== null) {
-            $item = \current($copy);
+        while(($key = key($copy)) !== null) {
+            $item = current($copy);
             $bool = $condition($item, $key);
             Assert::bool($bool);
             if ($bool) {
                 return $key;
             }
-            \prev($copy);
+            prev($copy);
         }
 
         return null;
@@ -603,7 +628,7 @@ class Arr
      */
     public static function max(iterable $iterable): mixed
     {
-        return \max(static::from($iterable));
+        return max(static::from($iterable));
     }
 
     /**
@@ -626,9 +651,9 @@ class Arr
     {
         $merged = static::from($iterable1);
         foreach ($iterable2 as $key => $value) {
-            if (\is_int($key)) {
+            if (is_int($key)) {
                 $merged[] = $value;
-            } else if ($depth > 1 && \array_key_exists($key, $merged) && \is_iterable($merged[$key]) && \is_iterable($value)) {
+            } else if ($depth > 1 && array_key_exists($key, $merged) && is_iterable($merged[$key]) && is_iterable($value)) {
                 $merged[$key] = static::mergeRecursive($merged[$key], $value, $depth - 1);
             } else {
                 $merged[$key] = $value;
@@ -643,7 +668,7 @@ class Arr
      */
     public static function min(iterable $iterable): mixed
     {
-        return \min(static::from($iterable));
+        return min(static::from($iterable));
     }
 
     /**
@@ -708,7 +733,7 @@ class Arr
     public static function pluck(iterable $iterable, int|string $key): array
     {
         if (static::isNotDottedKey($key)) {
-            return \array_column(static::from($iterable), $key);
+            return array_column(static::from($iterable), $key);
         }
 
         $plucked = [];
@@ -732,8 +757,8 @@ class Arr
             return $value;
         }
 
-        $segments = \explode('.', $key);
-        $lastSegment = \array_pop($segments);
+        $segments = explode('.', $key);
+        $lastSegment = array_pop($segments);
         $ptr = &$array;
         foreach ($segments as $segment) {
             if (!isset($segment, $ptr)) {
@@ -785,7 +810,7 @@ class Arr
                 $initial = '';
             } else if ($name === 'array') {
                 $initial = [];
-            } else if (\class_exists($name)) {
+            } else if (class_exists($name)) {
                 $initial = new $name;
             } else {
                 throw new RuntimeException('Initial value not set and not guessable.');
@@ -826,25 +851,25 @@ class Arr
     public static function removeKey(array|ArrayAccess &$array, int|string $key): bool
     {
         if (static::isNotDottedKey($key)) {
-            if (\array_key_exists($key, $array)) {
+            if (array_key_exists($key, $array)) {
                 unset($array[$key]);
                 return true;
             }
             return false;
         }
 
-        $segments = \explode('.', $key);
-        $lastSegment = \array_pop($segments);
+        $segments = explode('.', $key);
+        $lastSegment = array_pop($segments);
         $ptr = &$array;
         foreach ($segments as $segment) {
-            if (\is_array($ptr) && \array_key_exists($segment, $ptr)) {
+            if (is_array($ptr) && array_key_exists($segment, $ptr)) {
                 $ptr = &$ptr[$segment];
             } else {
                 return false;
             }
         }
 
-        if (\array_key_exists($lastSegment, $ptr)) {
+        if (array_key_exists($lastSegment, $ptr)) {
             unset($ptr[$lastSegment]);
             return true;
         }
@@ -859,7 +884,7 @@ class Arr
     public static function reverse(iterable $iterable): array
     {
         $array = static::from($iterable);
-        return \array_reverse($array, static::isAssoc($array));
+        return array_reverse($array, static::isAssoc($array));
     }
 
     /**
@@ -870,7 +895,7 @@ class Arr
     public static function sample(iterable $iterable): mixed
     {
         $arr = static::from($iterable);
-        return $arr[\array_rand($arr)];
+        return $arr[array_rand($arr)];
     }
 
     /**
@@ -882,7 +907,7 @@ class Arr
     public static function sampleMany(iterable $iterable, int $amount): array
     {
         $array = static::from($iterable);
-        $sampledKeys = \array_rand($array, $amount);
+        $sampledKeys = array_rand($array, $amount);
         return Arr::only($array, $sampledKeys);
     }
 
@@ -926,8 +951,8 @@ class Arr
         }
 
         $ptr = &$array;
-        $segments = \explode('.', $key);
-        $lastSegment = \array_pop($segments);
+        $segments = explode('.', $key);
+        $lastSegment = array_pop($segments);
         foreach ($segments as $segment) {
             $ptr[$segment] ??= [];
             $ptr = &$ptr[$segment];
@@ -945,7 +970,7 @@ class Arr
         $isList = static::isList($copy);
         $array = [];
         while (!empty($copy)) {
-            $key = \array_rand($copy);
+            $key = array_rand($copy);
             $isList
                 ? $array[] = $copy[$key]
                 : $array[$key] = $copy[$key];
@@ -975,8 +1000,8 @@ class Arr
     public static function take(iterable $iterable, int $amount): array
     {
         return $amount > 0
-            ? \array_slice(static::from($iterable), 0, $amount)
-            : \array_slice(static::from($iterable), $amount, -$amount);
+            ? array_slice(static::from($iterable), 0, $amount)
+            : array_slice(static::from($iterable), $amount, -$amount);
     }
 
     /**
@@ -1025,7 +1050,7 @@ class Arr
     {
         $arr = static::from($iterable);
         $data = $namespace !== null ? [$namespace => $arr] : $arr;
-        return \http_build_query($data, '', '&', PHP_QUERY_RFC3986);
+        return http_build_query($data, '', '&', PHP_QUERY_RFC3986);
     }
 
     /**
@@ -1048,11 +1073,11 @@ class Arr
     {
         $union = static::from($iterable1);
         foreach ($iterable2 as $key => $value) {
-            if (\is_int($key)) {
+            if (is_int($key)) {
                 $union[] = $value;
-            } else if (!\array_key_exists($key, $union)) {
+            } else if (!array_key_exists($key, $union)) {
                 $union[$key] = $value;
-            } else if ($depth > 1 && \is_iterable($union[$key]) && \is_iterable($value)) {
+            } else if ($depth > 1 && is_iterable($union[$key]) && is_iterable($value)) {
                 $union[$key] = static::unionRecursive($union[$key], $value, $depth - 1);
             }
         }
@@ -1067,7 +1092,7 @@ class Arr
     public static function unshift(array &$array, mixed ...$values): void
     {
         for($i = count($values) - 1; $i >= 0; $i--) {
-            \array_unshift($array, $values[$i]);
+            array_unshift($array, $values[$i]);
         }
     }
 
@@ -1077,7 +1102,7 @@ class Arr
      */
     public static function wrap(mixed $value): array
     {
-        return \is_array($value) ? $value : [$value];
+        return is_array($value) ? $value : [$value];
     }
 
     /**
@@ -1086,7 +1111,7 @@ class Arr
      */
     protected static function isDottedKey(int|string $key): bool
     {
-        return \is_string($key) && \str_contains($key, '.');
+        return is_string($key) && str_contains($key, '.');
     }
 
     /**
@@ -1109,9 +1134,9 @@ class Arr
             if (!isset($array[$key])) {
                 return null;
             }
-            if (!\is_array($array[$key])) {
+            if (!is_array($array[$key])) {
                 // If at last key, return the referenced value
-                if ($key === $keys[\array_key_last($keys)]) {
+                if ($key === $keys[array_key_last($keys)]) {
                     return $array[$key];
                 }
                 return null;
@@ -1128,7 +1153,7 @@ class Arr
      */
     protected static function createDigger(string $key): Closure
     {
-        $segments = \explode('.', $key);
+        $segments = explode('.', $key);
         return static fn($v, $k) => static::dig($v, $segments);
     }
 }

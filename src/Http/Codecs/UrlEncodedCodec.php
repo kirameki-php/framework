@@ -1,15 +1,15 @@
 <?php declare(strict_types=1);
 
-namespace Kirameki\Http\Handlers;
+namespace Kirameki\Http\Codecs;
 
-class MsgpackHandler implements HandlerInterface
+class UrlEncodedCodec implements CodecInterface
 {
     /**
      * @return array
      */
     public function getContentTypes(): array
     {
-        return ['application/msgpack'];
+        return ['application/x-www-form-urlencoded'];
     }
 
     /**
@@ -18,7 +18,9 @@ class MsgpackHandler implements HandlerInterface
      */
     public function receive(string $content): array
     {
-        return msgpack_unpack($content);
+        $result = [];
+        parse_str($content, $result);
+        return $result;
     }
 
     /**
@@ -27,6 +29,6 @@ class MsgpackHandler implements HandlerInterface
      */
     public function send(array $content): string
     {
-        return msgpack_pack($content);
+        return http_build_query($content);
     }
 }

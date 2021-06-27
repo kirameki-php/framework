@@ -1,6 +1,5 @@
 <?php declare(strict_types=1);
 
-use JetBrains\PhpStorm\Pure;
 use Kirameki\Core\Application;
 use Kirameki\Database\DatabaseManager;
 use Kirameki\Event\EventManager;
@@ -8,7 +7,6 @@ use Kirameki\Logging\LogManager;
 use Kirameki\Support\Collection;
 use Kirameki\Core\Config;
 use Kirameki\Core\Env;
-use Psr\Log\LoggerInterface;
 use Ramsey\Uuid\Uuid;
 
 /**

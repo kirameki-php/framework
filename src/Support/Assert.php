@@ -4,6 +4,9 @@ namespace Kirameki\Support;
 
 use Kirameki\Exception\InvalidKeyException;
 use Kirameki\Exception\InvalidValueException;
+use function is_bool;
+use function is_int;
+use function is_string;
 
 class Assert
 {
@@ -13,7 +16,7 @@ class Assert
      */
     public static function bool(mixed $value): void
     {
-        if (!\is_bool($value)) {
+        if (!is_bool($value)) {
             throw new InvalidValueException('bool', $value);
         }
     }
@@ -24,7 +27,7 @@ class Assert
      */
     public static function positiveInt(mixed $value): void
     {
-        if (\is_int($value) && $value > 0) {
+        if (is_int($value) && $value > 0) {
             return;
         }
         throw new InvalidValueException('positive int', $value);
@@ -37,7 +40,7 @@ class Assert
      */
     public static function greaterThan(int $expected, mixed $value): void
     {
-        if (\is_int($value) && $value > 1) {
+        if (is_int($value) && $value > 1) {
             return;
         }
         throw new InvalidValueException('greater than '.$expected, $value);
@@ -49,7 +52,7 @@ class Assert
      */
     public static function validKey(mixed $key): void
     {
-        if (\is_string($key) || \is_int($key)) {
+        if (is_string($key) || is_int($key)) {
             return;
         }
         throw new InvalidKeyException($key);

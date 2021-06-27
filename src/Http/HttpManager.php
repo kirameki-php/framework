@@ -2,12 +2,12 @@
 
 namespace Kirameki\Http;
 
-use Kirameki\Http\Handlers\HandlerInterface;
+use Kirameki\Http\Codecs\CodecInterface;
 
 class HttpManager
 {
     /**
-     * @var HandlerInterface[]
+     * @var CodecInterface[]
      */
     protected array $contentHandlers = [];
 
@@ -42,10 +42,10 @@ class HttpManager
     }
 
     /**
-     * @param HandlerInterface $handler
+     * @param CodecInterface $handler
      * @return void
      */
-    public function addContentHandler(HandlerInterface $handler)
+    public function addContentHandler(CodecInterface $handler)
     {
         foreach ($handler->getContentTypes() as $type) {
             $this->contentHandlers[$type] = $handler;
@@ -54,9 +54,9 @@ class HttpManager
 
     /**
      * @param string $contentType
-     * @return HandlerInterface|null
+     * @return CodecInterface|null
      */
-    public function getContentHandler(string $contentType): ?HandlerInterface
+    public function getContentHandler(string $contentType): ?CodecInterface
     {
         return $this->contentHandlers[$contentType] ?? null;
     }
