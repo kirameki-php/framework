@@ -2,6 +2,6 @@
 
 namespace Kirameki\Storage;
 
-class DirectoryInfo extends Info
+class DirectoryInfo extends FileSystemInfo
 {
 }

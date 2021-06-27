@@ -4,7 +4,7 @@ namespace Kirameki\Storage;
 
 use Carbon\Carbon;
 
-abstract class Info
+abstract class FileSystemInfo
 {
     /**
      * @var string
@@ -61,29 +61,50 @@ abstract class Info
     }
 
     /**
-     * @return Carbon
+     * @return int
      */
-    public function mtime(): Carbon
+    public function size(): int
     {
-        $timestamp = filemtime($this->absolutePath);
-        return Carbon::createFromTimestamp($timestamp);
+        return filesize($this->absolutePath);
     }
 
     /**
      * @return Carbon
      */
-    public function ctime(): Carbon
+    public function lastModifiedTime(): Carbon
     {
-        $timestamp = filectime($this->absolutePath);
-        return Carbon::createFromTimestamp($timestamp);
+        return Carbon::createFromTimestamp(filemtime($this->absolutePath));
     }
 
     /**
      * @return Carbon
      */
-    public function atime(): Carbon
+    public function lastChangedTime(): Carbon
     {
-        $timestamp = fileatime($this->absolutePath);
-        return Carbon::createFromTimestamp($timestamp);
+        return Carbon::createFromTimestamp(filectime($this->absolutePath));
+    }
+
+    /**
+     * @return Carbon
+     */
+    public function lastAccessedTime(): Carbon
+    {
+        return Carbon::createFromTimestamp(fileatime($this->absolutePath));
+    }
+
+    /**
+     * @return string
+     */
+    public function permissions(): string
+    {
+        return decoct(fileperms($this->absolutePath) & 0777);
+    }
+
+    /**
+     * @return bool
+     */
+    public function isLink(): bool
+    {
+        return is_link($this->absolutePath);
     }
 }

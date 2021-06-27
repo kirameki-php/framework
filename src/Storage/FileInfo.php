@@ -2,7 +2,7 @@
 
 namespace Kirameki\Storage;
 
-class FileInfo extends Info
+class FileInfo extends FileSystemInfo
 {
     /**
      * @return string

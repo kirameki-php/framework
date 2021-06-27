@@ -42,7 +42,7 @@ class LocalStorage implements StorageInterface
     /**
      * @param string $dirPath
      * @param bool $deep
-     * @return Collection<Info>|Info[]
+     * @return Collection<FileSystemInfo>|FileSystemInfo[]
      */
     public function list(string $dirPath, bool $deep = false): Collection
     {
