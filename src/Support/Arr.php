@@ -58,7 +58,7 @@ class Arr
      * @param int $depth
      * @return array
      */
-    public static function compact(iterable $iterable, int $depth = PHP_INT_MAX): array
+    public static function compact(iterable $iterable, int $depth = 1): array
     {
         $result = [];
         foreach ($iterable as $key => $value) {

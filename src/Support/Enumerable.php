@@ -83,7 +83,7 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
      * @param int $depth
      * @return $this
      */
-    public function compact(int $depth = PHP_INT_MAX): static
+    public function compact(int $depth = 1): static
     {
         return $this->newInstance(Arr::compact($this->items, $depth));
     }

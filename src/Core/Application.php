@@ -56,6 +56,9 @@ class Application extends Container
         static::setPhpRuntimeConfigs();
         Env::applyDotFile($dotEnvPath ?? $basePath.'/.env');
 
+        // getcwd will be root project path
+        chdir($basePath);
+
         $this->basePath = $basePath;
         $this->startTime = microtime(true) * 1000;
         $this->config = Config::fromDirectory($basePath.'/config');

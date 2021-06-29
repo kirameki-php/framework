@@ -27,4 +27,13 @@ class Json
     {
         return json_decode($json, true, $depth, JSON_THROW_ON_ERROR);
     }
+
+    /**
+     * @param string $path
+     * @return array
+     */
+    public static function decodeFile(string $path): array
+    {
+        return static::decode(file_get_contents($path));
+    }
 }
