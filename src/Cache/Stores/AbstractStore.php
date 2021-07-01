@@ -16,6 +16,8 @@ use Kirameki\Cache\Events\CacheStored;
 use Kirameki\Event\Event;
 use Kirameki\Event\EventManager;
 use Kirameki\Support\Arr;
+use function preg_replace;
+use function time;
 
 abstract class AbstractStore implements StoreInterface
 {

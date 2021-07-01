@@ -3,6 +3,7 @@
 namespace Kirameki\Container;
 
 use Closure;
+use function call_user_func_array;
 
 class ClosureEntry implements EntryInterface
 {

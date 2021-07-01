@@ -3,9 +3,9 @@
 namespace Kirameki\Container;
 
 use Closure;
-use Kirameki\Database\DatabaseManager;
 use Kirameki\Support\Collection;
 use Psr\Container\ContainerInterface;
+use function array_key_exists;
 
 class Container implements ContainerInterface
 {

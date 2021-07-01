@@ -12,6 +12,8 @@ use Stringable;
  */
 class Request implements Stringable
 {
+    const CRLF = "\r\n";
+
     /**
      * @var string
      */
@@ -117,6 +119,54 @@ class Request implements Stringable
     /**
      * @return bool
      */
+    public function isGet(): bool
+    {
+        return $this->method === Method::GET;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isHead(): bool
+    {
+        return $this->method === Method::HEAD;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isPost(): bool
+    {
+        return $this->method === Method::POST;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isPut(): bool
+    {
+        return $this->method === Method::PUT;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isDelete(): bool
+    {
+        return $this->method === Method::DELETE;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isPatch(): bool
+    {
+        return $this->method === Method::PATCH;
+    }
+
+    /**
+     * @return bool
+     */
     public function isSecure(): bool
     {
         return $this->url->schema() === 'https';
@@ -127,7 +177,7 @@ class Request implements Stringable
      */
     public function isAjax(): bool
     {
-        return $this->headers->is('X-Requested-With', 'XMLHttpRequest');
+        return $this->headers->matches('X-Requested-With', 'XMLHttpRequest');
     }
 
     /**
@@ -135,7 +185,7 @@ class Request implements Stringable
      */
     protected function resolveParameters(): Parameters
     {
-        $contentType = $this->headers->get('Content-Type');
+        $contentType = $this->headers->getFirst('Content-Type');
         return $contentType
             ? Parameters::fromMediaType($contentType, $this->body)
             : Parameters::blank();
@@ -154,14 +204,13 @@ class Request implements Stringable
      */
     public function __toString(): string
     {
-        $newline = "\r\n";
-        $raw = sprintf('%s %s %s', $this->method, $this->url, $this->protocol).$newline;
+        $raw = sprintf('%s %s %s', $this->method, $this->url, $this->protocol).self::CRLF;
         if ($headers = $this->headers->toString()) {
-            $raw.= $headers.$newline;
+            $raw.= $headers.self::CRLF;
         }
-        $raw.= $newline;
+        $raw.= self::CRLF;
         if ($this->body !== null) {
-            $raw.= $this->body.$newline;
+            $raw.= $this->body.self::CRLF;
         }
         return $raw;
     }

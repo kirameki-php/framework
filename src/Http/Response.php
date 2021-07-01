@@ -3,11 +3,15 @@
 namespace Kirameki\Http;
 
 use Stringable;
+use function header;
+use function headers_sent;
+use function ini_get;
+use function ksort;
+use function strlen;
+use function gmdate;
 
 class Response implements Stringable
 {
-    const CRLF = "\r\n";
-
     public Request $request;
 
     /**
@@ -152,7 +156,7 @@ class Response implements Stringable
      */
     public function toString(): string
     {
-        $str = "HTTP/$this->version $this->statusCode $this->statusPhrase".self::CRLF;
+        $str = "HTTP/$this->version $this->statusCode $this->statusPhrase".Request::CRLF;
 
         $headers = $this->headers->all();
         $headers['Content-Length'] = strlen($this->body);
@@ -163,10 +167,10 @@ class Response implements Stringable
         ksort($headers);
 
         foreach ($headers as $name => $value) {
-            $str.= $name.': '.$value.self::CRLF;
+            $str.= $name.': '.$value.Request::CRLF;
         }
 
-        $str.= self::CRLF;
+        $str.= Request::CRLF;
 
         $str.= $this->body;
 

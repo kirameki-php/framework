@@ -14,7 +14,7 @@ interface EntryInterface
     /**
      * @return mixed
      */
-    public function getInstance();
+    public function getInstance(): mixed;
 
     /**
      * @param Closure $callback

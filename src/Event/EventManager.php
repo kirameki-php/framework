@@ -3,6 +3,7 @@
 namespace Kirameki\Event;
 
 use Closure;
+use function get_class;
 
 class EventManager
 {
@@ -113,7 +114,7 @@ class EventManager
 
         $listeners = &$this->events[$name];
         foreach ($listeners as $index => $listener) {
-            if ($listener === $targetListener) {
+            if ($listener->getCallback() === $targetListener) {
                 unset($listeners[$index]);
             }
         }

@@ -1,6 +1,8 @@
 <?php declare(strict_types=1);
 
 namespace Kirameki\Http\Codecs;
+use function msgpack_pack;
+use function msgpack_unpack;
 
 class MsgpackCodec implements CodecInterface
 {

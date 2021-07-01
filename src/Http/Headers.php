@@ -2,13 +2,15 @@
 
 namespace Kirameki\Http;
 
-use Countable;
 use Stringable;
+use function array_merge;
+use function compact;
+use function strtoupper;
 
-class Headers implements Countable, Stringable
+class Headers implements Stringable
 {
     /**
-     * @var array<string, string>
+     * @var array<string, string[]>
      */
     protected array $entries;
 
@@ -18,7 +20,7 @@ class Headers implements Countable, Stringable
     public function __construct(array $entries = [])
     {
         $this->entries = [];
-        $this->merge($entries);
+        $this->merge($entries, false);
     }
 
     /**
@@ -43,37 +45,61 @@ class Headers implements Countable, Stringable
      * @param string $expectedValue
      * @return bool
      */
-    public function is(string $name, string $expectedValue): bool
+    public function matches(string $name, string $expectedValue): bool
     {
-        return $this->get($name) === $expectedValue;
+        foreach ($this->get($name) as $value) {
+            if ($value === $expectedValue) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * @param string $name
+     * @return array
+     */
+    public function get(string $name): array
+    {
+        return $this->entries[strtoupper($name)]['values'] ?? [];
     }
 
     /**
      * @param string $name
      * @return string|null
      */
-    public function get(string $name): ?string
+    public function getFirst(string $name): ?string
     {
-        return $this->entries[strtoupper($name)]['value'] ?? null;
+        return $this->entries[strtoupper($name)]['values'][0] ?? null;
     }
 
     /**
      * @param string $name
      * @param string $value
+     * @param bool $replace
+     * @return void
      */
-    public function set(string $name, string $value): void
+    public function set(string $name, string $value, bool $replace = true): void
     {
-        $this->entries[strtoupper($name)] = compact('name', 'value');
+        $key = strtoupper($name);
+        $values = [$value];
+
+        if (!$replace && $this->has($name)) {
+            $values = array_merge($this->entries[$key]['values'], $values);
+        }
+
+        $this->entries[$key] = compact('name', 'values');
     }
 
     /**
      * @param array $entries
+     * @param bool $replace
      * @return void
      */
-    public function merge(array $entries): void
+    public function merge(array $entries, bool $replace = true): void
     {
         foreach ($entries as $name => $entry) {
-            $this->set($name, $entry);
+            $this->set($name, $entry, $replace);
         }
     }
 
@@ -87,21 +113,13 @@ class Headers implements Countable, Stringable
     }
 
     /**
-     * @return int
-     */
-    public function count(): int
-    {
-        return count($this->entries);
-    }
-
-    /**
      * @return array
      */
     protected function caseSensitiveEntries(): array
     {
         $entries = [];
         foreach ($this->entries as $data) {
-            $entries[$data['name']] = $data['value'];
+            $entries[$data['name']] = $data['values'];
         }
         return $entries;
     }
@@ -113,7 +131,9 @@ class Headers implements Countable, Stringable
     {
         $raw = '';
         foreach ($this->entries as $data) {
-            $raw.= $data['name'].': '.$data['value'];
+            foreach ($data['values'] as $value) {
+                $raw.= $data['name'].': '.$value.Request::CRLF;
+            }
         }
         return $raw;
     }

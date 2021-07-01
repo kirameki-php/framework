@@ -9,9 +9,11 @@ use Kirameki\Support\FileInfo;
 use Kirameki\Support\Json;
 use ReflectionClass;
 use RuntimeException;
+use function getcwd;
 use function preg_quote;
 use function preg_replace;
 use function str_replace;
+use function str_starts_with;
 
 class Router
 {
@@ -26,9 +28,10 @@ class Router
      */
     public function scanForRoutes(string $path): Collection
     {
-        $composer = Json::decodeFile(getcwd().'/composer.json');
-        $autoloads = Arr::get($composer, 'autoload.psr-4');
+        $cwd = getcwd();
 
+        $composer = Json::decodeFile($cwd.'/composer.json');
+        $autoloads = Arr::get($composer, 'autoload.psr-4');
         $startingNamespace = null;
         $startingPattern = null;
         foreach ($autoloads as $namespace => $startPath) {
@@ -43,7 +46,7 @@ class Router
         }
 
         $targetClasses = File::list($path, true)
-            ->map(fn(FileInfo $file) => str_replace(getcwd().'/', '', $file->path()))
+            ->map(fn(FileInfo $file) => str_replace($cwd.'/', '', $file->path()))
             ->map(fn(string $path) => preg_replace($startingPattern, $startingNamespace, $path, 1))
             ->map(fn(string $path) => preg_replace("/.php$/", '', $path))
             ->map(fn(string $path) => str_replace('/', '\\', $path));

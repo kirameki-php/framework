@@ -8,6 +8,8 @@ use Kirameki\Model\Model;
 use Kirameki\Model\ModelManager;
 use Kirameki\Model\QueryBuilder;
 use RuntimeException;
+use function get_class;
+use function preg_replace;
 
 class TokenAuth implements AuthInterface
 {
@@ -90,7 +92,7 @@ class TokenAuth implements AuthInterface
      */
     protected function extractBearerToken(): string
     {
-        $value = $this->request->headers->get('Authorization');
+        $value = $this->request->headers->getFirst('Authorization');
         return preg_replace('/^Bearer: /', '', $value, 1);
     }
 }

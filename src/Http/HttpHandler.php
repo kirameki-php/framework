@@ -3,6 +3,9 @@
 namespace Kirameki\Http;
 
 use Kirameki\Http\Codecs\CodecInterface;
+use function header;
+use function headers_sent;
+use function strlen;
 
 class HttpHandler
 {

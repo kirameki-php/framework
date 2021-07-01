@@ -1,6 +1,8 @@
 <?php declare(strict_types=1);
 
 namespace Kirameki\Http\Codecs;
+use function http_build_query;
+use function parse_str;
 
 class UrlEncodedCodec implements CodecInterface
 {

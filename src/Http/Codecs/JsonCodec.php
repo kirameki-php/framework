@@ -1,6 +1,8 @@
 <?php declare(strict_types=1);
 
 namespace Kirameki\Http\Codecs;
+use function json_decode;
+use function json_encode;
 
 class JsonCodec implements CodecInterface
 {

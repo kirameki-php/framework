@@ -3,13 +3,14 @@
 namespace Kirameki\Event;
 
 use Closure;
+use function call_user_func;
 
 class Listener
 {
     /**
      * @var Closure
      */
-    protected Closure $listener;
+    protected Closure $callback;
 
     /**
      * @var bool
@@ -22,12 +23,12 @@ class Listener
     protected bool $listening;
 
     /**
-     * @param Closure $listener
+     * @param Closure $callback
      * @param bool $once
      */
-    public function __construct(Closure $listener, bool $once = false)
+    public function __construct(Closure $callback, bool $once = false)
     {
-        $this->listener = $listener;
+        $this->callback = $callback;
         $this->once = $once;
         $this->listening = true;
     }
@@ -42,8 +43,16 @@ class Listener
             if ($this->once) {
                 $this->stopListening();
             }
-            call_user_func($this->listener, $event, $this);
+            call_user_func($this->callback, $event, $this);
         }
+    }
+
+    /**
+     * @return Closure
+     */
+    public function getCallback(): Closure
+    {
+        return $this->callback;
     }
 
     /**

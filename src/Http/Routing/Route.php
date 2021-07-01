@@ -8,6 +8,7 @@ use Kirameki\Support\Arr;
 use ReflectionAttribute;
 use ReflectionMethod;
 use RuntimeException;
+use function str_replace;
 
 #[Attribute(Attribute::TARGET_METHOD)]
 class Route
