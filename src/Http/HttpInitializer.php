@@ -13,6 +13,6 @@ class HttpInitializer implements InitializerInterface
      */
     public function register(Application $app): void
     {
-        $app->singleton(HttpManager::class, fn() => new HttpManager());
+        $app->singleton(HttpHandler::class, fn() => new HttpHandler());
     }
 }

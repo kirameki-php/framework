@@ -31,9 +31,9 @@ class Parameters implements Countable, IteratorAggregate, JsonSerializable
      */
     public static function fromMediaType(string $type, string $input): static
     {
-        /** @var HttpManager $httpManager */
-        $httpManager = app()->get(HttpManager::class);
-        $data = $httpManager->getContentHandler($type)->receive($input);
+        /** @var HttpHandler $httpHandler */
+        $httpHandler = app()->get(HttpHandler::class);
+        $data = $httpHandler->getCodec($type)->receive($input);
         return new static($data);
     }
 
