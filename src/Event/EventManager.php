@@ -79,7 +79,7 @@ class EventManager
                 unset($listeners[$index]);
             }
 
-            if ($event->isPropagationStopped()) {
+            if ($event instanceof StoppableEvent && $event->isPropagationStopped()) {
                 break;
             }
         }
