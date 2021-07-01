@@ -7,7 +7,7 @@ use RuntimeException;
 use Stringable;
 
 /**
- * @property-read Headers $headers
+ * @property-read ResponseHeaders $headers
  * @property-read Parameters $parameters
  */
 class Request implements Stringable
@@ -40,9 +40,9 @@ class Request implements Stringable
     protected float $timestamp;
 
     /**
-     * @var Headers|null
+     * @var ResponseHeaders|null
      */
-    protected ?Headers $_headers;
+    protected ?ResponseHeaders $_headers;
 
     /**
      * @var Parameters|null
@@ -57,7 +57,7 @@ class Request implements Stringable
         $protocol = $_SERVER['SERVER_PROTOCOL'] ?? 'HTTP/1.1';
         $method = $_REQUEST['_method'] ?? $_SERVER['REQUEST_METHOD'];
         $url = ($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? $_SERVER['REQUEST_SCHEME'] ?? 'http') . '://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
-        $headers = new Headers(getallheaders());
+        $headers = new ResponseHeaders(getallheaders());
         $body = file_get_contents('php://input');
         $time = $_SERVER['REQUEST_TIME_FLOAT'];
 
@@ -68,18 +68,18 @@ class Request implements Stringable
      * @param string $protocol
      * @param string $method
      * @param string $url
-     * @param Headers|null $headers
+     * @param ResponseHeaders|null $headers
      * @param string|null $body
      * @param float|null $timestamp
      */
-    public function __construct(string $protocol, string $method, string $url, ?Headers $headers = null, ?string $body = null, ?float $timestamp = null)
+    public function __construct(string $protocol, string $method, string $url, ?ResponseHeaders $headers = null, ?string $body = null, ?float $timestamp = null)
     {
         $this->protocol = $protocol;
         $this->method = strtoupper($method);
         $this->url = new Url(parse_url($url));
         $this->body = $body;
         $this->timestamp = $timestamp ?? microtime(true);
-        $this->_headers = $headers ?? new Headers;
+        $this->_headers = $headers ?? new ResponseHeaders;
         $this->_parameters = null;
     }
 

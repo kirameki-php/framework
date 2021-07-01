@@ -7,7 +7,7 @@ use function array_merge;
 use function compact;
 use function strtoupper;
 
-class Headers implements Stringable
+class ResponseHeaders implements Stringable
 {
     /**
      * @var array<string, string[]>

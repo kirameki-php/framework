@@ -30,9 +30,9 @@ class Response implements Stringable
     public string $statusPhrase;
 
     /**
-     * @var Headers
+     * @var ResponseHeaders
      */
-    public Headers $headers;
+    public ResponseHeaders $headers;
 
     /**
      * @var string
@@ -43,16 +43,16 @@ class Response implements Stringable
     /**
      * @param Request $request
      * @param int $code
-     * @param Headers|null $headers
+     * @param ResponseHeaders|null $headers
      * @param string $body
      */
-    public function __construct(Request $request, int $code = 200, Headers $headers = null, string $body = '')
+    public function __construct(Request $request, int $code = 200, ResponseHeaders $headers = null, string $body = '')
     {
         $this->request = $request;
         $this->version = $request->httpVersion();
         $this->statusCode = $code;
         $this->statusPhrase = static::codeToPhrase($code);
-        $this->headers = $headers ?? new Headers();
+        $this->headers = $headers ?? new ResponseHeaders();
         $this->body = $body;
     }
 
