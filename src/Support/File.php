@@ -4,6 +4,13 @@ namespace Kirameki\Support;
 
 use DirectoryIterator;
 use RuntimeException;
+use function array_filter;
+use function explode;
+use function getcwd;
+use function implode;
+use function is_dir;
+use function preg_quote;
+use function preg_replace;
 
 class File
 {

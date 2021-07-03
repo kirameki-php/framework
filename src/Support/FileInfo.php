@@ -3,12 +3,20 @@
 namespace Kirameki\Support;
 
 use Carbon\Carbon;
+use function fileatime;
+use function filectime;
+use function filemtime;
+use function filesize;
+use function is_dir;
+use function is_executable;
+use function is_file;
+use function is_link;
+use function is_readable;
+use function is_writable;
+use function pathinfo;
 
 class FileInfo
 {
-    const TYPE_DIRECTORY = 0;
-    const TYPE_FILE = 1;
-
     /**
      * @var string
      */

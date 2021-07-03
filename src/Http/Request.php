@@ -3,13 +3,13 @@
 namespace Kirameki\Http;
 
 use Carbon\Carbon;
-use RuntimeException;
 use Stringable;
+use function microtime;
+use function parse_url;
+use function sprintf;
+use function strtoupper;
+use function substr;
 
-/**
- * @property-read ResponseHeaders $headers
- * @property-read Parameters $parameters
- */
 class Request implements Stringable
 {
     const CRLF = "\r\n";
@@ -40,14 +40,14 @@ class Request implements Stringable
     protected float $timestamp;
 
     /**
-     * @var ResponseHeaders|null
+     * @var RequestHeaders|null
      */
-    protected ?ResponseHeaders $_headers;
+    public ?RequestHeaders $headers;
 
     /**
-     * @var Parameters|null
+     * @var RequestData|null
      */
-    protected ?Parameters $_parameters;
+    public ?RequestData $data;
 
     /**
      * @return static
@@ -57,7 +57,7 @@ class Request implements Stringable
         $protocol = $_SERVER['SERVER_PROTOCOL'] ?? 'HTTP/1.1';
         $method = $_REQUEST['_method'] ?? $_SERVER['REQUEST_METHOD'];
         $url = ($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? $_SERVER['REQUEST_SCHEME'] ?? 'http') . '://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
-        $headers = new ResponseHeaders(getallheaders());
+        $headers = new RequestHeaders(getallheaders());
         $body = file_get_contents('php://input');
         $time = $_SERVER['REQUEST_TIME_FLOAT'];
 
@@ -68,19 +68,19 @@ class Request implements Stringable
      * @param string $protocol
      * @param string $method
      * @param string $url
-     * @param ResponseHeaders|null $headers
+     * @param RequestHeaders|null $headers
      * @param string|null $body
      * @param float|null $timestamp
      */
-    public function __construct(string $protocol, string $method, string $url, ?ResponseHeaders $headers = null, ?string $body = null, ?float $timestamp = null)
+    public function __construct(string $protocol, string $method, string $url, ?RequestHeaders $headers = null, ?string $body = null, ?float $timestamp = null)
     {
         $this->protocol = $protocol;
         $this->method = strtoupper($method);
         $this->url = new Url(parse_url($url));
         $this->body = $body;
         $this->timestamp = $timestamp ?? microtime(true);
-        $this->_headers = $headers ?? new ResponseHeaders;
-        $this->_parameters = null;
+        $this->headers = $headers ?? new RequestHeaders();
+        $this->data = null;
     }
 
     /**
@@ -181,28 +181,9 @@ class Request implements Stringable
     }
 
     /**
-     * @return Parameters
-     */
-    protected function resolveParameters(): Parameters
-    {
-        $contentType = $this->headers->getFirst('Content-Type');
-        return $contentType
-            ? Parameters::fromMediaType($contentType, $this->body)
-            : Parameters::blank();
-    }
-
-    /**
      * @return string
      */
     public function toString(): string
-    {
-        return $this->__toString();
-    }
-
-    /**
-     * @return string
-     */
-    public function __toString(): string
     {
         $raw = sprintf('%s %s %s', $this->method, $this->url, $this->protocol).self::CRLF;
         if ($headers = $this->headers->toString()) {
@@ -216,25 +197,20 @@ class Request implements Stringable
     }
 
     /**
+     * @return string
+     */
+    public function __toString(): string
+    {
+        return $this->toString();
+    }
+
+    /**
      * @return void
      */
     public function __clone()
     {
         $this->url = clone $this->url;
         $this->headers = clone $this->headers;
-        $this->parameters = clone $this->parameters;
-    }
-
-    /**
-     * @param string $name
-     * @return mixed
-     */
-    public function __get(string $name)
-    {
-        return match ($name) {
-            'headers' => $this->_headers,
-            'parameters' => $this->_parameters,
-            default => throw new RuntimeException('Undefined Property: '.$name),
-        };
+        $this->data = clone $this->data;
     }
 }

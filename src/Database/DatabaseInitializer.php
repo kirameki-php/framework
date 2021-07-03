@@ -6,10 +6,14 @@ use Kirameki\Core\Application;
 use Kirameki\Core\InitializerInterface;
 use Kirameki\Database\Events\QueryExecuted;
 use Kirameki\Event\EventManager;
-use Psr\Log\LoggerInterface;
+use function sprintf;
 
 class DatabaseInitializer implements InitializerInterface
 {
+    /**
+     * @param Application $app
+     * @return void
+     */
     public function register(Application $app): void
     {
         $app->singleton(DatabaseManager::class, function (Application $app) {

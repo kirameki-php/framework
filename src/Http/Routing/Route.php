@@ -4,6 +4,7 @@ namespace Kirameki\Http\Routing;
 
 use Attribute;
 use Closure;
+use Kirameki\Http\Controller;
 use Kirameki\Support\Arr;
 use ReflectionAttribute;
 use ReflectionMethod;
@@ -43,7 +44,12 @@ class Route
         $route = $reflection->newInstance();
 
         if ($route instanceof static) {
+            if (!is_subclass_of($reference->class, Controller::class)) {
+                throw new RuntimeException($reference->class.' need to be a sub-class of '. Controller::class);
+            }
+
             $route->action = $reference->class.'::'.$reference->name;
+
             return $route;
         }
 
@@ -55,10 +61,11 @@ class Route
      * @param string $path
      * @param string|null $name
      */
-    public function __construct(array|string $method, string $path, ?string $name = null)
+    public function __construct(array|string $method, string $path, string|null $name = null)
     {
         $this->methods = Arr::wrap($method);
         $this->path = $path;
         $this->name = $name ?? str_replace('/', '.', $path);
+        $this->action = null;
     }
 }

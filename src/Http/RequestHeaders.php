@@ -3,14 +3,13 @@
 namespace Kirameki\Http;
 
 use Stringable;
-use function array_merge;
 use function compact;
 use function strtoupper;
 
-class ResponseHeaders implements Stringable
+class RequestHeaders implements Stringable
 {
     /**
-     * @var array<string, string[]>
+     * @var array<string, string>
      */
     protected array $entries;
 
@@ -20,11 +19,11 @@ class ResponseHeaders implements Stringable
     public function __construct(array $entries = [])
     {
         $this->entries = [];
-        $this->merge($entries, false);
+        $this->merge($entries);
     }
 
     /**
-     * @return array<string, string[]>
+     * @return array<string, string>
      */
     public function all(): array
     {
@@ -37,7 +36,7 @@ class ResponseHeaders implements Stringable
      */
     public function has(string $name): bool
     {
-        return !empty($this->get($name));
+        return $this->get($name) !== null;
     }
 
     /**
@@ -47,59 +46,35 @@ class ResponseHeaders implements Stringable
      */
     public function matches(string $name, string $expectedValue): bool
     {
-        foreach ($this->get($name) as $value) {
-            if ($value === $expectedValue) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
-     * @param string $name
-     * @return array
-     */
-    public function get(string $name): array
-    {
-        return $this->entries[strtoupper($name)]['values'] ?? [];
+        return $this->get($name) === $expectedValue;
     }
 
     /**
      * @param string $name
      * @return string|null
      */
-    public function getFirst(string $name): ?string
+    public function get(string $name): ?string
     {
-        return $this->entries[strtoupper($name)]['values'][0] ?? null;
+        return $this->entries[strtoupper($name)]['value'] ?? null;
     }
 
     /**
      * @param string $name
      * @param string $value
-     * @param bool $replace
-     * @return void
      */
-    public function set(string $name, string $value, bool $replace = true): void
+    public function set(string $name, string $value): void
     {
-        $key = strtoupper($name);
-        $values = [$value];
-
-        if (!$replace && $this->has($key)) {
-            $values = array_merge($this->entries[$key]['values'], $values);
-        }
-
-        $this->entries[$key] = compact('name', 'values');
+        $this->entries[strtoupper($name)] = compact('name', 'value');
     }
 
     /**
      * @param array $entries
-     * @param bool $replace
      * @return void
      */
-    public function merge(array $entries, bool $replace = true): void
+    public function merge(array $entries): void
     {
         foreach ($entries as $name => $entry) {
-            $this->set($name, $entry, $replace);
+            $this->set($name, $entry);
         }
     }
 
@@ -119,7 +94,7 @@ class ResponseHeaders implements Stringable
     {
         $entries = [];
         foreach ($this->entries as $data) {
-            $entries[$data['name']] = $data['values'];
+            $entries[$data['name']] = $data['value'];
         }
         return $entries;
     }
@@ -131,9 +106,7 @@ class ResponseHeaders implements Stringable
     {
         $raw = '';
         foreach ($this->entries as $data) {
-            foreach ($data['values'] as $value) {
-                $raw.= $data['name'].': '.$value.Request::CRLF;
-            }
+            $raw.= $data['name'].': '.$data['value'];
         }
         return $raw;
     }

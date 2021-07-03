@@ -2,7 +2,6 @@
 
 namespace Kirameki\Database\Schema\Formatters;
 
-use Closure;
 use Kirameki\Database\Schema\Statements\AlterColumnAction;
 use Kirameki\Database\Schema\Statements\AlterDropColumnAction;
 use Kirameki\Database\Schema\Statements\AlterRenameColumnAction;
@@ -14,6 +13,14 @@ use Kirameki\Database\Support\Expr;
 use Kirameki\Database\Schema\Statements\ColumnDefinition;
 use Kirameki\Database\Schema\Statements\CreateTableStatement;
 use Kirameki\Support\Arr;
+use RuntimeException;
+use function array_filter;
+use function array_keys;
+use function array_merge;
+use function implode;
+use function is_bool;
+use function is_string;
+use function strtoupper;
 
 class Formatter
 {
@@ -186,11 +193,14 @@ class Formatter
     protected function columnType(ColumnDefinition $def): string
     {
         if ($def->type === 'int') {
-            if ($def->size === null) return 'BIGINT';
-            if ($def->size === 1) return 'TINYINT';
-            if ($def->size === 2) return 'SMALLINT';
-            if ($def->size === 4) return 'INT';
-            if ($def->size === 8) return 'BIGINT';
+            return match ($def->size) {
+                null => 'BIGINT',
+                1 => 'TINYINT',
+                2 => 'SMALLINT',
+                4 => 'INT',
+                8 => 'BIGINT',
+                default => throw new RuntimeException('Invalid int size: '.$def->size.' for '.$def->name),
+            };
         }
         if ($def->type === 'decimal') {
             $args = Arr::compact([$def->size, $def->scale]);

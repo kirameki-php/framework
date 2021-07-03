@@ -5,6 +5,7 @@ namespace Kirameki\Database\Concerns;
 use Kirameki\Database\Connection;
 use Kirameki\Database\Events\SchemaExecuted;
 use Kirameki\Database\Schema\Formatters\Formatter as SchemaFormatter;
+use function microtime;
 
 /**
  * @mixin Connection

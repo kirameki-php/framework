@@ -9,33 +9,12 @@ use JsonSerializable;
 use Kirameki\Support\Arr;
 use Kirameki\Support\Json;
 
-class Parameters implements Countable, IteratorAggregate, JsonSerializable
+class RequestData implements Countable, IteratorAggregate, JsonSerializable
 {
     /**
      * @var array
      */
     protected array $entries;
-
-    /**
-     * @return static
-     */
-    public static function blank(): static
-    {
-        return new static;
-    }
-
-    /**
-     * @param string $type
-     * @param string $input
-     * @return static
-     */
-    public static function fromMediaType(string $type, string $input): static
-    {
-        /** @var HttpHandler $httpHandler */
-        $httpHandler = app()->get(HttpHandler::class);
-        $data = $httpHandler->getCodec($type)->receive($input);
-        return new static($data);
-    }
 
     /**
      * @param array $entries

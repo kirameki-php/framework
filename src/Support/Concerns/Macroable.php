@@ -4,6 +4,7 @@ namespace Kirameki\Support\Concerns;
 
 use BadMethodCallException;
 use Closure;
+use function sprintf;
 
 trait Macroable
 {

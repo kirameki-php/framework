@@ -35,25 +35,25 @@ class Response implements Stringable
     public ResponseHeaders $headers;
 
     /**
-     * @var string
+     * @var ResponseData
      */
-    public string $body;
+    public ResponseData $data;
 
 
     /**
      * @param Request $request
+     * @param ResponseData $data
      * @param int $code
      * @param ResponseHeaders|null $headers
-     * @param string $body
      */
-    public function __construct(Request $request, int $code = 200, ResponseHeaders $headers = null, string $body = '')
+    public function __construct(Request $request, ResponseData $data, int $code = 200, ResponseHeaders $headers = null)
     {
         $this->request = $request;
         $this->version = $request->httpVersion();
         $this->statusCode = $code;
         $this->statusPhrase = static::codeToPhrase($code);
         $this->headers = $headers ?? new ResponseHeaders();
-        $this->body = $body;
+        $this->data = $data;
     }
 
     /**
@@ -126,24 +126,6 @@ class Response implements Stringable
     }
 
     /**
-     * @return void
-     */
-    public function send()
-    {
-        if (!headers_sent()) {
-            header("HTTP/$this->version $this->statusCode $this->statusPhrase", true, $this->statusCode);
-
-            foreach ($this->headers->all() as $name => $value) {
-                header($name.': '.$value, true, $this->statusCode);
-            }
-
-            header('Content-Length: '.strlen($this->body), true, $this->statusCode);
-        }
-
-        echo $this->body;
-    }
-
-    /**
      * @return string
      */
     public function statusLine(): string
@@ -152,27 +134,59 @@ class Response implements Stringable
     }
 
     /**
+     * @return void
+     */
+    public function send()
+    {
+        $body = $this->data->toString();
+
+        if (!headers_sent()) {
+            if (!$this->headers->has('Content-Length')) {
+                $this->headers->set('Content-Length', (string) strlen($body));
+            }
+
+            header($this->statusLine(), true, $this->statusCode);
+
+            foreach ($this->headers->all() as $name => $values) {
+                foreach ($values as $value) {
+                    header($name.': '.$value, false, $this->statusCode);
+                }
+            }
+        }
+
+        echo $body;
+    }
+
+    /**
      * @return string
      */
     public function toString(): string
     {
-        $str = "HTTP/$this->version $this->statusCode $this->statusPhrase".Request::CRLF;
+        $body = $this->data->toString();
 
-        $headers = $this->headers->all();
-        $headers['Content-Length'] = strlen($this->body);
-        $headers['Date'] = gmdate('D, d M Y H:i:s T');
+        $headers = clone $this->headers;
+
+        $headers->set('Date', gmdate('D, d M Y H:i:s T'));
+
+        if (!$headers->has('Content-Length')) {
+            $headers->set('Content-Length', (string) strlen($body));
+        }
+
         if (ini_get('expose_php') === '1') {
-            $headers['X-Powered-By'] = 'PHP/'.PHP_VERSION;
-        }
-        ksort($headers);
-
-        foreach ($headers as $name => $value) {
-            $str.= $name.': '.$value.Request::CRLF;
+            $headers->set('X-Powered-By', 'PHP/'.PHP_VERSION);
         }
 
+        $headersArray = $headers->all();
+        ksort($headersArray);
+
+        $str = $this->statusLine().Request::CRLF;
+        foreach ($headersArray as $name => $values) {
+            foreach ($values as $value) {
+                $str.= $name.': '.$value.Request::CRLF;
+            }
+        }
         $str.= Request::CRLF;
-
-        $str.= $this->body;
+        $str.= $this->data->toString();
 
         return $str;
     }

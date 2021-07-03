@@ -66,11 +66,13 @@ interface AdapterInterface
 
     /**
      * @param string $id
+     * @return void
      */
     public function setSavepoint(string $id): void;
 
     /**
      * @param string $id
+     * @return void
      */
     public function rollbackSavepoint(string $id): void;
 
@@ -81,16 +83,19 @@ interface AdapterInterface
 
     /**
      * @param string $statement
+     * @return void
      */
     public function execute(string $statement): void;
 
     /**
      * @param bool $ifNotExist
+     * @return void
      */
     public function createDatabase(bool $ifNotExist = true): void;
 
     /**
      * @param bool $ifNotExist
+     * @return void
      */
     public function dropDatabase(bool $ifNotExist = true): void;
 
@@ -107,6 +112,7 @@ interface AdapterInterface
 
     /**
      * @param string $table
+     * @return void
      */
     public function truncate(string $table): void;
 

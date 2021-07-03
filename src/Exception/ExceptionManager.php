@@ -40,7 +40,7 @@ class ExceptionManager
      */
     public function removeHandler(string $name): bool
     {
-        return $this->handlers->remove($name);
+        return $this->handlers->delete($name);
     }
 
     /**

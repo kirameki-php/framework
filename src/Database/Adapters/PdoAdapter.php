@@ -10,6 +10,7 @@ use PDO;
 use PDOStatement;
 use RuntimeException;
 use Throwable;
+use function preg_match;
 
 /**
  * @mixin Connection

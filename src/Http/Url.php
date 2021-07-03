@@ -108,7 +108,7 @@ class Url
     /**
      * @return array
      */
-    public function queryAsData(): array
+    public function queryParameters(): array
     {
         $result = [];
         parse_str($this->query() ?? '', $result);

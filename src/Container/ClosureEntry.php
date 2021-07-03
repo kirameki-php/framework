@@ -101,6 +101,10 @@ class ClosureEntry implements EntryInterface
     {
         $this->onResolvedCallbacks ??= [];
         $this->onResolvedCallbacks[] = $callback;
+
+        if ($this->resolved) {
+            $callback($this->instance);
+        }
     }
 
     /**

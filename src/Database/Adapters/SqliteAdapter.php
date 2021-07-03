@@ -3,6 +3,7 @@
 namespace Kirameki\Database\Adapters;
 
 use PDO;
+use function unlink;
 
 class SqliteAdapter extends PdoAdapter
 {

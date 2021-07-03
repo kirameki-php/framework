@@ -2,6 +2,7 @@
 
 namespace Kirameki\Http\Routing;
 
+use Kirameki\Http\Request;
 use Kirameki\Support\Arr;
 use Kirameki\Support\Collection;
 use Kirameki\Support\File;
@@ -24,9 +25,8 @@ class Router
 
     /**
      * @param string $path
-     * @return Collection|FileInfo[]
      */
-    public function scanForRoutes(string $path): Collection
+    protected function scanForRoutesIn(string $path)
     {
         $cwd = getcwd();
 
@@ -51,7 +51,7 @@ class Router
             ->map(fn(string $path) => preg_replace("/.php$/", '', $path))
             ->map(fn(string $path) => str_replace('/', '\\', $path));
 
-        return $targetClasses->flatMap(function(string $class) {
+        $targetClasses->each(function(string $class) {
             $reflectionClass = new ReflectionClass($class);
             foreach ($reflectionClass->getMethods() as $methodReflection) {
                 foreach ($methodReflection->getAttributes(Route::class) as $attributeReflection) {
@@ -77,5 +77,16 @@ class Router
     public function getRoutes(): Collection
     {
         return new Collection($this->routesByName);
+    }
+
+    /**
+     * @param string $method
+     * @param string $path
+     * @return Route
+     */
+    public function findMatch(string $method, string $path): Route
+    {
+        $this->scanForRoutesIn('app/Http/Controllers');
+        return $this->getRoutes()->first();
     }
 }

@@ -19,7 +19,7 @@ class Container implements ContainerInterface
      * @param class-string<TClass> $id
      * @return TClass
      */
-    public function get(string $id)
+    public function get(string $id): mixed
     {
         return $this->entries[$id]->getInstance();
     }
@@ -60,7 +60,7 @@ class Container implements ContainerInterface
      * @param string $id
      * @return bool
      */
-    public function remove(string $id): bool
+    public function delete(string $id): bool
     {
         if ($this->has($id)) {
             unset($this->entries[$id]);
@@ -97,7 +97,7 @@ class Container implements ContainerInterface
         if ($entry instanceof ClosureEntry) {
             $entry->onResolved($callback);
         } else {
-            $callback($entry);
+            $callback($entry->getInstance());
         }
     }
 }

@@ -185,11 +185,14 @@ class Application extends Container
     }
 
     /**
+     * @param string|null $for
      * @return Config
      */
-    public function config(): Config
+    public function config(string $for = null): Config
     {
-        return $this->config;
+        return $for !== null
+            ? $this->config->for($for)
+            : $this->config;
     }
 
     /**

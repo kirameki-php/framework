@@ -14,6 +14,8 @@ use Kirameki\Database\Transaction\SavepointRollback;
 use Kirameki\Database\Transaction\Transaction;
 use RuntimeException;
 use Throwable;
+use function array_pop;
+use function count;
 
 /**
  * @mixin Connection
@@ -107,7 +109,7 @@ trait Transactions
      */
     protected function runInSavepoint(callable $callback): mixed
     {
-        $savepointId = count($this->txStack) + 1;
+        $savepointId = (string)(count($this->txStack) + 1);
 
         $tx = $this->txStack[] = new Savepoint($savepointId);
 

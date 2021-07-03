@@ -4,6 +4,8 @@ namespace Kirameki\Database\Adapters;
 
 use Kirameki\Database\Query\Formatters\MySqlFormatter as MySqlQueryFormatter;
 use PDO;
+use function array_filter;
+use function implode;
 
 class MySqlAdapter extends PdoAdapter
 {
