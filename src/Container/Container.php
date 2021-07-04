@@ -85,19 +85,4 @@ class Container implements ContainerInterface
     {
         return new Collection($this->entries);
     }
-
-    /**
-     * @param string $id
-     * @param Closure $callback
-     * @return void
-     */
-    public function onResolved(string $id, Closure $callback): void
-    {
-        $entry = $this->entries[$id];
-        if ($entry instanceof ClosureEntry) {
-            $entry->onResolved($callback);
-        } else {
-            $callback($entry->getInstance());
-        }
-    }
 }
