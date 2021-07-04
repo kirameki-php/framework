@@ -38,13 +38,9 @@ class ClosureEntry implements EntryInterface
     protected mixed $instance;
 
     /**
-     * @var Closure[]
-     */
-    protected array $onResolvedCallbacks = [];
-
-    /**
      * @param string $id
      * @param Closure $resolver
+     * @param array $arguments
      * @param bool $cacheable
      */
     public function __construct(string $id, Closure $resolver, array $arguments, bool $cacheable)
@@ -72,14 +68,12 @@ class ClosureEntry implements EntryInterface
     {
         if (!$this->cacheable) {
             $instance = call_user_func_array($this->resolver, $this->arguments);
-            $this->invokeOnResolved($instance);
             return $instance;
         }
 
         if (!$this->resolved) {
             $this->resolved = true;
             $this->instance = call_user_func_array($this->resolver, $this->arguments);
-            $this->invokeOnResolved($this->instance);
         }
 
         return $this->instance;
@@ -91,30 +85,5 @@ class ClosureEntry implements EntryInterface
     public function cached(): bool
     {
         return $this->resolved;
-    }
-
-    /**
-     * @param Closure $callback
-     * @return void
-     */
-    public function onResolved(Closure $callback): void
-    {
-        $this->onResolvedCallbacks ??= [];
-        $this->onResolvedCallbacks[] = $callback;
-
-        if ($this->resolved) {
-            $callback($this->instance);
-        }
-    }
-
-    /**
-     * @param mixed $instance
-     * @return void
-     */
-    protected function invokeOnResolved(mixed $instance): void
-    {
-        foreach ($this->onResolvedCallbacks as $callback) {
-            $callback($instance);
-        }
     }
 }

@@ -2,8 +2,6 @@
 
 namespace Kirameki\Container;
 
-use Closure;
-
 interface EntryInterface
 {
     /**
@@ -15,10 +13,4 @@ interface EntryInterface
      * @return mixed
      */
     public function getInstance(): mixed;
-
-    /**
-     * @param Closure $callback
-     * @return void
-     */
-    public function onResolved(Closure $callback): void;
 }
