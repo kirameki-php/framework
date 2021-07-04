@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Kirameki\Support;
 
@@ -252,9 +252,10 @@ class Arr
     }
 
     /**
-     * @param iterable $iterable
+     * @template T
+     * @param iterable<T> $iterable
      * @param callable|null $condition
-     * @return mixed
+     * @return T
      */
     public static function first(iterable $iterable, ?callable $condition = null): mixed
     {
