@@ -2,14 +2,14 @@
 
 namespace Kirameki\Http\Codecs\Decoders;
 
-class NullDecoder implements DecoderInterface
+class BlankDecoder implements DecoderInterface
 {
     /**
      * @param string $content
-     * @return mixed
+     * @return array
      */
-    public function decode(string $content): mixed
+    public function decode(string $content): array
     {
-        return null;
+        return [];
     }
 }
