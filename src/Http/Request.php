@@ -3,6 +3,9 @@
 namespace Kirameki\Http;
 
 use Carbon\Carbon;
+use Kirameki\Http\Request\Method;
+use Kirameki\Http\Request\RequestData;
+use Kirameki\Http\Request\RequestHeaders;
 use Stringable;
 use function microtime;
 use function parse_url;

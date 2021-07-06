@@ -2,9 +2,6 @@
 
 namespace Kirameki\Http;
 
-/**
- * @method processors($registrar): void
- */
 abstract class Controller
 {
     /**
@@ -19,10 +16,4 @@ abstract class Controller
     {
         $this->request = $request;
     }
-
-    /**
-     * @param $data
-     * @return ResponseData
-     */
-    public abstract function action($data): ResponseData;
 }

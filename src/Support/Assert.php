@@ -4,6 +4,7 @@ namespace Kirameki\Support;
 
 use Kirameki\Exception\InvalidKeyException;
 use Kirameki\Exception\InvalidValueException;
+use RuntimeException;
 use function is_bool;
 use function is_int;
 use function is_string;
@@ -56,5 +57,21 @@ class Assert
             return;
         }
         throw new InvalidKeyException($key);
+    }
+
+    /**
+     * @param string|object $is
+     * @param string $of
+     * @return void
+     */
+    public static function isClassOf(string|object $is, string $of): void
+    {
+        if (is_object($is)) {
+            $is = get_class($is);
+        }
+
+        if(!is_a($is, $of, true)) {
+            throw new RuntimeException("$is must be class or subclass of $of.");
+        }
     }
 }
