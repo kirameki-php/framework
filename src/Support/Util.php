@@ -3,6 +3,7 @@
 namespace Kirameki\Support;
 
 use DateTimeInterface;
+use Kirameki\Exception\InvalidValueException;
 use function is_array;
 use function is_bool;
 use function is_float;

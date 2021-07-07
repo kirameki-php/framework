@@ -26,6 +26,28 @@ class Assert
      * @param mixed $value
      * @return void
      */
+    public static function int(mixed $value): void
+    {
+        if (!is_int($value)) {
+            throw new InvalidValueException('int', $value);
+        }
+    }
+
+    /**
+     * @param mixed $value
+     * @return void
+     */
+    public static function object(mixed $value): void
+    {
+        if (!is_object($value)) {
+            throw new InvalidValueException('object', $value);
+        }
+    }
+
+    /**
+     * @param mixed $value
+     * @return void
+     */
     public static function positiveInt(mixed $value): void
     {
         if (is_int($value) && $value > 0) {
@@ -57,6 +79,21 @@ class Assert
             return;
         }
         throw new InvalidKeyException($key);
+    }
+
+    /**
+     * @param string|object $class
+     * @return void
+     */
+    public static function isClass(string|object $class): void
+    {
+        if (is_object($class)) {
+            $class = get_class($class);
+        }
+
+        if(!class_exists($class)) {
+            throw new RuntimeException("Class: $class does not exist.");
+        }
     }
 
     /**

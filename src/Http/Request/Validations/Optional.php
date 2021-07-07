@@ -5,6 +5,6 @@ namespace Kirameki\Http\Request\Validations;
 use Attribute;
 
 #[Attribute(Attribute::TARGET_PROPERTY)]
-class Required
+class Optional
 {
 }

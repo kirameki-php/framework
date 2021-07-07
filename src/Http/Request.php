@@ -48,9 +48,9 @@ class Request implements Stringable
     public ?RequestHeaders $headers;
 
     /**
-     * @var RequestData|null
+     * @var object|null
      */
-    public ?RequestData $data;
+    public ?object $data;
 
     /**
      * @return static

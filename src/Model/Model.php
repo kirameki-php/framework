@@ -63,7 +63,7 @@ abstract class Model implements ArrayAccess, JsonSerializable
             $this->setPersistedProperties($properties);
         } else {
             $this->setProperties($properties);
-            $this->setDefaultProperties();
+            $this->setDefaultProperties($properties);
         }
     }
 

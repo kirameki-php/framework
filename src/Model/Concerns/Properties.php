@@ -128,10 +128,10 @@ trait Properties
     /**
      * @return $this
      */
-    protected function setDefaultProperties(): static
+    protected function setDefaultProperties(array $excludes = []): static
     {
         $defined = static::getReflection()->properties;
-        $unused = array_diff_key($defined, $this->persistedProperties);
+        $unused = array_diff_key($defined, $excludes);
         foreach ($unused as $name => $property) {
             $this->setProperty($name, $property->default);
         }

@@ -4,7 +4,7 @@ namespace Kirameki\Http\Request\Casts;
 
 use RuntimeException;
 
-class IntArray extends ArrayObject
+class FloatArray extends ArrayObject
 {
     /**
      * @param array $array
@@ -12,7 +12,7 @@ class IntArray extends ArrayObject
     public function __construct(array $array)
     {
         foreach ($array as $key => $value) {
-            $castedValue = filter_var($value, FILTER_VALIDATE_INT);
+            $castedValue = filter_var($value, FILTER_VALIDATE_FLOAT);
             if ($castedValue === false) {
                 throw new RuntimeException("$value could not be casted to int");
             }

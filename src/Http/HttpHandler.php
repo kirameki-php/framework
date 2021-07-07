@@ -6,13 +6,14 @@ use Closure;
 use Kirameki\Container\Container;
 use Kirameki\Core\Application;
 use Kirameki\Core\Config;
+use Kirameki\Exception\InvalidValueException;
 use Kirameki\Http\Request\Input;
 use Kirameki\Http\Codecs\Decoders\DecoderInterface;
 use Kirameki\Http\Exceptions\BadRequestException;
 use Kirameki\Http\Request\RequestData;
 use Kirameki\Http\Request\RequestField;
 use Kirameki\Http\Routing\Router;
-use Kirameki\Http\Request\Validations\Required;
+use Kirameki\Http\Request\Validations\Optional;
 use Kirameki\Http\Request\Validations\ValidationInterface;
 use Kirameki\Support\Arr;
 use Kirameki\Support\Assert;
@@ -186,9 +187,9 @@ class HttpHandler
     /**
      * @param Request $request
      * @param Closure $action
-     * @return RequestData
+     * @return object
      */
-    protected function createRequestData(Request $request, Closure $action): RequestData
+    protected function createRequestData(Request $request, Closure $action): object
     {
         $contentType = $request->headers->get('Content-Type') ?? '';
         $mediaDecoder = $this->getDecoder($contentType);
@@ -228,7 +229,7 @@ class HttpHandler
             }
         }
 
-        Assert::isClassOf($targetClass, RequestData::class);
+        Assert::isClass($targetClass);
 
         return $targetClass;
     }
@@ -241,34 +242,9 @@ class HttpHandler
     protected function injectIntoProperties(object $data, array $inputs): void
     {
         $classReflection = new ReflectionClass($data);
-        $fields = [];
         foreach ($classReflection->getProperties() as $propertyReflection) {
-            $field = $fields[] = new RequestField($propertyReflection);
-            foreach ($propertyReflection->getAttributes() as $attributeReflection) {
-                $attribute = $attributeReflection->newInstance();
-                if ($attribute instanceof Input) {
-                    $field->name = $attribute->name;
-                } elseif($attribute instanceof Required) {
-                    $field->required = true;
-                } elseif ($attribute instanceof ValidationInterface) {
-                    $field->validations[] = $attribute;
-                }
-            }
-        }
-
-        foreach ($fields as $field) {
-            if (!array_key_exists($field->name, $inputs)) {
-                if ($field->required) {
-                    throw new BadRequestException('Missing required field: '.$field->name);
-                }
-                continue;
-            }
-
-            foreach ($field->validations as $validation) {
-                $validation->validate($field->name, $inputs);
-            }
-
-            $field->setValue($data, $inputs[$field->name]);
+            $field = new RequestField($propertyReflection);
+            $field->assignValue($inputs, $data);
         }
     }
 }
