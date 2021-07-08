@@ -10,7 +10,7 @@ use function krsort;
 use function str_starts_with;
 use function substr;
 
-class Codecs
+class ContentCodecs
 {
     /**
      * @var array

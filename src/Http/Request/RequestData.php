@@ -16,11 +16,11 @@ class RequestData implements ArrayAccess, Countable, IteratorAggregate, JsonSeri
     protected array $data = [];
 
     /**
-     * @param array $entries
+     * @param array $inputs
      */
-    public function __construct(array $entries = [])
+    public function __construct(array $inputs = [])
     {
-        $this->data = $entries;
+        $this->data = $inputs;
     }
 
     /**
