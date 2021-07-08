@@ -20,6 +20,6 @@ class InvalidValueException extends LogicException
     {
         $this->value = $value;
         $valueAsString = Util::toString($value);
-        parent::__construct(rtrim("Expected value to be $expected. $valueAsString given."));
+        parent::__construct("Expected value to be $expected. $valueAsString given.");
     }
 }

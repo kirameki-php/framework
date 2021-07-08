@@ -2,10 +2,10 @@
 
 namespace Kirameki\Http\Request;
 
-use Kirameki\Exception\InvalidValueException;
-use Kirameki\Http\Exceptions\BadRequestException;
+use Kirameki\Http\Exceptions\ValidationException;
 use Kirameki\Http\Request\Validations\Optional;
 use Kirameki\Http\Request\Validations\ValidationInterface;
+use Kirameki\Support\Util;
 use ReflectionProperty;
 
 class RequestField
@@ -70,14 +70,18 @@ class RequestField
         $this->propertyReflection->setValue($target, $casted);
     }
 
-    protected function inputExists(array $inputs)
+    /**
+     * @param array $inputs
+     * @return bool
+     */
+    protected function inputExists(array $inputs): bool
     {
         if (array_key_exists($this->inputName, $inputs)) {
             return true;
         }
 
         if ($this->required) {
-            throw new BadRequestException('Missing required field: ' . $this->inputName);
+            throw new ValidationException('Missing required field: ' . $this->inputName);
         }
 
         return false;
@@ -100,59 +104,65 @@ class RequestField
      */
     protected function castToType(mixed $value): mixed
     {
-        try {
-            $type = $this->propertyReflection->getType();
-            $typeName = $type?->getName();
+        $type = $this->propertyReflection->getType();
+        $typeName = $type?->getName();
 
-            if ($typeName === null) {
-                return $value;
-            }
-
-            if ($type->allowsNull() && $value === null) {
-                return null;
-            }
-
-            if ($typeName === 'string') {
-                return (string) $value;
-            }
-
-            if ($typeName === 'int') {
-                if (($result = filter_var($value, FILTER_VALIDATE_INT)) === false) {
-                    throw new InvalidValueException($typeName, $value);
-                }
-                return $result;
-            }
-
-            if ($typeName === 'float') {
-                if (($result = filter_var($value, FILTER_VALIDATE_FLOAT)) === false) {
-                    throw new InvalidValueException($typeName, $value);
-                }
-                return $result;
-            }
-
-            if ($typeName === 'bool') {
-                if (($result = filter_var($value, FILTER_VALIDATE_BOOL)) === false) {
-                    throw new InvalidValueException($typeName, $value);
-                }
-                return $result;
-            }
-
-            if ($typeName === 'array' && is_array($value)) {
-                return $value;
-            }
-
-            if ($typeName === 'object' && is_array($value)) {
-                return (object) $value;
-            }
-
-            if (class_exists($typeName)) {
-                return new $typeName($value);
-            }
-
-            throw new InvalidValueException($typeName, $value);
+        if ($typeName === null) {
+            return $value;
         }
-        catch (InvalidValueException $exception) {
-            throw new BadRequestException($exception->getMessage(), $exception);
+
+        if ($type->allowsNull() && $value === null) {
+            return null;
         }
+
+        if ($typeName === 'string') {
+            return (string) $value;
+        }
+
+        if ($typeName === 'int') {
+            if (($result = filter_var($value, FILTER_VALIDATE_INT)) === false) {
+                $this->throwValidationException($typeName, $value);
+            }
+            return $result;
+        }
+
+        if ($typeName === 'float') {
+            if (($result = filter_var($value, FILTER_VALIDATE_FLOAT)) === false) {
+                $this->throwValidationException($typeName, $value);
+            }
+            return $result;
+        }
+
+        if ($typeName === 'bool') {
+            if (($result = filter_var($value, FILTER_VALIDATE_BOOL)) === false) {
+                $this->throwValidationException($typeName, $value);
+            }
+            return $result;
+        }
+
+        if ($typeName === 'array' && is_array($value)) {
+            return $value;
+        }
+
+        if ($typeName === 'object' && is_array($value)) {
+            return (object) $value;
+        }
+
+        if (class_exists($typeName)) {
+            return new $typeName($value);
+        }
+
+        $this->throwValidationException($typeName, $value);
+    }
+
+    /**
+     * @param string $expected
+     * @param mixed $actual
+     * @return void
+     */
+    protected function throwValidationException(string $expected, $actual)
+    {
+        $valueAsString = Util::toString($actual);
+        throw new ValidationException(("Expected value to be $expected. $valueAsString given."));
     }
 }

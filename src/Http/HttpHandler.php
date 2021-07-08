@@ -3,29 +3,20 @@
 namespace Kirameki\Http;
 
 use Closure;
-use Kirameki\Container\Container;
 use Kirameki\Core\Application;
 use Kirameki\Core\Config;
-use Kirameki\Exception\InvalidValueException;
-use Kirameki\Http\Request\Input;
-use Kirameki\Http\Codecs\Decoders\DecoderInterface;
 use Kirameki\Http\Exceptions\BadRequestException;
+use Kirameki\Http\Exceptions\ValidationException;
 use Kirameki\Http\Request\RequestData;
 use Kirameki\Http\Request\RequestField;
 use Kirameki\Http\Routing\Router;
-use Kirameki\Http\Request\Validations\Optional;
-use Kirameki\Http\Request\Validations\ValidationInterface;
 use Kirameki\Support\Arr;
 use Kirameki\Support\Assert;
 use ReflectionClass;
 use ReflectionFunction;
 use ReflectionNamedType;
 use Throwable;
-use function array_shift;
 use function explode;
-use function krsort;
-use function str_starts_with;
-use function substr;
 
 class HttpHandler
 {
@@ -35,25 +26,22 @@ class HttpHandler
     protected Application $app;
 
     /**
+     * @psalm-readonly
      * @var Router
      */
-    protected Router $router;
+    public Router $router;
 
     /**
+     * @psalm-readonly
      * @var Config
      */
-    protected Config $config;
+    public Config $config;
 
     /**
-     * @var Container
+     * @psalm-readonly
+     * @var Codecs
      */
-    protected Container $mediaDecoders;
-
-    /**
-     * @var Container
-     */
-    protected Container $mediaEncoders;
-
+    public Codecs $codecs;
 
     /**
      * @param Application $app
@@ -65,8 +53,7 @@ class HttpHandler
         $this->app = $app;
         $this->router = $router;
         $this->config = $config;
-        $this->mediaDecoders = new Container();
-        $this->mediaEncoders = new Container();
+        $this->codecs = new Codecs;
     }
 
     /**
@@ -79,77 +66,6 @@ class HttpHandler
         $responsable = $this->runAction($request, $route->action);
 
         return $responsable;
-    }
-
-    /**
-     * @param string|array $mediaType
-     * @param callable $resolver
-     */
-    public function registerEncoder(string|array $mediaType, callable $resolver)
-    {
-        foreach (Arr::wrap($mediaType) as $type) {
-            $this->mediaEncoders->singleton($type, $resolver);
-        }
-    }
-
-    /**
-     * @param string $mediaType
-     * @return DecoderInterface|null
-     */
-    protected function getEncoder(string $mediaType): ?DecoderInterface
-    {
-
-    }
-
-    /**
-     * @param string|array $mediaType
-     * @param callable $resolver
-     * @return void
-     */
-    public function registerDecoder(string|array $mediaType, callable $resolver): void
-    {
-        foreach (Arr::wrap($mediaType) as $type) {
-            $this->mediaDecoders->singleton($type, $resolver);
-        }
-    }
-
-    /**
-     * @param string $contentType
-     * @return DecoderInterface
-     */
-    protected function getDecoder(string $contentType): DecoderInterface
-    {
-        foreach ($this->extractMediaTypesFromRequest($contentType) as $type) {
-            if ($this->mediaDecoders->has($type)) {
-                return $this->mediaDecoders->get($type);
-            }
-        }
-        return $this->mediaDecoders->get('*/*');
-    }
-
-    /**
-     * @param string $contentType
-     * @return array
-     */
-    protected function extractMediaTypesFromRequest(string $contentType): array
-    {
-        $typesByWeight = [];
-        $segments = explode(',', $contentType);
-        foreach ($segments as $segment) {
-            $parts = explode(';', $segment);
-            $mediaType = array_shift($parts);
-            $weight = 1.0;
-            foreach ($parts as $part) {
-                if (str_starts_with($part, 'q=')) {
-                    $weight = (float)substr($part, 2);
-                    break;
-                }
-            }
-            $typesByWeight[$weight][] = $mediaType;
-        }
-        krsort($typesByWeight);
-
-        return Arr::flatten($typesByWeight);
     }
 
     /**
@@ -191,17 +107,14 @@ class HttpHandler
      */
     protected function createRequestData(Request $request, Closure $action): object
     {
-        $contentType = $request->headers->get('Content-Type') ?? '';
-        $mediaDecoder = $this->getDecoder($contentType);
+        // if no Content-Type is defined, use application/octet-stream
+        // @see https://datatracker.ietf.org/doc/html/rfc7231#section-3.1.1.5
+        $contentType = $request->headers->get('Content-Type') ?: 'application/octet-stream';
 
-        try {
-            $inputs = Arr::mergeRecursive(
-                $request->url->queryParameters(),
-                $mediaDecoder->decode($request->body)
-            );
-        } catch (Throwable $throwable) {
-            throw new BadRequestException(previous: $throwable);
-        }
+        $inputs = Arr::mergeRecursive(
+            $request->url->queryParameters(),
+            $this->codecs->decode($contentType, $request->body),
+        );
 
         $targetClass = $this->resolveDataClass($action);
         $data = new $targetClass($inputs);

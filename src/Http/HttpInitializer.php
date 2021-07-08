@@ -6,6 +6,7 @@ use Kirameki\Core\Application;
 use Kirameki\Core\InitializerInterface;
 use Kirameki\Http\Codecs\Decoders\JsonDecoder;
 use Kirameki\Http\Codecs\Decoders\BlankDecoder;
+use Kirameki\Http\Codecs\Decoders\StreamDecoder;
 use Kirameki\Http\Routing\Router;
 
 class HttpInitializer implements InitializerInterface
@@ -21,9 +22,9 @@ class HttpInitializer implements InitializerInterface
             $config = $app->config('http');
 
             $handler = new HttpHandler($app, $router, $config);
-            $handler->registerDecoder('*/*', fn() => new BlankDecoder);
-            $handler->registerDecoder('application/x-www-form-urlencoded', fn() => new BlankDecoder);
-            $handler->registerDecoder('application/json', fn() => new JsonDecoder);
+            $handler->codecs->registerDecoder('application/octet-stream', fn() => new StreamDecoder);
+            $handler->codecs->registerDecoder('application/x-www-form-urlencoded', fn() => new BlankDecoder);
+            $handler->codecs->registerDecoder('application/json', fn() => new JsonDecoder);
 
             return $handler;
         });

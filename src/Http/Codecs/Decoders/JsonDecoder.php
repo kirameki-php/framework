@@ -2,19 +2,23 @@
 
 namespace Kirameki\Http\Codecs\Decoders;
 
+use JsonException;
+use Kirameki\Http\Exceptions\DecodeException;
 use function json_decode;
 
 class JsonDecoder implements DecoderInterface
 {
     /**
      * @param string $content
-     * @return mixed
+     * @return array
      */
-    public function decode(string $content): mixed
+    public function decode(string $content): array
     {
-        $flags = JSON_THROW_ON_ERROR
-               | JSON_INVALID_UTF8_IGNORE;
-
-        return json_decode($content, true, $flags);
+        try {
+            return json_decode($content, true, JSON_THROW_ON_ERROR) ?? [];
+        }
+        catch (JsonException $exception) {
+            throw new DecodeException($exception->getMessage(), $content);
+        }
     }
 }

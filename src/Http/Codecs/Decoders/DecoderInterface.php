@@ -6,7 +6,7 @@ interface DecoderInterface
 {
     /**
      * @param string $content
-     * @return mixed
+     * @return array
      */
-    public function decode(string $content): mixed;
+    public function decode(string $content): array;
 }
