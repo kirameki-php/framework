@@ -90,9 +90,4 @@ class Router
         $this->scanForRoutesIn('app/Http/Controllers');
         return $this->getRoutes()->first();
     }
-
-    public function process(Route $route)
-    {
-
-    }
 }

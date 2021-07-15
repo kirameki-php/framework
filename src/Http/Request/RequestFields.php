@@ -4,6 +4,7 @@ namespace Kirameki\Http\Request;
 
 use Kirameki\Support\Arr;
 use ReflectionClass;
+use function array_key_exists;
 
 class RequestFields
 {
@@ -41,12 +42,11 @@ class RequestFields
 
     /**
      * @param array $inputs
-     * @param array $args
      * @return object
      */
-    public function newInstanceWith(array $inputs, array $query): object
+    public function newInstanceWith(array $inputs): object
     {
-        $instance = $this->class->newInstance(...$query);
+        $instance = $this->class->newInstance();
         foreach ($inputs as $name => $value) {
             if (array_key_exists($name, $this->fields)) {
                 $this->fields[$name]->inject($instance, $value);

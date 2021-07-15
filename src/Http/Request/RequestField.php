@@ -8,9 +8,16 @@ use Kirameki\Support\Arr;
 use Kirameki\Support\Util;
 use ReflectionAttribute;
 use ReflectionProperty;
+use function array_key_exists;
+use function class_exists;
+use function filter_var;
+use function is_array;
 
 class RequestField
 {
+    /**
+     * @var ReflectionProperty
+     */
     protected ReflectionProperty $property;
 
     /**

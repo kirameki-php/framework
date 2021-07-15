@@ -2,7 +2,6 @@
 
 namespace Kirameki\Http;
 
-use Kirameki\Http\Codecs\Codecs;
 use Kirameki\Http\Request\RequestData;
 use Kirameki\Http\Response\ResponseBuilder;
 use Kirameki\Support\Arr;

@@ -5,9 +5,9 @@ namespace Kirameki\Http;
 use Kirameki\Core\Application;
 use Kirameki\Core\Config;
 use Kirameki\Http\Codecs\Codecs;
-use Kirameki\Http\Request\RequestData;
 use Kirameki\Http\Response\ResponseBuilder;
 use Kirameki\Http\Response\ResponseData;
+use Kirameki\Http\Routing\Route;
 use Kirameki\Http\Routing\Router;
 use Kirameki\Support\Assert;
 use Kirameki\Support\Util;
@@ -59,15 +59,40 @@ class HttpHandler
      */
     public function process(Request $request): Response
     {
-        $request->data->merge($this->decodeInput($request));
+        $this->setRequestData($request);
 
         $route = $this->router->findMatch($request->method, $request->url->path());
 
-        [$class, $method] = explode('::', $route->action, 2);
-
-        $result = $this->makeController($class, $request)->runAction($method);
+        $result = $this->runAction($route, $request);
 
         return $this->buildResponse($request, $result);
+    }
+
+    /**
+     * @param Request $request
+     * @return void
+     */
+    protected function setRequestData(Request $request): void
+    {
+        // if no Content-Type is defined, use application/octet-stream
+        // @see https://datatracker.ietf.org/doc/html/rfc7231#section-3.1.1.5
+        $contentType = $request->headers->get('Content-Type') ?: 'application/octet-stream';
+
+        $data = $this->codecs->decode($contentType, $request->body);
+
+        $request->data->merge($data);
+    }
+
+    /**
+     * @param Route $route
+     * @param Request $request
+     * @return ResponseBuilder
+     */
+    protected function runAction(Route $route, Request $request): ResponseBuilder
+    {
+        [$class, $method] = explode('::', $route->action, 2);
+
+        return $this->makeController($class, $request)->runAction($method);
     }
 
     /**
@@ -79,20 +104,7 @@ class HttpHandler
     {
         Assert::isClassOf($class, Controller::class);
 
-        return new $class($request, new ResponseBuilder($request, $this->codecs));
-    }
-
-    /**
-     * @param Request $request
-     * @return mixed
-     */
-    protected function decodeInput(Request $request): RequestData
-    {
-        // if no Content-Type is defined, use application/octet-stream
-        // @see https://datatracker.ietf.org/doc/html/rfc7231#section-3.1.1.5
-        $contentType = $request->headers->get('Content-Type') ?: 'application/octet-stream';
-
-        return $this->codecs->decode($contentType, $request->body);
+        return new $class($request, new ResponseBuilder());
     }
 
     /**
