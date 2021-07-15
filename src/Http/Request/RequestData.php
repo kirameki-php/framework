@@ -7,6 +7,7 @@ use ArrayIterator;
 use Countable;
 use IteratorAggregate;
 use JsonSerializable;
+use Kirameki\Support\Arr;
 
 class RequestData implements ArrayAccess, Countable, IteratorAggregate, JsonSerializable
 {
@@ -111,6 +112,16 @@ class RequestData implements ArrayAccess, Countable, IteratorAggregate, JsonSeri
     public function delete(string $name): static
     {
         unset($this->data[$name]);
+        return $this;
+    }
+
+    /**
+     * @param array $data
+     * @return $this
+     */
+    public function merge(array $data): static
+    {
+        Arr::mergeRecursive($this->data, $data);
         return $this;
     }
 

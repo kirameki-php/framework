@@ -3,164 +3,148 @@
 namespace Kirameki\Http\Request;
 
 use Kirameki\Http\Exceptions\ValidationException;
-use Kirameki\Http\Request\Validations\Optional;
 use Kirameki\Http\Request\Validations\ValidationInterface;
+use Kirameki\Support\Arr;
 use Kirameki\Support\Util;
+use ReflectionAttribute;
 use ReflectionProperty;
 
 class RequestField
 {
-    /**
-     * @var ReflectionProperty
-     */
-    protected ReflectionProperty $propertyReflection;
+    protected ReflectionProperty $property;
 
     /**
-     * @var string
+     * @var Input
      */
-    public string $inputName;
+    protected Input $definition;
 
     /**
-     * @var bool
+     * @param Input $definition
+     * @param ReflectionProperty $reflection
      */
-    protected bool $required;
-
-    /**
-     * @var ValidationInterface[]
-     */
-    protected array $validations;
-
-    /**
-     * @param ReflectionProperty $reflectionProperty
-     */
-    public function __construct(ReflectionProperty $reflectionProperty)
+    public function __construct(Input $definition, ReflectionProperty $reflection)
     {
-        $this->propertyReflection = $reflectionProperty;
-        $this->inputName = $reflectionProperty->getName();
-        $this->required = true;
-        $this->validations = [];
-
-        foreach ($reflectionProperty->getAttributes() as $attributeReflection) {
-            $attribute = $attributeReflection->newInstance();
-            if ($attribute instanceof Input) {
-                $this->inputName = $attribute->name;
-            } elseif ($attribute instanceof Optional) {
-                $this->required = false;
-            } elseif ($attribute instanceof ValidationInterface) {
-                $this->validations[] = $attribute;
-            }
-        }
+        $this->property = $reflection;
+        $this->definition = $definition;
     }
 
     /**
      * @param array $inputs
-     * @param object $target
-     * @return void
+     * @throws ValidationException
      */
-    public function assignValue(array $inputs, object $target)
+    public function validate(array $inputs)
     {
-        if (!$this->inputExists($inputs)) {
+        if (!array_key_exists($this->definition->name, $inputs)) {
+            if ($this->definition->required) {
+                throw new ValidationException('Missing required field: ' . $this->definition->name);
+            }
             return;
         }
 
-        $this->runValidations($inputs);
+        $attributes = $this->property->getAttributes(ValidationInterface::class);
 
-        $casted = $this->castToType($inputs[$this->inputName]);
+        $validations = Arr::map($attributes, function(ReflectionAttribute $attribute) {
+            return $attribute->newInstance();
+        });
 
-        $this->propertyReflection->setValue($target, $casted);
+        Arr::each($validations, function(ValidationInterface $validation) use ($inputs) {
+            $validation->validate($this->definition->name, $inputs);
+        });
     }
 
     /**
-     * @param array $inputs
-     * @return bool
-     */
-    protected function inputExists(array $inputs): bool
-    {
-        if (array_key_exists($this->inputName, $inputs)) {
-            return true;
-        }
-
-        if ($this->required) {
-            throw new ValidationException('Missing required field: ' . $this->inputName);
-        }
-
-        return false;
-    }
-
-    /**
-     * @param array $inputs
+     * @param object $object
+     * @param mixed $value
      * @return void
      */
-    protected function runValidations(array $inputs)
+    public function inject(object $object, mixed $value): void
     {
-        foreach ($this->validations as $validation) {
-            $validation->validate($this->inputName, $inputs);
-        }
+        $this->property->setValue($object, $this->cast($value));
     }
 
     /**
      * @param mixed $value
      * @return mixed
      */
-    protected function castToType(mixed $value): mixed
+    public function cast(mixed $value): mixed
     {
-        $type = $this->propertyReflection->getType();
+        $type = $this->property->getType();
         $typeName = $type?->getName();
+        $nullable = $type?->allowsNull() ?? true;
+        return $this->castToType($typeName, $value, $nullable);
+    }
 
-        if ($typeName === null) {
+    /**
+     * @param string|null $type
+     * @param mixed $value
+     * @param bool $nullable
+     * @return mixed
+     */
+    protected function castToType(?string $type, mixed $value, bool $nullable): mixed
+    {
+        if ($type === null) {
             return $value;
         }
 
-        if ($type->allowsNull() && $value === null) {
-            return null;
-        }
-
-        if ($typeName === 'string') {
+        if ($type === 'string') {
             return (string) $value;
         }
 
-        if ($typeName === 'int') {
+        if ($nullable && $value === null) {
+            return null;
+        }
+
+        if ($type === 'int') {
             if (($result = filter_var($value, FILTER_VALIDATE_INT)) === false) {
-                $this->throwValidationException($typeName, $value);
+                $this->throwValidationException($type, $value);
             }
             return $result;
         }
 
-        if ($typeName === 'float') {
+        if ($type === 'float') {
             if (($result = filter_var($value, FILTER_VALIDATE_FLOAT)) === false) {
-                $this->throwValidationException($typeName, $value);
+                $this->throwValidationException($type, $value);
             }
             return $result;
         }
 
-        if ($typeName === 'bool') {
+        if ($type === 'bool') {
             if (($result = filter_var($value, FILTER_VALIDATE_BOOL)) === false) {
-                $this->throwValidationException($typeName, $value);
+                $this->throwValidationException($type, $value);
             }
             return $result;
         }
 
-        if ($typeName === 'array' && is_array($value)) {
-            return $value;
+        if ($type === 'array' && is_array($value)) {
+            $arrayOf = Arr::first($this->property->getAttributes(ArrayOf::class))?->newInstance();
+            if ($arrayOf !== null && $arrayOf instanceof ArrayOf) {
+                $arr = [];
+                foreach ($value as $key => $item) {
+                    $arr[$key] = $this->castToType($arrayOf->type, $arrayOf->nullable, $item);
+                }
+                return $arr;
+            } else {
+                return $value;
+            }
         }
 
-        if ($typeName === 'object' && is_array($value)) {
+        if ($type === 'object' && is_array($value)) {
             return (object) $value;
         }
 
-        if (class_exists($typeName)) {
-            return new $typeName($value);
+        if (class_exists($type) && is_array($value)) {
+            return RequestFields::for($type)->newInstanceWith($value);
         }
 
-        $this->throwValidationException($typeName, $value);
+        $this->throwValidationException($type, $value);
     }
 
     /**
      * @param string $expected
      * @param mixed $actual
-     * @return void
+     * @return never-return
      */
-    protected function throwValidationException(string $expected, $actual)
+    protected function throwValidationException(string $expected, mixed $actual)
     {
         $valueAsString = Util::toString($actual);
         throw new ValidationException(("Expected value to be $expected. $valueAsString given."));

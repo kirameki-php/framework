@@ -3,6 +3,7 @@
 namespace Kirameki\Http\Routing;
 
 use Kirameki\Http\Request;
+use Kirameki\Http\Response\ResponseBuilder;
 use Kirameki\Support\Arr;
 use Kirameki\Support\Collection;
 use Kirameki\Support\File;
@@ -88,5 +89,10 @@ class Router
     {
         $this->scanForRoutesIn('app/Http/Controllers');
         return $this->getRoutes()->first();
+    }
+
+    public function process(Route $route)
+    {
+
     }
 }

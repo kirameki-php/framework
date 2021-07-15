@@ -1,16 +1,18 @@
 <?php declare(strict_types=1);
 
-namespace Kirameki\Http;
+namespace Kirameki\Http\Codecs;
 
 use Kirameki\Http\Codecs\Decoders\DecoderInterface;
+use Kirameki\Http\Codecs\Encoders\EncoderInterface;
 use Kirameki\Http\Exceptions\BadRequestException;
+use Kirameki\Http\Exceptions\UnsupportedMediaTypeException;
 use Kirameki\Support\Arr;
 use function array_shift;
 use function krsort;
 use function str_starts_with;
 use function substr;
 
-class ContentCodecs
+class Codecs
 {
     /**
      * @var array
@@ -58,7 +60,7 @@ class ContentCodecs
      * @param string $contentType
      * @return DecoderInterface
      */
-    protected function getDecoder(string $contentType): DecoderInterface
+    public function getDecoder(string $contentType): DecoderInterface
     {
         $mediaTypes = $this->extractMediaTypesFromRequest($contentType);
         foreach ($mediaTypes as $mediaType) {
@@ -76,17 +78,33 @@ class ContentCodecs
     public function registerEncoder(string|array $mediaType, callable $resolver)
     {
         foreach (Arr::wrap($mediaType) as $type) {
-            $this->encoders[$type] = $resolver;
+            $this->encoderResolvers[$type] = $resolver;
         }
     }
 
     /**
-     * @param string $mediaType
-     * @return DecoderInterface|null
+     * @param string $accept
+     * @param mixed $data
+     * @return string
      */
-    protected function getEncoder(string $mediaType): ?DecoderInterface
+    public function encode(string $accept, mixed $data): string
     {
+        return $this->getEncoder($accept)->encode($data);
+    }
 
+    /**
+     * @param string $accept
+     * @return EncoderInterface|null
+     */
+    public function getEncoder(string $accept): ?EncoderInterface
+    {
+        $mediaTypes = $this->extractMediaTypesFromRequest($accept);
+        foreach ($mediaTypes as $mediaType) {
+            if (array_key_exists($mediaType, $this->encoderResolvers)) {
+                return $this->encoders[$mediaType] ??= call_user_func($this->encoderResolvers[$mediaType]);
+            }
+        }
+        throw new UnsupportedMediaTypeException($mediaTypes);
     }
 
     /**

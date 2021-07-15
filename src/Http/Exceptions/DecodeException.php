@@ -12,13 +12,13 @@ class DecodeException extends BadRequestException
     public string $content;
 
     /**
-     * @param string $content
+     * @param string $media
      * @param string $message
      * @param Throwable|null $previous
      */
-    public function __construct(string $content, $message = "", Throwable $previous = null)
+    public function __construct(string $media, $message = "", Throwable $previous = null)
     {
-        $this->content = $content;
+        $this->content = $media;
         parent::__construct($message, $previous);
     }
 }

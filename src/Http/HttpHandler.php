@@ -2,17 +2,18 @@
 
 namespace Kirameki\Http;
 
-use Closure;
 use Kirameki\Core\Application;
 use Kirameki\Core\Config;
+use Kirameki\Http\Codecs\Codecs;
 use Kirameki\Http\Request\RequestData;
+use Kirameki\Http\Response\ResponseBuilder;
+use Kirameki\Http\Response\ResponseData;
 use Kirameki\Http\Routing\Router;
-use Kirameki\Support\Arr;
 use Kirameki\Support\Assert;
-use ReflectionClass;
-use ReflectionFunction;
-use ReflectionNamedType;
+use Kirameki\Support\Util;
+use RuntimeException;
 use function explode;
+use function is_string;
 
 class HttpHandler
 {
@@ -35,9 +36,9 @@ class HttpHandler
 
     /**
      * @psalm-readonly
-     * @var ContentCodecs
+     * @var Codecs
      */
-    public ContentCodecs $codecs;
+    public Codecs $codecs;
 
     /**
      * @param Application $app
@@ -49,7 +50,7 @@ class HttpHandler
         $this->app = $app;
         $this->router = $router;
         $this->config = $config;
-        $this->codecs = new ContentCodecs;
+        $this->codecs = new Codecs;
     }
 
     /**
@@ -58,56 +59,75 @@ class HttpHandler
      */
     public function process(Request $request): Response
     {
+        $request->data->merge($this->decodeInput($request));
+
         $route = $this->router->findMatch($request->method, $request->url->path());
 
-        $actionFunction = $this->convertActionToClosure($request, $route->action);
+        [$class, $method] = explode('::', $route->action, 2);
 
-        $request->data = $this->createRequestData($request, $actionFunction);
+        $result = $this->makeController($class, $request)->runAction($method);
 
-        return $actionFunction($request->data);
+        return $this->buildResponse($request, $result);
     }
 
     /**
+     * @param string $class
      * @param Request $request
-     * @param string|Closure $action
-     * @return Closure
+     * @return Controller
      */
-    protected function convertActionToClosure(Request $request, string|Closure $action): Closure
+    protected function makeController(string $class, Request $request): Controller
     {
-        if ($action instanceof Closure) {
-            return $action;
-        }
-
-        [$class, $method] = explode('::', $action, 2);
-
         Assert::isClassOf($class, Controller::class);
 
-        return (new ReflectionClass($class))
-            ->getMethod($method)
-            ->getClosure(new $class($request));
+        return new $class($request, new ResponseBuilder($request, $this->codecs));
     }
 
     /**
      * @param Request $request
-     * @param Closure $action
-     * @return object
+     * @return mixed
      */
-    protected function createRequestData(Request $request, Closure $action): object
+    protected function decodeInput(Request $request): RequestData
     {
-        $dataClass = RequestData::class;
-        $functionReflection = new ReflectionFunction($action);
-        $parameterReflection = Arr::first($functionReflection->getParameters());
-        if ($typeReflection = $parameterReflection?->getType()) {
-            if ($typeReflection instanceof ReflectionNamedType) {
-                $dataClass = $typeReflection->getName();
-            }
-        }
-
         // if no Content-Type is defined, use application/octet-stream
         // @see https://datatracker.ietf.org/doc/html/rfc7231#section-3.1.1.5
         $contentType = $request->headers->get('Content-Type') ?: 'application/octet-stream';
-        $inputs = $this->codecs->decode($contentType, $request->body);
 
-        return new $dataClass($inputs, $request);
+        return $this->codecs->decode($contentType, $request->body);
+    }
+
+    /**
+     * @param Request $request
+     * @param ResponseBuilder $builder
+     * @return Response
+     */
+    protected function buildResponse(Request $request, ResponseBuilder $builder): Response
+    {
+        $contentType ??= $request->headers->get('Accept') ?: 'application/octet-stream';
+
+        return new Response(
+            body: $this->encodeDataToString($contentType, $builder->data),
+            code: $builder->statusCode,
+            headers: $builder->headers,
+            version: $request->httpVersion(),
+        );
+    }
+
+    /**
+     * @param string $contentType
+     * @param mixed $data
+     * @return string
+     */
+    protected function encodeDataToString(string $contentType, mixed $data): string
+    {
+        if ($data instanceof ResponseData) {
+            $contentType = $data->getContentType() ?? $contentType;
+            return $this->codecs->encode($contentType, $data->jsonSerialize());
+        }
+
+        if (is_string($data)) {
+            return $data;
+        }
+
+        throw new RuntimeException('Unknown response data type: '.Util::typeOf($data));
     }
 }

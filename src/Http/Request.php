@@ -48,9 +48,9 @@ class Request implements Stringable
     public ?RequestHeaders $headers;
 
     /**
-     * @var object|null
+     * @var RequestData
      */
-    public ?object $data;
+    public RequestData $data;
 
     /**
      * @return static
@@ -83,7 +83,7 @@ class Request implements Stringable
         $this->body = $body;
         $this->timestamp = $timestamp ?? microtime(true);
         $this->headers = $headers ?? new RequestHeaders();
-        $this->data = null;
+        $this->data = new RequestData();
     }
 
     /**

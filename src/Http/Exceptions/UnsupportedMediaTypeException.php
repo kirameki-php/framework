@@ -2,6 +2,7 @@
 
 namespace Kirameki\Http\Exceptions;
 
+use Kirameki\Http\StatusCode;
 use Throwable;
 
 class UnsupportedMediaTypeException extends HttpException
@@ -9,16 +10,18 @@ class UnsupportedMediaTypeException extends HttpException
     /**
      * @var string[]
      */
-    public array $contentTypes;
+    public array $mediaTypes;
 
     /**
-     * @param string[] $contentTypes
+     * @param string[] $mediaTypes
      * @param Throwable|null $previous
      */
-    public function __construct(array $contentTypes, Throwable $previous = null)
+    public function __construct(array $mediaTypes, Throwable $previous = null)
     {
-        $this->contentTypes = $contentTypes;
-        $contentTypes = implode(', ', $contentTypes);
-        parent::__construct("[$contentTypes] could not be processed.", 415, $previous);
+        $this->mediaTypes = $mediaTypes;
+
+        $code = StatusCode::UnsupportedMediaType;
+        $mediaTypesString = implode(', ', $mediaTypes);
+        parent::__construct("[$mediaTypesString] could not be processed.", $code, $previous);
     }
 }

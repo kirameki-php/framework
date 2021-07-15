@@ -1,7 +1,8 @@
 <?php declare(strict_types=1);
 
-namespace Kirameki\Http;
+namespace Kirameki\Http\Response;
 
+use Kirameki\Http\Request;
 use Stringable;
 use function array_merge;
 use function compact;
