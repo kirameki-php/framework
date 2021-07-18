@@ -5,9 +5,13 @@ namespace Kirameki\Support;
 use Kirameki\Exception\InvalidKeyException;
 use Kirameki\Exception\InvalidValueException;
 use RuntimeException;
+use function class_exists;
+use function is_a;
 use function is_bool;
 use function is_int;
+use function is_object;
 use function is_string;
+use function get_class;
 
 class Assert
 {
