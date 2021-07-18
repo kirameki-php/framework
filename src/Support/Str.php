@@ -2,8 +2,22 @@
 
 namespace Kirameki\Support;
 
-
 use Ramsey\Uuid\Uuid;
+use function explode;
+use function lcfirst;
+use function preg_match;
+use function preg_replace;
+use function str_contains;
+use function str_ends_with;
+use function str_replace;
+use function str_starts_with;
+use function strlen;
+use function strpos;
+use function strrpos;
+use function strtolower;
+use function substr;
+use function substr_replace;
+use function ucwords;
 
 class Str
 {
@@ -126,9 +140,9 @@ class Str
      */
     public static function kebabCase(string $string): string
     {
-        $hyphenated = preg_replace(['/([a-z\d])([A-Z])/', '/([^-])([A-Z][a-z])/'], '$1-$2', $string);
-        $hyphenated = str_replace([' ', '_'], '-', $hyphenated);
-        return strtolower($hyphenated);
+        $converting = preg_replace(['/([a-z\d])([A-Z])/', '/([^-])([A-Z][a-z])/'], '$1-$2', $string);
+        $converting = str_replace([' ', '_'], '-', $converting);
+        return strtolower($converting);
     }
 
     /**
@@ -183,9 +197,10 @@ class Str
      */
     public static function snakeCase(string $string): string
     {
-        $hyphenated = preg_replace(['/([a-z\d])([A-Z])/', '/([^_])([A-Z][a-z])/'], '$1_$2', $string);
-        $hyphenated = str_replace([' ', '-'], '_', $hyphenated);
-        return strtolower($hyphenated);    }
+        $converting = preg_replace(['/([a-z\d])([A-Z])/', '/([^_])([A-Z][a-z])/'], '$1_$2', $string);
+        $converting = str_replace([' ', '-'], '_', $converting);
+        return strtolower($converting);
+    }
 
     /**
      * @param string $string

@@ -6,22 +6,23 @@ use Kirameki\Support\Arr;
 use ReflectionClass;
 use function array_key_exists;
 
-class RequestFields
+class FieldMap
 {
     public ReflectionClass $class;
 
     /**
-     * @var RequestField[]
+     * @var FieldReflection[]
      */
     public array $fields;
 
     /**
-     * @param string $class
-     * @return static
+     * @param class-string $class
+     * @param array $data
+     * @return object
      */
-    public static function for(string $class): static
+    public static function instance(string $class, array $data): object
     {
-        return new static($class);
+        return (new static($class))->newInstance($data);
     }
 
     /**
@@ -35,23 +36,25 @@ class RequestFields
             $input = Arr::first($prop->getAttributes(Input::class))?->newInstance();
             if ($input !== null && $input instanceof Input) {
                 $input->name ??= $prop->name;
-                $this->fields[$input->name] = new RequestField($input, $prop);
+                $this->fields[$input->name] = new FieldReflection($input, $prop);
             }
         }
     }
 
     /**
-     * @param array $inputs
+     * @param array $data
      * @return object
      */
-    public function newInstanceWith(array $inputs): object
+    public function newInstance(array $data): object
     {
         $instance = $this->class->newInstance();
-        foreach ($inputs as $name => $value) {
-            if (array_key_exists($name, $this->fields)) {
-                $this->fields[$name]->inject($instance, $value);
+
+        foreach ($this->fields as $name => $field) {
+            if (array_key_exists($name, $data)) {
+                $field->inject($instance, $data[$name]);
             }
         }
+
         return $instance;
     }
 }

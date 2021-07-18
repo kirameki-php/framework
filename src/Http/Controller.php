@@ -3,6 +3,7 @@
 namespace Kirameki\Http;
 
 use Kirameki\Http\Request\RequestData;
+use Kirameki\Http\Request\FieldMap;
 use Kirameki\Http\Response\ResponseBuilder;
 use Kirameki\Support\Arr;
 use ReflectionMethod;
@@ -43,15 +44,16 @@ abstract class Controller
 
     /**
      * @param string $method
-     * @return RequestData
+     * @return object
      */
-    protected function getActionArg(string $method): RequestData
+    protected function getActionArg(string $method): object
     {
         $reflection = new ReflectionMethod($this, $method);
         $parameterReflection = Arr::first($reflection->getParameters());
         if ($typeReflection = $parameterReflection?->getType()) {
             if ($typeReflection instanceof ReflectionNamedType) {
-                $dataClass = $typeReflection->getName();
+                $class = $typeReflection->getName();
+                return FieldMap::instance($class, $this->request->data->all());
             }
         }
         return $this->request->data;

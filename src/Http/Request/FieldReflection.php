@@ -13,7 +13,7 @@ use function class_exists;
 use function filter_var;
 use function is_array;
 
-class RequestField
+class FieldReflection
 {
     /**
      * @var ReflectionProperty
@@ -140,7 +140,7 @@ class RequestField
         }
 
         if (class_exists($type) && is_array($value)) {
-            return RequestFields::for($type)->newInstanceWith($value);
+            return FieldMap::instance($type, $value);
         }
 
         $this->throwValidationException($type, $value);
