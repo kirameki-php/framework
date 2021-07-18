@@ -36,6 +36,8 @@ use function str_contains;
 
 class Arr
 {
+    use Concerns\Macroable;
+
     /**
      * @param iterable $iterable
      * @param bool|null $allowEmpty

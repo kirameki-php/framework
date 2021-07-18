@@ -97,8 +97,3 @@ function tap(mixed $value, callable $callable)
     $callable($value);
     return $value;
 }
-
-function uuid(): string
-{
-    return Uuid::uuid4()->toString();
-}

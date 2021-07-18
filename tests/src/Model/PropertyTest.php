@@ -3,6 +3,7 @@
 namespace Tests\Kirameki\Model;
 
 use Kirameki\Model\Reflection;
+use Kirameki\Support\Str;
 
 class PropertyTest extends ModelTestCase
 {
@@ -80,7 +81,7 @@ class PropertyTest extends ModelTestCase
         SampleUser::setTestReflection($reflection);
 
         $model = new SampleUser();
-        $value = uuid();
+        $value = Str::uuid();
         $model->setProperty('id', $value);
 
         // with cache
