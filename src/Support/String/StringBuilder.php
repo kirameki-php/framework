@@ -275,13 +275,47 @@ class StringBuilder implements Stringable
     }
 
     /**
-     * @param array|string $search
-     * @param array|string $replace
+     * @param string $search
+     * @param string $replace
      * @return $this
      */
-    public function replace(array|string $search, array|string $replace): static
+    public function replace(string $search, string $replace): static
     {
-        $this->value = str_replace($search, $replace, $this->value);
+        $this->value = Str::replace($this->value, $search, $replace);
+        return $this;
+    }
+
+    /**
+     * @param string $search
+     * @param string $replace
+     * @return $this
+     */
+    public function replaceFirst(string $search, string $replace): static
+    {
+        $this->value = Str::replaceFirst($this->value, $search, $replace);
+        return $this;
+    }
+
+    /**
+     * @param string $search
+     * @param string $replace
+     * @return $this
+     */
+    public function replaceLast(string $search, string $replace): static
+    {
+        $this->value = Str::replaceLast($this->value, $search, $replace);
+        return $this;
+    }
+
+    /**
+     * @param string $pattern
+     * @param string $replace
+     * @param int|null $limit
+     * @return $this
+     */
+    public function replaceMatch(string $pattern, string $replace, ?int $limit = null): static
+    {
+        $this->value = Str::replaceMatch($this->value, $pattern, $replace, $limit);
         return $this;
     }
 

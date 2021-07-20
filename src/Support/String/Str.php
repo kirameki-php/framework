@@ -23,8 +23,6 @@ use function get_resource_type;
 use function lcfirst;
 use function ltrim;
 use function mb_strlen;
-use function mb_strpos;
-use function mb_strrpos;
 use function mb_strtolower;
 use function mb_strtoupper;
 use function mb_substr;
@@ -37,6 +35,7 @@ use function str_ends_with;
 use function str_pad;
 use function str_replace;
 use function str_starts_with;
+use function strrev;
 use function substr_replace;
 use function trim;
 use function ucwords;
@@ -54,8 +53,8 @@ class Str
      */
     public static function after(string $string, string $search): string
     {
-        $pos = mb_strrpos($string, $search, 0, self::Encoding);
-        return $pos !== false ? mb_substr($string, $pos + 1, null, self::Encoding) : '';
+        $pos = strrpos($string, $search);
+        return $pos !== false ? substr($string, $pos + 1) : '';
     }
 
     /**
@@ -65,8 +64,8 @@ class Str
      */
     public static function afterLast(string $string, string $search): string
     {
-        $pos = mb_strrpos($string, $search, 0, self::Encoding);
-        return $pos !== false ? mb_substr($string, $pos + 1, null, self::Encoding) : '';
+        $pos = strrpos($string, $search);
+        return $pos !== false ? substr($string, $pos + 1) : '';
     }
 
     /**
@@ -76,8 +75,8 @@ class Str
      */
     public static function before(string $string, string $search): string
     {
-        $pos = mb_strpos($string, $search, 0, self::Encoding);
-        return $pos !== false ? mb_substr($string, 0, $pos, self::Encoding) : $string;
+        $pos = strpos($string, $search);
+        return $pos !== false ? substr($string, 0, $pos) : $string;
     }
 
     /**
@@ -87,8 +86,8 @@ class Str
      */
     public static function beforeLast(string $string, string $search): string
     {
-        $pos = mb_strrpos($string, $search, 0, self::Encoding);
-        return $pos !== false ? mb_substr($string, 0, $pos, self::Encoding) : $string;
+        $pos = strrpos($string, $search);
+        return $pos !== false ? substr($string, 0, $pos) : $string;
     }
 
     /**
@@ -128,10 +127,10 @@ class Str
     public static function delete(string $string, string $search, ?int $limit = null): string
     {
         $offset = 0;
-        $length = mb_strlen($search, self::Encoding);
+        $length = strlen($search);
         $limit ??= INF;
         while($limit > 0) {
-            $pos = mb_strpos($string, $search, $offset, self::Encoding);
+            $pos = strpos($string, $search, $offset);
             if ($pos === false) {
                 break;
             }
@@ -309,12 +308,63 @@ class Str
     }
 
     /**
-     * @param $string
+     * @param string $string
      * @return string
      */
-    public static function pascalCase($string): string
+    public static function pascalCase(string $string): string
     {
         return str_replace(['-', '_', ' '], '', ucwords($string, '-_ '));
+    }
+
+    /**
+     * @param string $string
+     * @param string $search
+     * @param string $replace
+     * @return string
+     */
+    public static function replace(string $string, string $search, string $replace): string
+    {
+        return str_replace($search, $replace, $string);
+    }
+
+    /**
+     * @param string $string
+     * @param string $search
+     * @param string $replace
+     * @return string
+     */
+    public static function replaceFirst(string $string, string $search, string $replace): string
+    {
+        $pos = strpos($string, $search);
+        return $pos !== false
+            ? substr_replace($string, $replace, $pos, strlen($search))
+            : $string;
+    }
+
+    /**
+     * @param string $string
+     * @param string $search
+     * @param string $replace
+     * @return string
+     */
+    public static function replaceLast(string $string, string $search, string $replace): string
+    {
+        $pos = strrpos($string, $search);
+        return $pos !== false
+            ? substr_replace($string, $replace, $pos, strlen($search))
+            : $string;
+    }
+
+    /**
+     * @param string $string
+     * @param string $pattern
+     * @param string $replace
+     * @param int|null $limit
+     * @return string
+     */
+    public static function replaceMatch(string $string, string $pattern, string $replace, ?int $limit = null): string
+    {
+        return preg_replace($pattern, $replace, $string, $limit ?? -1);
     }
 
     /**
