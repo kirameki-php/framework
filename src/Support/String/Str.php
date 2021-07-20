@@ -28,6 +28,7 @@ use function mb_strtoupper;
 use function mb_substr;
 use function preg_match;
 use function preg_replace;
+use function preg_split;
 use function rtrim;
 use function spl_object_hash;
 use function str_contains;
@@ -404,12 +405,17 @@ class Str
 
     /**
      * @param string $string
-     * @param string $separator
+     * @param string|string[] $separator
      * @param int|null $limit
      * @return string[]
      */
-    public static function split(string $string, string $separator, ?int $limit = null): array
+    public static function split(string $string, string|array $separator, ?int $limit = null): array
     {
+        if (is_array($separator)) {
+            $pattern = '/('.implode('|', array_map('preg_quote', $separator)).')/';
+            return preg_split($pattern, $string, $limit ?? -1);
+        }
+
         return $limit !== null
             ? explode($separator, $string, $limit)
             : explode($separator, $string);
