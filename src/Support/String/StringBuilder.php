@@ -2,7 +2,6 @@
 
 namespace Kirameki\Support\String;
 
-use JetBrains\PhpStorm\NoReturn;
 use Kirameki\Support\Concerns;
 use Stringable;
 use function basename;
@@ -54,10 +53,10 @@ class StringBuilder implements Stringable
     }
 
     /**
-     * @param string $string
+     * @param string|bool|int|float|Stringable $string
      * @return $this
      */
-    public function append(string $string): static
+    public function append(string|bool|int|float|Stringable|null $string): static
     {
         $this->value.= $string;
         return $this;
