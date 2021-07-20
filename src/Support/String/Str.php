@@ -1,21 +1,25 @@
 <?php declare(strict_types=1);
 
-namespace Kirameki\Support;
+namespace Kirameki\Support\String;
 
+use Kirameki\Support\Arr;
+use Kirameki\Support\Concerns;
 use Ramsey\Uuid\Uuid;
+use function array_map;
 use function explode;
+use function implode;
 use function lcfirst;
+use function mb_strlen;
+use function mb_strpos;
+use function mb_strrpos;
+use function mb_strtolower;
+use function mb_substr;
 use function preg_match;
 use function preg_replace;
 use function str_contains;
 use function str_ends_with;
 use function str_replace;
 use function str_starts_with;
-use function strlen;
-use function strpos;
-use function strrpos;
-use function strtolower;
-use function substr;
 use function substr_replace;
 use function ucwords;
 
@@ -30,8 +34,8 @@ class Str
      */
     public static function after(string $string, string $search): string
     {
-        $pos = strpos($string, $search);
-        return $pos !== false ? substr($string, $pos + 1) : '';
+        $pos = mb_strrpos($string, $search, 0, 'UTF-8');
+        return $pos !== false ? mb_substr($string, $pos + 1, null, 'UTF-8') : '';
     }
 
     /**
@@ -41,8 +45,8 @@ class Str
      */
     public static function afterLast(string $string, string $search): string
     {
-        $pos = strrpos($string, $search);
-        return $pos !== false ? substr($string, $pos + 1) : '';
+        $pos = mb_strrpos($string, $search, 0, 'UTF-8');
+        return $pos !== false ? mb_substr($string, $pos + 1, null, 'UTF-8') : '';
     }
 
     /**
@@ -52,8 +56,8 @@ class Str
      */
     public static function before(string $string, string $search): string
     {
-        $pos = strpos($string, $search);
-        return $pos !== false ? substr($string, 0, $pos) : $string;
+        $pos = mb_strpos($string, $search, 0, 'UTF-8');
+        return $pos !== false ? mb_substr($string, 0, $pos, 'UTF-8') : $string;
     }
 
     /**
@@ -63,8 +67,8 @@ class Str
      */
     public static function beforeLast(string $string, string $search): string
     {
-        $pos = strrpos($string, $search);
-        return $pos !== false ? substr($string, 0, $pos) : $string;
+        $pos = mb_strrpos($string, $search, 0, 'UTF-8');
+        return $pos !== false ? mb_substr($string, 0, $pos, 'UTF-8') : $string;
     }
 
     /**
@@ -74,6 +78,15 @@ class Str
     public static function camelCase($string): string
     {
         return lcfirst(Str::pascalCase($string));
+    }
+
+    /**
+     * @param string $string
+     * @return string
+     */
+    public static function capitalize(string $string): string
+    {
+        return ucfirst($string);
     }
 
     /**
@@ -92,13 +105,13 @@ class Str
      * @param int|null $limit
      * @return string
      */
-    public static function delete(string $string, string $search, int $limit = null): string
+    public static function delete(string $string, string $search, ?int $limit = null): string
     {
         $offset = 0;
-        $length = strlen($search);
+        $length = mb_strlen($search, 'UTF-8');
         $limit ??= INF;
         while($limit > 0) {
-            $pos = strpos($string, $search, $offset);
+            $pos = mb_strpos($string, $search, $offset, 'UTF-8');
             if ($pos === false) {
                 break;
             }
@@ -136,13 +149,42 @@ class Str
 
     /**
      * @param string $string
+     * @param string|null $padding
+     * @param string|null $separator
+     * @return string
+     */
+    public static function indent(string $string, ?string $padding = null, ?string $separator = null): string
+    {
+        $padding ??= '    ';
+        $separator ??= "\n";
+        $parts = explode($separator, $string);
+        $formatted = array_map(static fn(string $part) => $padding.$part, $parts);
+        return implode($separator, $formatted);
+    }
+
+    /**
+     * @param string $string
+     * @param int $position
+     * @param string $insert
+     * @return string
+     */
+    public static function insert(string $string, int $position, string $insert): string
+    {
+        return
+            mb_substr($string, 0, $position, 'UTF-8').
+            $insert.
+            mb_substr($string, $position, null, 'UTF-8');
+    }
+
+    /**
+     * @param string $string
      * @return string
      */
     public static function kebabCase(string $string): string
     {
         $converting = preg_replace(['/([a-z\d])([A-Z])/', '/([^-])([A-Z][a-z])/'], '$1-$2', $string);
         $converting = str_replace([' ', '_'], '-', $converting);
-        return strtolower($converting);
+        return mb_strtolower($converting, 'UTF-8');
     }
 
     /**
@@ -165,6 +207,15 @@ class Str
     public static function notContains(string $haystack, string $needle): bool
     {
         return !static::contains($haystack, $needle);
+    }
+
+    /**
+     * @param string $string
+     * @return StringBuilder
+     */
+    public static function of(string $string = ''): StringBuilder
+    {
+        return new StringBuilder($string);
     }
 
     /**
@@ -199,7 +250,7 @@ class Str
     {
         $converting = preg_replace(['/([a-z\d])([A-Z])/', '/([^_])([A-Z][a-z])/'], '$1_$2', $string);
         $converting = str_replace([' ', '-'], '_', $converting);
-        return strtolower($converting);
+        return mb_strtolower($converting, 'UTF-8');
     }
 
     /**
@@ -208,11 +259,31 @@ class Str
      * @param int|null $limit
      * @return string[]
      */
-    public static function split(string $string, string $separator, int $limit = null): array
+    public static function split(string $string, string $separator, ?int $limit = null): array
     {
         return $limit !== null
             ? explode($separator, $string, $limit)
             : explode($separator, $string);
+    }
+
+    /**
+     * @param string $string
+     * @return string
+     */
+    public static function titleize(string $string): string
+    {
+        return ucwords($string);
+    }
+
+    /**
+     * @param string $string
+     * @param int $size
+     * @param string $ellipsis
+     * @return string
+     */
+    public static function truncate(string $string, int $size, string $ellipsis = '...'): string
+    {
+        return mb_strcut($string, 0, $size, 'UTF-8').$ellipsis;
     }
 
     /**

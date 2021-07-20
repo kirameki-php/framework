@@ -9,6 +9,7 @@
     "ext-ctype": "*",
     "ext-gmp": "*",
     "ext-json": "*",
+    "ext-mbstring": "*",
     "ext-pcntl": "*",
     "ext-pdo": "*",
     "ext-posix": "*",

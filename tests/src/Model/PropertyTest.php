@@ -3,7 +3,7 @@
 namespace Tests\Kirameki\Model;
 
 use Kirameki\Model\Reflection;
-use Kirameki\Support\Str;
+use Kirameki\Support\String\Str;
 
 class PropertyTest extends ModelTestCase
 {

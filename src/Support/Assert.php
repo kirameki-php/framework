@@ -41,6 +41,17 @@ class Assert
      * @param mixed $value
      * @return void
      */
+    public static function string(mixed $value): void
+    {
+        if (!is_string($value)) {
+            throw new InvalidValueException('string', $value);
+        }
+    }
+
+    /**
+     * @param mixed $value
+     * @return void
+     */
     public static function object(mixed $value): void
     {
         if (!is_object($value)) {
