@@ -144,7 +144,7 @@ class Str
      */
     public static function first(string $string, int $amount): string
     {
-        return mb_substr($string, 0, $amount);
+        return mb_substr($string, 0, $amount, 'UTF-8');
     }
 
     /**
@@ -154,7 +154,7 @@ class Str
      */
     public static function from(string $string, int $position): string
     {
-        return mb_substr($string, $position);
+        return mb_substr($string, $position, null, 'UTF-8');
     }
 
     /**
@@ -212,8 +212,8 @@ class Str
      */
     public static function last(string $string, int $amount): string
     {
-        $size = mb_strlen($string);
-        return mb_substr($string, $size - $amount, $size);
+        $size = mb_strlen($string, 'UTF-8');
+        return mb_substr($string, $size - $amount, $size, 'UTF-8');
     }
 
     /**
@@ -311,7 +311,7 @@ class Str
      */
     public static function to(string $string, int $position): string
     {
-        return mb_substr($string, 0, $position);
+        return mb_substr($string, 0, $position, 'UTF-8');
     }
 
     /**
