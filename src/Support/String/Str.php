@@ -21,6 +21,7 @@ use function is_string;
 use function get_class;
 use function get_resource_type;
 use function lcfirst;
+use function ltrim;
 use function mb_strlen;
 use function mb_strpos;
 use function mb_strrpos;
@@ -28,12 +29,15 @@ use function mb_strtolower;
 use function mb_substr;
 use function preg_match;
 use function preg_replace;
+use function rtrim;
 use function spl_object_hash;
 use function str_contains;
 use function str_ends_with;
+use function str_pad;
 use function str_replace;
 use function str_starts_with;
 use function substr_replace;
+use function trim;
 use function ucwords;
 
 class Str
@@ -261,6 +265,39 @@ class Str
     }
 
     /**
+     * @param string $string
+     * @param int $length
+     * @param string $pad
+     * @return string
+     */
+    public static function padBoth(string $string, int $length, string $pad = ' '): string
+    {
+        return str_pad($string, $length, $pad, STR_PAD_BOTH);
+    }
+
+    /**
+     * @param string $string
+     * @param int $length
+     * @param string $pad
+     * @return string
+     */
+    public static function padLeft(string $string, int $length, string $pad = ' '): string
+    {
+        return str_pad($string, $length, $pad, STR_PAD_LEFT);
+    }
+
+    /**
+     * @param string $string
+     * @param int $length
+     * @param string $pad
+     * @return string
+     */
+    public static function padRight(string $string, int $length, string $pad = ' '): string
+    {
+        return str_pad($string, $length, $pad, STR_PAD_RIGHT);
+    }
+
+    /**
      * @param $string
      * @return string
      */
@@ -319,6 +356,17 @@ class Str
 
     /**
      * @param string $string
+     * @param int $offset
+     * @param int|null $length
+     * @return string
+     */
+    public static function substring(string $string, int $offset, ?int $length = null): string
+    {
+        return mb_substr($string, $offset, $length, 'UTF-8');
+    }
+
+    /**
+     * @param string $string
      * @return string
      */
     public static function titleize(string $string): string
@@ -334,6 +382,36 @@ class Str
     public static function to(string $string, int $position): string
     {
         return mb_substr($string, 0, $position, 'UTF-8');
+    }
+
+    /**
+     * @param string $string
+     * @param string $character
+     * @return string
+     */
+    public static function trim(string $string, string $character = " \t\n\r\0\x0B"): string
+    {
+        return trim($string, $character);
+    }
+
+    /**
+     * @param string $string
+     * @param string $character
+     * @return string
+     */
+    public static function trimStart(string $string, string $character = " \t\n\r\0\x0B"): string
+    {
+        return ltrim($string, $character);
+    }
+
+    /**
+     * @param string $string
+     * @param string $character
+     * @return string
+     */
+    public static function trimEnd(string $string, string $character = " \t\n\r\0\x0B"): string
+    {
+        return rtrim($string, $character);
     }
 
     /**

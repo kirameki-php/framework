@@ -6,14 +6,10 @@ use Kirameki\Support\Concerns;
 use Stringable;
 use function basename;
 use function dirname;
-use function ltrim;
 use function mb_strlen;
 use function mb_strtolower;
 use function mb_strtoupper;
-use function rtrim;
-use function str_pad;
 use function str_replace;
-use function trim;
 
 class StringBuilder implements Stringable
 {
@@ -236,7 +232,7 @@ class StringBuilder implements Stringable
      */
     public function padBoth(int $length, string $pad = ' '): static
     {
-        $this->value = str_pad($this->value, $length, $pad, STR_PAD_BOTH);
+        $this->value = Str::padBoth($this->value, $length, $pad);
         return $this;
     }
 
@@ -247,7 +243,7 @@ class StringBuilder implements Stringable
      */
     public function padLeft(int $length, string $pad = ' '): static
     {
-        $this->value = str_pad($this->value, $length, $pad, STR_PAD_LEFT);
+        $this->value = Str::padLeft($this->value, $length, $pad);
         return $this;
     }
 
@@ -258,7 +254,7 @@ class StringBuilder implements Stringable
      */
     public function padRight(int $length, string $pad = ' '): static
     {
-        $this->value = str_pad($this->value, $length, $pad, STR_PAD_RIGHT);
+        $this->value = Str::padRight($this->value, $length, $pad);
         return $this;
     }
 
@@ -327,7 +323,7 @@ class StringBuilder implements Stringable
      */
     public function substring(int $offset, ?int $length = null): static
     {
-        $this->value = mb_substr($this->value, $offset, $length, 'UTF-8');
+        $this->value = Str::substring($this->value, $offset, $length);
         return $this;
     }
 
@@ -392,7 +388,7 @@ class StringBuilder implements Stringable
      */
     public function trim(string $characters = " \t\n\r\0\x0B"): static
     {
-        $this->value = trim($this->value, $characters);
+        $this->value = Str::trim($this->value, $characters);
         return $this;
     }
 
@@ -402,7 +398,7 @@ class StringBuilder implements Stringable
      */
     public function trimStart(string $characters = " \t\n\r\0\x0B"): static
     {
-        $this->value = ltrim($this->value, $characters);
+        $this->value = Str::trimStart($this->value, $characters);
         return $this;
     }
 
@@ -412,7 +408,7 @@ class StringBuilder implements Stringable
      */
     public function trimEnd(string $characters = " \t\n\r\0\x0B"): static
     {
-        $this->value = rtrim($this->value, $characters);
+        $this->value = Str::trimEnd($this->value, $characters);
         return $this;
     }
 
