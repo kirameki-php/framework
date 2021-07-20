@@ -139,6 +139,26 @@ class Str
 
     /**
      * @param string $string
+     * @param int $amount
+     * @return string
+     */
+    public static function first(string $string, int $amount): string
+    {
+        return mb_substr($string, 0, $amount);
+    }
+
+    /**
+     * @param string $string
+     * @param int $position
+     * @return string
+     */
+    public static function from(string $string, int $position): string
+    {
+        return mb_substr($string, $position);
+    }
+
+    /**
+     * @param string $string
      * @param string $pattern
      * @return bool
      */
@@ -149,14 +169,12 @@ class Str
 
     /**
      * @param string $string
-     * @param string|null $padding
-     * @param string|null $separator
+     * @param string $padding
+     * @param string $separator
      * @return string
      */
-    public static function indent(string $string, ?string $padding = null, ?string $separator = null): string
+    public static function indent(string $string, string $padding = '    ', string $separator = "\n"): string
     {
-        $padding ??= '    ';
-        $separator ??= "\n";
         $parts = explode($separator, $string);
         $formatted = array_map(static fn(string $part) => $padding.$part, $parts);
         return implode($separator, $formatted);
@@ -185,6 +203,17 @@ class Str
         $converting = preg_replace(['/([a-z\d])([A-Z])/', '/([^-])([A-Z][a-z])/'], '$1-$2', $string);
         $converting = str_replace([' ', '_'], '-', $converting);
         return mb_strtolower($converting, 'UTF-8');
+    }
+
+    /**
+     * @param string $string
+     * @param int $amount
+     * @return string
+     */
+    public static function last(string $string, int $amount): string
+    {
+        $size = mb_strlen($string);
+        return mb_substr($string, $size - $amount, $size);
     }
 
     /**
@@ -273,6 +302,16 @@ class Str
     public static function titleize(string $string): string
     {
         return ucwords($string);
+    }
+
+    /**
+     * @param string $string
+     * @param int $position
+     * @return string
+     */
+    public static function to(string $string, int $position): string
+    {
+        return mb_substr($string, 0, $position);
     }
 
     /**

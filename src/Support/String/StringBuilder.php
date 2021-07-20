@@ -143,6 +143,37 @@ class StringBuilder implements Stringable
     }
 
     /**
+     * @param int $amount
+     * @return $this
+     */
+    public function first(int $amount): static
+    {
+        $this->value = Str::first($this->value, $amount);
+        return $this;
+    }
+
+    /**
+     * @param int $position
+     * @return $this
+     */
+    public function from(int $position): static
+    {
+        $this->value = Str::from($this->value, $position);
+        return $this;
+    }
+
+    /**
+     * @param string $padding
+     * @param string $separator
+     * @return $this
+     */
+    public function indent(string $padding = '    ', string $separator = "\n"): static
+    {
+        $this->value = Str::indent($this->value, $padding, $separator);
+        return $this;
+    }
+
+    /**
      * @param int $position
      * @param string $insert
      * @return $this
@@ -150,6 +181,16 @@ class StringBuilder implements Stringable
     public function insert(int $position, string $insert): static
     {
         $this->value = Str::insert($this->value, $position, $insert);
+        return $this;
+    }
+
+    /**
+     * @param int $amount
+     * @return $this
+     */
+    public function last(int $amount): static
+    {
+        $this->value = Str::last($this->value, $amount);
         return $this;
     }
 
@@ -269,6 +310,16 @@ class StringBuilder implements Stringable
     public function titleize(): static
     {
         $this->value = Str::titleize($this->value);
+        return $this;
+    }
+
+    /**
+     * @param int $position
+     * @return $this
+     */
+    public function to(int $position): static
+    {
+        $this->value = Str::to($this->value, $position);
         return $this;
     }
 
