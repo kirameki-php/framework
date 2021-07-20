@@ -270,6 +270,15 @@ class Str
     }
 
     /**
+     * @param string $string
+     * @return string
+     */
+    public static function reverse(string $string): string
+    {
+        return strrev($string);
+    }
+
+    /**
      * @param string $haystack
      * @param string|string[] $needle
      * @return bool

@@ -293,6 +293,15 @@ class StringBuilder implements Stringable
     }
 
     /**
+     * @return $this
+     */
+    public function reverse(): static
+    {
+        $this->value = Str::reverse($this->value);
+        return $this;
+    }
+
+    /**
      * @return static
      */
     public function snakeCase(): static
