@@ -5,7 +5,7 @@ namespace Kirameki\Http\Request;
 use Kirameki\Http\Exceptions\ValidationException;
 use Kirameki\Http\Request\Validations\ValidationInterface;
 use Kirameki\Support\Arr;
-use Kirameki\Support\Util;
+use Kirameki\Support\String\Str;
 use ReflectionAttribute;
 use ReflectionProperty;
 use function array_key_exists;
@@ -153,7 +153,7 @@ class FieldReflection
      */
     protected function throwValidationException(string $expected, mixed $actual)
     {
-        $valueAsString = Util::toString($actual);
+        $valueAsString = Str::valueOf($actual);
         throw new ValidationException(("Expected value to be $expected. $valueAsString given."));
     }
 }

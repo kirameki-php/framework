@@ -13,7 +13,7 @@ use Kirameki\Database\Query\Statements\InsertStatement;
 use Kirameki\Database\Query\Statements\SelectStatement;
 use Kirameki\Database\Query\Statements\UpdateStatement;
 use Kirameki\Support\Arr;
-use Kirameki\Support\Util;
+use Kirameki\Support\String\Str;
 use RuntimeException;
 
 class Formatter
@@ -97,7 +97,7 @@ class Formatter
         $bindings = [];
         foreach ($statement->dataset as $data) {
             if (!is_array($data)) {
-                throw new RuntimeException('Data should be an array but ' . Util::typeOf($data) . ' given.');
+                throw new RuntimeException('Data should be an array but ' . Str::typeOf($data) . ' given.');
             }
             foreach ($columns as $column) {
                 $bindings[] = $data[$column] ?? null;

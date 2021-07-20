@@ -2,12 +2,24 @@
 
 namespace Kirameki\Support\String;
 
+use DateTimeInterface;
 use Kirameki\Support\Arr;
 use Kirameki\Support\Concerns;
+use Kirameki\Support\Json;
 use Ramsey\Uuid\Uuid;
 use function array_map;
 use function explode;
 use function implode;
+use function is_array;
+use function is_bool;
+use function is_float;
+use function is_int;
+use function is_null;
+use function is_object;
+use function is_resource;
+use function is_string;
+use function get_class;
+use function get_resource_type;
 use function lcfirst;
 use function mb_strlen;
 use function mb_strpos;
@@ -16,6 +28,7 @@ use function mb_strtolower;
 use function mb_substr;
 use function preg_match;
 use function preg_replace;
+use function spl_object_hash;
 use function str_contains;
 use function str_ends_with;
 use function str_replace;
@@ -325,11 +338,40 @@ class Str
         return mb_strcut($string, 0, $size, 'UTF-8').$ellipsis;
     }
 
+    public static function typeOf(mixed $var)
+    {
+        if (is_null($var)) return "null";
+        if (is_bool($var)) return "bool";
+        if (is_int($var)) return "int";
+        if (is_float($var)) return "float";
+        if (is_string($var)) return "string";
+        if (is_array($var)) return "array";
+        if ($var instanceof DateTimeInterface) return 'datetime';
+        if (is_object($var)) return "object";
+        if (is_resource($var)) return "resource";
+        return "unknown type";
+    }
+
     /**
      * @return string
      */
     public static function uuid(): string
     {
         return Uuid::uuid4()->toString();
+    }
+
+    /**
+     * @param mixed $var
+     * @return string
+     */
+    public static function valueOf(mixed $var): string
+    {
+        if (is_null($var)) return 'null';
+        if (is_bool($var)) return $var ? 'true' : 'false';
+        if (is_array($var)) return Json::encode($var);
+        if (is_resource($var)) return get_resource_type($var);
+        if ($var instanceof DateTimeInterface) return $var->format(DATE_RFC3339_EXTENDED);
+        if (is_object($var)) return get_class($var).':'.spl_object_hash($var);
+        return (string) $var;
     }
 }

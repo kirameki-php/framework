@@ -10,7 +10,7 @@ use Kirameki\Http\Response\ResponseData;
 use Kirameki\Http\Routing\Route;
 use Kirameki\Http\Routing\Router;
 use Kirameki\Support\Assert;
-use Kirameki\Support\Util;
+use Kirameki\Support\String\Str;
 use RuntimeException;
 use function explode;
 use function is_string;
@@ -140,6 +140,6 @@ class HttpHandler
             return $data;
         }
 
-        throw new RuntimeException('Unknown response data type: '.Util::typeOf($data));
+        throw new RuntimeException('Unknown response data type: '.Str::typeOf($data));
     }
 }

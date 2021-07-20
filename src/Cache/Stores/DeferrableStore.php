@@ -5,7 +5,7 @@ namespace Kirameki\Cache\Stores;
 use Carbon\Carbon;
 use DateInterval;
 use DateTimeInterface;
-use Kirameki\Support\Util;
+use Kirameki\Support\String\Str;
 use RuntimeException;
 
 class DeferrableStore extends AbstractStore
@@ -342,6 +342,6 @@ class DeferrableStore extends AbstractStore
         if (is_int($ttl)) return Carbon::createFromTimestamp(time() + $ttl);
         if ($ttl instanceof Carbon) return $ttl;
         if ($ttl instanceof DateTimeInterface) return Carbon::instance($ttl);
-        throw new RuntimeException('Unknown type for TTL: '.Util::toString($ttl));
+        throw new RuntimeException('Unknown type for TTL: '.Str::valueOf($ttl));
     }
 }

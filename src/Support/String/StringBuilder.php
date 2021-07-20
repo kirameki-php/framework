@@ -2,6 +2,7 @@
 
 namespace Kirameki\Support\String;
 
+use JetBrains\PhpStorm\NoReturn;
 use Kirameki\Support\Concerns;
 use Stringable;
 use function basename;
@@ -122,6 +123,15 @@ class StringBuilder implements Stringable
     }
 
     /**
+     * @return $this
+     */
+    public function dd(): static
+    {
+        dd($this->value);
+        return $this;
+    }
+
+    /**
      * @param string $search
      * @param int|null $limit
      * @return static
@@ -129,6 +139,15 @@ class StringBuilder implements Stringable
     public function delete(string $search, int $limit = null): static
     {
         $this->value = Str::delete($this->value, $search, $limit);
+        return $this;
+    }
+
+    /**
+     * @return $this
+     */
+    public function dump(): static
+    {
+        dump($this->value);
         return $this;
     }
 

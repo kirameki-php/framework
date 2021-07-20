@@ -2,7 +2,7 @@
 
 namespace Kirameki\Exception;
 
-use Kirameki\Support\Util;
+use Kirameki\Support\String\Str;
 use LogicException;
 
 class InvalidKeyException extends LogicException
@@ -12,8 +12,8 @@ class InvalidKeyException extends LogicException
      */
     public function __construct(mixed $key)
     {
-        $type = Util::typeOf($key);
-        $keyAsString = Util::toString($key);
+        $type = Str::typeOf($key);
+        $keyAsString = Str::valueOf($key);
         parent::__construct("Key for array must be a string or int. $type given. (value: $keyAsString)");
     }
 }
