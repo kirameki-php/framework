@@ -338,7 +338,11 @@ class Str
         return mb_strcut($string, 0, $size, 'UTF-8').$ellipsis;
     }
 
-    public static function typeOf(mixed $var)
+    /**
+     * @param mixed $var
+     * @return string
+     */
+    public static function typeOf(mixed $var): string
     {
         if (is_null($var)) return "null";
         if (is_bool($var)) return "bool";

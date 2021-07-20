@@ -56,7 +56,7 @@ class StringBuilder implements Stringable
      * @param string|bool|int|float|Stringable $string
      * @return $this
      */
-    public function append(string|bool|int|float|Stringable|null $string): static
+    public function append(string|bool|int|float|null $string): static
     {
         $this->value.= $string;
         return $this;
