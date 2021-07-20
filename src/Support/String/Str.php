@@ -97,7 +97,7 @@ class Str
      */
     public static function camelCase($string): string
     {
-        return lcfirst(Str::pascalCase($string));
+        return lcfirst(static::pascalCase($string));
     }
 
     /**
