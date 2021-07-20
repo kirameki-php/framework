@@ -6,9 +6,6 @@ use Kirameki\Support\Concerns;
 use Stringable;
 use function basename;
 use function dirname;
-use function mb_strlen;
-use function mb_strtolower;
-use function mb_strtoupper;
 use function str_replace;
 
 class StringBuilder implements Stringable
@@ -222,7 +219,7 @@ class StringBuilder implements Stringable
      */
     public function length(): int
     {
-        return mb_strlen($this->value, 'UTF-8');
+        return Str::length($this->value);
     }
 
     /**
@@ -351,7 +348,7 @@ class StringBuilder implements Stringable
      */
     public function toLower(): static
     {
-        $this->value = mb_strtolower($this->value, 'UTF-8');
+        $this->value = Str::toLower($this->value);
         return $this;
     }
 
@@ -360,7 +357,7 @@ class StringBuilder implements Stringable
      */
     public function toUpper(): static
     {
-        $this->value = mb_strtoupper($this->value, 'UTF-8');
+        $this->value = Str::toUpper($this->value);
         return $this;
     }
 

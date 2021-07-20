@@ -26,6 +26,7 @@ use function mb_strlen;
 use function mb_strpos;
 use function mb_strrpos;
 use function mb_strtolower;
+use function mb_strtoupper;
 use function mb_substr;
 use function preg_match;
 use function preg_replace;
@@ -44,6 +45,8 @@ class Str
 {
     use Concerns\Macroable;
 
+    public const Encoding = 'UTF-8';
+
     /**
      * @param string $string
      * @param string $search
@@ -51,8 +54,8 @@ class Str
      */
     public static function after(string $string, string $search): string
     {
-        $pos = mb_strrpos($string, $search, 0, 'UTF-8');
-        return $pos !== false ? mb_substr($string, $pos + 1, null, 'UTF-8') : '';
+        $pos = mb_strrpos($string, $search, 0, self::Encoding);
+        return $pos !== false ? mb_substr($string, $pos + 1, null, self::Encoding) : '';
     }
 
     /**
@@ -62,8 +65,8 @@ class Str
      */
     public static function afterLast(string $string, string $search): string
     {
-        $pos = mb_strrpos($string, $search, 0, 'UTF-8');
-        return $pos !== false ? mb_substr($string, $pos + 1, null, 'UTF-8') : '';
+        $pos = mb_strrpos($string, $search, 0, self::Encoding);
+        return $pos !== false ? mb_substr($string, $pos + 1, null, self::Encoding) : '';
     }
 
     /**
@@ -73,8 +76,8 @@ class Str
      */
     public static function before(string $string, string $search): string
     {
-        $pos = mb_strpos($string, $search, 0, 'UTF-8');
-        return $pos !== false ? mb_substr($string, 0, $pos, 'UTF-8') : $string;
+        $pos = mb_strpos($string, $search, 0, self::Encoding);
+        return $pos !== false ? mb_substr($string, 0, $pos, self::Encoding) : $string;
     }
 
     /**
@@ -84,8 +87,8 @@ class Str
      */
     public static function beforeLast(string $string, string $search): string
     {
-        $pos = mb_strrpos($string, $search, 0, 'UTF-8');
-        return $pos !== false ? mb_substr($string, 0, $pos, 'UTF-8') : $string;
+        $pos = mb_strrpos($string, $search, 0, self::Encoding);
+        return $pos !== false ? mb_substr($string, 0, $pos, self::Encoding) : $string;
     }
 
     /**
@@ -125,10 +128,10 @@ class Str
     public static function delete(string $string, string $search, ?int $limit = null): string
     {
         $offset = 0;
-        $length = mb_strlen($search, 'UTF-8');
+        $length = mb_strlen($search, self::Encoding);
         $limit ??= INF;
         while($limit > 0) {
-            $pos = mb_strpos($string, $search, $offset, 'UTF-8');
+            $pos = mb_strpos($string, $search, $offset, self::Encoding);
             if ($pos === false) {
                 break;
             }
@@ -161,7 +164,7 @@ class Str
      */
     public static function first(string $string, int $amount): string
     {
-        return mb_substr($string, 0, $amount, 'UTF-8');
+        return mb_substr($string, 0, $amount, self::Encoding);
     }
 
     /**
@@ -171,7 +174,7 @@ class Str
      */
     public static function from(string $string, int $position): string
     {
-        return mb_substr($string, $position, null, 'UTF-8');
+        return mb_substr($string, $position, null, self::Encoding);
     }
 
     /**
@@ -206,9 +209,9 @@ class Str
     public static function insert(string $string, int $position, string $insert): string
     {
         return
-            mb_substr($string, 0, $position, 'UTF-8').
+            mb_substr($string, 0, $position, self::Encoding).
             $insert.
-            mb_substr($string, $position, null, 'UTF-8');
+            mb_substr($string, $position, null, self::Encoding);
     }
 
     /**
@@ -219,7 +222,7 @@ class Str
     {
         $converting = preg_replace(['/([a-z\d])([A-Z])/', '/([^-])([A-Z][a-z])/'], '$1-$2', $string);
         $converting = str_replace([' ', '_'], '-', $converting);
-        return mb_strtolower($converting, 'UTF-8');
+        return mb_strtolower($converting, self::Encoding);
     }
 
     /**
@@ -229,8 +232,16 @@ class Str
      */
     public static function last(string $string, int $amount): string
     {
-        $size = mb_strlen($string, 'UTF-8');
-        return mb_substr($string, $size - $amount, $size, 'UTF-8');
+        $size = mb_strlen($string, self::Encoding);
+        return mb_substr($string, $size - $amount, $size, self::Encoding);
+    }
+
+    /**
+     * @return int
+     */
+    public static function length(string $string): int
+    {
+        return mb_strlen($string, self::Encoding);
     }
 
     /**
@@ -338,7 +349,7 @@ class Str
     {
         $converting = preg_replace(['/([a-z\d])([A-Z])/', '/([^_])([A-Z][a-z])/'], '$1_$2', $string);
         $converting = str_replace([' ', '-'], '_', $converting);
-        return mb_strtolower($converting, 'UTF-8');
+        return mb_strtolower($converting, self::Encoding);
     }
 
     /**
@@ -362,7 +373,7 @@ class Str
      */
     public static function substring(string $string, int $offset, ?int $length = null): string
     {
-        return mb_substr($string, $offset, $length, 'UTF-8');
+        return mb_substr($string, $offset, $length, self::Encoding);
     }
 
     /**
@@ -381,7 +392,25 @@ class Str
      */
     public static function to(string $string, int $position): string
     {
-        return mb_substr($string, 0, $position, 'UTF-8');
+        return mb_substr($string, 0, $position, self::Encoding);
+    }
+
+    /**
+     * @param string $string
+     * @return string
+     */
+    public static function toLower(string $string): string
+    {
+        return mb_strtolower($string, self::Encoding);
+    }
+
+    /**
+     * @param string $string
+     * @return string
+     */
+    public static function toUpper(string $string): string
+    {
+        return mb_strtoupper($string, self::Encoding);
     }
 
     /**
@@ -422,7 +451,7 @@ class Str
      */
     public static function truncate(string $string, int $size, string $ellipsis = '...'): string
     {
-        return mb_strcut($string, 0, $size, 'UTF-8').$ellipsis;
+        return mb_strcut($string, 0, $size, self::Encoding).$ellipsis;
     }
 
     /**
