@@ -10,13 +10,13 @@ class MySqlFormatter extends Formatter
 
     /**
      * @param $value
-     * @return mixed
+     * @return string
      */
-    public function parameter($value): mixed
+    public function parameter($value): string
     {
         if ($value instanceof DateTimeInterface) {
             return '\''.$value->format('Y-m-d H:i:s.u').'\'';
         }
-        return $value;
+        return (string) $value;
     }
 }

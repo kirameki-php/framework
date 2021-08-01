@@ -11,7 +11,7 @@ use Kirameki\Testing\TestCase;
  */
 trait UsesDatabases
 {
-    public function createTempConnection(string $driver, array $options = [])
+    public function createTempConnection(string $driver, array $options = []): Connection
     {
         $name = uniqid('test_');
 

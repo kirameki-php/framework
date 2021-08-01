@@ -2,6 +2,7 @@
 
 namespace Tests\Kirameki\Model;
 
+use DateTime;
 use Kirameki\Model\Reflection;
 use Kirameki\Support\String\Str;
 
@@ -103,17 +104,17 @@ class PropertyTest extends ModelTestCase
         SampleUser::setTestReflection($reflection);
 
         $model = new SampleUser();
-        $value = new \DateTime();
+        $value = new DateTime();
         $model->setProperty('createdAt', $value);
 
         // with cache
         $propValue = $model->getProperty('createdAt');
-        self::assertInstanceOf(\DateTime::class, $propValue);
+        self::assertInstanceOf(DateTime::class, $propValue);
         self::assertEquals($value, $propValue);
 
         // no cache
         $propValue = $model->getProperty('createdAt');
-        self::assertInstanceOf(\DateTime::class, $propValue);
+        self::assertInstanceOf(DateTime::class, $propValue);
         self::assertEquals($value, $propValue);
     }
 

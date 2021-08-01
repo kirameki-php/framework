@@ -43,7 +43,7 @@ class StdoutLogger extends Logger
 
         $colorSchemeClass = $options['color_scheme'] ?? DefaultScheme::class;
         $logFormat = $options['format'] ?? "[%datetime%] [%level_name%] %message%\n";
-        $dateFormat = $options['date_format'] = 'Y-m-d H:i:s.v';
+        $dateFormat = $options['date_format'] ?? 'Y-m-d H:i:s.v';
         $formatter = new ColoredLineFormatter(new $colorSchemeClass, $logFormat, $dateFormat, false, true);
 
         $fileHandler->setFormatter($formatter);

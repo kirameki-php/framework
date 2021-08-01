@@ -503,12 +503,6 @@ class Arr
         return static::keyByRecursive($iterable, $key, $overwrite, 1);
     }
 
-    /**
-     * @param iterable $iterable
-     * @param string|callable $key
-     * @param int $depth
-     * @return array
-     */
     public static function keyByRecursive(iterable $iterable, string|callable $key, bool $overwrite = false, int $depth = PHP_INT_MAX): array
     {
         $callable = is_string($key) ? static::createDigger($key) : $key;
@@ -524,7 +518,7 @@ class Arr
             }
 
             $result[$newKey] = ($depth > 1 && is_iterable($item))
-                ? static::keyByRecursive($item, $callable, $depth - 1)
+                ? static::keyByRecursive($item, $callable, $overwrite, $depth - 1)
                 : $item;
         }
 
@@ -801,10 +795,10 @@ class Arr
     public static function reduce(iterable $iterable, callable $callback, mixed $initial = null): mixed
     {
         // Guess initial from first argument of closure if defined
-        if ($initial === null && $callback instanceof Closure) {
+        if ($initial === null) {
             $ref = new ReflectionFunction($callback);
             $refType = $ref->getParameters()[0]->getType();
-            $name = $refType ? $refType->getName() : null;
+            $name = $refType?->getName();
             if ($name === 'int') {
                 $initial = 0;
             } else if ($name === 'float') {

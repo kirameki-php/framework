@@ -4,7 +4,6 @@ namespace Kirameki\Database\Schema\Builders;
 
 use Kirameki\Database\Schema\Statements\ColumnDefinition;
 use Kirameki\Database\Schema\Support\CurrentTimestamp;
-use Kirameki\Database\Support\Expr;
 
 class ColumnBuilder
 {

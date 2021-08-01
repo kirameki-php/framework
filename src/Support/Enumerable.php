@@ -834,6 +834,8 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
 
     /**
      * @param iterable $items
+     * @param int $depth
+     * @param bool $validate
      * @return array
      */
     protected function asArrayRecursive(iterable $items, int $depth, bool $validate = false): array

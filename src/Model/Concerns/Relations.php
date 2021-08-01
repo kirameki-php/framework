@@ -21,7 +21,7 @@ trait Relations
      * @param string|string[] $relationNames
      * @return $this
      */
-    public function preload(array $relationNames)
+    public function preload(array $relationNames): static
     {
         $this->preloadRecursive($this, $relationNames);
         return $this;
@@ -74,9 +74,9 @@ trait Relations
 
     /**
      * @param string $name
-     * @return mixed|null
+     * @return mixed
      */
-    public function getRelation(string $name)
+    public function getRelation(string $name): mixed
     {
         if (!array_key_exists($name, $this->relations)) {
             $this->loadRelation($this, $name);
@@ -89,7 +89,7 @@ trait Relations
      * @param string $name
      * @return Model|RelationCollection
      */
-    protected function loadRelation($target, string $name)
+    protected function loadRelation($target, string $name): RelationCollection|Model
     {
         if ($target instanceof ModelCollection) {
             $relation = $target->getModelReflection()->relations[$name];

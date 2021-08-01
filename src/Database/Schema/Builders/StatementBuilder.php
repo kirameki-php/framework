@@ -33,7 +33,7 @@ abstract class StatementBuilder implements BuilderInterface
     /**
      * @return static
      */
-    protected function copy()
+    protected function copy(): static
     {
         return clone $this;
     }

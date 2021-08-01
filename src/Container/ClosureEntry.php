@@ -67,8 +67,7 @@ class ClosureEntry implements EntryInterface
     public function getInstance(): mixed
     {
         if (!$this->cacheable) {
-            $instance = call_user_func_array($this->resolver, $this->arguments);
-            return $instance;
+            return call_user_func_array($this->resolver, $this->arguments);
         }
 
         if (!$this->resolved) {

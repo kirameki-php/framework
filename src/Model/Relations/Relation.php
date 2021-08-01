@@ -101,9 +101,9 @@ abstract class Relation
 
     /**
      * @param Model $model
-     * @return mixed|null
+     * @return string|int|float
      */
-    public function getSrcKey(Model $model)
+    public function getSrcKey(Model $model): string|int|float
     {
         return $model->getProperty($this->getSrcKeyName());
     }

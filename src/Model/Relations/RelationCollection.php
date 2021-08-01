@@ -3,7 +3,6 @@
 namespace Kirameki\Model\Relations;
 
 use Kirameki\Model\ModelCollection;
-use Kirameki\Model\ModelManager;
 use Kirameki\Model\Model;
 use Kirameki\Model\Reflection;
 

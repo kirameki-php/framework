@@ -7,7 +7,6 @@ use Kirameki\Database\Schema\Statements\ColumnDefinition;
 use Kirameki\Database\Schema\Statements\CreateIndexStatement;
 use Kirameki\Database\Schema\Statements\CreateTableStatement;
 use Kirameki\Database\Schema\Statements\PrimaryKeyConstraint;
-use Kirameki\Database\Support\Expr;
 use Kirameki\Support\Arr;
 use RuntimeException;
 
@@ -172,10 +171,10 @@ class CreateTableBuilder extends StatementBuilder
     }
 
     /**
-     * @param string|string[] $columns
+     * @param string|array<string> $columns
      * @return CreateIndexBuilder
      */
-    public function index($columns): CreateIndexBuilder
+    public function index(string|array $columns): CreateIndexBuilder
     {
         $statement = new CreateIndexStatement($this->statement->table);
         $this->statement->indexes[] = $statement;

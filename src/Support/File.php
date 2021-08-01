@@ -17,7 +17,7 @@ class File
     /**
      * @param string $dirPath
      * @param bool $deep
-     * @return Collection<FileInfo>|FileInfo[]
+     * @return Collection<FileInfo>
      */
     public static function list(string $dirPath, bool $deep = false): Collection
     {

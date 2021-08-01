@@ -24,7 +24,7 @@ class DateTimeCast implements CastInterface
      * @param $value
      * @return mixed
      */
-    public function set(Model $model, string $key, $value)
+    public function set(Model $model, string $key, $value): mixed
     {
         // don't convert here, let the formatter take care of it
         return $value;

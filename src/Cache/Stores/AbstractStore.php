@@ -179,11 +179,11 @@ abstract class AbstractStore implements StoreInterface
      * @param string $command
      * @param string $key
      * @param int $by
-     * @param int $result
+     * @param int|null $result
      * @param DateTimeInterface|DateInterval|int|float|null $ttl
      * @return void
      */
-    protected function triggerCounterEvent(string $command, string $key, int $by, int $result, DateTimeInterface|DateInterval|int|float|null $ttl = null)
+    protected function triggerCounterEvent(string $command, string $key, int $by, ?int $result, DateTimeInterface|DateInterval|int|float|null $ttl = null)
     {
         $this->triggerEvent(new CacheCountUpdated($this->name, $this->namespace, $command, $key, $by, $result, $ttl));
     }

@@ -38,7 +38,7 @@ class DeferredPool extends MemoryStore
     }
 
     /**
-     * MemoryStore tries to delete expired ones but deferred needs expired information
+     * MemoryStore tries to delete expired ones but deferred needs the expired information
      * because if the record does not exist it will try to get it from the underlying
      * store where the data might still exist.
      *

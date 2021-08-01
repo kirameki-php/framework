@@ -34,7 +34,7 @@ class CreateIndexBuilder extends StatementBuilder
      * @param string|string[] $columns
      * @return $this
      */
-    public function columns($columns): static
+    public function columns(string|array $columns): static
     {
         foreach (Arr::wrap($columns) as $column => $order) {
             is_string($column)

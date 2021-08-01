@@ -10,22 +10,22 @@ use Tests\Kirameki\Database\DatabaseTestCase;
 
 class QueryTestCase extends DatabaseTestCase
 {
-    protected function selectBuilder()
+    protected function selectBuilder(): SelectBuilder
     {
         return new SelectBuilder($this->mysqlConnection());
     }
 
-    protected function insertBuilder()
+    protected function insertBuilder(): InsertBuilder
     {
         return new InsertBuilder($this->mysqlConnection());
     }
 
-    protected function updateBuilder()
+    protected function updateBuilder(): UpdateBuilder
     {
         return new UpdateBuilder($this->mysqlConnection());
     }
 
-    protected function deleteBuilder()
+    protected function deleteBuilder(): DeleteBuilder
     {
         return new DeleteBuilder($this->mysqlConnection());
     }

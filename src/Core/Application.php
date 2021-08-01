@@ -56,7 +56,7 @@ class Application extends Container
         static::setPhpRuntimeConfigs();
         Env::applyDotFile($dotEnvPath ?? $basePath.'/.env');
 
-        // getcwd will be root project path
+        // getcwd() will be root project path
         chdir($basePath);
 
         $this->basePath = $basePath;

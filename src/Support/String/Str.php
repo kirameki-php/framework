@@ -237,6 +237,7 @@ class Str
     }
 
     /**
+     * @param string $string
      * @return int
      */
     public static function length(string $string): int
@@ -545,9 +546,21 @@ class Str
         if (is_null($var)) return 'null';
         if (is_bool($var)) return $var ? 'true' : 'false';
         if (is_array($var)) return Json::encode($var);
-        if (is_resource($var)) return get_resource_type($var);
         if ($var instanceof DateTimeInterface) return $var->format(DATE_RFC3339_EXTENDED);
         if (is_object($var)) return get_class($var).':'.spl_object_hash($var);
+        if (is_resource($var)) return get_resource_type($var);
         return (string) $var;
+    }
+
+    /**
+     * @param string $string
+     * @param int $width
+     * @param string $break
+     * @param bool $overflow
+     * @return string
+     */
+    public static function wrap(string $string, int $width = 80, string $break = "\n", bool $overflow = false): string
+    {
+        return wordwrap($string, $width, $break, !$overflow);
     }
 }

@@ -45,7 +45,7 @@ class HasMany extends Relation
      * @param ModelCollection $targets
      * @return ModelCollection
      */
-    public function loadOnCollection(ModelCollection $targets)
+    public function loadOnCollection(ModelCollection $targets): ModelCollection
     {
         $mappedTargets = $targets->keyBy($this->getSrcKeyName())->compact();
 

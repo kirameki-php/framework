@@ -7,6 +7,9 @@ use Kirameki\Database\Query\Statements\ConditionsStatement;
 use Kirameki\Database\Query\Support\Range;
 use RuntimeException;
 
+/**
+ * @property-read ConditionsStatement $statement
+ */
 abstract class ConditionsBuilder extends StatementBuilder
 {
     /**
@@ -69,7 +72,7 @@ abstract class ConditionsBuilder extends StatementBuilder
      */
     public function orderByAsc(string $column): static
     {
-        return $this->orderBy($column, 'ASC');
+        return $this->orderBy($column);
     }
 
     /**

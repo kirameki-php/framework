@@ -290,7 +290,7 @@ class MemoryStore extends AbstractStore
 
     /**
      * @param string $key
-     * @return false|mixed
+     * @return mixed
      */
     protected function fetchEntryValue(string $key): mixed
     {
@@ -349,9 +349,9 @@ class MemoryStore extends AbstractStore
 
     /**
      * @param array $data
-     * @return bool
+     * @return int
      */
-    protected function calcRemainingTtl(array $data): bool
+    protected function calcRemainingTtl(array $data): int
     {
         return ($data['created'] + $data['ttl']) - time();
     }

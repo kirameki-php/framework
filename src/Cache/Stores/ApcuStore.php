@@ -6,7 +6,6 @@ use APCuIterator;
 use Closure;
 use DateInterval;
 use DateTimeInterface;
-use Kirameki\Support\Arr;
 use RuntimeException;
 
 class ApcuStore extends AbstractStore

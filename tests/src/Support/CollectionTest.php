@@ -3,12 +3,12 @@
 namespace Tests\Kirameki\Support;
 
 use ArrayIterator;
+use DivisionByZeroError;
 use ErrorException;
 use Generator;
 use Kirameki\Exception\DuplicateKeyException;
 use Kirameki\Exception\InvalidKeyException;
 use Kirameki\Exception\InvalidValueException;
-use Kirameki\Support\Arr;
 use Kirameki\Support\Collection;
 use RuntimeException;
 use Tests\Kirameki\TestCase;
@@ -73,7 +73,7 @@ class CollectionTest extends TestCase
 
     public function testAverage_NotEmpty()
     {
-        self::expectException(\DivisionByZeroError::class);
+        self::expectException(DivisionByZeroError::class);
         $this->collect([])->average(allowEmpty: false);
     }
 
@@ -166,7 +166,7 @@ class CollectionTest extends TestCase
         self::assertEquals(['a' => ['b' => []]], $compacted->toArray());
 
         // depth = 1
-        $compacted = $this->collect(['a' => ['b' => null], 'b' => null])->compact(1);
+        $compacted = $this->collect(['a' => ['b' => null], 'b' => null])->compact();
         self::assertEquals(['a' => ['b' => null]], $compacted->toArray());
     }
 
@@ -908,24 +908,6 @@ class CollectionTest extends TestCase
         self::assertFalse($this->collect(['a' => 1, 0])->notContainsKey('a'));
     }
 
-    public function testNotContainsKey_InvalidKey_Null()
-    {
-        self::expectException(InvalidKeyException::class);
-        self::assertTrue($this->collect([])->notContainsKey(null));
-    }
-
-    public function testNotContainsKey_InvalidKey_Bool()
-    {
-        self::expectException(InvalidKeyException::class);
-        self::assertTrue($this->collect([])->notContainsKey(false));
-    }
-
-    public function testNotContainsKey_InvalidKey_Float()
-    {
-        self::expectException(InvalidKeyException::class);
-        self::assertTrue($this->collect([])->notContainsKey(0.0));
-    }
-
     public function testNotEquals()
     {
         self::assertTrue($this->collect([])->notEquals($this->collect([1])));
@@ -970,7 +952,7 @@ class CollectionTest extends TestCase
         $seq[] = 3;
         self::assertEquals([1, 2, 3], $seq->toArray());
 
-        // jump offset number from 0, 1, 3
+        // skip number from 0, 1, to 3
         $seq = $this->collect([1, 2]);
         $seq[3] = 3;
         self::assertEquals([1, 2, 3 => 3], $seq->toArray());
@@ -1056,18 +1038,6 @@ class CollectionTest extends TestCase
 
         $collect = $this->collect([['id' => ['a' => 1]], ['id' => 'b'], ['a' => 1]]);
         self::assertEquals([1, null, null], $collect->pluck('id.a')->toArray());
-    }
-
-    public function testPluck_WithInvalidKey_Bool()
-    {
-        self::expectException(InvalidKeyException::class);
-        $this->collect([['id' => 'a'], ['id' => 'b'], ['a' => 1]])->pluck(true);
-    }
-
-    public function testPluck_WithInvalidKey_Float()
-    {
-        self::expectException(InvalidKeyException::class);
-        $this->collect([['id' => 'a'], ['id' => 'b'], ['a' => 1]])->pluck(1.1);
     }
 
     public function testPop()

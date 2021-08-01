@@ -20,7 +20,7 @@ class ColumnDefinition
 
     public ?string $comment;
 
-    public $default;
+    public mixed $default;
 
     public static function withSize(string $name, string $type, ?int $size): static
     {

@@ -357,7 +357,7 @@ class Formatter
      * @param ConditionsStatement $statement
      * @return string
      */
-    protected function wherePart(ConditionsStatement $statement)
+    protected function wherePart(ConditionsStatement $statement): string
     {
         $clause = [];
         foreach ($statement->where as $condition) {
@@ -370,7 +370,7 @@ class Formatter
      * @param SelectStatement $statement
      * @return string
      */
-    protected function groupByPart(SelectStatement $statement)
+    protected function groupByPart(SelectStatement $statement): string
     {
         $clause = [];
         foreach ($statement->groupBy as $column) {
@@ -383,7 +383,7 @@ class Formatter
      * @param ConditionsStatement $statement
      * @return string
      */
-    protected function orderByPart(ConditionsStatement $statement)
+    protected function orderByPart(ConditionsStatement $statement): string
     {
         $clause = [];
         foreach ($statement->orderBy as $column => $sort) {

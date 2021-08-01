@@ -12,7 +12,7 @@ interface CastInterface
      * @param $value
      * @return mixed
      */
-    public function get(Model $model, string $key, $value);
+    public function get(Model $model, string $key, $value): mixed;
 
     /**
      * @param Model $model
@@ -20,5 +20,5 @@ interface CastInterface
      * @param $value
      * @return mixed
      */
-    public function set(Model $model, string $key, $value);
+    public function set(Model $model, string $key, $value): mixed;
 }

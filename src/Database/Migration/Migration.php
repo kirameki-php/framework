@@ -58,7 +58,7 @@ abstract class Migration
      * @param string $connection
      * @return $this
      */
-    public function using(string $connection)
+    public function using(string $connection): static
     {
         $this->using = db()->using($connection);
         return $this;

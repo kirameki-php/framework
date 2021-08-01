@@ -6,7 +6,6 @@ use Kirameki\Support\Concerns;
 use Stringable;
 use function basename;
 use function dirname;
-use function str_replace;
 
 class StringBuilder implements Stringable
 {

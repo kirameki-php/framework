@@ -73,7 +73,7 @@ class SelectBuilder extends ConditionsBuilder
      * @param mixed|null $value
      * @return $this
      */
-    public function having($column, $operator, $value = null): static
+    public function having(ConditionBuilder|string $column, mixed $operator, mixed $value = null): static
     {
         $this->addHavingCondition($this->buildCondition(...func_get_args()));
         return $this;
@@ -163,18 +163,18 @@ class SelectBuilder extends ConditionsBuilder
 
     /**
      * @param string $column
-     * @return mixed
+     * @return int
      */
-    public function min(string $column)
+    public function min(string $column): int
     {
         return $this->execAggregate($column, 'MIN');
     }
 
     /**
      * @param string $column
-     * @return mixed
+     * @return int
      */
-    public function max(string $column)
+    public function max(string $column): int
     {
         return $this->execAggregate($column, 'MAX');
     }

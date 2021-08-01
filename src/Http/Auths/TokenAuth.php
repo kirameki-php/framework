@@ -92,7 +92,7 @@ class TokenAuth implements AuthInterface
      */
     protected function extractBearerToken(): string
     {
-        $value = $this->request->headers->getFirst('Authorization');
+        $value = $this->request->headers->get('Authorization');
         return preg_replace('/^Bearer: /', '', $value, 1);
     }
 }

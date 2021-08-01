@@ -288,10 +288,10 @@ class ConditionBuilder
     }
 
     /**
-     * @param StatementBuilder|iterable $value
+     * @param iterable|StatementBuilder $value
      * @return $this
      */
-    public function in($value): static
+    public function in(iterable|StatementBuilder $value): static
     {
         $this->current->negated = false;
         $this->current->operator = 'IN';
@@ -361,10 +361,10 @@ class ConditionBuilder
     }
 
     /**
-     * @param array|mixed $value
+     * @param mixed $value
      * @return $this
      */
-    public function parameter($value): static
+    public function parameter(mixed $value): static
     {
         $value = is_array($value) ? $value : [$value];
         $this->current->parameters = [];

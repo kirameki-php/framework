@@ -12,7 +12,7 @@ trait Properties
     /**
      * This has raw values that come directly from the database.
      * For example, the datetime values are stored as string
-     * and will not be casted until it is actually used.
+     * and will not cast until it is actually used.
      *
      * @var array
      */

@@ -4,9 +4,9 @@ namespace Kirameki\Database\Query\Support;
 
 class Range
 {
-    public $lowerBound;
+    public mixed $lowerBound;
     public bool $lowerClosed;
-    public $upperBound;
+    public mixed $upperBound;
     public bool $upperClosed;
 
     /**
@@ -73,12 +73,12 @@ class Range
     }
 
     /**
-     * @param $lowerBound
+     * @param mixed $lowerBound
      * @param bool $lowerClosed
-     * @param $upperBound
+     * @param mixed $upperBound
      * @param bool $upperClosed
      */
-    public function __construct($lowerBound, bool $lowerClosed, $upperBound, bool $upperClosed)
+    public function __construct(mixed $lowerBound, bool $lowerClosed, mixed $upperBound, bool $upperClosed)
     {
         $this->lowerBound = $lowerBound;
         $this->lowerClosed = $lowerClosed;

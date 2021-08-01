@@ -124,7 +124,7 @@ class FieldReflection
 
         if ($type === 'array' && is_array($value)) {
             $arrayOf = Arr::first($this->property->getAttributes(ArrayOf::class))?->newInstance();
-            if ($arrayOf !== null && $arrayOf instanceof ArrayOf) {
+            if ($arrayOf instanceof ArrayOf) {
                 $arr = [];
                 foreach ($value as $key => $item) {
                     $arr[$key] = $this->castToType($arrayOf->type, $arrayOf->nullable, $item);

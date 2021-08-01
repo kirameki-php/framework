@@ -2,7 +2,6 @@
 
 namespace Kirameki\Http;
 
-use Kirameki\Http\Request\RequestData;
 use Kirameki\Http\Request\FieldMap;
 use Kirameki\Http\Response\ResponseBuilder;
 use Kirameki\Support\Arr;

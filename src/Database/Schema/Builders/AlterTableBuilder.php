@@ -63,10 +63,10 @@ class AlterTableBuilder extends StatementBuilder
     }
 
     /**
-     * @param string|string[] ...$columns
+     * @param string|array<string> $columns
      * @return CreateIndexBuilder
      */
-    public function createIndex($columns = []): CreateIndexBuilder
+    public function createIndex(string|array $columns = []): CreateIndexBuilder
     {
         $statement = new CreateIndexStatement($this->statement->table);
         $builder = new CreateIndexBuilder($this->connection, $statement);
@@ -76,10 +76,10 @@ class AlterTableBuilder extends StatementBuilder
     }
 
     /**
-     * @param string|string[] ...$columns
+     * @param string|array<string> $columns
      * @return DropIndexBuilder
      */
-    public function dropIndex($columns = []): DropIndexBuilder
+    public function dropIndex(string|array $columns = []): DropIndexBuilder
     {
         $statement = new DropIndexStatement($this->statement->table);
         $bulider = new DropIndexBuilder($this->connection, $statement);

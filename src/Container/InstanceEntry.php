@@ -2,8 +2,6 @@
 
 namespace Kirameki\Container;
 
-use Closure;
-
 class InstanceEntry implements EntryInterface
 {
     /**

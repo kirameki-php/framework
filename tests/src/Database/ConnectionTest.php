@@ -3,9 +3,6 @@
 namespace Tests\Kirameki\Database;
 
 use Kirameki\Database\Schema\Builders\CreateTableBuilder;
-use Kirameki\Database\Support\Expr;
-use Tests\Kirameki\Database\DatabaseTestCase;
-use RuntimeException;
 
 class ConnectionTest extends DatabaseTestCase
 {
