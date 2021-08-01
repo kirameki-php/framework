@@ -8,6 +8,7 @@
     "ext-bcmath": "*",
     "ext-ctype": "*",
     "ext-gmp": "*",
+    "ext-igbinary": "*",
     "ext-json": "*",
     "ext-mbstring": "*",
     "ext-pcntl": "*",
