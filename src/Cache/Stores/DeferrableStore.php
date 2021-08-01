@@ -5,7 +5,7 @@ namespace Kirameki\Cache\Stores;
 use Carbon\Carbon;
 use DateInterval;
 use DateTimeInterface;
-use Kirameki\Support\String\Str;
+use Kirameki\Support\Text\Str;
 use RuntimeException;
 
 class DeferrableStore extends AbstractStore

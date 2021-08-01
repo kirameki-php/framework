@@ -12,7 +12,6 @@ class LogHandler implements HandlerInterface
      */
     public function handle(Throwable $exception): void
     {
-        dump($exception);
         if ($this->shouldIgnore($exception)) {
             return;
         }

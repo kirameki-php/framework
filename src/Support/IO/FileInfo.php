@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Kirameki\Support;
+namespace Kirameki\Support\IO;
 
 use Carbon\Carbon;
 use function fileatime;

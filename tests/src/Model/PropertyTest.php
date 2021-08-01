@@ -4,7 +4,7 @@ namespace Tests\Kirameki\Model;
 
 use DateTime;
 use Kirameki\Model\Reflection;
-use Kirameki\Support\String\Str;
+use Kirameki\Support\Text\Str;
 
 class PropertyTest extends ModelTestCase
 {

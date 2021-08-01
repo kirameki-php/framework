@@ -7,6 +7,7 @@ use Countable;
 use Generator;
 use IteratorAggregate;
 use JsonSerializable;
+use Kirameki\Support\Serializers\Json;
 use function array_chunk;
 use function array_diff;
 use function array_diff_key;

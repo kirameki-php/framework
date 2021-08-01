@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Kirameki\Support;
+namespace Kirameki\Support\Serializers;
 use function json_decode;
 use function json_encode;
 

@@ -1,8 +1,10 @@
 <?php declare(strict_types=1);
 
-namespace Kirameki\Support;
+namespace Kirameki\Support\IO;
 
 use DirectoryIterator;
+use Kirameki\Support\Collection;
+use Kirameki\Support\IO\FileInfo;
 use RuntimeException;
 use function array_filter;
 use function explode;

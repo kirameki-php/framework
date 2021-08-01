@@ -3,7 +3,7 @@
 namespace Kirameki\Model\Casts;
 
 use Kirameki\Model\Model;
-use Kirameki\Support\Json;
+use Kirameki\Support\Serializers\Json;
 
 class ArrayCast implements CastInterface
 {

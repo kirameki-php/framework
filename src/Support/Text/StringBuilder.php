@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Kirameki\Support\String;
+namespace Kirameki\Support\Text;
 
 use Kirameki\Support\Concerns;
 use Stringable;

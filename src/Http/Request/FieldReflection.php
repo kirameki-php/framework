@@ -5,7 +5,7 @@ namespace Kirameki\Http\Request;
 use Kirameki\Http\Exceptions\ValidationException;
 use Kirameki\Http\Request\Validations\ValidationInterface;
 use Kirameki\Support\Arr;
-use Kirameki\Support\String\Str;
+use Kirameki\Support\Text\Str;
 use ReflectionAttribute;
 use ReflectionProperty;
 use function array_key_exists;

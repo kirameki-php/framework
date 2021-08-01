@@ -10,7 +10,7 @@ use Kirameki\Http\Response\ResponseData;
 use Kirameki\Http\Routing\Route;
 use Kirameki\Http\Routing\Router;
 use Kirameki\Support\Assert;
-use Kirameki\Support\String\Str;
+use Kirameki\Support\Text\Str;
 use RuntimeException;
 use function explode;
 use function is_string;
