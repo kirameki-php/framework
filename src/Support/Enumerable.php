@@ -7,7 +7,6 @@ use Countable;
 use Generator;
 use IteratorAggregate;
 use JsonSerializable;
-use Kirameki\Support\Serializers\Json;
 use function array_chunk;
 use function array_diff;
 use function array_diff_key;
@@ -320,7 +319,7 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
 
     /**
      * @param int|string $key
-     * @return mixed
+     * @return T
      */
     public function get(int|string $key): mixed
     {
@@ -528,15 +527,6 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
     public function only(iterable $keys): static
     {
         return $this->newInstance(Arr::only($this->items, $keys));
-    }
-
-    /**
-     * @param int|string $key
-     * @return Collection
-     */
-    public function pluck(int|string $key): Collection
-    {
-        return $this->newCollection(Arr::pluck($this->items, $key));
     }
 
     /**
@@ -753,7 +743,7 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
     }
 
     /**
-     * @return array
+     * @return array<T>
      */
     public function toArray(): array
     {

@@ -420,16 +420,6 @@ class CollectionTest extends TestCase
         });
     }
 
-    public function testEquals()
-    {
-        $arr = ['a' => 1, 'b' => 2];
-        $collect = $this->collect($arr);
-        self::assertTrue($collect->equals($arr));
-        self::assertTrue($collect->equals($collect));
-        self::assertTrue($collect->equals($this->collect($arr)));
-        self::assertFalse($collect->equals([]));
-    }
-
     public function testExcept()
     {
         $collect = $this->collect(['a' => 1, 'b' => 2]);

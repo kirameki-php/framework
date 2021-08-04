@@ -3,7 +3,7 @@
 namespace Kirameki\Model\Concerns;
 
 use Kirameki\Model\Model;
-use Kirameki\Support\Serializers\Json;
+use Kirameki\Support\Json;
 
 /**
  * @mixin Model

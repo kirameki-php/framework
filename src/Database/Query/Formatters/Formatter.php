@@ -13,7 +13,7 @@ use Kirameki\Database\Query\Statements\InsertStatement;
 use Kirameki\Database\Query\Statements\SelectStatement;
 use Kirameki\Database\Query\Statements\UpdateStatement;
 use Kirameki\Support\Arr;
-use Kirameki\Support\Text\Str;
+use Kirameki\Support\Str;
 use RuntimeException;
 
 class Formatter

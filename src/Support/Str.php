@@ -1,11 +1,9 @@
 <?php declare(strict_types=1);
 
-namespace Kirameki\Support\Text;
+namespace Kirameki\Support;
 
 use DateTimeInterface;
-use Kirameki\Support\Arr;
 use Kirameki\Support\Concerns;
-use Kirameki\Support\Serializers\Json;
 use Ramsey\Uuid\Uuid;
 use function array_map;
 use function explode;

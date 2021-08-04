@@ -2,7 +2,7 @@
 
 namespace Kirameki\Exception;
 
-use Kirameki\Support\Text\Str;
+use Kirameki\Support\Str;
 use LogicException;
 
 class InvalidKeyException extends LogicException

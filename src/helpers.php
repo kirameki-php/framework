@@ -7,7 +7,6 @@ use Kirameki\Logging\LogManager;
 use Kirameki\Support\Collection;
 use Kirameki\Core\Config;
 use Kirameki\Core\Env;
-use Ramsey\Uuid\Uuid;
 
 /**
  * @return Application

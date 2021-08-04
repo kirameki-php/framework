@@ -2,10 +2,11 @@
 
 namespace Kirameki\Model;
 
+use Kirameki\Support\Arr;
 use Kirameki\Support\Collection;
 
 /**
- * @method Model[] toArray() { @see Collection::toArray() }
+ * @template T
  */
 class ModelCollection extends Collection
 {
@@ -33,6 +34,15 @@ class ModelCollection extends Collection
     }
 
     /**
+     * @param int|string $key
+     * @return Collection
+     */
+    public function pluck(int|string $key): Collection
+    {
+        return $this->newCollection(Arr::pluck($this->items, $key));
+    }
+
+    /**
      * @return Collection
      */
     public function primaryKeys(): Collection
@@ -46,15 +56,6 @@ class ModelCollection extends Collection
     public function keyByPrimaryKey(): static
     {
         return $this->keyBy($this->reflection->primaryKey);
-    }
-
-    /**
-     * @param int|string $key
-     * @return Model|null
-     */
-    public function get(int|string $key): ?Model
-    {
-        return parent::get($key);
     }
 
     /**
