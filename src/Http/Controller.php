@@ -22,12 +22,11 @@ abstract class Controller
 
     /**
      * @param Request $request
-     * @param ResponseBuilder $response
      */
-    public function __construct(Request $request, ResponseBuilder $response)
+    public function __construct(Request $request)
     {
         $this->request = $request;
-        $this->response = $response;
+        $this->response = new ResponseBuilder();
     }
 
     /**

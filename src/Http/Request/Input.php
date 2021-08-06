@@ -21,7 +21,7 @@ class Input
      * @param bool $required
      * @param string|null $name
      */
-    public function __construct(bool $required, string $name = null)
+    public function __construct(bool $required = true, string $name = null)
     {
         $this->required = $required;
         $this->name = $name;

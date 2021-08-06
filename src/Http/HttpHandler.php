@@ -12,6 +12,7 @@ use Kirameki\Http\Routing\Router;
 use Kirameki\Support\Assert;
 use Kirameki\Support\Str;
 use RuntimeException;
+use Stringable;
 use function explode;
 use function is_string;
 
@@ -23,19 +24,16 @@ class HttpHandler
     protected Application $app;
 
     /**
-     * @psalm-readonly
      * @var Router
      */
     public Router $router;
 
     /**
-     * @psalm-readonly
      * @var Config
      */
     public Config $config;
 
     /**
-     * @psalm-readonly
      * @var Codecs
      */
     public Codecs $codecs;
@@ -104,7 +102,7 @@ class HttpHandler
     {
         Assert::isClassOf($class, Controller::class);
 
-        return new $class($request, new ResponseBuilder());
+        return new $class($request);
     }
 
     /**
@@ -136,8 +134,8 @@ class HttpHandler
             return $this->codecs->encode($contentType, $data->jsonSerialize());
         }
 
-        if (is_string($data)) {
-            return $data;
+        if (is_string($data) || $data instanceof Stringable) {
+            return (string) $data;
         }
 
         throw new RuntimeException('Unknown response data type: '.Str::typeOf($data));
