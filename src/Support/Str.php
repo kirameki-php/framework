@@ -52,8 +52,19 @@ class Str
      */
     public static function after(string $string, string $search): string
     {
-        $pos = strrpos($string, $search);
-        return $pos !== false ? substr($string, $pos + 1) : '';
+        // If empty string is searched, return the string as is since there is nothing to trim.
+        if ($search === '') {
+            return $string;
+        }
+
+        $pos = mb_strpos($string, $search);
+
+        // If string is not matched, return blank immediately.
+        if ($pos === false) {
+            return '';
+        }
+
+        return mb_substr($string, $pos + 1);
     }
 
     /**
@@ -63,8 +74,19 @@ class Str
      */
     public static function afterLast(string $string, string $search): string
     {
-        $pos = strrpos($string, $search);
-        return $pos !== false ? substr($string, $pos + 1) : '';
+        // If empty string is searched, return the string as is since there is nothing to trim.
+        if ($search === '') {
+            return $string;
+        }
+
+        $pos = mb_strrpos($string, $search);
+
+        // If string is not matched, return blank immediately.
+        if ($pos === false) {
+            return '';
+        }
+
+        return mb_substr($string, $pos + 1);
     }
 
     /**
@@ -74,8 +96,19 @@ class Str
      */
     public static function before(string $string, string $search): string
     {
-        $pos = strpos($string, $search);
-        return $pos !== false ? substr($string, 0, $pos) : $string;
+        // If empty string is searched, return the string as is since there is nothing to search.
+        if ($search === '') {
+            return $string;
+        }
+
+        $pos = mb_strpos($string, $search);
+
+        // If string is not matched, return itself immediately.
+        if ($pos === false) {
+            return $string;
+        }
+
+        return mb_substr($string, 0, $pos);
     }
 
     /**
@@ -85,8 +118,19 @@ class Str
      */
     public static function beforeLast(string $string, string $search): string
     {
-        $pos = strrpos($string, $search);
-        return $pos !== false ? substr($string, 0, $pos) : $string;
+        // If empty string is searched, return the string as is since there is nothing to search.
+        if ($search === '') {
+            return $string;
+        }
+
+        $pos = mb_strrpos($string, $search);
+
+        // If string is not matched, return itself immediately.
+        if ($pos === false) {
+            return $string;
+        }
+
+        return mb_substr($string, 0, $pos);
     }
 
     /**

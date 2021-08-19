@@ -162,7 +162,7 @@ class CollectionTest extends TestCase
         self::assertEquals([], $compacted->toArray());
 
         // depth = INT_MAX
-        $compacted = $this->collect(['a' => ['b' => ['c' => null]], 'b' => null])->compact();
+        $compacted = $this->collect(['a' => ['b' => ['c' => null]], 'b' => null])->compact(PHP_INT_MAX);
         self::assertEquals(['a' => ['b' => []]], $compacted->toArray());
 
         // depth = 1
@@ -1016,18 +1016,6 @@ class CollectionTest extends TestCase
         self::assertEquals(['a' => 1, 'b' => 2, 0 => 9], $collect->pad(3, 9)->toArray());
 
         self::assertEquals([9, 9, 9], $this->collect()->pad(3, 9)->toArray());
-    }
-
-    public function testPluck()
-    {
-        $collect = $this->collect([['a'], ['b']]);
-        self::assertEquals(['a', 'b'], $collect->pluck(0)->toArray());
-
-        $collect = $this->collect([['id' => 'a'], ['id' => 'b'], ['a' => 1]]);
-        self::assertEquals(['a', 'b'], $collect->pluck('id')->toArray());
-
-        $collect = $this->collect([['id' => ['a' => 1]], ['id' => 'b'], ['a' => 1]]);
-        self::assertEquals([1, null, null], $collect->pluck('id.a')->toArray());
     }
 
     public function testPop()

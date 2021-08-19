@@ -807,7 +807,7 @@ class Arr
                 $initial = '';
             } else if ($name === 'array') {
                 $initial = [];
-            } else if (class_exists($name)) {
+            } else if ($name !== null && class_exists($name)) {
                 $initial = new $name;
             } else {
                 throw new RuntimeException('Initial value not set and not guessable.');

@@ -2,7 +2,7 @@ DOCKER_COMPOSE_COMMAND=cd docker && docker compose -p $(shell basename $(CURDIR)
 
 .PHONY: build
 build:
-	$(DOCKER_COMPOSE_COMMAND) build app
+	$(DOCKER_COMPOSE_COMMAND) build --pull app
 
 .PHONY: up
 up:
