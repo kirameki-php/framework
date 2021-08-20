@@ -52,19 +52,14 @@ class Str
      */
     public static function after(string $string, string $search): string
     {
-        // If empty string is searched, return the string as is since there is nothing to trim.
-        if ($search === '') {
-            return $string;
-        }
-
-        $pos = mb_strpos($string, $search);
+        $pos = strpos($string, $search);
 
         // If string is not matched, return blank immediately.
         if ($pos === false) {
             return '';
         }
 
-        return mb_substr($string, $pos + 1);
+        return substr($string, $pos + strlen($search));
     }
 
     /**
@@ -79,14 +74,14 @@ class Str
             return $string;
         }
 
-        $pos = mb_strrpos($string, $search);
+        $pos = strrpos($string, $search);
 
         // If string is not matched, return blank immediately.
         if ($pos === false) {
             return '';
         }
 
-        return mb_substr($string, $pos + 1);
+        return substr($string, $pos + strlen($search));
     }
 
     /**
@@ -101,14 +96,14 @@ class Str
             return $string;
         }
 
-        $pos = mb_strpos($string, $search);
+        $pos = strpos($string, $search);
 
         // If string is not matched, return itself immediately.
         if ($pos === false) {
             return $string;
         }
 
-        return mb_substr($string, 0, $pos);
+        return substr($string, 0, $pos);
     }
 
     /**
@@ -118,19 +113,14 @@ class Str
      */
     public static function beforeLast(string $string, string $search): string
     {
-        // If empty string is searched, return the string as is since there is nothing to search.
-        if ($search === '') {
-            return $string;
-        }
-
-        $pos = mb_strrpos($string, $search);
+        $pos = strrpos($string, $search);
 
         // If string is not matched, return itself immediately.
         if ($pos === false) {
             return $string;
         }
 
-        return mb_substr($string, 0, $pos);
+        return substr($string, 0, $pos);
     }
 
     /**
