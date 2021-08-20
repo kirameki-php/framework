@@ -166,25 +166,8 @@ class StrTest extends TestCase
     {
         self::assertTrue(Str::contains('abcde', 'ab'));
         self::assertFalse(Str::contains('abcde', 'ac'));
-
-        self::assertTrue(Str::contains('', ''));
-        self::assertTrue(Str::contains('', ['']));
         self::assertTrue(Str::contains('abcde', ''));
-        self::assertTrue(Str::contains('abcde', ['']));
-
-        self::assertTrue(Str::contains('abcde', ['a', 'z']));
-        self::assertTrue(Str::contains('abcde', ['z', 'a']));
-        self::assertTrue(Str::contains('abcde', ['a']));
-
-        self::assertFalse(Str::contains('abcde', ['z']));
-        self::assertFalse(Str::contains('abcde', ['y', 'z']));
-    }
-
-    public function testContains_EmptyNeedles()
-    {
-        self::expectException(RuntimeException::class);
-        self::expectExceptionMessage('Array cannot be empty.');
-        Str::contains('abcde', []);
+        self::assertTrue(Str::contains('', ''));
     }
 
     public function testContainsAll()
@@ -209,6 +192,26 @@ class StrTest extends TestCase
         Str::containsAll('abcde', []);
     }
 
+    public function testContainsAny()
+    {
+        self::assertTrue(Str::containsAny('', ['']));
+        self::assertTrue(Str::containsAny('abcde', ['']));
+
+        self::assertTrue(Str::containsAny('abcde', ['a', 'z']));
+        self::assertTrue(Str::containsAny('abcde', ['z', 'a']));
+        self::assertTrue(Str::containsAny('abcde', ['a']));
+
+        self::assertFalse(Str::containsAny('abcde', ['z']));
+        self::assertFalse(Str::containsAny('abcde', ['y', 'z']));
+    }
+
+    public function testContainsAny_EmptyNeedles()
+    {
+        self::expectException(RuntimeException::class);
+        self::expectExceptionMessage('Array cannot be empty.');
+        Str::containsAny('abcde', []);
+    }
+
     public function testDelete()
     {
         $result = Str::delete('aaa', 'a');
@@ -222,5 +225,22 @@ class StrTest extends TestCase
 
         $result = Str::delete('no match', 'hctam on');
         self::assertEquals('no match', $result);
+    }
+
+    public function testEndsWith()
+    {
+        self::assertTrue(Str::endsWith('abc', 'c'));
+        self::assertFalse(Str::endsWith('abc', 'b'));
+        self::assertTrue(Str::endsWith('abc', ['c']));
+        self::assertTrue(Str::endsWith('abc', ['a', 'b', 'c']));
+        self::assertFalse(Str::endsWith('abc', ['a', 'b']));
+        self::assertTrue(Str::endsWith('aabbcc', 'cc'));
+        self::assertTrue(Str::endsWith('aabbcc'.PHP_EOL, PHP_EOL));
+        self::assertTrue(Str::endsWith('abc0', '0'));
+        self::assertTrue(Str::endsWith('abcfalse', 'false'));
+        self::assertTrue(Str::endsWith('a', ''));
+        self::assertTrue(Str::endsWith('', ''));
+        self::assertTrue(Str::endsWith('あいう', 'う'));
+        self::assertFalse(Str::endsWith("あ\n", 'あ'));
     }
 }
