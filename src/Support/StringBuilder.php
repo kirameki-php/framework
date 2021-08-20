@@ -114,6 +114,33 @@ class StringBuilder implements Stringable
     }
 
     /**
+     * @param string $needle
+     * @return bool
+     */
+    public function contains(string $needle): bool
+    {
+        return Str::contains($this->value, $needle);
+    }
+
+    /**
+     * @param array $needles
+     * @return bool
+     */
+    public function containsAll(array $needles): bool
+    {
+        return Str::containsAll($this->value, $needles);
+    }
+
+    /**
+     * @param array $needles
+     * @return bool
+     */
+    public function containsAny(array $needles): bool
+    {
+        return Str::containsAny($this->value, $needles);
+    }
+
+    /**
      * @return $this
      */
     public function dd(): static

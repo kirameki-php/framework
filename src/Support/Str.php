@@ -145,23 +145,12 @@ class Str
 
     /**
      * @param string $haystack
-     * @param string|array $needle
+     * @param string $needle
      * @return bool
      */
-    public static function contains(string $haystack, string|array $needle): bool
+    public static function contains(string $haystack, string $needle): bool
     {
-        if(is_string($needle)) {
-            return str_contains($haystack, $needle);
-        }
-
-        Assert::arrayIsNotEmpty($needle);
-
-        foreach ($needle as $each) {
-            if(str_contains($haystack, $each)) {
-                return true;
-            }
-        }
-        return false;
+        return str_contains($haystack, $needle);
     }
 
     /**
@@ -179,6 +168,23 @@ class Str
             }
         }
         return true;
+    }
+
+    /**
+     * @param string $haystack
+     * @param array<string> $needle
+     * @return bool
+     */
+    public static function containsAny(string $haystack, array $needle): bool
+    {
+        Assert::arrayIsNotEmpty($needle);
+
+        foreach ($needle as $each) {
+            if(str_contains($haystack, $each)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
