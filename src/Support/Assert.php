@@ -126,4 +126,11 @@ class Assert
             throw new RuntimeException("$is must be class or subclass of $of.");
         }
     }
+
+    public static function arrayIsNotEmpty(array $array)
+    {
+        if (count($array) === 0) {
+            throw new RuntimeException('Array cannot be empty.');
+        }
+    }
 }

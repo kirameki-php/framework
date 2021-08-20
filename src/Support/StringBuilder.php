@@ -264,6 +264,16 @@ class StringBuilder implements Stringable
     }
 
     /**
+     * @param string $search
+     * @param int $offset
+     * @return bool|int
+     */
+    public function position(string $search, int $offset = 0): bool|int
+    {
+        return Str::position($this->value, $search, $offset);
+    }
+
+    /**
      * @param string $string
      * @return $this
      */

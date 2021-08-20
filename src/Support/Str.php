@@ -138,17 +138,47 @@ class Str
      */
     public static function capitalize(string $string): string
     {
-        return ucfirst($string);
+        $firstChar = mb_strtoupper(mb_substr($string, 0, 1));
+        $otherChars = mb_substr($string, 1, mb_strlen($string));
+        return $firstChar.$otherChars;
     }
 
     /**
      * @param string $haystack
-     * @param string $needle
+     * @param string|array $needle
      * @return bool
      */
-    public static function contains(string $haystack, string $needle): bool
+    public static function contains(string $haystack, string|array $needle): bool
     {
-        return str_contains($haystack, $needle);
+        if(is_string($needle)) {
+            return str_contains($haystack, $needle);
+        }
+
+        Assert::arrayIsNotEmpty($needle);
+
+        foreach ($needle as $each) {
+            if(str_contains($haystack, $each)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * @param string $haystack
+     * @param array $needles
+     * @return bool
+     */
+    public static function containsAll(string $haystack, array $needles): bool
+    {
+        Assert::arrayIsNotEmpty($needles);
+
+        foreach ($needles as $needle) {
+            if(!str_contains($haystack, $needle)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
@@ -162,13 +192,13 @@ class Str
         $offset = 0;
         $length = strlen($search);
         $limit ??= INF;
-        while($limit > 0) {
-            $pos = strpos($string, $search, $offset);
+        while($limit > 0 && $string !== '') {
+            $pos = static::position($string, $search, $offset);
             if ($pos === false) {
                 break;
             }
             $string = substr_replace($string, '', $pos, $length);
-            $offset = $pos - $length;
+            $offset = $length - $pos;
             $limit--;
         }
         return $string;
@@ -348,6 +378,23 @@ class Str
     public static function pascalCase(string $string): string
     {
         return str_replace(['-', '_', ' '], '', ucwords($string, '-_ '));
+    }
+
+    /**
+     * @param string $string
+     * @param string $search
+     * @param int $offset
+     * @return false|int
+     */
+    public static function position(string $string, string $search, int $offset = 0): bool|int
+    {
+        // ValueError is thrown if $offset is bigger than string size,
+        // so check that here and return false if that's the case.
+        if ($offset !== 0 && abs($offset) > strlen($string)) {
+            return false;
+        }
+
+        return strpos($string, $search, $offset);
     }
 
     /**
