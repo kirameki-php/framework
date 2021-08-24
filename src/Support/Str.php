@@ -64,6 +64,16 @@ class Str
 
     /**
      * @param string $string
+     * @param int $position
+     * @return string
+     */
+    public static function afterIndex(string $string, int $position): string
+    {
+        return mb_substr($string, $position, null, self::Encoding);
+    }
+
+    /**
+     * @param string $string
      * @param string $search
      * @return string
      */
@@ -104,6 +114,16 @@ class Str
         }
 
         return substr($string, 0, $pos);
+    }
+
+    /**
+     * @param string $string
+     * @param int $position
+     * @return string
+     */
+    public static function beforeIndex(string $string, int $position): string
+    {
+        return mb_substr($string, 0, $position, self::Encoding);
     }
 
     /**
@@ -189,6 +209,16 @@ class Str
 
     /**
      * @param string $string
+     * @param string $pattern
+     * @return bool
+     */
+    public static function containsPattern(string $string, string $pattern): bool
+    {
+        return (bool) preg_match($pattern, $string);
+    }
+
+    /**
+     * @param string $string
      * @param string $search
      * @param int|null $limit
      * @return string
@@ -227,54 +257,11 @@ class Str
 
     /**
      * @param string $string
-     * @param int $amount
-     * @return string
-     */
-    public static function first(string $string, int $amount): string
-    {
-        return mb_substr($string, 0, $amount, self::Encoding);
-    }
-
-    /**
-     * @param string $string
-     * @param int $position
-     * @return string
-     */
-    public static function from(string $string, int $position): string
-    {
-        return mb_substr($string, $position, null, self::Encoding);
-    }
-
-    /**
-     * @param string $string
-     * @param string $pattern
-     * @return bool
-     */
-    public static function hasMatch(string $string, string $pattern): bool
-    {
-        return (bool) preg_match($pattern, $string);
-    }
-
-    /**
-     * @param string $string
-     * @param string $padding
-     * @param string $separator
-     * @return string
-     */
-    public static function indent(string $string, string $padding = '    ', string $separator = "\n"): string
-    {
-        $parts = explode($separator, $string);
-        $formatted = array_map(static fn(string $part) => $padding.$part, $parts);
-        return implode($separator, $formatted);
-    }
-
-    /**
-     * @param string $string
-     * @param int $position
      * @param string $insert
+     * @param int $position
      * @return string
      */
-    public static function insert(string $string, int $position, string $insert): string
+    public static function insert(string $string, string $insert, int $position): string
     {
         return
             mb_substr($string, 0, $position, self::Encoding).
@@ -289,19 +276,8 @@ class Str
     public static function kebabCase(string $string): string
     {
         $converting = preg_replace(['/([a-z\d])([A-Z])/', '/([^-])([A-Z][a-z])/'], '$1-$2', $string);
-        $converting = str_replace([' ', '_'], '-', $converting);
+        $converting = preg_replace('/[-_\s]+/', '-', $converting);
         return mb_strtolower($converting, self::Encoding);
-    }
-
-    /**
-     * @param string $string
-     * @param int $amount
-     * @return string
-     */
-    public static function last(string $string, int $amount): string
-    {
-        $size = mb_strlen($string, self::Encoding);
-        return mb_substr($string, $size - $amount, $size, self::Encoding);
     }
 
     /**
@@ -525,16 +501,6 @@ class Str
     public static function titleize(string $string): string
     {
         return ucwords($string);
-    }
-
-    /**
-     * @param string $string
-     * @param int $position
-     * @return string
-     */
-    public static function to(string $string, int $position): string
-    {
-        return mb_substr($string, 0, $position, self::Encoding);
     }
 
     /**

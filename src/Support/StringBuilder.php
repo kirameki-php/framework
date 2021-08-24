@@ -35,6 +35,16 @@ class StringBuilder implements Stringable
     }
 
     /**
+     * @param int $position
+     * @return $this
+     */
+    public function afterIndex(int $position): static
+    {
+        $this->value = Str::afterIndex($this->value, $position);
+        return $this;
+    }
+
+    /**
      * @param string $search
      * @return $this
      */
@@ -82,6 +92,16 @@ class StringBuilder implements Stringable
     public function before(string $search): static
     {
         $this->value = Str::before($this->value, $search);
+        return $this;
+    }
+
+    /**
+     * @param int $position
+     * @return $this
+     */
+    public function beforeIndex(int $position): static
+    {
+        $this->value = Str::beforeIndex($this->value, $position);
         return $this;
     }
 
@@ -141,6 +161,15 @@ class StringBuilder implements Stringable
     }
 
     /**
+     * @param string $pattern
+     * @return bool
+     */
+    public function containsPattern(string $pattern): bool
+    {
+        return Str::containsPattern($this->value, $pattern);
+    }
+
+    /**
      * @return $this
      */
     public function dd(): static
@@ -180,54 +209,13 @@ class StringBuilder implements Stringable
     }
 
     /**
-     * @param int $amount
-     * @return $this
-     */
-    public function first(int $amount): static
-    {
-        $this->value = Str::first($this->value, $amount);
-        return $this;
-    }
-
-    /**
-     * @param int $position
-     * @return $this
-     */
-    public function from(int $position): static
-    {
-        $this->value = Str::from($this->value, $position);
-        return $this;
-    }
-
-    /**
-     * @param string $padding
-     * @param string $separator
-     * @return $this
-     */
-    public function indent(string $padding = '    ', string $separator = "\n"): static
-    {
-        $this->value = Str::indent($this->value, $padding, $separator);
-        return $this;
-    }
-
-    /**
      * @param int $position
      * @param string $insert
      * @return $this
      */
-    public function insert(int $position, string $insert): static
+    public function insert(string $insert, int $position): static
     {
-        $this->value = Str::insert($this->value, $position, $insert);
-        return $this;
-    }
-
-    /**
-     * @param int $amount
-     * @return $this
-     */
-    public function last(int $amount): static
-    {
-        $this->value = Str::last($this->value, $amount);
+        $this->value = Str::insert($this->value, $insert, $position);
         return $this;
     }
 

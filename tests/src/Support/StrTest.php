@@ -11,155 +11,130 @@ class StrTest extends TestCase
     public function testAfter()
     {
         // match first
-        $result = Str::after('test', 't');
-        self::assertEquals('est', $result);
+        self::assertEquals('est', Str::after('test', 't'));
 
         // match last
-        $result = Str::after('test1', '1');
-        self::assertEquals('', $result);
+        self::assertEquals('', Str::after('test1', '1'));
 
         // match empty string
-        $result = Str::after('test', '');
-        self::assertEquals('test', $result);
+        self::assertEquals('test', Str::after('test', ''));
 
         // no match
-        $result = Str::after('test', 'test2');
-        self::assertEquals('', $result);
+        self::assertEquals('', Str::after('test', 'test2'));
 
         // multi byte
-        $result = Str::after('ああいうえ', 'い');
-        self::assertEquals('うえ', $result);
+        self::assertEquals('うえ', Str::after('ああいうえ', 'い'));
+    }
+
+    public function testAfterIndex()
+    {
+        self::assertEquals('', Str::afterIndex('abcde', 6));
+        self::assertEquals('', Str::afterIndex('abcde', 5));
+        self::assertEquals('e', Str::afterIndex('abcde', 4));
+        self::assertEquals('a', Str::afterIndex('a', 0));
+        self::assertEquals('a', Str::afterIndex('a', -0));
+        self::assertEquals('e', Str::afterIndex('abcde', -1));
+        self::assertEquals('abcde', Str::afterIndex('abcde', -5));
+        self::assertEquals('bcde', Str::afterIndex('abcde', -4));
     }
 
     public function testAfterLast()
     {
         // match first (single occurrence)
-        $result = Str::afterLast('abc', 'a');
-        self::assertEquals('bc', $result);
+        self::assertEquals('bc', Str::afterLast('abc', 'a'));
 
         // match first (multiple occurrence)
-        $result = Str::afterLast('test1', 't');
-        self::assertEquals('1', $result);
+        self::assertEquals('1', Str::afterLast('test1', 't'));
 
         // match last
-        $result = Str::afterLast('test1', '1');
-        self::assertEquals('', $result);
+        self::assertEquals('', Str::afterLast('test1', '1'));
 
         // should match the last string
-        $result = Str::afterLast('----Foo','---');
-        self::assertEquals('Foo', $result);
+        self::assertEquals('Foo', Str::afterLast('----Foo','---'));
 
         // match empty string
-        $result = Str::afterLast('test', '');
-        self::assertEquals('test', $result);
+        self::assertEquals('test', Str::afterLast('test', ''));
 
         // no match
-        $result = Str::afterLast('test', 'test2');
-        self::assertEquals('', $result);
+        self::assertEquals('', Str::afterLast('test', 'test2'));
 
         // multi byte
-        $result = Str::afterLast('ああいういえ', 'い');
-        self::assertEquals('え', $result);
+        self::assertEquals('え', Str::afterLast('ああいういえ', 'い'));
     }
 
     public function testBefore()
     {
         // match first (single occurrence)
-        $result = Str::before('abc', 'b');
-        self::assertEquals('a', $result);
+        self::assertEquals('a', Str::before('abc', 'b'));
 
         // match first (multiple occurrence)
-        $result = Str::before('abc-abc', 'b');
-        self::assertEquals('a', $result);
+        self::assertEquals('a', Str::before('abc-abc', 'b'));
 
         // match last
-        $result = Str::before('test1', '1');
-        self::assertEquals('test', $result);
+        self::assertEquals('test', Str::before('test1', '1'));
 
         // match empty string
-        $result = Str::before('test', '');
-        self::assertEquals('test', $result);
+        self::assertEquals('test', Str::before('test', ''));
 
         // no match
-        $result = Str::before('test', 'test2');
-        self::assertEquals('test', $result);
+        self::assertEquals('test', Str::before('test', 'test2'));
 
         // multi byte
-        $result = Str::before('ああいういえ', 'い');
-        self::assertEquals('ああ', $result);
+        self::assertEquals('ああ', Str::before('ああいういえ', 'い'));
+    }
+
+    public function testBeforeIndex()
+    {
+        self::assertEquals('abcde', Str::beforeIndex('abcde', 6));
+        self::assertEquals('abcde', Str::beforeIndex('abcde', 5));
+        self::assertEquals('abcd', Str::beforeIndex('abcde', 4));
+        self::assertEquals('', Str::beforeIndex('a', 0));
+        self::assertEquals('', Str::beforeIndex('a', -0));
+        self::assertEquals('abcd', Str::beforeIndex('abcde', -1));
+        self::assertEquals('', Str::beforeIndex('abcde', -5));
+        self::assertEquals('a', Str::beforeIndex('abcde', -4));
     }
 
     public function testBeforeLast()
     {
         // match first (single occurrence)
-        $result = Str::beforeLast('abc', 'b');
-        self::assertEquals('a', $result);
+        self::assertEquals('a', Str::beforeLast('abc', 'b'));
 
         // match first (multiple occurrence)
-        $result = Str::beforeLast('abc-abc', 'b');
-        self::assertEquals('abc-a', $result);
+        self::assertEquals('abc-a', Str::beforeLast('abc-abc', 'b'));
 
         // match last
-        $result = Str::beforeLast('test1', '1');
-        self::assertEquals('test', $result);
+        self::assertEquals('test', Str::beforeLast('test1', '1'));
 
         // match empty string
-        $result = Str::beforeLast('test', '');
-        self::assertEquals('test', $result);
+        self::assertEquals('test', Str::beforeLast('test', ''));
 
         // no match
-        $result = Str::beforeLast('test', 'test2');
-        self::assertEquals('test', $result);
+        self::assertEquals('test', Str::beforeLast('test', 'test2'));
 
         // multi byte
-        $result = Str::beforeLast('ああいういえ', 'い');
-        self::assertEquals('ああいう', $result);
+        self::assertEquals('ああいう', Str::beforeLast('ああいういえ', 'い'));
     }
 
     public function testCamelCase()
     {
-        $result = Str::camelCase('test');
-        self::assertEquals('test', $result);
-
-        $result = Str::camelCase('Test');
-        self::assertEquals('test', $result);
-
-        $result = Str::camelCase('test-test');
-        self::assertEquals('testTest', $result);
-
-        $result = Str::camelCase('test_test');
-        self::assertEquals('testTest', $result);
-
-        $result = Str::camelCase('test test');
-        self::assertEquals('testTest', $result);
-
-        $result = Str::camelCase('test test test');
-        self::assertEquals('testTestTest', $result);
-
-        $result = Str::camelCase(' test  test  ');
-        self::assertEquals('testTest', $result);
-
-        $result = Str::camelCase("--test_test-test__");
-        self::assertEquals('testTestTest', $result);
+        self::assertEquals('test', Str::camelCase('test'));
+        self::assertEquals('test', Str::camelCase('Test'));
+        self::assertEquals('testTest', Str::camelCase('test-test'));
+        self::assertEquals('testTest', Str::camelCase('test_test'));
+        self::assertEquals('testTest', Str::camelCase('test test'));
+        self::assertEquals('testTestTest', Str::camelCase('test test test'));
+        self::assertEquals('testTest', Str::camelCase(' test  test  '));
+        self::assertEquals('testTestTest', Str::camelCase("--test_test-test__"));
     }
 
     public function testCapitalize()
     {
-        $result = Str::capitalize('test');
-        self::assertEquals('Test', $result);
-
-        $result = Str::capitalize('test abc');
-        self::assertEquals('Test abc', $result);
-
-        $result = Str::capitalize(' test abc');
-        self::assertEquals(' test abc', $result);
-
-        $result = Str::capitalize('àbc');
-        self::assertEquals('Àbc', $result);
-
-        // do not uppercase japanese
-        $result = Str::capitalize('ゅ');
-        self::assertEquals('ゅ', $result);
+        self::assertEquals('Test', Str::capitalize('test'));
+        self::assertEquals('Test abc', Str::capitalize('test abc'));
+        self::assertEquals(' test abc', Str::capitalize(' test abc'));
+        self::assertEquals('Àbc', Str::capitalize('àbc'));
+        self::assertEquals('ゅ', Str::capitalize('ゅ'));
     }
 
     public function testContains()
@@ -212,19 +187,24 @@ class StrTest extends TestCase
         Str::containsAny('abcde', []);
     }
 
+    public function testContainsPattern()
+    {
+        self::assertTrue(Str::containsPattern('abc', '/b/'));
+        self::assertTrue(Str::containsPattern('abc', '/ab/'));
+        self::assertTrue(Str::containsPattern('abc', '/abc/'));
+        self::assertTrue(Str::containsPattern('ABC', '/abc/i'));
+        self::assertTrue(Str::containsPattern('aaaz', '/a{3}/'));
+        self::assertTrue(Str::containsPattern('ABC1', '/[A-z0-9]+/'));
+        self::assertTrue(Str::containsPattern('ABC1', '/[0-9]$/'));
+        self::assertFalse(Str::containsPattern('AB1C', '/[0-9]$/'));
+    }
+
     public function testDelete()
     {
-        $result = Str::delete('aaa', 'a');
-        self::assertEquals('', $result);
-
-        $result = Str::delete('aaa aa a', 'aa');
-        self::assertEquals('a  a', $result);
-
-        $result = Str::delete('', '');
-        self::assertEquals('', $result);
-
-        $result = Str::delete('no match', 'hctam on');
-        self::assertEquals('no match', $result);
+        self::assertEquals('', Str::delete('aaa', 'a'));
+        self::assertEquals('a  a', Str::delete('aaa aa a', 'aa'));
+        self::assertEquals('', Str::delete('', ''));
+        self::assertEquals('no match', Str::delete('no match', 'hctam on'));
     }
 
     public function testEndsWith()
@@ -243,4 +223,29 @@ class StrTest extends TestCase
         self::assertTrue(Str::endsWith('あいう', 'う'));
         self::assertFalse(Str::endsWith("あ\n", 'あ'));
     }
+
+    public function testInsert()
+    {
+        self::assertEquals('xyzabc', Str::insert('abc', 'xyz', 0));
+        self::assertEquals('axyzbc', Str::insert('abc', 'xyz', 1));
+        self::assertEquals('abxyzc', Str::insert('abc', 'xyz', -1));
+        self::assertEquals('abcxyz', Str::insert('abc', 'xyz', 3));
+    }
+
+    public function testKebabCase()
+    {
+        self::assertEquals('test', Str::kebabCase('test'));
+        self::assertEquals('test', Str::kebabCase('Test'));
+        self::assertEquals('ttt', Str::kebabCase('TTT'));
+        self::assertEquals('tt-test', Str::kebabCase('TTTest'));
+        self::assertEquals('test-test', Str::kebabCase('testTest'));
+        self::assertEquals('test-t-test', Str::kebabCase('testTTest'));
+        self::assertEquals('test-test', Str::kebabCase('test-test'));
+        self::assertEquals('test-test', Str::kebabCase('test_test'));
+        self::assertEquals('test-test', Str::kebabCase('test test'));
+        self::assertEquals('test-test-test', Str::kebabCase('test test test'));
+        self::assertEquals('-test-test-', Str::kebabCase(' test  test  '));
+        self::assertEquals('-test-test-test-', Str::kebabCase("--test_test-test__"));
+    }
+
 }
