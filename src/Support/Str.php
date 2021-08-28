@@ -302,6 +302,18 @@ class Str
     }
 
     /**
+     * @param string $string
+     * @param string $pattern
+     * @return array
+     */
+    public static function matchAll(string $string, string $pattern): array
+    {
+        $match = [];
+        preg_match_all($pattern, $string, $match);
+        return $match;
+    }
+
+    /**
      * @param string $haystack
      * @param string $needle
      * @return bool

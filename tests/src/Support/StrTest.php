@@ -2,7 +2,9 @@
 
 namespace Tests\Kirameki\Support;
 
+use ErrorException;
 use Kirameki\Support\Str;
+use Kirameki\Support\StringBuilder;
 use RuntimeException;
 use Tests\Kirameki\TestCase;
 
@@ -230,6 +232,8 @@ class StrTest extends TestCase
         self::assertEquals('axyzbc', Str::insert('abc', 'xyz', 1));
         self::assertEquals('abxyzc', Str::insert('abc', 'xyz', -1));
         self::assertEquals('abcxyz', Str::insert('abc', 'xyz', 3));
+        self::assertEquals('あxyzい', Str::insert('あい', 'xyz', 1));
+        self::assertEquals('あxyzい', Str::insert('あい', 'xyz', -1));
     }
 
     public function testKebabCase()
@@ -248,4 +252,61 @@ class StrTest extends TestCase
         self::assertEquals('-test-test-test-', Str::kebabCase("--test_test-test__"));
     }
 
+    public function testLength()
+    {
+        self::assertEquals(0, Str::length(''));
+        self::assertEquals(4, Str::length('Test'));
+        self::assertEquals(9, Str::length(' T e s t '));
+        self::assertEquals(2, Str::length('あい'));
+        self::assertEquals(4, Str::length('あいzう'));
+    }
+
+    public function testMatch()
+    {
+        self::assertEquals(['a'], Str::match('abcabc', '/a/'));
+        self::assertEquals(['abc', 'p1' => 'a', 'a'], Str::match('abcabc', '/(?<p1>a)bc/'));
+        self::assertEquals([], Str::match('abcabc', '/bcd/'));
+        self::assertEquals(['cd'], Str::match('abcdxabc', '/c[^x]*/'));
+        self::assertEquals([], Str::match('abcabcx', '/^abcx/'));
+        self::assertEquals(['cx'], Str::match('abcabcx', '/cx$/'));
+    }
+
+    public function testMatch_withoutSlashes()
+    {
+        self::expectException(ErrorException::class);
+        self::expectExceptionMessage('preg_match(): Delimiter must not be alphanumeric or backslash');
+        Str::match('abcabc', 'a');
+    }
+
+    public function testMatchAll()
+    {
+        self::assertEquals([['a', 'a']], Str::matchAll('abcabc', '/a/'));
+        self::assertEquals([['abc', 'abc'], 'p1' => ['a', 'a'], ['a', 'a']], Str::matchAll('abcabc', '/(?<p1>a)bc/'));
+        self::assertEquals([[]], Str::matchAll('abcabc', '/bcd/'));
+        self::assertEquals([['cd', 'c']], Str::matchAll('abcdxabc', '/c[^x]*/'));
+        self::assertEquals([[]], Str::matchAll('abcabcx', '/^abcx/'));
+        self::assertEquals([['cx']], Str::matchAll('abcabcx', '/cx$/'));
+    }
+
+    public function testMatchAll_withoutSlashes()
+    {
+        self::expectException(ErrorException::class);
+        self::expectExceptionMessage('preg_match_all(): Delimiter must not be alphanumeric or backslash');
+        Str::matchAll('abcabc', 'a');
+    }
+
+    public function testNotContains()
+    {
+        self::assertTrue(Str::notContains('abcde', 'ac'));
+        self::assertFalse(Str::notContains('abcde', 'ab'));
+        self::assertFalse(Str::notContains('a', ''));
+        self::assertTrue(Str::notContains('', 'a'));
+    }
+
+    public function testOf()
+    {
+        self::assertInstanceOf(StringBuilder::class, Str::of('test'));
+        self::assertEquals('test', Str::of('test')->toString());
+        self::assertEquals('', Str::of()->toString());
+    }
 }
