@@ -4,13 +4,12 @@ namespace Tests\Kirameki\Support;
 
 use ErrorException;
 use Kirameki\Support\Str;
-use Kirameki\Support\StringBuilder;
 use RuntimeException;
 use Tests\Kirameki\TestCase;
 
 class StrTest extends TestCase
 {
-    public function testAfter()
+    public function testAfter(): void
     {
         // match first
         self::assertEquals('est', Str::after('test', 't'));
@@ -28,7 +27,7 @@ class StrTest extends TestCase
         self::assertEquals('うえ', Str::after('ああいうえ', 'い'));
     }
 
-    public function testAfterIndex()
+    public function testAfterIndex(): void
     {
         self::assertEquals('', Str::afterIndex('abcde', 6));
         self::assertEquals('', Str::afterIndex('abcde', 5));
@@ -40,7 +39,7 @@ class StrTest extends TestCase
         self::assertEquals('bcde', Str::afterIndex('abcde', -4));
     }
 
-    public function testAfterLast()
+    public function testAfterLast(): void
     {
         // match first (single occurrence)
         self::assertEquals('bc', Str::afterLast('abc', 'a'));
@@ -64,7 +63,7 @@ class StrTest extends TestCase
         self::assertEquals('え', Str::afterLast('ああいういえ', 'い'));
     }
 
-    public function testBefore()
+    public function testBefore(): void
     {
         // match first (single occurrence)
         self::assertEquals('a', Str::before('abc', 'b'));
@@ -85,7 +84,7 @@ class StrTest extends TestCase
         self::assertEquals('ああ', Str::before('ああいういえ', 'い'));
     }
 
-    public function testBeforeIndex()
+    public function testBeforeIndex(): void
     {
         self::assertEquals('abcde', Str::beforeIndex('abcde', 6));
         self::assertEquals('abcde', Str::beforeIndex('abcde', 5));
@@ -97,7 +96,7 @@ class StrTest extends TestCase
         self::assertEquals('a', Str::beforeIndex('abcde', -4));
     }
 
-    public function testBeforeLast()
+    public function testBeforeLast(): void
     {
         // match first (single occurrence)
         self::assertEquals('a', Str::beforeLast('abc', 'b'));
@@ -118,7 +117,7 @@ class StrTest extends TestCase
         self::assertEquals('ああいう', Str::beforeLast('ああいういえ', 'い'));
     }
 
-    public function testCamelCase()
+    public function testCamelCase(): void
     {
         self::assertEquals('test', Str::camelCase('test'));
         self::assertEquals('test', Str::camelCase('Test'));
@@ -130,7 +129,7 @@ class StrTest extends TestCase
         self::assertEquals('testTestTest', Str::camelCase("--test_test-test__"));
     }
 
-    public function testCapitalize()
+    public function testCapitalize(): void
     {
         self::assertEquals('Test', Str::capitalize('test'));
         self::assertEquals('Test abc', Str::capitalize('test abc'));
@@ -139,7 +138,7 @@ class StrTest extends TestCase
         self::assertEquals('ゅ', Str::capitalize('ゅ'));
     }
 
-    public function testContains()
+    public function testContains(): void
     {
         self::assertTrue(Str::contains('abcde', 'ab'));
         self::assertFalse(Str::contains('abcde', 'ac'));
@@ -147,7 +146,7 @@ class StrTest extends TestCase
         self::assertTrue(Str::contains('', ''));
     }
 
-    public function testContainsAll()
+    public function testContainsAll(): void
     {
         self::assertTrue(Str::containsAll('', ['']));
         self::assertTrue(Str::containsAll('abcde', ['']));
@@ -162,14 +161,14 @@ class StrTest extends TestCase
         self::assertFalse(Str::containsAll('abcde', ['y', 'z']));
     }
 
-    public function testContainsAll_EmptyNeedles()
+    public function testContainsAll_EmptyNeedles(): void
     {
-        self::expectException(RuntimeException::class);
-        self::expectExceptionMessage('Array cannot be empty.');
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('Array cannot be empty.');
         Str::containsAll('abcde', []);
     }
 
-    public function testContainsAny()
+    public function testContainsAny(): void
     {
         self::assertTrue(Str::containsAny('', ['']));
         self::assertTrue(Str::containsAny('abcde', ['']));
@@ -182,14 +181,14 @@ class StrTest extends TestCase
         self::assertFalse(Str::containsAny('abcde', ['y', 'z']));
     }
 
-    public function testContainsAny_EmptyNeedles()
+    public function testContainsAny_EmptyNeedles(): void
     {
-        self::expectException(RuntimeException::class);
-        self::expectExceptionMessage('Array cannot be empty.');
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('Array cannot be empty.');
         Str::containsAny('abcde', []);
     }
 
-    public function testContainsPattern()
+    public function testContainsPattern(): void
     {
         self::assertTrue(Str::containsPattern('abc', '/b/'));
         self::assertTrue(Str::containsPattern('abc', '/ab/'));
@@ -201,7 +200,7 @@ class StrTest extends TestCase
         self::assertFalse(Str::containsPattern('AB1C', '/[0-9]$/'));
     }
 
-    public function testDelete()
+    public function testDelete(): void
     {
         self::assertEquals('', Str::delete('aaa', 'a'));
         self::assertEquals('a  a', Str::delete('aaa aa a', 'aa'));
@@ -209,7 +208,7 @@ class StrTest extends TestCase
         self::assertEquals('no match', Str::delete('no match', 'hctam on'));
     }
 
-    public function testEndsWith()
+    public function testEndsWith(): void
     {
         self::assertTrue(Str::endsWith('abc', 'c'));
         self::assertFalse(Str::endsWith('abc', 'b'));
@@ -226,7 +225,7 @@ class StrTest extends TestCase
         self::assertFalse(Str::endsWith("あ\n", 'あ'));
     }
 
-    public function testInsert()
+    public function testInsert(): void
     {
         self::assertEquals('xyzabc', Str::insert('abc', 'xyz', 0));
         self::assertEquals('axyzbc', Str::insert('abc', 'xyz', 1));
@@ -236,7 +235,7 @@ class StrTest extends TestCase
         self::assertEquals('あxyzい', Str::insert('あい', 'xyz', -1));
     }
 
-    public function testKebabCase()
+    public function testKebabCase(): void
     {
         self::assertEquals('test', Str::kebabCase('test'));
         self::assertEquals('test', Str::kebabCase('Test'));
@@ -252,7 +251,7 @@ class StrTest extends TestCase
         self::assertEquals('-test-test-test-', Str::kebabCase("--test_test-test__"));
     }
 
-    public function testLength()
+    public function testLength(): void
     {
         self::assertEquals(0, Str::length(''));
         self::assertEquals(4, Str::length('Test'));
@@ -261,7 +260,7 @@ class StrTest extends TestCase
         self::assertEquals(4, Str::length('あいzう'));
     }
 
-    public function testMatch()
+    public function testMatch(): void
     {
         self::assertEquals(['a'], Str::match('abcabc', '/a/'));
         self::assertEquals(['abc', 'p1' => 'a', 'a'], Str::match('abcabc', '/(?<p1>a)bc/'));
@@ -271,14 +270,14 @@ class StrTest extends TestCase
         self::assertEquals(['cx'], Str::match('abcabcx', '/cx$/'));
     }
 
-    public function testMatch_withoutSlashes()
+    public function testMatch_withoutSlashes(): void
     {
-        self::expectException(ErrorException::class);
-        self::expectExceptionMessage('preg_match(): Delimiter must not be alphanumeric or backslash');
+        $this->expectException(ErrorException::class);
+        $this->expectExceptionMessage('preg_match(): Delimiter must not be alphanumeric or backslash');
         Str::match('abcabc', 'a');
     }
 
-    public function testMatchAll()
+    public function testMatchAll(): void
     {
         self::assertEquals([['a', 'a']], Str::matchAll('abcabc', '/a/'));
         self::assertEquals([['abc', 'abc'], 'p1' => ['a', 'a'], ['a', 'a']], Str::matchAll('abcabc', '/(?<p1>a)bc/'));
@@ -288,14 +287,14 @@ class StrTest extends TestCase
         self::assertEquals([['cx']], Str::matchAll('abcabcx', '/cx$/'));
     }
 
-    public function testMatchAll_withoutSlashes()
+    public function testMatchAll_withoutSlashes(): void
     {
-        self::expectException(ErrorException::class);
-        self::expectExceptionMessage('preg_match_all(): Delimiter must not be alphanumeric or backslash');
+        $this->expectException(ErrorException::class);
+        $this->expectExceptionMessage('preg_match_all(): Delimiter must not be alphanumeric or backslash');
         Str::matchAll('abcabc', 'a');
     }
 
-    public function testNotContains()
+    public function testNotContains(): void
     {
         self::assertTrue(Str::notContains('abcde', 'ac'));
         self::assertFalse(Str::notContains('abcde', 'ab'));
@@ -303,9 +302,8 @@ class StrTest extends TestCase
         self::assertTrue(Str::notContains('', 'a'));
     }
 
-    public function testOf()
+    public function testOf(): void
     {
-        self::assertInstanceOf(StringBuilder::class, Str::of('test'));
         self::assertEquals('test', Str::of('test')->toString());
         self::assertEquals('', Str::of()->toString());
     }

@@ -45,7 +45,7 @@ class Arr
      */
     public static function average(iterable $iterable, ?bool $allowEmpty = true): float|int
     {
-        $array = Arr::from($iterable);
+        $array = static::from($iterable);
         $size = count($array);
 
         if ($size === 0 && $allowEmpty) {
@@ -503,13 +503,20 @@ class Arr
         return static::keyByRecursive($iterable, $key, $overwrite, 1);
     }
 
+    /**
+     * @param iterable $iterable
+     * @param string|callable $key
+     * @param bool $overwrite
+     * @param int $depth
+     * @return array
+     */
     public static function keyByRecursive(iterable $iterable, string|callable $key, bool $overwrite = false, int $depth = PHP_INT_MAX): array
     {
         $callable = is_string($key) ? static::createDigger($key) : $key;
 
         $result = [];
-        foreach ($iterable as $key => $item) {
-            $newKey = $callable($item, $key);
+        foreach ($iterable as $_key => $item) {
+            $newKey = $callable($item, $_key);
 
             Assert::validKey($newKey);
 
@@ -905,7 +912,7 @@ class Arr
     {
         $array = static::from($iterable);
         $sampledKeys = array_rand($array, $amount);
-        return Arr::only($array, $sampledKeys);
+        return static::only($array, $sampledKeys);
     }
 
     /**
@@ -940,7 +947,7 @@ class Arr
      * @param int|string $key
      * @param mixed $value
      */
-    public static function set(array|ArrayAccess &$array, int|string $key, mixed $value)
+    public static function set(array|ArrayAccess &$array, int|string $key, mixed $value): void
     {
         if (static::isNotDottedKey($key)) {
             $array[$key] = $value;

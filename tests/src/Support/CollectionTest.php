@@ -2,10 +2,8 @@
 
 namespace Tests\Kirameki\Support;
 
-use ArrayIterator;
 use DivisionByZeroError;
 use ErrorException;
-use Generator;
 use Kirameki\Exception\DuplicateKeyException;
 use Kirameki\Exception\InvalidKeyException;
 use Kirameki\Exception\InvalidValueException;
@@ -22,7 +20,7 @@ class CollectionTest extends TestCase
         return new Collection($items);
     }
 
-    public function test__Construct()
+    public function test__Construct(): void
     {
         // empty
         $empty = new Collection();
@@ -46,14 +44,14 @@ class CollectionTest extends TestCase
         self::assertEquals([1, 2], $collection->toArray());
     }
 
-    public function test__Construct_BadArgument()
+    public function test__Construct_BadArgument(): void
     {
-        self::expectException(TypeError::class);
-        self::expectExceptionMessage('Argument #1 ($items) must be of type ?iterable, int given');
+        $this->expectException(TypeError::class);
+        $this->expectExceptionMessage('Argument #1 ($items) must be of type ?iterable, int given');
         new Collection(1);
     }
 
-    public function testAverage()
+    public function testAverage(): void
     {
         $average = $this->collect([])->average();
         self::assertEquals(0, $average);
@@ -71,13 +69,13 @@ class CollectionTest extends TestCase
         self::assertEquals(0, $average);
     }
 
-    public function testAverage_NotEmpty()
+    public function testAverage_NotEmpty(): void
     {
-        self::expectException(DivisionByZeroError::class);
+        $this->expectException(DivisionByZeroError::class);
         $this->collect([])->average(allowEmpty: false);
     }
 
-    public function testChunk()
+    public function testChunk(): void
     {
         // empty but not same instance
         $empty = $this->collect();
@@ -113,14 +111,14 @@ class CollectionTest extends TestCase
         self::assertNotSame($chunked, $assoc);
     }
 
-    public function testChunkInvalidSize()
+    public function testChunkInvalidSize(): void
     {
         $this->expectException(ValueError::class);
         $this->expectExceptionMessage('array_chunk(): Argument #2 ($length) must be greater than 0');
         $this->collect([1])->chunk(0);
     }
 
-    public function testCompact()
+    public function testCompact(): void
     {
         // empty but not same instance
         $empty = $this->collect();
@@ -170,7 +168,7 @@ class CollectionTest extends TestCase
         self::assertEquals(['a' => ['b' => null]], $compacted->toArray());
     }
 
-    public function testContains()
+    public function testContains(): void
     {
         $empty = $this->collect();
         self::assertFalse($empty->contains(null));
@@ -204,7 +202,7 @@ class CollectionTest extends TestCase
         self::assertTrue($collect->contains(static fn($v, $k) => $k === 'b'));
     }
 
-    public function testContainsKey()
+    public function testContainsKey(): void
     {
         // empty but not same instance
         $empty = $this->collect();
@@ -237,7 +235,7 @@ class CollectionTest extends TestCase
         self::assertTrue($assoc->containsKey('f'));
     }
 
-    public function testCopy()
+    public function testCopy(): void
     {
         // empty but not same instance
         $empty = $this->collect();
@@ -258,7 +256,7 @@ class CollectionTest extends TestCase
         self::assertEquals(['a' => 3, 'b' => 4], $seq->toArray());
     }
 
-    public function testCount()
+    public function testCount(): void
     {
         // empty
         $empty = $this->collect();
@@ -269,21 +267,20 @@ class CollectionTest extends TestCase
         self::assertEquals(3, $simple->count());
     }
 
-    public function testCountBy()
+    public function testCountBy(): void
     {
         $simple = $this->collect([1, 2, 3]);
         self::assertEquals(2, $simple->countBy(fn($v) => $v > 1));
     }
 
-    public function testCursor()
+    public function testCursor(): void
     {
         $array = ['a' => 1, 'b' => 2];
         $simple = $this->collect($array);
-        self::assertInstanceOf(Generator::class, $simple->cursor());
         self::assertSame($array, iterator_to_array($simple->cursor()));
     }
 
-    public function testDiff()
+    public function testDiff(): void
     {
         $empty = $this->collect();
         $diffed = $empty->diff([1]);
@@ -300,7 +297,7 @@ class CollectionTest extends TestCase
         self::assertSame([-1], $diffed->toArray());
     }
 
-    public function testDiffKeys()
+    public function testDiffKeys(): void
     {
         $empty = $this->collect();
         $diffed = $empty->diffKeys([-1]);
@@ -317,7 +314,7 @@ class CollectionTest extends TestCase
         self::assertSame(['b' => 2, -10 => -10], $diffed->toArray());
     }
 
-    public function testDrop()
+    public function testDrop(): void
     {
         $collect = $this->collect(['a' => 1, 'b' => 2, 'c' => 3]);
         self::assertEquals(['b' => 2, 'c' => 3], $collect->drop(1)->toArray());
@@ -335,7 +332,7 @@ class CollectionTest extends TestCase
         self::assertEquals(['a' => 1], $collect->drop(0)->toArray());
     }
 
-    public function testDropUntil()
+    public function testDropUntil(): void
     {
         // look at value
         $collect = $this->collect(['a' => 1, 'b' => 2, 'c' => 3]);
@@ -345,12 +342,12 @@ class CollectionTest extends TestCase
         self::assertEquals(['c' => 3], $collect->dropUntil(fn($v, $k) => $k === 'c')->toArray());
 
         // drop until null does not work
-        self::expectException(InvalidValueException::class);
-        self::expectExceptionMessage('Expected value to be bool. null given.');
+        $this->expectException(InvalidValueException::class);
+        $this->expectExceptionMessage('Expected value to be bool. null given.');
         $collect->dropUntil(fn($v, $k) => null)->toArray();
     }
 
-    public function testDropWhile()
+    public function testDropWhile(): void
     {
         // look at value
         $collect = $this->collect(['a' => 1, 'b' => 2, 'c' => 3]);
@@ -360,12 +357,12 @@ class CollectionTest extends TestCase
         self::assertEquals(['c' => 3], $collect->dropWhile(fn($v, $k) => $k !== 'c')->toArray());
 
         // drop until null does not work
-        self::expectException(InvalidValueException::class);
-        self::expectExceptionMessage('Expected value to be bool. null given.');
+        $this->expectException(InvalidValueException::class);
+        $this->expectExceptionMessage('Expected value to be bool. null given.');
         $collect->dropWhile(fn($v, $k) => null)->toArray();
     }
 
-    public function testEach()
+    public function testEach(): void
     {
         $collect = $this->collect(['a' => 1, 'b' => 2]);
         $collect->each(function ($v, $k) {
@@ -380,12 +377,16 @@ class CollectionTest extends TestCase
         });
     }
 
-    public function testEachChunk()
+    public function testEachChunk(): void
     {
         $collect = $this->collect(['a' => 1, 'b' => 2, 'c' => 3]);
         $collect->eachChunk(2, function (Collection $chunk, int $count) {
-            if ($count === 0) self::assertEquals(['a' => 1, 'b' => 2], $chunk->toArray());
-            if ($count === 1) self::assertEquals(['c' => 3], $chunk->toArray());
+            if ($count === 0) {
+                self::assertEquals(['a' => 1, 'b' => 2], $chunk->toArray());
+            }
+            if ($count === 1) {
+                self::assertEquals(['c' => 3], $chunk->toArray());
+            }
         });
 
         // chunk larger than assoc length
@@ -395,15 +396,15 @@ class CollectionTest extends TestCase
         });
     }
 
-    public function testEachChunk_NegativeValue()
+    public function testEachChunk_NegativeValue(): void
     {
         $collect = $this->collect(['a' => 1, 'b' => 2, 'c' => 3]);
-        self::expectException(InvalidValueException::class);
-        self::expectExceptionMessage('Expected value to be positive int. -2 given.');
+        $this->expectException(InvalidValueException::class);
+        $this->expectExceptionMessage('Expected value to be positive int. -2 given.');
         $collect->eachChunk(-2, fn() => null);
     }
 
-    public function testEachWithIndex()
+    public function testEachWithIndex(): void
     {
         $collect = $this->collect(['a' => 1, 'b' => 2]);
         $collect->eachWithIndex(function ($v, $k, $n) {
@@ -420,7 +421,7 @@ class CollectionTest extends TestCase
         });
     }
 
-    public function testExcept()
+    public function testExcept(): void
     {
         $collect = $this->collect(['a' => 1, 'b' => 2]);
         self::assertEquals(['b' => 2], $collect->except(['a'])->toArray());
@@ -429,7 +430,7 @@ class CollectionTest extends TestCase
         self::assertEquals(['b' => 2], $collect->except(['a', 'c'])->toArray());
     }
 
-    public function testFilter()
+    public function testFilter(): void
     {
         // sequence: remove ones with empty value
         $collect = $this->collect([0, 1, '', '0', null]);
@@ -443,7 +444,7 @@ class CollectionTest extends TestCase
         self::assertEquals(['d' => ''], $collect->filter(fn($v) => $v === '')->toArray());
     }
 
-    public function testFirst()
+    public function testFirst(): void
     {
         $collect = $this->collect([10, 20]);
         self::assertEquals(10, $collect->first());
@@ -452,7 +453,7 @@ class CollectionTest extends TestCase
         self::assertEquals(null, $collect->first(fn() => false));
     }
 
-    public function testFirstIndex()
+    public function testFirstIndex(): void
     {
         $collect = $this->collect([10, 20, 20, 30]);
         self::assertEquals(2, $collect->firstIndex(fn($v, $k) => $k === 2));
@@ -460,7 +461,7 @@ class CollectionTest extends TestCase
         self::assertEquals(null, $collect->firstIndex(fn() => false));
     }
 
-    public function testFirstKey()
+    public function testFirstKey(): void
     {
         $collect = $this->collect([10, 20, 30]);
         self::assertEquals(1, $collect->firstKey(fn($v, $k) => $v === 20));
@@ -471,7 +472,7 @@ class CollectionTest extends TestCase
         self::assertEquals('c', $collect->firstKey(fn($v, $k) => $k === 'c'));
     }
 
-    public function testFlatMap()
+    public function testFlatMap(): void
     {
         $collect = $this->collect([1, 2]);
         self::assertEquals([1, -1, 2, -2], $collect->flatMap(fn($i) => [$i, -$i])->toArray());
@@ -483,7 +484,7 @@ class CollectionTest extends TestCase
         self::assertEquals([1, 2, 2], $collect->flatMap(fn($a) => $a)->toArray());
     }
 
-    public function testFlatten()
+    public function testFlatten(): void
     {
         // nothing to flatten
         $collect = $this->collect([1, 2]);
@@ -502,23 +503,23 @@ class CollectionTest extends TestCase
         self::assertEquals(['a', 'b', 'd'], $collect->flatten()->toArray());
     }
 
-    public function testFlatten_ZeroDepth()
+    public function testFlatten_ZeroDepth(): void
     {
-        self::expectException(InvalidValueException::class);
-        self::expectExceptionMessage('Expected value to be positive int. 0 given.');
+        $this->expectException(InvalidValueException::class);
+        $this->expectExceptionMessage('Expected value to be positive int. 0 given.');
         $collect = $this->collect([1, 2]);
         self::assertEquals([1, 2], $collect->flatten(0)->toArray());
     }
 
-    public function testFlatten_NegativeDepth()
+    public function testFlatten_NegativeDepth(): void
     {
-        self::expectException(InvalidValueException::class);
-        self::expectExceptionMessage('Expected value to be positive int. -1 given.');
+        $this->expectException(InvalidValueException::class);
+        $this->expectExceptionMessage('Expected value to be positive int. -1 given.');
         $collect = $this->collect([1, 2]);
         self::assertEquals([1, 2], $collect->flatten(-1)->toArray());
     }
 
-    public function testFlip()
+    public function testFlip(): void
     {
         $collect = $this->collect([1, 2]);
         self::assertEquals([1 => 0, 2 => 1], $collect->flip()->toArray());
@@ -527,7 +528,7 @@ class CollectionTest extends TestCase
         self::assertEquals(['b' => 'a', 'd' => 'c'], $collect->flip()->toArray());
     }
 
-    public function testGet()
+    public function testGet(): void
     {
         $collect = $this->collect([1, 2]);
         $collect->pull("");
@@ -547,13 +548,13 @@ class CollectionTest extends TestCase
         self::assertEquals([], $collect->get('e'));
     }
 
-    public function testGetIterator()
+    public function testGetIterator(): void
     {
         $iterator = $this->collect()->getIterator();
-        self::assertInstanceOf(ArrayIterator::class, $iterator);
+        self::assertEquals([], iterator_to_array($iterator));
     }
 
-    public function testGroupBy()
+    public function testGroupBy(): void
     {
         $collect = $this->collect([1, 2, 3, 4, 5, 6]);
         self::assertEquals([[3, 6], [1, 4], [2, 5]], $collect->groupBy(fn($n) => $n % 3)->toArrayRecursive());
@@ -567,7 +568,7 @@ class CollectionTest extends TestCase
         self::assertEquals([1 => [['id' => 1], ['id' => 1]], 2 => [['id' => 2]]], $collect->groupBy('id')->toArrayRecursive());
     }
 
-    public function testImplode()
+    public function testImplode(): void
     {
         $collect = $this->collect([1, 2]);
         self::assertEquals('1, 2', $collect->implode(', '));
@@ -580,7 +581,7 @@ class CollectionTest extends TestCase
         self::assertEquals('[1, 2]', $collect->implode(', ', '[', ']'));
     }
 
-    public function testInsertAt()
+    public function testInsertAt(): void
     {
         $collect = $this->collect([1, 2]);
         self::assertEquals(['a', 1, 2], $collect->insertAt(0, 'a')->toArray());
@@ -598,7 +599,7 @@ class CollectionTest extends TestCase
         self::assertEquals([1, 2, 3, 'a', 4], $collect->insertAt(-2, 'a')->toArray());
     }
 
-    public function testIntersect()
+    public function testIntersect(): void
     {
         $collect = $this->collect([1, 2, 3]);
         self::assertEquals([1], $collect->intersect([1])->toArray());
@@ -610,7 +611,7 @@ class CollectionTest extends TestCase
         self::assertEquals([], $collect->intersect([1])->toArray());
     }
 
-    public function testIntersectKeys()
+    public function testIntersectKeys(): void
     {
         $collect = $this->collect([1, 2, 3]);
         self::assertEquals([1, 2], $collect->intersectKeys([1, 3])->toArray());
@@ -628,7 +629,7 @@ class CollectionTest extends TestCase
         self::assertEquals([], $collect->intersectKeys([])->toArray());
     }
 
-    public function testIsAssoc()
+    public function testIsAssoc(): void
     {
         $collect = $this->collect([]);
         self::assertTrue($collect->isAssoc());
@@ -640,7 +641,7 @@ class CollectionTest extends TestCase
         self::assertTrue($collect->isAssoc());
     }
 
-    public function testIsEmpty()
+    public function testIsEmpty(): void
     {
         $collection = $this->collect([]);
         self::assertTrue($collection->isEmpty());
@@ -652,7 +653,7 @@ class CollectionTest extends TestCase
         self::assertFalse($collect->isEmpty());
     }
 
-    public function testIsNotEmpty()
+    public function testIsNotEmpty(): void
     {
         $collect = $this->collect([]);
         self::assertFalse($collect->isNotEmpty());
@@ -664,7 +665,7 @@ class CollectionTest extends TestCase
         self::assertTrue($collect->isNotEmpty());
     }
 
-    public function testIsList()
+    public function testIsList(): void
     {
         $collect = $this->collect([]);
         self::assertTrue($collect->isList());
@@ -676,7 +677,7 @@ class CollectionTest extends TestCase
         self::assertFalse($collect->isList());
     }
 
-    public function testJsonSerialize()
+    public function testJsonSerialize(): void
     {
         $collect = $this->collect([]);
         self::assertEquals([], $collect->jsonSerialize());
@@ -685,7 +686,7 @@ class CollectionTest extends TestCase
         self::assertEquals(['a' => 1, 'b' => 2], $collect->jsonSerialize());
     }
 
-    public function testKeyBy()
+    public function testKeyBy(): void
     {
         $collect = $this->collect([1, 2])->keyBy(fn($v) => 'a'.$v);
         self::assertEquals(['a1' => 1, 'a2' => 2], $collect->toArray());
@@ -694,28 +695,28 @@ class CollectionTest extends TestCase
         self::assertEquals(['b' => ['id' => 'b'], 'c' => ['id' => 'c']], $collect->toArray());
     }
 
-    public function testKeyBy_WithDuplicateKey()
+    public function testKeyBy_WithDuplicateKey(): void
     {
-        self::expectException(DuplicateKeyException::class);
+        $this->expectException(DuplicateKeyException::class);
         $this->collect([['id' => 'b'], ['id' => 'b']])->keyBy(fn($v) => $v['id']);
     }
 
-    public function testKeyBy_WithOverwritableKey()
+    public function testKeyBy_WithOverwritableKey(): void
     {
         $collect = $this->collect([['id' => 'b', 1], ['id' => 'b', 2]])->keyBy(fn($v) => $v['id'], true);
         self::assertEquals(['b' => ['id' => 'b', 2]], $collect->toArray());
 
-        self::expectException(DuplicateKeyException::class);
+        $this->expectException(DuplicateKeyException::class);
         $this->collect([['id' => 'b', 1], ['id' => 'b', 2]])->keyBy(fn($v) => $v['id'], false);
     }
 
-    public function testKeyBy_WithInvalidKey()
+    public function testKeyBy_WithInvalidKey(): void
     {
-        self::expectException(InvalidKeyException::class);
+        $this->expectException(InvalidKeyException::class);
         $this->collect([['id' => 'b', 1], ['id' => 'b', 2]])->keyBy(fn($v) => false);
     }
 
-    public function testKeys()
+    public function testKeys(): void
     {
         $keys = $this->collect([1,2])->keys();
         self::assertEquals([0,1], $keys->toArray());
@@ -724,7 +725,7 @@ class CollectionTest extends TestCase
         self::assertEquals(['a', 'b'], $keys->toArray());
     }
 
-    public function testLast()
+    public function testLast(): void
     {
         $collect = $this->collect([10, 20]);
         self::assertEquals(20, $collect->last());
@@ -733,7 +734,7 @@ class CollectionTest extends TestCase
         self::assertEquals(null, $collect->last(fn() => false));
     }
 
-    public function testLastIndex()
+    public function testLastIndex(): void
     {
         $collect = $this->collect([10, 20, 20]);
         self::assertEquals(1, $collect->lastIndex(fn($v, $k) => $k === 1));
@@ -741,7 +742,7 @@ class CollectionTest extends TestCase
         self::assertEquals(null, $collect->lastIndex(fn() => false));
     }
 
-    public function testLastKey()
+    public function testLastKey(): void
     {
         $collect = $this->collect(['a' => 10, 'b' => 20, 'c' => 20]);
         self::assertEquals('c', $collect->lastKey());
@@ -750,21 +751,21 @@ class CollectionTest extends TestCase
         self::assertEquals(null, $collect->lastKey(fn() => false));
     }
 
-    public function testMacro()
+    public function testMacro(): void
     {
         Collection::macro('testMacro', fn($num) => $num * 100);
         $collect = $this->collect([1]);
         self::assertEquals(200, $collect->testMacro(2));
     }
 
-    public function testMacroExists()
+    public function testMacroExists(): void
     {
         self::assertFalse(Collection::macroExists('testMacro2'));
         Collection::macro('testMacro2', fn() => 1);
         self::assertTrue(Collection::macroExists('testMacro2'));
     }
 
-    public function testMap()
+    public function testMap(): void
     {
         $collect = $this->collect([1, 2, 3]);
         self::assertEquals([2, 4, 6], $collect->map(fn($i) => $i * 2)->toArray());
@@ -774,7 +775,7 @@ class CollectionTest extends TestCase
         self::assertEquals(['a' => 2, 'b' => 4, 'c' => 6], $collect->map(fn($i) => $i * 2)->toArray());
     }
 
-    public function testMax()
+    public function testMax(): void
     {
         $collect = $this->collect([1, 2, 3, 10, 1]);
         self::assertEquals(10, $collect->max());
@@ -786,7 +787,7 @@ class CollectionTest extends TestCase
         self::assertEquals(90, $collect->max());
     }
 
-    public function testMerge()
+    public function testMerge(): void
     {
         $empty = $this->collect();
         $merged = $empty->merge([1, [2]]);
@@ -811,7 +812,7 @@ class CollectionTest extends TestCase
         self::assertSame([1, 'a' => [3], 2, 3], $merged->toArray());
     }
 
-    public function testMergeRecursive()
+    public function testMergeRecursive(): void
     {
         $collect = $this->collect([])->mergeRecursive([]);
         self::assertEquals([], $collect->toArray());
@@ -838,7 +839,7 @@ class CollectionTest extends TestCase
         self::assertEquals(['a' => ['b' => 1, 'c' => 2], 'b' => 3, 'd' => 4], $collect->toArray());
     }
 
-    public function testMin()
+    public function testMin(): void
     {
         $collect = $this->collect([1, 2, 3, 10, -1]);
         self::assertEquals(-1, $collect->min());
@@ -850,7 +851,7 @@ class CollectionTest extends TestCase
         self::assertEquals(-100, $collect->min());
     }
 
-    public function testMinMax()
+    public function testMinMax(): void
     {
         $collect = $this->collect([]);
         self::assertEquals([null, null], $collect->minMax());
@@ -862,20 +863,17 @@ class CollectionTest extends TestCase
         self::assertEquals([-100, 10], $collect->minMax());
     }
 
-    public function testNewInstance()
+    public function testNewInstance(): void
     {
         $collect = $this->collect([]);
         self::assertNotSame($collect, $collect->newInstance());
         self::assertEquals($collect, $collect->newInstance());
 
-        $collect = $this->collect([]);
-        self::assertInstanceOf(Collection::class, $collect->newInstance());
-
         $collect = $this->collect([1, 10]);
         self::assertEquals([], $collect->newInstance()->toArray());
     }
 
-    public function testNotContains()
+    public function testNotContains(): void
     {
         self::assertTrue($this->collect([])->notContains(0));
         self::assertTrue($this->collect([])->notContains(null));
@@ -888,7 +886,7 @@ class CollectionTest extends TestCase
         self::assertFalse($this->collect(['a' => 1, 0])->notContains(1));
     }
 
-    public function testNotContainsKey()
+    public function testNotContainsKey(): void
     {
         self::assertTrue($this->collect([])->notContainsKey(0));
         self::assertTrue($this->collect([])->notContainsKey(1));
@@ -898,7 +896,7 @@ class CollectionTest extends TestCase
         self::assertFalse($this->collect(['a' => 1, 0])->notContainsKey('a'));
     }
 
-    public function testNotEquals()
+    public function testNotEquals(): void
     {
         self::assertTrue($this->collect([])->notEquals($this->collect([1])));
         self::assertTrue($this->collect([])->notEquals($this->collect([null])));
@@ -907,7 +905,7 @@ class CollectionTest extends TestCase
         self::assertFalse($this->collect(['a' => 1])->notEquals($this->collect(['a' => 1])));
     }
 
-    public function testOffsetExists()
+    public function testOffsetExists(): void
     {
         $seq = $this->collect([1, 2]);
         self::assertTrue(isset($seq[0]));
@@ -919,7 +917,7 @@ class CollectionTest extends TestCase
         self::assertFalse(isset($assoc['a']));
     }
 
-    public function testOffsetGet()
+    public function testOffsetGet(): void
     {
         $seq = $this->collect([1, 2]);
         self::assertEquals(1, $seq[0]);
@@ -928,14 +926,14 @@ class CollectionTest extends TestCase
         self::assertEquals(2, $assoc['b']);
     }
 
-    public function testOffsetGet_UndefinedKey()
+    public function testOffsetGet_UndefinedKey(): void
     {
-        self::expectException(ErrorException::class);
-        self::expectExceptionMessage('Undefined array key "e"');
+        $this->expectException(ErrorException::class);
+        $this->expectExceptionMessage('Undefined array key "e"');
         $this->collect(['a' => 1, 'b' => 2])['e'];
     }
 
-    public function testOffsetSet()
+    public function testOffsetSet(): void
     {
         // push number
         $seq = $this->collect([1, 2]);
@@ -953,19 +951,19 @@ class CollectionTest extends TestCase
         self::assertEquals(3, $assoc['c']);
     }
 
-    public function testOffsetSet_BoolAsKey()
+    public function testOffsetSet_BoolAsKey(): void
     {
-        self::expectException(InvalidKeyException::class);
+        $this->expectException(InvalidKeyException::class);
         $this->collect([])[true]= 1;
     }
 
-    public function testOffsetSet_FloatAsKey()
+    public function testOffsetSet_FloatAsKey(): void
     {
-        self::expectException(InvalidKeyException::class);
+        $this->expectException(InvalidKeyException::class);
         $this->collect([])[1.1]= 1;
     }
 
-    public function testOffsetUnset()
+    public function testOffsetUnset(): void
     {
         $seq = $this->collect([1, 2]);
         unset($seq[0]);
@@ -980,7 +978,7 @@ class CollectionTest extends TestCase
         self::assertEquals([], $assoc->toArray());
     }
 
-    public function testOnly()
+    public function testOnly(): void
     {
         // with list array
         $collect = $this->collect([1, 2, 3]);
@@ -997,14 +995,14 @@ class CollectionTest extends TestCase
         self::assertEquals(['c' => 3, 'b' => 2], $collect->only(['x' => 'c', 'b'])->toArray());
     }
 
-    public function testOnly_WithUndefinedKey()
+    public function testOnly_WithUndefinedKey(): void
     {
-        self::expectException(ErrorException::class);
-        self::expectExceptionMessage('Undefined array key "a"');
+        $this->expectException(ErrorException::class);
+        $this->expectExceptionMessage('Undefined array key "a"');
         self::assertEquals([], $this->collect()->only(['a'])->toArray());
     }
 
-    public function testPad()
+    public function testPad(): void
     {
         $collect = $this->collect([1, 2]);
         self::assertEquals([1, 2], $collect->pad(0, 9)->toArray());
@@ -1018,7 +1016,7 @@ class CollectionTest extends TestCase
         self::assertEquals([9, 9, 9], $this->collect()->pad(3, 9)->toArray());
     }
 
-    public function testPop()
+    public function testPop(): void
     {
         $collect = $this->collect([1, 2]);
         self::assertEquals(2, $collect->pop());
@@ -1029,7 +1027,7 @@ class CollectionTest extends TestCase
         self::assertEquals(['a' => 1], $collect->toArray());
     }
 
-    public function testPull()
+    public function testPull(): void
     {
         $collect = $this->collect();
         self::assertEquals(null, $collect->pull(1));
@@ -1047,7 +1045,7 @@ class CollectionTest extends TestCase
         self::assertEquals(['a' => [], 'b' => 2], $collect->toArray());
     }
 
-    public function testPush()
+    public function testPush(): void
     {
         $collect = $this->collect([1, 2]);
         self::assertSame($collect, $collect->push(3));
@@ -1062,7 +1060,7 @@ class CollectionTest extends TestCase
         self::assertEquals(['a' => 1, 'b' => 2, 'b'], $collect->toArray());
     }
 
-    public function testReduce()
+    public function testReduce(): void
     {
         /** @var Collection $reduced */
         $reduced = $this->collect()->reduce(fn(Collection $c) => $c->push(1));
@@ -1074,21 +1072,21 @@ class CollectionTest extends TestCase
         $reduced = $this->collect(['a' => 1, 'b' => 2])->reduce(fn(Collection $c, $i, $k) => $c->set($k, $i * 2));
         self::assertEquals(['a' => 2, 'b' => 4], $reduced->toArray());
 
-        $reduced = $this->collect(['a' => 1, 'b' => 2])->reduce(fn($c, $i, $k) => tap($c, fn($c) => $c->$k = 0), (object)[]);
+        $reduced = $this->collect(['a' => 1, 'b' => 2])->reduce(fn($c, $i, $k) => tap($c, static fn($c) => $c->$k = 0), (object)[]);
         self::assertEquals(['a' => 0, 'b' => 0], (array) $reduced);
 
         $reduced = $this->collect([1, 2, 3])->reduce(fn(int $c, $i, $k) => $c + $i);
         self::assertEquals(6, $reduced);
     }
 
-    public function testReduce_UnableToGuessInitial()
+    public function testReduce_UnableToGuessInitial(): void
     {
-        self::expectException(RuntimeException::class);
-        self::expectExceptionMessage('Initial value not set and not guessable.');
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('Initial value not set and not guessable.');
         $this->collect([1, 2, 3])->reduce(fn($c, $i, $k) => $c + $i);
     }
 
-    public function testRemove()
+    public function testRemove(): void
     {
         $collect = $this->collect();
         self::assertEquals(0, $collect->remove(1));
@@ -1114,7 +1112,7 @@ class CollectionTest extends TestCase
         self::assertEquals(['a' => 1], $collect->toArray());
     }
 
-    public function testRemoveKey()
+    public function testRemoveKey(): void
     {
         $collect = $this->collect();
         self::assertEquals(false, $collect->removeKey(1));
@@ -1137,7 +1135,7 @@ class CollectionTest extends TestCase
         self::assertEquals(['a' => [], 1], $collect->toArray());
     }
 
-    public function testReverse()
+    public function testReverse(): void
     {
         $collect = $this->collect([])->reverse();
         self::assertEquals([], $collect->toArray());
@@ -1155,26 +1153,26 @@ class CollectionTest extends TestCase
         self::assertEquals([2 => 4, 1 => 3, 0 => 2, 'a' => 1], $collect->toArray());
     }
 
-    public function testSample()
+    public function testSample(): void
     {
-        srand(100);
+        mt_srand(100);
         self::assertEquals(8, $this->collect(range(0, 10))->sample());
     }
 
-    public function testSample_Empty()
+    public function testSample_Empty(): void
     {
-        self::expectException(ValueError::class);
-        self::expectExceptionMessage('array_rand(): Argument #1 ($array) cannot be empty');
+        $this->expectException(ValueError::class);
+        $this->expectExceptionMessage('array_rand(): Argument #1 ($array) cannot be empty');
         $this->collect()->sample();
     }
 
-    public function testSampleMany()
+    public function testSampleMany(): void
     {
-        srand(100);
+        mt_srand(100);
         self::assertEquals([8 => 8, 9 => 9], $this->collect(range(0, 10))->sampleMany(2)->toArray());
     }
 
-    public function testSatisfyAll()
+    public function testSatisfyAll(): void
     {
         $collect = $this->collect([]);
         self::assertTrue($collect->satisfyAll(static fn($v) => is_int($v)));
@@ -1189,7 +1187,7 @@ class CollectionTest extends TestCase
         self::assertFalse($collect->satisfyAll(static fn($k) => is_string($k)));
     }
 
-    public function testSatisfyAny()
+    public function testSatisfyAny(): void
     {
         $empty = $this->collect();
         self::assertFalse($empty->satisfyAny(static fn() => true));
@@ -1205,7 +1203,7 @@ class CollectionTest extends TestCase
         self::assertTrue($collect->satisfyAny(static fn($v, $k) => $k === 'b'));
     }
 
-    public function testSet()
+    public function testSet(): void
     {
         self::assertEquals(['a' => 1], $this->collect()->set('a', 1)->toArray());
         self::assertEquals(['a' => 1], $this->collect()->set('a', 0)->set('a', 1)->toArray());
@@ -1213,7 +1211,7 @@ class CollectionTest extends TestCase
         self::assertEquals(['a' => ['b' => 1]], $this->collect()->set('a.b', 1)->toArray());
     }
 
-    public function testSetIfNotExists()
+    public function testSetIfNotExists(): void
     {
         self::assertEquals(['a' => 1], $this->collect()->setIfNotExists('a', 1)->toArray());
         self::assertEquals(['a' => 0], $this->collect()->setIfNotExists('a', 0)->setIfNotExists('a', 1)->toArray());
@@ -1221,7 +1219,7 @@ class CollectionTest extends TestCase
         self::assertEquals(['a' => ['b' => 1]], $this->collect(['a' => ['b' => 1]])->setIfNotExists('a.b', 0)->toArray());
     }
 
-    public function testShift()
+    public function testShift(): void
     {
         self::assertEquals(1, $this->collect([1, 2])->shift());
         self::assertEquals(null, $this->collect()->shift());
@@ -1229,14 +1227,14 @@ class CollectionTest extends TestCase
         self::assertEquals(['b' => 1], $this->collect(['a' => ['b' => 1]])->shift());
     }
 
-    public function testShuffle()
+    public function testShuffle(): void
     {
-        srand(100);
+        mt_srand(100);
         self::assertEquals([1, 2, 4, 3, 2], $this->collect([1, 2, 2, 3, 4])->shuffle()->toArray());
         self::assertSame(['a' => 1, 'c' => 3, 'b' => 2, 'd' => 4], $this->collect(['a' => 1, 'b' => 2, 'c' => 3, 'd' => 4])->shuffle()->toArray());
     }
 
-    public function testSlice()
+    public function testSlice(): void
     {
         $collect = $this->collect([1, 2, 3])->slice(1);
         self::assertEquals([2, 3], $collect->toArray());
@@ -1245,7 +1243,7 @@ class CollectionTest extends TestCase
         self::assertEquals([1, 2], $collect->toArray());
     }
 
-    public function testSortBy()
+    public function testSortBy(): void
     {
         $collect = $this->collect([4, 2, 1, 3])->sortBy(fn($v) => $v)->values();
         self::assertEquals([1, 2, 3, 4], $collect->toArray());
@@ -1254,7 +1252,7 @@ class CollectionTest extends TestCase
         self::assertEquals(['a' => 1, 'b' => 0, 'c' => 2], $collect->toArray());
     }
 
-    public function testSortByDesc()
+    public function testSortByDesc(): void
     {
         $collect = $this->collect([4, 2, 1, 3])->sortByDesc(fn($v) => $v)->values();
         self::assertEquals([4, 3, 2, 1], $collect->toArray());
@@ -1263,7 +1261,7 @@ class CollectionTest extends TestCase
         self::assertEquals(['c' => 2, 'b' => 0, 'a' => 1], $collect->toArray());
     }
 
-    public function testSortKeys()
+    public function testSortKeys(): void
     {
         $collect = $this->collect(['b' => 0, 'a' => 1, 'c' => 2])->sortKeys();
         self::assertEquals(['a' => 1, 'b' => 0, 'c' => 2], $collect->toArray());
@@ -1272,7 +1270,7 @@ class CollectionTest extends TestCase
         self::assertEquals(['2' => 0, '30' => 2, '100' => 1], $collect->toArray());
     }
 
-    public function testSortValues()
+    public function testSortValues(): void
     {
         $collect = $this->collect([4, 2, 1, 3])->sortValues()->values();
         self::assertEquals([1, 2, 3, 4], $collect->toArray());
@@ -1284,7 +1282,7 @@ class CollectionTest extends TestCase
         self::assertEquals(['b' => 1, 'c' => 2, 'a' => 3], $collect->toArray());
     }
 
-    public function testSortValuesDesc()
+    public function testSortValuesDesc(): void
     {
         $collect = $this->collect([4, 2, 1, 3])->sortValuesDesc()->values();
         self::assertEquals([4, 3, 2, 1], $collect->toArray());
@@ -1296,13 +1294,13 @@ class CollectionTest extends TestCase
         self::assertEquals(['a' => 3, 'c' => 2, 'b' => 1], $collect->toArray());
     }
 
-    public function testSortWith()
+    public function testSortWith(): void
     {
-        $collect = $this->collect(['b' => 1, 'a' => 3, 'c' => 2])->sortWith(fn($a, $b) => ($a === $b ? 0 : (($a < $b) ? -1 : 1)));
+        $collect = $this->collect(['b' => 1, 'a' => 3, 'c' => 2])->sortWith(static fn($a, $b) => ($a === $b ? 0 : (($a < $b) ? -1 : 1)));
         self::assertEquals(['b' => 1, 'c' => 2, 'a' => 3], $collect->toArray());
     }
 
-    public function testSum()
+    public function testSum(): void
     {
         $sum = $this->collect(['b' => 1, 'a' => 3, 'c' => 2])->sum();
         self::assertEquals(6, $sum);
@@ -1317,14 +1315,14 @@ class CollectionTest extends TestCase
         self::assertEquals(0, $sum);
     }
 
-    public function testSum_ThrowOnSumOfString()
+    public function testSum_ThrowOnSumOfString(): void
     {
-        self::expectException(TypeError::class);
-        self::expectExceptionMessage('Unsupported operand types: int + string');
+        $this->expectException(TypeError::class);
+        $this->expectExceptionMessage('Unsupported operand types: int + string');
         $this->collect(['a', 'b'])->sum();
     }
 
-    public function testTake()
+    public function testTake(): void
     {
         $collect = $this->collect([2, 3, 4])->take(2);
         self::assertEquals([2, 3], $collect->toArray());
@@ -1340,7 +1338,7 @@ class CollectionTest extends TestCase
 
     }
 
-    public function testTakeUntil()
+    public function testTakeUntil(): void
     {
         $collect = $this->collect(['b' => 1, 'a' => 3, 'c' => 2])->takeUntil(fn($v) => $v > 2);
         self::assertEquals(['b' => 1], $collect->toArray());
@@ -1352,7 +1350,7 @@ class CollectionTest extends TestCase
         self::assertEquals([], $collect->toArray());
     }
 
-    public function testTakeWhile()
+    public function testTakeWhile(): void
     {
         $collect = $this->collect(['b' => 1, 'a' => 3, 'c' => 4])->takeWhile(fn($v) => $v < 4);
         self::assertEquals(['b' => 1, 'a' => 3], $collect->toArray());
@@ -1364,7 +1362,7 @@ class CollectionTest extends TestCase
         self::assertEquals(['b' => 1, 'a' => 3, 'c' => 2], $collect->toArray());
     }
 
-    public function testTally()
+    public function testTally(): void
     {
         $collect = $this->collect([1, 1, 1, 2, 3, 3])->tally();
         self::assertEquals([1 => 3, 2 => 1, 3 => 2], $collect->toArray());
@@ -1373,7 +1371,7 @@ class CollectionTest extends TestCase
         self::assertEquals([1 => 3], $collect->toArray());
     }
 
-    public function testTap()
+    public function testTap(): void
     {
         $collect = $this->collect([1, 2])->tap(fn() => 100);
         self::assertEquals([1, 2], $collect->toArray());
@@ -1384,7 +1382,7 @@ class CollectionTest extends TestCase
         self::assertEquals(1, $cnt);
     }
 
-    public function testToArray()
+    public function testToArray(): void
     {
         self::assertEquals([], $this->collect()->toArray());
         self::assertEquals([1, 2], $this->collect([1, 2])->toArray());
@@ -1394,7 +1392,7 @@ class CollectionTest extends TestCase
         self::assertEquals(['a' => $inner], $this->collect(['a' => $inner])->toArray());
     }
 
-    public function testToArrayRecursive()
+    public function testToArrayRecursive(): void
     {
         // no depth defined
         $inner = $this->collect([1, 2]);
@@ -1410,7 +1408,7 @@ class CollectionTest extends TestCase
         self::assertEquals(['a' => [2, 3, [1]]], $collect->toArrayRecursive(3));
     }
 
-    public function testToJson()
+    public function testToJson(): void
     {
         $json = $this->collect([1, 2])->toJson();
         self::assertEquals("[1,2]", $json);
@@ -1425,7 +1423,7 @@ class CollectionTest extends TestCase
         self::assertEquals("[\n    1\n]", $json);
     }
 
-    public function testToUrlQuery()
+    public function testToUrlQuery(): void
     {
         $query = $this->collect(['a' => 1])->toUrlQuery('t');
         self::assertEquals(urlencode('t[a]').'=1', $query);
@@ -1434,7 +1432,7 @@ class CollectionTest extends TestCase
         self::assertEquals("a=1&b=2", $query);
     }
 
-    public function testUnion()
+    public function testUnion(): void
     {
         $collect = $this->collect([])->union([]);
         self::assertEquals([], $collect->toArray());
@@ -1446,7 +1444,7 @@ class CollectionTest extends TestCase
         self::assertEquals(['a' => ['b' => 1]], $collect->toArray());
     }
 
-    public function testUnionRecursive()
+    public function testUnionRecursive(): void
     {
         $collect = $this->collect([])->unionRecursive([]);
         self::assertEquals([], $collect->toArray());
@@ -1473,7 +1471,7 @@ class CollectionTest extends TestCase
         self::assertEquals(['a' => ['b' => 1, 'c' => 2], 'b' => 3, 'd' => 4], $collect->toArray());
     }
 
-    public function testUnique()
+    public function testUnique(): void
     {
         $collect = $this->collect([])->unique();
         self::assertEquals([], $collect->toArray());
@@ -1485,7 +1483,7 @@ class CollectionTest extends TestCase
         self::assertEquals(['a' => 1, 'b' => 2], $collect->toArray());
     }
 
-    public function testUnshift()
+    public function testUnshift(): void
     {
         $collect = $this->collect([])->unshift(1);
         self::assertEquals([1], $collect->toArray());
@@ -1497,7 +1495,7 @@ class CollectionTest extends TestCase
         self::assertEquals([1, 2, 'a' => 1], $collect->toArray());
     }
 
-    public function testValues()
+    public function testValues(): void
     {
         $collect = $this->collect([])->values();
         self::assertEquals([], $collect->toArray());

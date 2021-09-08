@@ -4,6 +4,7 @@
   "bin": ["bin/kirameki"],
   "type": "project",
   "require": {
+    "php": ">= 8",
     "ext-apcu": "*",
     "ext-bcmath": "*",
     "ext-ctype": "*",
