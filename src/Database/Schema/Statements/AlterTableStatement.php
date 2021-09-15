@@ -10,17 +10,9 @@ class AlterTableStatement extends BaseStatement
     public array $actions;
 
     /**
-     * @param string $table
-     */
-    public function __construct(string $table)
-    {
-        parent::__construct($table);
-    }
-
-    /**
      * @param $action
      */
-    public function addAction($action)
+    public function addAction($action): void
     {
         $this->actions[] = $action;
     }

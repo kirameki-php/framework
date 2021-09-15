@@ -67,7 +67,7 @@ class Config implements ArrayAccess
      * @param string $key
      * @param mixed $value
      */
-    public function set(string $key, mixed $value)
+    public function set(string $key, mixed $value): void
     {
         $segments = explode('.', $key);
         $lastSegment = array_pop($segments);
@@ -83,7 +83,7 @@ class Config implements ArrayAccess
      * @param string $key
      * @return void
      */
-    public function delete(string $key)
+    public function delete(string $key): void
     {
         $segments = explode('.', $key);
         $lastSegment = array_pop($segments);
@@ -129,7 +129,7 @@ class Config implements ArrayAccess
      * @param mixed $value
      * @return void
      */
-    public function offsetSet($offset, $value)
+    public function offsetSet($offset, $value): void
     {
         $this->entries[$offset] = $value;
     }
@@ -138,7 +138,7 @@ class Config implements ArrayAccess
      * @param mixed $offset
      * @return void
      */
-    public function offsetUnset($offset)
+    public function offsetUnset($offset): void
     {
         unset($this->entries[$offset]);
     }

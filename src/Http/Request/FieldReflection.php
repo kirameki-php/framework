@@ -39,7 +39,7 @@ class FieldReflection
      * @param array $inputs
      * @throws ValidationException
      */
-    public function validate(array $inputs)
+    public function validate(array $inputs): void
     {
         if (!array_key_exists($this->definition->name, $inputs)) {
             if ($this->definition->required) {
@@ -151,7 +151,7 @@ class FieldReflection
      * @param mixed $actual
      * @return never-return
      */
-    protected function throwValidationException(string $expected, mixed $actual)
+    protected function throwValidationException(string $expected, mixed $actual): void
     {
         $valueAsString = Str::valueOf($actual);
         throw new ValidationException(("Expected value to be $expected. $valueAsString given."));

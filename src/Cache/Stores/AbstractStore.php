@@ -138,7 +138,7 @@ abstract class AbstractStore implements StoreInterface
      * @param Event $event
      * @return void
      */
-    protected function triggerEvent(Event $event)
+    protected function triggerEvent(Event $event): void
     {
         $this->eventManager->dispatch($event);
     }
@@ -149,7 +149,7 @@ abstract class AbstractStore implements StoreInterface
      * @param array $results
      * @return void
      */
-    protected function triggerAccessEvent(string $command, array $keys, array $results)
+    protected function triggerAccessEvent(string $command, array $keys, array $results): void
     {
         $this->triggerEvent(new CacheAccessed($this->name, $this->namespace, $command, $keys, $this->unformatKeys($results)));
     }
@@ -159,7 +159,7 @@ abstract class AbstractStore implements StoreInterface
      * @param array $results
      * @return void
      */
-    protected function triggerCheckEvent(string $command, array $results)
+    protected function triggerCheckEvent(string $command, array $results): void
     {
         $this->triggerEvent(new CacheChecked($this->name, $this->namespace, $command, $results));
     }
@@ -170,7 +170,7 @@ abstract class AbstractStore implements StoreInterface
      * @param DateTimeInterface|DateInterval|int|float|null $ttl
      * @return void
      */
-    protected function triggerStoreEvent(string $command, array $entries, DateTimeInterface|DateInterval|int|float|null $ttl = null)
+    protected function triggerStoreEvent(string $command, array $entries, DateTimeInterface|DateInterval|int|float|null $ttl = null): void
     {
         $this->triggerEvent(new CacheStored($this->name, $this->namespace, $command, $entries, $ttl));
     }
@@ -183,7 +183,7 @@ abstract class AbstractStore implements StoreInterface
      * @param DateTimeInterface|DateInterval|int|float|null $ttl
      * @return void
      */
-    protected function triggerCounterEvent(string $command, string $key, int $by, ?int $result, DateTimeInterface|DateInterval|int|float|null $ttl = null)
+    protected function triggerCounterEvent(string $command, string $key, int $by, ?int $result, DateTimeInterface|DateInterval|int|float|null $ttl = null): void
     {
         $this->triggerEvent(new CacheCountUpdated($this->name, $this->namespace, $command, $key, $by, $result, $ttl));
     }
@@ -194,7 +194,7 @@ abstract class AbstractStore implements StoreInterface
      * @param array $missedKeys
      * @return void
      */
-    protected function triggerDeleteEvent(string $command, array $keys, array $missedKeys)
+    protected function triggerDeleteEvent(string $command, array $keys, array $missedKeys): void
     {
         $this->triggerEvent(new CacheDeleted($this->name, $this->namespace, $command, $keys, $missedKeys));
     }
@@ -204,7 +204,7 @@ abstract class AbstractStore implements StoreInterface
      * @param string $pattern
      * @param array $keys
      */
-    protected function triggerDeleteMatchedEvent(string $command, string $pattern, array $keys)
+    protected function triggerDeleteMatchedEvent(string $command, string $pattern, array $keys): void
     {
         $this->triggerEvent(new CacheDeleteMatched($this->name, $this->namespace, $command, $pattern, $keys));
     }
@@ -213,7 +213,7 @@ abstract class AbstractStore implements StoreInterface
      * @param string $command
      * @param array $keys
      */
-    protected function triggerDeleteExpiredEvent(string $command, array $keys)
+    protected function triggerDeleteExpiredEvent(string $command, array $keys): void
     {
         $this->triggerEvent(new CacheDeleteExpired($this->name, $this->namespace, $command, $keys));
     }
@@ -222,7 +222,7 @@ abstract class AbstractStore implements StoreInterface
      * @param string $command
      * @return void
      */
-    protected function triggerClearEvent(string $command)
+    protected function triggerClearEvent(string $command): void
     {
         $this->triggerEvent(new CacheCleared($this->name, $this->namespace, $command));
     }

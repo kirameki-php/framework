@@ -78,7 +78,7 @@ class Codecs
      * @param string|array $mediaType
      * @param callable $resolver
      */
-    public function registerEncoder(string|array $mediaType, callable $resolver)
+    public function registerEncoder(string|array $mediaType, callable $resolver): void
     {
         foreach (Arr::wrap($mediaType) as $type) {
             $this->encoderResolvers[$type] = $resolver;

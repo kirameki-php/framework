@@ -3,7 +3,6 @@
 namespace Kirameki\Support;
 
 use DirectoryIterator;
-use Kirameki\Support\Collection;
 use RuntimeException;
 use function array_filter;
 use function explode;

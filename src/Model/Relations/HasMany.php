@@ -26,9 +26,9 @@ class HasMany extends Relation
 
     /**
      * @param Model $target
-     * @return Model|Model[]|RelationCollection
+     * @return Model|RelationCollection<Model>
      */
-    public function loadOnModel(Model $target)
+    public function loadOnModel(Model $target): Model|RelationCollection
     {
         $models = $this->buildQuery()
             ->where($this->getDestKeyName(), $this->getSrcKey($target))

@@ -67,7 +67,7 @@ class Application extends Container
         $this->initialize();
     }
 
-    public static function setPhpRuntimeConfigs()
+    public static function setPhpRuntimeConfigs(): void
     {
         error_reporting(E_ALL & ~E_NOTICE);
         ini_set('display_errors', 'Off');

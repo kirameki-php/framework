@@ -25,7 +25,7 @@ class Router
     /**
      * @param string $path
      */
-    protected function scanForRoutesIn(string $path)
+    protected function scanForRoutesIn(string $path): void
     {
         $cwd = getcwd();
 
@@ -65,7 +65,7 @@ class Router
      * @param Route $route
      * @return void
      */
-    public function register(Route $route)
+    public function register(Route $route): void
     {
         $this->routesByName[$route->name] = $route;
     }

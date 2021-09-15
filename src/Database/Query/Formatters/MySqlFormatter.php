@@ -6,8 +6,6 @@ use DateTimeInterface;
 
 class MySqlFormatter extends Formatter
 {
-    protected string $quote = '`';
-
     /**
      * @param $value
      * @return string

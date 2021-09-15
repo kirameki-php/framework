@@ -18,7 +18,7 @@ abstract class StatementBuilder implements BuilderInterface
     /**
      * @var BaseStatement
      */
-    protected $statement;
+    protected BaseStatement $statement;
 
     /**
      * Do a deep clone of object types

@@ -12,6 +12,6 @@ class JsonDecoder implements DecoderInterface
      */
     public function decode(string $content): array
     {
-        return json_decode($content, true, JSON_THROW_ON_ERROR) ?? [];
+        return json_decode($content, true, 512, JSON_THROW_ON_ERROR) ?? [];
     }
 }

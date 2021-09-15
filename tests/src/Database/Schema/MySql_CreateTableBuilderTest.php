@@ -2,16 +2,14 @@
 
 namespace Tests\Kirameki\Database\Schema;
 
-use Kirameki\Database\Schema\Builders\CreateTableBuilder;
 use Kirameki\Database\Support\Expr;
-use Tests\Kirameki\Database\DatabaseTestCase;
 use RuntimeException;
 
 class MySql_CreateTableBuilderTest extends SchemaTestCase
 {
     protected string $connection = 'mysql';
 
-    public function testWithNoColumn()
+    public function testWithNoColumn(): void
     {
         $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('Table requires at least one column to be defined.');
@@ -20,7 +18,7 @@ class MySql_CreateTableBuilderTest extends SchemaTestCase
         $builder->toString();
     }
 
-    public function testWithoutPrimaryKey()
+    public function testWithoutPrimaryKey(): void
     {
         $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('Table must have at least one column as primary key.');
@@ -30,7 +28,7 @@ class MySql_CreateTableBuilderTest extends SchemaTestCase
         $builder->toString();
     }
 
-    public function testStringColumn()
+    public function testStringColumn(): void
     {
         $builder = $this->createTableBuilder('users');
         $builder->uuid('id')->primaryKey();

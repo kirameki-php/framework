@@ -31,7 +31,7 @@ trait Relations
      * @param Model|RelationCollection $target
      * @param array $names
      */
-    protected function preloadRecursive($target, array $names)
+    protected function preloadRecursive(RelationCollection|Model $target, array $names): void
     {
         if (Arr::isList($names)) {
             foreach ($names as $name) {
@@ -89,7 +89,7 @@ trait Relations
      * @param string $name
      * @return Model|RelationCollection
      */
-    protected function loadRelation($target, string $name): RelationCollection|Model
+    protected function loadRelation(RelationCollection|Model $target, string $name): RelationCollection|Model
     {
         if ($target instanceof ModelCollection) {
             $relation = $target->getModelReflection()->relations[$name];

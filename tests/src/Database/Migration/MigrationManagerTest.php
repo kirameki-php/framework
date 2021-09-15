@@ -6,7 +6,7 @@ use Kirameki\Database\Migration\MigrationManager;
 
 class MigrationManagerTest extends MySql_MigrationTestCase
 {
-    public function testMigrateUp()
+    public function testMigrateUp(): void
     {
         $manager = new MigrationManager(__DIR__.'/files');
         $manager->up();

@@ -53,7 +53,7 @@ class ReflectionBuilder
      * @param string $cast
      * @param mixed|null $default
      */
-    public function property(string $name, string $cast, mixed $default = null)
+    public function property(string $name, string $cast, mixed $default = null): void
     {
         $this->reflection->properties[$name] = new Property($name, $this->manager->getCast($cast), $default);
     }
@@ -65,7 +65,7 @@ class ReflectionBuilder
      * @param string|null $referenceKey
      * @param string|null $inverseOf
      */
-    public function belongsTo(string $name, string $class, ?string $foreignKey = null, ?string $referenceKey = null, ?string $inverseOf = null)
+    public function belongsTo(string $name, string $class, ?string $foreignKey = null, ?string $referenceKey = null, ?string $inverseOf = null): void
     {
         $this->reflection->relations[$name] = new BelongsTo($this->manager, $name, $this->reflection, $class, $foreignKey, $referenceKey, $inverseOf);
     }
@@ -77,7 +77,7 @@ class ReflectionBuilder
      * @param string|null $referenceKey
      * @param string|null $inverseOf
      */
-    public function hasMany(string $name, string $class, ?string $foreignKey = null, ?string $referenceKey = null, ?string $inverseOf = null)
+    public function hasMany(string $name, string $class, ?string $foreignKey = null, ?string $referenceKey = null, ?string $inverseOf = null): void
     {
         $this->reflection->relations[$name] = new HasMany($this->manager, $name, $this->reflection, $class, $foreignKey, $referenceKey, $inverseOf);
     }
@@ -86,7 +86,7 @@ class ReflectionBuilder
      * @param string $name
      * @param Closure<QueryBuilder> $callback
      */
-    public function scope(string $name, Closure $callback)
+    public function scope(string $name, Closure $callback): void
     {
         $this->reflection->scopes[$name] = $callback;
     }

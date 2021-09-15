@@ -6,14 +6,14 @@ use Kirameki\Database\Schema\Builders\CreateTableBuilder;
 
 class ConnectionTest extends DatabaseTestCase
 {
-    protected function createDummyTable()
+    protected function createDummyTable(): void
     {
         $this->createTable('Dummy', function(CreateTableBuilder $schema) {
             $schema->uuid('id')->primaryKey()->notNull();
         });
     }
 
-    public function testTableExists()
+    public function testTableExists(): void
     {
         $this->createDummyTable();
 

@@ -127,7 +127,7 @@ class Assert
         }
     }
 
-    public static function arrayIsNotEmpty(array $array)
+    public static function arrayIsNotEmpty(array $array): void
     {
         if (count($array) === 0) {
             throw new RuntimeException('Array cannot be empty.');

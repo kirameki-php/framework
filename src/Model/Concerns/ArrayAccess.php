@@ -22,7 +22,7 @@ trait ArrayAccess
      * @param mixed $offset
      * @param mixed $value
      */
-    public function offsetSet(mixed $offset, mixed $value)
+    public function offsetSet(mixed $offset, mixed $value): void
     {
         $this->setProperty($offset, $value);
     }
@@ -40,7 +40,7 @@ trait ArrayAccess
     /**
      * @param mixed $offset
      */
-    public function offsetUnset(mixed $offset)
+    public function offsetUnset(mixed $offset): void
     {
         $this->setProperty($offset, null);
     }

@@ -22,7 +22,7 @@ class Env
     /**
      * @param string $filePath
      */
-    public static function applyDotFile(string $filePath)
+    public static function applyDotFile(string $filePath): void
     {
         $content = file_get_contents($filePath);
         $lines = preg_split("/(\r\n|\n|\r)/", rtrim($content));

@@ -68,7 +68,7 @@ class NullStore extends AbstractStore
      */
     public function existsMulti(string ...$keys): array
     {
-        $entries = array_map(fn($key) => false, $keys);
+        $entries = array_map(static fn($key) => false, $keys);
         if ($this->triggerEvents) {
             $this->triggerCheckEvent(__FUNCTION__, $entries);
         }

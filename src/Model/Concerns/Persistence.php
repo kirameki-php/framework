@@ -116,7 +116,7 @@ trait Persistence
     /**
      * @param Closure $callback
      */
-    protected function processing(Closure $callback)
+    protected function processing(Closure $callback): void
     {
         try {
             if (!$this->processing) {

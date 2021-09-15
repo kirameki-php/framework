@@ -82,7 +82,7 @@ class ExceptionManager
      */
     protected function setErrorHandling(): void
     {
-        set_error_handler(function(int $no, string $msg, string $file, int $line) {
+        set_error_handler(static function(int $no, string $msg, string $file, int $line) {
             throw new ErrorException($msg, 0, $no, $file, $line);
         });
     }

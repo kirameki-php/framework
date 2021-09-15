@@ -167,13 +167,13 @@ abstract class Relation
 
     /**
      * @param Model $target
-     * @return Model|Model[]|RelationCollection
+     * @return Model|RelationCollection<Model>
      */
-    abstract public function loadOnModel(Model $target);
+    abstract public function loadOnModel(Model $target): Model|RelationCollection;
 
     /**
      * @param ModelCollection $targets
-     * @return Model|Model[]|ModelCollection
+     * @return Model|ModelCollection<Model>
      */
-    abstract public function loadOnCollection(ModelCollection $targets);
+    abstract public function loadOnCollection(ModelCollection $targets): ModelCollection|Model;
 }

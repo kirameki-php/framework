@@ -65,7 +65,7 @@ class Response implements Stringable
     /**
      * @return void
      */
-    public function send()
+    public function send(): void
     {
         if (!headers_sent()) {
             if (!$this->headers->has('Content-Length')) {

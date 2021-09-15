@@ -15,7 +15,7 @@ use function substr;
 
 class Request implements Stringable
 {
-    const CRLF = "\r\n";
+    public const CRLF = "\r\n";
 
     /**
      * @var string

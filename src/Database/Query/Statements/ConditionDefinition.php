@@ -2,6 +2,7 @@
 
 namespace Kirameki\Database\Query\Statements;
 
+use Kirameki\Database\Query\Support\Range;
 use Kirameki\Support\Concerns\Tappable;
 
 class ConditionDefinition
@@ -14,7 +15,7 @@ class ConditionDefinition
 
     public bool $negated;
 
-    public $parameters;
+    public Range|array|null $parameters;
 
     public ?string $nextLogic;
 

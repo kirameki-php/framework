@@ -16,9 +16,10 @@ class Collection extends Enumerable implements ArrayAccess
     /**
      * @param iterable|null $items
      */
-    public function __construct(?iterable $items = null)
+    public function __construct(iterable|null $items = null)
     {
-        $this->items = $this->asArray($items ?? []);
+        $items ??= [];
+        $this->items = $this->asArray($items);
     }
 
     /**
