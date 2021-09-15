@@ -51,6 +51,22 @@ class CollectionTest extends TestCase
         new Collection(1);
     }
 
+    public function testAt(): void
+    {
+        self::assertEquals(null, $this->collect()->at(0));
+        self::assertEquals(null, $this->collect([1, 2, 3])->at(5));
+        self::assertEquals(null, $this->collect([1, 2, 3])->at(PHP_INT_MIN));
+        self::assertEquals(null, $this->collect([1, 2, 3])->at(PHP_INT_MAX));
+
+        self::assertEquals(1, $this->collect([1, 2, 3])->at(0));
+        self::assertEquals(2, $this->collect([1, 2, 3])->at(1));
+        self::assertEquals(3, $this->collect([1, 2, 3])->at(-1));
+
+        self::assertEquals(1, $this->collect(['a' => 1, 'b' => 2, 'c' => 3])->at(0));
+        self::assertEquals(2, $this->collect(['a' => 1, 'b' => 2, 'c' => 3])->at(1));
+        self::assertEquals(3, $this->collect(['a' => 1, 'b' => 2, 'c' => 3])->at(-1));
+    }
+
     public function testAverage(): void
     {
         $average = $this->collect([])->average();

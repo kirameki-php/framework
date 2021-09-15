@@ -57,6 +57,15 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
     }
 
     /**
+     * @param int $position
+     * @return T|null
+     */
+    public function at(int $position)
+    {
+        return Arr::at($this->items, $position);
+    }
+
+    /**
      * @param bool|null $allowEmpty
      * @return float|int
      */

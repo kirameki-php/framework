@@ -39,6 +39,28 @@ class Arr
     use Concerns\Macroable;
 
     /**
+     * @template T
+     * @param iterable<T> $iterable
+     * @param int $position
+     * @return T|null
+     */
+    public static function at(iterable $iterable, int $position)
+    {
+        $array = static::from($iterable);
+        $offset = $position >= 0 ? $position : count($array) + $position;
+        $counter = 0;
+
+        foreach ($array as $item) {
+            if ($counter === $offset) {
+                return $item;
+            }
+            $counter+= 1;
+        }
+
+        return null;
+    }
+
+    /**
      * @param iterable $iterable
      * @param bool|null $allowEmpty
      * @return float|int
