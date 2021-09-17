@@ -116,8 +116,7 @@ class ConditionBuilder
     {
         return match (strtoupper($operator)) {
             '=' => $this->equals($value),
-            '!=' => $this->notEquals($value),
-            '<>' => $this->notEquals($value),
+            '!=', '<>' => $this->notEquals($value),
             '>' => $this->greaterThan($value),
             '>=' => $this->greaterThanOrEquals($value),
             '<' => $this->lessThan($value),

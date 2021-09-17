@@ -147,9 +147,19 @@ class Url
     {
         $schema = $this->schema();
         $port = $this->port();
-        if ($port === null) return true;
-        if ('http'  === $schema &&  80 === $port) return true;
-        if ('https' === $schema && 443 === $port) return true;
+
+        if ($port === null) {
+            return true;
+        }
+
+        if ('http'  === $schema &&  80 === $port) {
+            return true;
+        }
+
+        if ('https' === $schema && 443 === $port) {
+            return true;
+        }
+
         return false;
     }
 

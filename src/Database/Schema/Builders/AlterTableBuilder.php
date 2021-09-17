@@ -82,40 +82,40 @@ class AlterTableBuilder extends StatementBuilder
     public function dropIndex(string|array $columns = []): DropIndexBuilder
     {
         $statement = new DropIndexStatement($this->statement->table);
-        $bulider = new DropIndexBuilder($this->connection, $statement);
-        $bulider->columns($columns);
-        $this->statement->addAction($bulider);
-        return $bulider;
+        $builder = new DropIndexBuilder($this->connection, $statement);
+        $builder->columns($columns);
+        $this->statement->addAction($builder);
+        return $builder;
     }
 
     /**
      * @return string[]
      */
-    public function toDdls(): array
+    public function build(): array
     {
         $formatter = $this->connection->getSchemaFormatter();
-        $ddls = [];
+        $statements = [];
         foreach ($this->statement->actions as $action) {
             if ($action instanceof AlterColumnAction) {
                 if ($action->isAdd()) {
-                    $ddls[] = $formatter->addColumnAction($action);
+                    $statements[] = $formatter->addColumnAction($action);
                 } else {
-                    $ddls[] = $formatter->modifyColumnAction($action);
+                    $statements[] = $formatter->modifyColumnAction($action);
                 }
             }
             elseif ($action instanceof AlterDropColumnAction) {
-                $ddls[] = $formatter->dropColumnAction($action);
+                $statements[] = $formatter->dropColumnAction($action);
             }
             elseif ($action instanceof AlterRenameColumnAction) {
-                $ddls[] = $formatter->renameColumnAction($action);
+                $statements[] = $formatter->renameColumnAction($action);
             }
             elseif ($action instanceof CreateIndexStatement) {
-                $ddls[] = $formatter->createIndexStatement($action);
+                $statements[] = $formatter->createIndexStatement($action);
             }
             elseif ($action instanceof DropIndexStatement) {
-                $ddls[] = $formatter->dropIndexStatement($action);
+                $statements[] = $formatter->dropIndexStatement($action);
             }
         }
-        return $ddls;
+        return $statements;
     }
 }

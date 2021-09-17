@@ -7,5 +7,5 @@ interface BuilderInterface
     /**
      * @return string[]
      */
-    public function toDdls(): array;
+    public function build(): array;
 }

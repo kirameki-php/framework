@@ -85,7 +85,7 @@ abstract class Migration
      */
     public function toDdls(): array
     {
-        return Arr::flatMap($this->builders, fn(StatementBuilder $b) => $b->toDdls());
+        return Arr::flatMap($this->builders, fn(StatementBuilder $b) => $b->build());
     }
 
     /**

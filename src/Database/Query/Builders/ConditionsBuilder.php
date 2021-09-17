@@ -112,15 +112,27 @@ abstract class ConditionsBuilder extends StatementBuilder
     protected function buildCondition(ConditionBuilder|string $column, mixed $operator = null, mixed $value = null): ConditionDefinition
     {
         $num = func_num_args();
+
         if ($num === 1) {
             return $column->getDefinition();
         }
+
         if ($num === 2) {
-            if (is_callable($operator)) return ConditionBuilder::for($column)->tap($operator)->getDefinition();
-            if (is_iterable($operator)) return ConditionBuilder::for($column)->in($operator)->getDefinition();
-            if ($operator instanceof Range) return ConditionBuilder::for($column)->inRange($operator)->getDefinition();
+            if (is_callable($operator)) {
+                return ConditionBuilder::for($column)->tap($operator)->getDefinition();
+            }
+
+            if (is_iterable($operator)) {
+                return ConditionBuilder::for($column)->in($operator)->getDefinition();
+            }
+
+            if ($operator instanceof Range) {
+                return ConditionBuilder::for($column)->inRange($operator)->getDefinition();
+            }
+
             return ConditionBuilder::for($column)->equals($operator)->getDefinition();
         }
+
         if ($num === 3) {
             return ConditionBuilder::for($column)->with($operator, $value)->getDefinition();
         }

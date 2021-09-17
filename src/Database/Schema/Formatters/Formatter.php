@@ -194,11 +194,10 @@ class Formatter
     {
         if ($def->type === 'int') {
             return match ($def->size) {
-                null => 'BIGINT',
                 1 => 'TINYINT',
                 2 => 'SMALLINT',
                 4 => 'INT',
-                8 => 'BIGINT',
+                8, null => 'BIGINT',
                 default => throw new RuntimeException('Invalid int size: '.$def->size.' for '.$def->name),
             };
         }

@@ -66,7 +66,7 @@ class CreateIndexBuilder extends StatementBuilder
     /**
      * @return string[]
      */
-    public function toDdls(): array
+    public function build(): array
     {
         $this->preprocess();
         $formatter = $this->connection->getSchemaFormatter();

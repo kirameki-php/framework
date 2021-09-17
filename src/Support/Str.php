@@ -580,15 +580,42 @@ class Str
      */
     public static function typeOf(mixed $var): string
     {
-        if (is_null($var)) return "null";
-        if (is_bool($var)) return "bool";
-        if (is_int($var)) return "int";
-        if (is_float($var)) return "float";
-        if (is_string($var)) return "string";
-        if (is_array($var)) return "array";
-        if ($var instanceof DateTimeInterface) return 'datetime';
-        if (is_object($var)) return "object";
-        if (is_resource($var)) return "resource";
+        if (is_null($var)) {
+            return "null";
+        }
+
+        if (is_bool($var)) {
+            return "bool";
+        }
+
+        if (is_int($var)) {
+            return "int";
+        }
+
+        if (is_float($var)) {
+            return "float";
+        }
+
+        if (is_string($var)) {
+            return "string";
+        }
+
+        if (is_array($var)) {
+            return "array";
+        }
+
+        if ($var instanceof DateTimeInterface) {
+            return 'datetime';
+        }
+
+        if (is_object($var)) {
+            return "object";
+        }
+
+        if (is_resource($var)) {
+            return "resource";
+        }
+
         return "unknown type";
     }
 
@@ -606,12 +633,30 @@ class Str
      */
     public static function valueOf(mixed $var): string
     {
-        if (is_null($var)) return 'null';
-        if (is_bool($var)) return $var ? 'true' : 'false';
-        if (is_array($var)) return Json::encode($var);
-        if ($var instanceof DateTimeInterface) return $var->format(DATE_RFC3339_EXTENDED);
-        if (is_object($var)) return get_class($var).':'.spl_object_hash($var);
-        if (is_resource($var)) return get_resource_type($var);
+        if (is_null($var)) {
+            return 'null';
+        }
+
+        if (is_bool($var)) {
+            return $var ? 'true' : 'false';
+        }
+
+        if (is_array($var)) {
+            return Json::encode($var);
+        }
+
+        if ($var instanceof DateTimeInterface) {
+            return $var->format(DATE_RFC3339_EXTENDED);
+        }
+
+        if (is_object($var)) {
+            return get_class($var) . ':' . spl_object_hash($var);
+        }
+
+        if (is_resource($var)) {
+            return get_resource_type($var);
+        }
+
         return (string) $var;
     }
 

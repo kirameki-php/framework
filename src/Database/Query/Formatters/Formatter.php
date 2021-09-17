@@ -65,13 +65,13 @@ class Formatter
     public function insertStatement(InsertStatement $statement): string
     {
         $columns = $statement->columns();
-        $cloumnCount = count($columns);
+        $columnCount = count($columns);
         $listSize = count($statement->dataset);
 
         $placeholders = [];
         for ($i = 0; $i < $listSize; $i++) {
             $binders = [];
-            for ($j = 0; $j < $cloumnCount; $j++) {
+            for ($j = 0; $j < $columnCount; $j++) {
                 $binders[] = $this->bindName();
             }
             $placeholders[] = '(' . implode(', ', $binders) . ')';
@@ -172,11 +172,22 @@ class Formatter
                 $current = current($bindings);
                 next($bindings);
                 $remains--;
-                if (is_null($current)) return 'NULL';
-                if (is_bool($current)) return $current ? 'TRUE' : 'FALSE';
-                if (is_string($current)) return $this->stringLiteral($current);
+
+                if (is_null($current)) {
+                    return 'NULL';
+                }
+
+                if (is_bool($current)) {
+                    return $current ? 'TRUE' : 'FALSE';
+                }
+
+                if (is_string($current)) {
+                    return $this->stringLiteral($current);
+                }
+
                 return $this->parameter($current);
             }
+
             return $matches[0];
         }, $statement);
     }
@@ -190,7 +201,7 @@ class Formatter
         if (empty($statement->columns)) {
             $statement->columns[] = '*';
         }
-        $exprs = [];
+        $expressions = [];
 
         $distinct = '';
         if ($statement->distinct) {
@@ -199,25 +210,25 @@ class Formatter
 
         foreach ($statement->columns as $name) {
             if ($name instanceof Expr) {
-                $exprs[] = $name->toString();
+                $expressions[] = $name->toString();
                 continue;
             }
 
             $segments = preg_split('/\s+as\s+/i', $name);
             if (count($segments) > 1) {
-                $exprs[] = $this->columnName($segments[0]) . ' AS ' . $segments[1];
+                $expressions[] = $this->columnName($segments[0]) . ' AS ' . $segments[1];
                 continue;
             }
 
             // consists of only alphanumerics so assume it's just a column
             if (ctype_alnum($segments[0])) {
-                $exprs[] = $this->columnName($segments[0], $statement->tableAlias);
+                $expressions[] = $this->columnName($segments[0], $statement->tableAlias);
                 continue;
             }
 
-            $exprs[] = $segments[0];
+            $expressions[] = $segments[0];
         }
-        return 'SELECT ' . $distinct . implode(', ', $exprs);
+        return 'SELECT ' . $distinct . implode(', ', $expressions);
     }
 
     /**
@@ -246,12 +257,15 @@ class Formatter
         if ($statement->where !== null) {
             $parts[] = $this->wherePart($statement);
         }
+
         if ($statement->orderBy !== null) {
             $parts[] = $this->orderByPart($statement);
         }
+
         if ($statement->limit !== null) {
             $parts[] = 'LIMIT ' . $statement->limit;
         }
+
         return implode(' ', $parts);
     }
 
@@ -308,7 +322,9 @@ class Formatter
         }
 
         if ($operator === 'IN') {
-            if (empty($value)) return '1 = 0';
+            if (empty($value)) {
+                return '1 = 0';
+            }
             $operator = $negated ? 'NOT '.$operator : $operator;
             $bindNames = [];
             for($i = 0, $size = count($value); $i < $size; $i++) {

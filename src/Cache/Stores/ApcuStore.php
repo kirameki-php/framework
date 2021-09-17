@@ -64,9 +64,9 @@ class ApcuStore extends AbstractStore
         $results = [];
         foreach ($formattedKeys as $formattedKey) {
             if (array_key_exists($formattedKey, $entries)) {
-                $results[$this->unformatKey($formattedKey)] = $entries[$formattedKey];
+                $results[$this->deformatKey($formattedKey)] = $entries[$formattedKey];
             } else {
-                $results[$this->unformatKey($formattedKey)] = false;
+                $results[$this->deformatKey($formattedKey)] = false;
             }
         }
         if ($this->triggerEvents) {
@@ -96,7 +96,7 @@ class ApcuStore extends AbstractStore
         $entries = apcu_exists($formattedKeys);
         $results = [];
         foreach ($formattedKeys as $formattedKey) {
-            $results[$this->unformatKey($formattedKey)] = $entries[$formattedKey] ?? false;
+            $results[$this->deformatKey($formattedKey)] = $entries[$formattedKey] ?? false;
         }
         if ($this->triggerEvents) {
             $this->triggerCheckEvent(__FUNCTION__, $results);

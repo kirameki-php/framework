@@ -717,7 +717,7 @@ class CollectionTest extends TestCase
         $this->collect([['id' => 'b'], ['id' => 'b']])->keyBy(fn($v) => $v['id']);
     }
 
-    public function testKeyBy_WithOverwritableKey(): void
+    public function testKeyBy_WithOverwrittenKey(): void
     {
         $collect = $this->collect([['id' => 'b', 1], ['id' => 'b', 2]])->keyBy(fn($v) => $v['id'], true);
         self::assertEquals(['b' => ['id' => 'b', 2]], $collect->toArray());

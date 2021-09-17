@@ -40,14 +40,18 @@ class File
         $parts = array_filter(explode('/', $path), 'strlen');
         $absolutes = [];
         foreach ($parts as $part) {
-            if ('.' === $part) continue;
+            if ('.' === $part) {
+                continue;
+            }
             if ('..' === $part) {
                 if (array_pop($absolutes) === null) {
                     // TODO Better error
                     throw new RuntimeException("Invalid Directory $path. No parent exists. (Too many ..s)");
                 }
             }
-            else $absolutes[] = $part;
+            else {
+                $absolutes[] = $part;
+            }
         }
         return '/'.implode('/', $absolutes);
     }

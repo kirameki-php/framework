@@ -98,7 +98,7 @@ abstract class AbstractStore implements StoreInterface
      * @param string $key
      * @return string
      */
-    public function unformatKey(string $key): string
+    public function deformatKey(string $key): string
     {
         return preg_replace('/'.static::$prefix.$this->namespace.static::$delimiter.'/', '', $key, 1);
     }
@@ -109,7 +109,7 @@ abstract class AbstractStore implements StoreInterface
      */
     public function unformatKeys(array $results): array
     {
-        return Arr::keyBy($results, fn($_, $key) => $this->unformatKey($key));
+        return Arr::keyBy($results, fn($_, $key) => $this->deformatKey($key));
     }
 
     /**

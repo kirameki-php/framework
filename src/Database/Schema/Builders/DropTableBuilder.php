@@ -20,7 +20,7 @@ class DropTableBuilder extends StatementBuilder
     /**
      * @return string[]
      */
-    public function toDdls(): array
+    public function build(): array
     {
         $formatter = $this->connection->getSchemaFormatter();
         return [

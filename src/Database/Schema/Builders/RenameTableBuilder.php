@@ -36,7 +36,7 @@ class RenameTableBuilder implements BuilderInterface
     /**
      * @return string[]
      */
-    public function toDdls(): array
+    public function build(): array
     {
         $formatter = $this->connection->getSchemaFormatter();
         return [

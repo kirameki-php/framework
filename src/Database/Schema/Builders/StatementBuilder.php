@@ -41,14 +41,14 @@ abstract class StatementBuilder implements BuilderInterface
     /**
      * @return string[]
      */
-    abstract public function toDdls(): array;
+    abstract public function build(): array;
 
     /**
      * @return string
      */
     public function toString(): string
     {
-        return implode(PHP_EOL, $this->toDdls());
+        return implode(PHP_EOL, $this->build());
     }
 }
 

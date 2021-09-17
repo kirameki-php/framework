@@ -338,10 +338,22 @@ class DeferrableStore extends AbstractStore
      */
     protected function toAbsoluteTtl($ttl): ?Carbon
     {
-        if (is_null($ttl)) return null;
-        if (is_int($ttl)) return Carbon::createFromTimestamp(time() + $ttl);
-        if ($ttl instanceof Carbon) return $ttl;
-        if ($ttl instanceof DateTimeInterface) return Carbon::instance($ttl);
+        if (is_null($ttl)) {
+            return null;
+        }
+
+        if (is_int($ttl)) {
+            return Carbon::createFromTimestamp(time() + $ttl);
+        }
+
+        if ($ttl instanceof Carbon) {
+            return $ttl;
+        }
+
+        if ($ttl instanceof DateTimeInterface) {
+            return Carbon::instance($ttl);
+        }
+
         throw new RuntimeException('Unknown type for TTL: '.Str::valueOf($ttl));
     }
 }
