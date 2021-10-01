@@ -147,8 +147,14 @@ abstract class ConditionsBuilder extends StatementBuilder
      */
     protected function buildNotCondition(string $column, mixed $value): ConditionDefinition
     {
-        if (is_array($value)) return ConditionBuilder::for($column)->notIn($value)->getDefinition();
-        if ($value instanceof Range) return ConditionBuilder::for($column)->notInRange($value)->getDefinition();
+        if (is_array($value)) {
+            return ConditionBuilder::for($column)->notIn($value)->getDefinition();
+        }
+
+        if ($value instanceof Range) {
+            return ConditionBuilder::for($column)->notInRange($value)->getDefinition();
+        }
+
         return ConditionBuilder::for($column)->notEquals($value)->getDefinition();
     }
 

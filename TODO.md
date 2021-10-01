@@ -9,3 +9,4 @@ Database
 
 Model
 - readonly mode
+- add encryption option to attribute

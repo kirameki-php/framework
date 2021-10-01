@@ -97,9 +97,9 @@ class Codecs
 
     /**
      * @param string $accept
-     * @return EncoderInterface|null
+     * @return EncoderInterface
      */
-    public function getEncoder(string $accept): ?EncoderInterface
+    public function getEncoder(string $accept): EncoderInterface
     {
         $mediaTypes = $this->extractMediaTypesFromRequest($accept);
         foreach ($mediaTypes as $mediaType) {

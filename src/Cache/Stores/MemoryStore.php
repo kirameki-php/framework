@@ -56,14 +56,16 @@ class MemoryStore extends AbstractStore
     public function tryGet(string $key, &$value): bool
     {
         $result = false;
+
         if ($data = $this->fetchEntry($key)) {
             $value = $data['value'];
             $result = true;
         }
-        $value = false;
+
         if ($this->triggerEvents) {
             $this->triggerAccessEvent(__FUNCTION__, [$key], [$key => $value]);
         }
+
         return $result;
     }
 

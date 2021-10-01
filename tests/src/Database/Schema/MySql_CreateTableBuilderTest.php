@@ -36,7 +36,7 @@ class MySql_CreateTableBuilderTest extends SchemaTestCase
         static::assertEquals('CREATE TABLE users (id VARCHAR(36), PRIMARY KEY (id ASC));', $schema);
     }
 
-    public function testDefaultIntColumn()
+    public function testDefaultIntColumn(): void
     {
         $builder = $this->createTableBuilder('users');
         $builder->int('id')->primaryKey();
@@ -44,7 +44,7 @@ class MySql_CreateTableBuilderTest extends SchemaTestCase
         static::assertEquals('CREATE TABLE users (id BIGINT, PRIMARY KEY (id ASC));', $schema);
     }
 
-    public function testInt8Column()
+    public function testInt8Column(): void
     {
         $builder = $this->createTableBuilder('users');
         $builder->int('id', 1)->primaryKey();
@@ -52,7 +52,7 @@ class MySql_CreateTableBuilderTest extends SchemaTestCase
         static::assertEquals('CREATE TABLE users (id TINYINT, PRIMARY KEY (id ASC));', $schema);
     }
 
-    public function testInt16Column()
+    public function testInt16Column(): void
     {
         $builder = $this->createTableBuilder('users');
         $builder->int('id', 2)->primaryKey();
@@ -60,7 +60,7 @@ class MySql_CreateTableBuilderTest extends SchemaTestCase
         static::assertEquals('CREATE TABLE users (id SMALLINT, PRIMARY KEY (id ASC));', $schema);
     }
 
-    public function testInt32Column()
+    public function testInt32Column(): void
     {
         $builder = $this->createTableBuilder('users');
         $builder->int('id', 4)->primaryKey();
@@ -68,7 +68,7 @@ class MySql_CreateTableBuilderTest extends SchemaTestCase
         static::assertEquals('CREATE TABLE users (id INT, PRIMARY KEY (id ASC));', $schema);
     }
 
-    public function testInt64Column()
+    public function testInt64Column(): void
     {
         $builder = $this->createTableBuilder('users');
         $builder->int('id', 8)->primaryKey();
@@ -76,7 +76,7 @@ class MySql_CreateTableBuilderTest extends SchemaTestCase
         static::assertEquals('CREATE TABLE users (id BIGINT, PRIMARY KEY (id ASC));', $schema);
     }
 
-    public function testBoolColumn()
+    public function testBoolColumn(): void
     {
         $builder = $this->createTableBuilder('users');
         $builder->int('id')->primaryKey();
@@ -85,7 +85,7 @@ class MySql_CreateTableBuilderTest extends SchemaTestCase
         static::assertEquals('CREATE TABLE users (id BIGINT, enabled BOOL DEFAULT TRUE, PRIMARY KEY (id ASC));', $schema);
     }
 
-    public function testNotNull()
+    public function testNotNull(): void
     {
         $builder = $this->createTableBuilder('users');
         $builder->int('id')->primaryKey()->notNull();
@@ -93,7 +93,7 @@ class MySql_CreateTableBuilderTest extends SchemaTestCase
         static::assertEquals('CREATE TABLE users (id BIGINT NOT NULL, PRIMARY KEY (id ASC));', $schema);
     }
 
-    public function testAutoIncrement()
+    public function testAutoIncrement(): void
     {
         $builder = $this->createTableBuilder('users');
         $builder->int('id')->primaryKey()->autoIncrement();
@@ -101,7 +101,7 @@ class MySql_CreateTableBuilderTest extends SchemaTestCase
         static::assertEquals('CREATE TABLE users (id BIGINT AUTO_INCREMENT, PRIMARY KEY (id ASC));', $schema);
     }
 
-    public function testDefaultValue()
+    public function testDefaultValue(): void
     {
         $builder = $this->createTableBuilder('users');
         $builder->uuid('id')->primaryKey()->default('ABC');
@@ -109,7 +109,7 @@ class MySql_CreateTableBuilderTest extends SchemaTestCase
         static::assertEquals('CREATE TABLE users (id VARCHAR(36) DEFAULT \'ABC\', PRIMARY KEY (id ASC));', $schema);
     }
 
-    public function testDefaultValueRaw()
+    public function testDefaultValueRaw(): void
     {
         $builder = $this->createTableBuilder('users');
         $builder->int('id')->primaryKey();
@@ -118,7 +118,7 @@ class MySql_CreateTableBuilderTest extends SchemaTestCase
         static::assertEquals('CREATE TABLE users (id BIGINT, loginAt DATETIME(6) DEFAULT CURRENT_TIMESTAMP, PRIMARY KEY (id ASC));', $schema);
     }
 
-    public function testComment()
+    public function testComment(): void
     {
         $builder = $this->createTableBuilder('users');
         $builder->int('id')->primaryKey()->comment('test\'escaped"');

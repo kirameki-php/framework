@@ -26,7 +26,7 @@ class ResponseBuilder
      */
     public function __construct(ResponseHeaders $headers = null)
     {
-        $this->statusCode = $code ?? StatusCode::OK;
+        $this->statusCode = StatusCode::OK;
         $this->headers = $headers ?? new ResponseHeaders();
         $this->data = null;
     }

@@ -8,6 +8,10 @@ use Kirameki\Support\Arr;
 
 class LogInitializer implements InitializerInterface
 {
+    /**
+     * @param Application $app
+     * @return void
+     */
     public function register(Application $app): void
     {
         $config = $app->config()->for('logging');

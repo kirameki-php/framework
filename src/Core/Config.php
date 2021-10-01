@@ -65,6 +65,15 @@ class Config implements ArrayAccess
 
     /**
      * @param string $key
+     * @return mixed
+     */
+    public function getOrFail(string $key): mixed
+    {
+        return $this[$key];
+    }
+
+    /**
+     * @param string $key
      * @param mixed $value
      */
     public function set(string $key, mixed $value): void

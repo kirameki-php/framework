@@ -46,15 +46,15 @@ abstract class TestCase extends BaseTestCase
 
     protected function setUp(): void
     {
-        array_map(fn($callback) => $callback(), $this->beforeSetupCallbacks);
+        array_map(static fn($callback) => $callback(), $this->beforeSetupCallbacks);
         parent::setUp();
-        array_map(fn($callback) => $callback(), $this->afterSetupCallbacks);
+        array_map(static fn($callback) => $callback(), $this->afterSetupCallbacks);
     }
 
     protected function tearDown(): void
     {
-        array_map(fn($callback) => $callback(), $this->beforeTearDownCallbacks);
+        array_map(static fn($callback) => $callback(), $this->beforeTearDownCallbacks);
         parent::tearDown();
-        array_map(fn($callback) => $callback(), $this->afterTearDownCallbacks);
+        array_map(static fn($callback) => $callback(), $this->afterTearDownCallbacks);
     }
 }

@@ -7,14 +7,13 @@ use Countable;
 use Generator;
 use IteratorAggregate;
 use JsonSerializable;
+use Symfony\Component\VarDumper\VarDumper;
 use function array_chunk;
 use function array_diff;
 use function array_diff_key;
 use function array_unique;
 use function array_values;
 use function count;
-use function dd;
-use function dump;
 use function is_iterable;
 
 /**
@@ -156,7 +155,9 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
      */
     public function dd(bool $asArray = false): static
     {
-        dd($asArray ? $this->toArray() : $this);
+        if ($this->dump($asArray)) {
+            exit(1);
+        }
         return $this;
     }
 
@@ -211,7 +212,7 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
      */
     public function dump(bool $asArray = false): static
     {
-        dump($asArray ? $this->toArray() : $this);
+        VarDumper::dump($asArray ? $this->toArray() : $this);
         return $this;
     }
 

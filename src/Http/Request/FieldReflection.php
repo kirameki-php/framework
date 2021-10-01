@@ -130,9 +130,8 @@ class FieldReflection
                     $arr[$key] = $this->castToType($arrayOf->type, $arrayOf->nullable, $item);
                 }
                 return $arr;
-            } else {
-                return $value;
             }
+            return $value;
         }
 
         if ($type === 'object' && is_array($value)) {

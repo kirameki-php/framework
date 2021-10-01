@@ -4,6 +4,7 @@ namespace Kirameki\Support;
 
 use Kirameki\Support\Concerns;
 use Stringable;
+use Symfony\Component\VarDumper\VarDumper;
 use function basename;
 use function dirname;
 
@@ -174,7 +175,9 @@ class StringBuilder implements Stringable
      */
     public function dd(): static
     {
-        dd($this->value);
+        if ($this->dump()) {
+            exit(1);
+        }
         return $this;
     }
 
@@ -194,7 +197,7 @@ class StringBuilder implements Stringable
      */
     public function dump(): static
     {
-        dump($this->value);
+        VarDumper::dump($this->value);
         return $this;
     }
 
@@ -388,16 +391,6 @@ class StringBuilder implements Stringable
     public function titleize(): static
     {
         $this->value = Str::titleize($this->value);
-        return $this;
-    }
-
-    /**
-     * @param int $position
-     * @return $this
-     */
-    public function to(int $position): static
-    {
-        $this->value = Str::to($this->value, $position);
         return $this;
     }
 
