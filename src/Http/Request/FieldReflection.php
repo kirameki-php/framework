@@ -4,6 +4,7 @@ namespace Kirameki\Http\Request;
 
 use Kirameki\Http\Exceptions\ValidationException;
 use Kirameki\Http\Request\Validations\ValidationInterface;
+use ArrayAccess;
 use Kirameki\Support\Arr;
 use Kirameki\Support\Str;
 use ReflectionAttribute;
@@ -122,24 +123,25 @@ class FieldReflection
             return $result;
         }
 
-        if ($type === 'array' && is_array($value)) {
-            $arrayOf = Arr::first($this->property->getAttributes(ArrayOf::class))?->newInstance();
-            if ($arrayOf instanceof ArrayOf) {
-                $arr = [];
-                foreach ($value as $key => $item) {
-                    $arr[$key] = $this->castToType($arrayOf->type, $arrayOf->nullable, $item);
+        if (is_array($value)) {
+            if ($type === 'array' || is_subclass_of($type, ArrayAccess::class)) {
+                $list = $type === 'array' ? [] : new $type;
+                if (($arrType = $this->definition->arrayOf) !== null) {
+                    foreach ($value as $key => $item) {
+                        $list[$key] = $this->castToType($arrType, $item, true);
+                    }
+                    return $list;
                 }
-                return $arr;
+                return $value;
             }
-            return $value;
-        }
 
-        if ($type === 'object' && is_array($value)) {
-            return (object) $value;
-        }
+            if ($type === 'object') {
+                return (object) $value;
+            }
 
-        if (class_exists($type) && is_array($value)) {
-            return FieldMap::instance($type, $value);
+            if (class_exists($type)) {
+                return FieldMap::instance($type, $value);
+            }
         }
 
         $this->throwValidationException($type, $value);

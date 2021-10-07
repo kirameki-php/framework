@@ -79,6 +79,7 @@ class HttpHandler
         $data = $this->codecs->decode($contentType, $request->body);
 
         $request->data->merge($data);
+        $request->data->merge($request->url->queryParameters());
     }
 
     /**

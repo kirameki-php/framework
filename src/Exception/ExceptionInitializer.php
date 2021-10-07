@@ -5,6 +5,7 @@ namespace Kirameki\Exception;
 use Kirameki\Core\Application;
 use Kirameki\Core\InitializerInterface;
 use Kirameki\Exception\Handlers\LogHandler;
+use Kirameki\Exception\Handlers\VarDumpHandler;
 
 class ExceptionInitializer implements InitializerInterface
 {
@@ -17,5 +18,6 @@ class ExceptionInitializer implements InitializerInterface
         $manager = new ExceptionManager;
         $app->singleton(ExceptionManager::class, $manager);
         $manager->setHandler('log', fn() => new LogHandler);
+        $manager->setHandler('dump', fn() => new VardumpHandler);
     }
 }

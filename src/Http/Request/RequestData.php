@@ -121,7 +121,7 @@ class RequestData implements ArrayAccess, Countable, IteratorAggregate, JsonSeri
      */
     public function merge(array $data): static
     {
-        Arr::mergeRecursive($this->data, $data);
+        $this->data = Arr::mergeRecursive($this->data, $data);
         return $this;
     }
 
