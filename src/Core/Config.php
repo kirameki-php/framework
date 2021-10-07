@@ -3,13 +3,14 @@
 namespace Kirameki\Core;
 
 use ArrayAccess;
+use RuntimeException;
 
 class Config implements ArrayAccess
 {
     /**
      * @var array
      */
-    protected array $entries = [];
+    protected array $entries;
 
     /**
      * @param string $dir
@@ -29,9 +30,9 @@ class Config implements ArrayAccess
     /**
      * @param array $entries
      */
-    public function __construct(array $entries)
+    public function __construct(array &$entries)
     {
-        $this->entries = $entries;
+        $this->entries = &$entries;
     }
 
     /**
@@ -48,19 +49,7 @@ class Config implements ArrayAccess
      */
     public function get(string $key): mixed
     {
-        if (!str_contains($key, '.')) {
-            return $this->entries[$key] ?? null;
-        }
-
-        $curr = &$this->entries;
-        foreach (explode('.', $key) as $segment) {
-            if (!isset($curr[$segment])) {
-                return null;
-            }
-            $curr = &$curr[$segment];
-        }
-
-        return $curr;
+        return $this->getInternal($key, false);
     }
 
     /**
@@ -69,7 +58,50 @@ class Config implements ArrayAccess
      */
     public function getOrFail(string $key): mixed
     {
-        return $this[$key];
+        return $this->getInternal($key, true);
+    }
+
+    /**
+     * @param string $key
+     * @return string
+     */
+    public function getString(string $key): string
+    {
+        return $this->getOrFail($key);
+    }
+
+    /**
+     * @param string $key
+     * @return string|null
+     */
+    public function getStringOrNull(string $key): string|null
+    {
+        return $this->get($key);
+    }
+
+    /**
+     * @param string $key
+     * @param bool $strict
+     * @return mixed
+     */
+    protected function getInternal(string $key, bool $strict): mixed
+    {
+        if (!str_contains($key, '.')) {
+            return $this->entries[$key] ?? null;
+        }
+
+        $curr = &$this->entries;
+        foreach (explode('.', $key) as $segment) {
+            if (!isset($curr[$segment])) {
+                if ($strict) {
+                     throw new RuntimeException("$segment does not exist. (Key: $key)");
+                }
+                return null;
+            }
+            $curr = &$curr[$segment];
+        }
+
+        return $curr;
     }
 
     /**
@@ -112,7 +144,11 @@ class Config implements ArrayAccess
      */
     public function for(string $name): static
     {
-        return new Config($this->entries[$name] ?? []);
+        $ptr = &$this->entries;
+        foreach (explode('.', $name) as $segment) {
+            $ptr = &$ptr[$segment];
+        }
+        return new Config($ptr);
     }
 
     /**

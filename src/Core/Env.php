@@ -11,6 +11,11 @@ class Env
     public static function get(string $key): bool|string|null
     {
         $value = getenv($key);
+
+        if ($value === false) {
+            return null;
+        }
+
         return match (strtolower($value)) {
             'true' => true,
             'false' => false,
