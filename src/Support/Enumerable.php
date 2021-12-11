@@ -275,7 +275,7 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
 
     /**
      * @param callable|null $condition
-     * @return T
+     * @return T|null
      */
     public function first(callable $condition = null): mixed
     {
@@ -329,7 +329,7 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
 
     /**
      * @param int|string $key
-     * @return T
+     * @return T|null
      */
     public function get(int|string $key): mixed
     {
@@ -426,7 +426,7 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
 
     /**
      * @param callable|null $condition
-     * @return T
+     * @return T|null
      */
     public function last(callable $condition = null): mixed
     {
@@ -559,7 +559,7 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
     }
 
     /**
-     * @return T
+     * @return T|null
      */
     public function sample(): mixed
     {
