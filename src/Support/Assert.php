@@ -78,7 +78,7 @@ class Assert
      */
     public static function greaterThan(int $expected, mixed $value): void
     {
-        if (is_int($value) && $value > 1) {
+        if (is_int($value) && $value > $expected) {
             return;
         }
         throw new InvalidValueException('greater than '.$expected, $value);
@@ -127,6 +127,9 @@ class Assert
         }
     }
 
+    /**
+     * @param array $array
+     */
     public static function arrayIsNotEmpty(array $array): void
     {
         if (count($array) === 0) {
