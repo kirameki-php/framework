@@ -1156,13 +1156,40 @@ class Arr
     }
 
     /**
+     * @see uniqueBy for details
+     *
      * @param iterable $iterable
-     * @param int $flag
      * @return array
      */
-    public static function unique(iterable $iterable, int $flag = SORT_STRING): array
+    public static function unique(iterable $iterable): array
     {
-        return array_unique(static::from($iterable), $flag);
+        return static::uniqueBy($iterable, static fn($value) => $value);
+    }
+
+    /**
+     * Must do custom unique because array_unique does a string convertion before comparing.
+     * For example, `[1, true, null, false]` will result in: `[0 => 1, 2 => null]` 🤦
+     *
+     * @param iterable $iterable
+     * @param callable $callback
+     * @return array
+     */
+    public static function uniqueBy(iterable $iterable, callable $callback): array
+    {
+        $ukeys = [];
+        $preserved = [];
+        foreach (static::from($iterable) as $key => $value) {
+            $ukey = $callback($value, $key);
+            if (! in_array($ukey, $ukeys, true)) {
+                $ukeys[] = $ukey;
+                $preserved[] = [$key, $value];
+            }
+        }
+        $results = [];
+        foreach ($preserved as $data) {
+            $results[$data[0]] = $data[1];
+        }
+        return $results;
     }
 
     /**

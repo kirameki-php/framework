@@ -829,12 +829,19 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
     }
 
     /**
-     * @param int $flag
      * @return static
      */
-    public function unique(int $flag = SORT_STRING): static
+    public function unique(): static
     {
-        return $this->newInstance(Arr::unique($this->items, $flag));
+        return $this->newInstance(Arr::unique($this->items));
+    }
+
+    /**
+     * @return static
+     */
+    public function uniqueBy(callable $callback): static
+    {
+        return $this->newInstance(Arr::uniqueBy($this->items, $callback));
     }
 
     /**

@@ -1628,6 +1628,30 @@ class CollectionTest extends TestCase
 
         $collect = $this->collect(['a' => 1, 'b' => 2, 'c' => 2])->unique();
         self::assertEquals(['a' => 1, 'b' => 2], $collect->toArray());
+
+        $values = ['3', 3, null, '', 0, true, false];
+        $collect = $this->collect()->merge($values)->merge($values)->unique();
+        self::assertEquals($values, $collect->toArray());
+
+        $values = ['3', 3, null, '', 0, true, false];
+        $collect = $this->collect($values)->repeat(2)->unique();
+        self::assertEquals($values, $collect->toArray());
+    }
+
+    public function testUniqueBy(): void
+    {
+        $collect = $this->collect([])->uniqueBy(static fn() => 1);
+        self::assertEquals([], $collect->toArray());
+
+        $collect = $this->collect([1,2,3,4])->uniqueBy(static fn($v) => $v % 2);
+        self::assertEquals([1, 2], $collect->toArray());
+
+        $collect = $this->collect(['a' => 1, 'b' => 2, 'c' => 2])->uniqueBy(static fn($v) => $v % 2);
+        self::assertEquals(['a' => 1, 'b' => 2], $collect->toArray());
+
+        $values = ['3', 3, null, '', 0, true, false];
+        $collect = $this->collect($values)->repeat(2)->uniqueBy(static fn($v) => $v);
+        self::assertEquals($values, $collect->toArray());
     }
 
     public function testUnshift(): void
