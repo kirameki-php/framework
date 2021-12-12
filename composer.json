@@ -21,6 +21,7 @@
     "ramsey/uuid": "^4.1"
   },
   "require-dev": {
+    "phpstan/phpstan": "^1.2",
     "phpunit/phpunit": "~9.0",
     "roave/security-advisories": "dev-master",
     "symfony/var-dumper": "^5.1"

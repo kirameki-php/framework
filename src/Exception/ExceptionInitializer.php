@@ -18,6 +18,6 @@ class ExceptionInitializer implements InitializerInterface
         $manager = new ExceptionManager;
         $app->singleton(ExceptionManager::class, $manager);
         $manager->setHandler('log', fn() => new LogHandler);
-        $manager->setHandler('dump', fn() => new VardumpHandler);
+        $manager->setHandler('dump', fn() => new VarDumpHandler);
     }
 }

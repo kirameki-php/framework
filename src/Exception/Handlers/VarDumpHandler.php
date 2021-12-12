@@ -5,7 +5,7 @@ namespace Kirameki\Exception\Handlers;
 use Symfony\Component\VarDumper\VarDumper;
 use Throwable;
 
-class VardumpHandler implements HandlerInterface
+class VarDumpHandler implements HandlerInterface
 {
     /**
      * @param Throwable $exception

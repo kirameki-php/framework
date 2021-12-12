@@ -20,6 +20,10 @@ logs:
 test:
 	$(DOCKER_COMPOSE_COMMAND) run app phpunit
 
+.PHONY: test
+analyze:
+	$(DOCKER_COMPOSE_COMMAND) run app phpstan analyse src --memory-limit 1G
+
 .PHONY: bash
 bash:
 	$(DOCKER_COMPOSE_COMMAND) run app bash

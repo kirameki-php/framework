@@ -8,7 +8,7 @@ use Kirameki\Database\Query\Support\Range;
 use RuntimeException;
 
 /**
- * @property-read ConditionsStatement $statement
+ * @property ConditionsStatement $statement
  */
 abstract class ConditionsBuilder extends StatementBuilder
 {

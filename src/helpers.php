@@ -87,7 +87,7 @@ function storage_path(string $relPath = null): string
 
 /**
  * @template T
- * @param mixed $value
+ * @param T $value
  * @param callable $callable
  * @return T
  */
