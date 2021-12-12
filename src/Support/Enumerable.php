@@ -74,6 +74,14 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
     }
 
     /**
+     * @return T|null
+     */
+    public function coalesce(): mixed
+    {
+        return Arr::coalesce($this->items);
+    }
+
+    /**
      * @param int $size
      * @return static
      */

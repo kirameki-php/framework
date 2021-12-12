@@ -134,6 +134,33 @@ class CollectionTest extends TestCase
         $this->collect([1])->chunk(0);
     }
 
+    public function testCoalease(): void
+    {
+        $result = $this->collect()->coalesce();
+        self::assertNull($result);
+
+        $result = $this->collect([null, 0, 1])->coalesce();
+        self::assertEquals(0, $result);
+
+        $result = $this->collect([0, null, 1])->coalesce();
+        self::assertEquals(0, $result);
+
+        $result = $this->collect(['', null, 1])->coalesce();
+        self::assertEquals('', $result);
+
+        $result = $this->collect(['', null, 1])->coalesce();
+        self::assertEquals('', $result);
+
+        $result = $this->collect([[], null, 1])->coalesce();
+        self::assertEquals([], $result);
+
+        $result = $this->collect([null, [], 1])->coalesce();
+        self::assertEquals([], $result);
+
+        $result = $this->collect([null, null, 1])->coalesce();
+        self::assertEquals(1, $result);
+    }
+
     public function testCompact(): void
     {
         // empty but not same instance

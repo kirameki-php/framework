@@ -79,6 +79,20 @@ class Arr
 
     /**
      * @param iterable $iterable
+     * @return mixed
+     */
+    public static function coalesce(iterable $iterable): mixed
+    {
+        foreach ($iterable as $value) {
+            if ($value !== null) {
+                return $value;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * @param iterable $iterable
      * @param int $depth
      * @return array
      */
