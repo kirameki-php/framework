@@ -32,6 +32,7 @@ use function spl_object_hash;
 use function str_contains;
 use function str_ends_with;
 use function str_pad;
+use function str_repeat;
 use function str_replace;
 use function str_starts_with;
 use function strrev;
@@ -389,6 +390,16 @@ class Str
         }
 
         return strpos($string, $search, $offset);
+    }
+
+    /**
+     * @param string $string
+     * @param int $times
+     * @return string
+     */
+    public static function repeat(string $string, int $times): string
+    {
+        return str_repeat($string, $times);
     }
 
     /**

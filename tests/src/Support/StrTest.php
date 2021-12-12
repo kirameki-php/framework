@@ -307,4 +307,18 @@ class StrTest extends TestCase
         self::assertEquals('test', Str::of('test')->toString());
         self::assertEquals('', Str::of()->toString());
     }
+
+    public function testRepeat(): void
+    {
+        self::assertEquals('aaa', Str::repeat('a', 3));
+        self::assertEquals('', Str::repeat('a', 0));
+    }
+
+    public function testRepeatNegativeTimes(): void
+    {
+        $this->expectError();
+        $this->expectErrorMessage('str_repeat(): Argument #2 ($times) must be greater than or equal to 0');
+        /** @noinspection PhpExpressionResultUnusedInspection */
+        Str::repeat('a', -1);
+    }
 }

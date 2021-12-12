@@ -302,6 +302,16 @@ class StringBuilder implements Stringable
     }
 
     /**
+     * @param int $times
+     * @return $this
+     */
+    public function repeat(int $times): static
+    {
+        $this->value = Str::repeat($this->value, $times);
+        return $this;
+    }
+
+    /**
      * @param string $search
      * @param string $replace
      * @return $this
