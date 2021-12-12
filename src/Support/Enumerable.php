@@ -563,6 +563,15 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
     }
 
     /**
+     * @param int $times
+     * @return static
+     */
+    public function repeat(int $times): static
+    {
+        return $this->newInstance(Arr::repeat($this->items, $times));
+    }
+
+    /**
      * @return static
      */
     public function reverse(): static

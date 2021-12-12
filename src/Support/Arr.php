@@ -26,6 +26,7 @@ use function end;
 use function explode;
 use function http_build_query;
 use function implode;
+use function in_array;
 use function is_array;
 use function is_callable;
 use function is_int;
@@ -927,6 +928,24 @@ class Arr
         }
 
         return false;
+    }
+
+    /**
+     * @param iterable $iterable
+     * @param int $times
+     * @return array
+     */
+    public static function repeat(iterable $iterable, int $times): array
+    {
+        Assert::greaterThanOrEqualTo(0, $times);
+
+        $array = [];
+        for ($i = 0; $i < $times; $i++) {
+            foreach ($iterable as $value) {
+                $array[] = $value;
+            }
+        }
+        return $array;
     }
 
     /**

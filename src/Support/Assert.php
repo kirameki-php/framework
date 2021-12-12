@@ -85,6 +85,19 @@ class Assert
     }
 
     /**
+     * @param int $expected
+     * @param mixed $value
+     * @return void
+     */
+    public static function greaterThanOrEqualTo(int $expected, mixed $value): void
+    {
+        if (is_int($value) && $value >= $expected) {
+            return;
+        }
+        throw new InvalidValueException('greater than or equal to '.$expected, $value);
+    }
+
+    /**
      * @param int|string $key
      * @return void
      */

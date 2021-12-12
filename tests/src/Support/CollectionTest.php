@@ -1178,6 +1178,30 @@ class CollectionTest extends TestCase
         self::assertEquals(['a' => [], 1], $collect->toArray());
     }
 
+    public function testRepeat(): void
+    {
+        $collect = $this->collect([1])->repeat(3);
+        self::assertEquals([1, 1, 1], $collect->toArray(), 'Repeat single 3 times');
+
+        $collect = $this->collect([1, 2])->repeat(2);
+        self::assertEquals([1, 2, 1, 2], $collect->toArray(), 'Repeat multiple 3 times');
+
+        $collect = $this->collect(['a' => 1, 'b' => 2])->repeat(2);
+        self::assertEquals([1, 2, 1, 2], $collect->toArray(), 'Repeat hash 3 times (loses the keys)');
+
+        $collect = $this->collect([1])->repeat(0);
+        self::assertEquals([], $collect->toArray(), 'Repeat 0 times (does nothing)');
+    }
+
+    public function testRepeat_NegativeTimes(): void
+    {
+        $this->expectException(InvalidValueException::class);
+        $this->expectExceptionMessage('Expected value to be greater than or equal to 0. -1 given.');
+
+        $collect = $this->collect([1])->repeat(-1);
+        self::assertEquals([], $collect->toArray(), 'Repeat -1 times (throws error)');
+    }
+
     public function testReverse(): void
     {
         $collect = $this->collect([])->reverse();
