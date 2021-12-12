@@ -1254,12 +1254,92 @@ class CollectionTest extends TestCase
         self::assertEquals(['a' => ['b' => 1]], $this->collect()->set('a.b', 1)->toArray());
     }
 
+    public function testSetIfAlreadyExists(): void
+    {
+        self::assertEquals(
+            [],
+            $this->collect()->setIfAlreadyExists('a', 1)->toArray(),
+            'Set when not exists'
+        );
+
+        self::assertEquals(
+            [],
+            $this->collect()->setIfAlreadyExists('a', 1)->setIfAlreadyExists('a', 2)->toArray(),
+            'Set when not exists twice on non existing'
+        );
+
+        self::assertEquals(
+            ['a' => 2],
+            $this->collect(['a' => null])->setIfAlreadyExists('a', 1)->setIfAlreadyExists('a', 2)->toArray(),
+            'Set when not exists twice on existing'
+        );
+
+        self::assertEquals(
+            ['a' => 1],
+            $this->collect(['a' => 0])->setIfAlreadyExists('a', 1)->toArray(),
+            '$value1 => $value2'
+        );
+
+        self::assertEquals(
+            ['a' => 1],
+            $this->collect(['a' => null])->setIfAlreadyExists('a', 1)->toArray(),
+            'null => $value',
+        );
+
+        self::assertEquals(
+            ['a' => null],
+            $this->collect(['a' => 1])->setIfAlreadyExists('a', null)->toArray(),
+            '$value => null'
+        );
+
+        self::assertEquals(
+            ['a' => ['b' => 0]],
+            $this->collect(['a' => ['b' => 1]])->setIfAlreadyExists('a.b', 0)->toArray(),
+            'Set to existing through dot notation',
+        );
+
+        $result = null;
+        $this->collect()->setIfAlreadyExists('a', 1, $result)->toArray();
+        self::assertFalse($result, 'Result for no previous value');
+
+        $result = null;
+        $this->collect(['a' => 0])->setIfAlreadyExists('a', 1, $result)->toArray();
+        self::assertTrue($result, 'Result for value already existing');
+    }
+
     public function testSetIfNotExists(): void
     {
-        self::assertEquals(['a' => 1], $this->collect()->setIfNotExists('a', 1)->toArray());
-        self::assertEquals(['a' => 0], $this->collect()->setIfNotExists('a', 0)->setIfNotExists('a', 1)->toArray());
-        self::assertEquals(['a' => null], $this->collect()->setIfNotExists('a', null)->toArray());
-        self::assertEquals(['a' => ['b' => 1]], $this->collect(['a' => ['b' => 1]])->setIfNotExists('a.b', 0)->toArray());
+        self::assertEquals(
+            ['a' => 1],
+            $this->collect()->setIfNotExists('a', 1)->toArray(),
+            'Set on non-existing'
+        );
+
+        self::assertEquals(
+            ['a' => 0],
+            $this->collect()->setIfNotExists('a', 0)->setIfNotExists('a', 1)->toArray(),
+            'Set on non existing twice',
+        );
+
+        self::assertEquals(
+            ['a' => null],
+            $this->collect()->setIfNotExists('a', null)->toArray(),
+            'Set null'
+        );
+
+        self::assertEquals(
+            ['a' => ['b' => 1]],
+            $this->collect(['a' => ['b' => 1]])->setIfNotExists('a.b', 0)->toArray(),
+            'Try to set to existing through dot notation'
+        );
+
+        $result = null;
+        $this->collect()->setIfNotExists('a', 1, $result)->toArray();
+        self::assertTrue($result, 'Result for no previous value');
+
+        $result = null;
+        $this->collect(['a' => 0])->setIfNotExists('a', 1, $result)->toArray();
+        self::assertFalse($result, 'Result for value already exiting');
     }
 
     public function testShift(): void

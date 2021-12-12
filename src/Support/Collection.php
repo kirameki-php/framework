@@ -169,12 +169,31 @@ class Collection extends Enumerable implements ArrayAccess
     /**
      * @param int|string $key
      * @param mixed $value
+     * @param bool|null $result
      * @return $this
      */
-    public function setIfNotExists(int|string $key, mixed $value): static
+    public function setIfAlreadyExists(int|string $key, mixed $value, bool &$result = null): static
     {
+        $result = false;
+        if ($this->containsKey($key)) {
+            $this->set($key, $value);
+            $result = true;
+        }
+        return $this;
+    }
+
+    /**
+     * @param int|string $key
+     * @param mixed $value
+     * @param bool|null $result
+     * @return $this
+     */
+    public function setIfNotExists(int|string $key, mixed $value, bool &$result = null): static
+    {
+        $result = false;
         if (!$this->containsKey($key)) {
             $this->set($key, $value);
+            $result = true;
         }
         return $this;
     }
