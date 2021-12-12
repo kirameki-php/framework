@@ -28,7 +28,7 @@ class Collection extends Enumerable implements ArrayAccess
      */
     public function newInstance(?iterable $items = null): static
     {
-        return new static($items);
+        return new self($items);
     }
 
     /**
