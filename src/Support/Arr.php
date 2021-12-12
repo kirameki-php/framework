@@ -11,11 +11,14 @@ use Traversable;
 use function array_column;
 use function array_key_exists;
 use function array_key_last;
+use function array_keys;
 use function array_pop;
 use function array_rand;
 use function array_reverse;
 use function array_slice;
 use function array_sum;
+use function array_unique;
+use function array_values;
 use function class_exists;
 use function count;
 use function current;
@@ -145,6 +148,16 @@ class Arr
         $lastSegment = array_pop($segments);
         $ptr = static::dig($array, $segments);
         return is_array($ptr) && array_key_exists($lastSegment, $ptr);
+    }
+
+    /**
+     * @param iterable $iterable
+     * @return int
+     */
+    public static function count(iterable $iterable): int
+    {
+        $countable = is_countable($iterable) ? $iterable : static::from($iterable);
+        return count($countable);
     }
 
     /**
@@ -506,17 +519,7 @@ class Arr
      */
     public static function isList(iterable $iterable): bool
     {
-        // TODO add array_is_list when php 8.1 is out
-
-        $current_key = 0;
-        foreach ($iterable as $key => $noop) {
-            if ($key !== $current_key) {
-                return false;
-            }
-            ++$current_key;
-        }
-
-        return true;
+        return array_is_list(is_array($iterable) ? $iterable : static::from($iterable));
     }
 
     /**
@@ -526,6 +529,15 @@ class Arr
     public static function isNotEmpty(iterable $iterable): bool
     {
         return !static::isEmpty($iterable);
+    }
+
+    /**
+     * @param iterable $iterable
+     * @return array
+     */
+    public static function keys(iterable $iterable): array
+    {
+        return array_keys(static::from($iterable));
     }
 
     /**
@@ -1125,6 +1137,16 @@ class Arr
     }
 
     /**
+     * @param iterable $iterable
+     * @param int $flag
+     * @return array
+     */
+    public static function unique(iterable $iterable, int $flag = SORT_STRING): array
+    {
+        return array_unique(static::from($iterable), $flag);
+    }
+
+    /**
      * @param array $array
      * @param mixed ...$values
      * @return void
@@ -1134,6 +1156,15 @@ class Arr
         for($i = count($values) - 1; $i >= 0; $i--) {
             array_unshift($array, $values[$i]);
         }
+    }
+
+    /**
+     * @param iterable $iterable
+     * @return array
+     */
+    public static function values(iterable $iterable): array
+    {
+        return array_values(static::from($iterable));
     }
 
     /**

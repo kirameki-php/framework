@@ -26,6 +26,15 @@ class ModelCollection extends Collection
     }
 
     /**
+     * @param iterable|null $items
+     * @return $this
+     */
+    public function newInstance(?iterable $items = null): static
+    {
+        return new self($this->reflection, $items);
+    }
+
+    /**
      * @return Reflection
      */
     public function getModelReflection(): Reflection

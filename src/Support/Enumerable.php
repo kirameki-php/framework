@@ -11,10 +11,14 @@ use Symfony\Component\VarDumper\VarDumper;
 use function array_chunk;
 use function array_diff;
 use function array_diff_key;
-use function array_unique;
-use function array_values;
-use function count;
+use function array_intersect;
+use function array_intersect_key;
+use function array_slice;
+use function arsort;
+use function asort;
 use function is_iterable;
+use function krsort;
+use function ksort;
 
 /**
  * @template T
@@ -127,7 +131,7 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
      */
     public function copy(): static
     {
-        return $this->newInstance($this->items);
+        return clone $this;
     }
 
     /**
@@ -135,7 +139,7 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
      */
     public function count(): int
     {
-        return count($this->toArray());
+        return Arr::count($this->items);
     }
 
     /**
@@ -350,7 +354,7 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
      */
     public function groupBy(string|callable $key): static
     {
-        return $this->newInstance(Arr::groupBy($this->items, $key))->map(fn($array) => $this->newCollection($array));
+        return $this->newCollection(Arr::groupBy($this->items, $key))->map(fn($array) => $this->newInstance($array));
     }
 
     /**
@@ -429,7 +433,7 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
      */
     public function keys(): Collection
     {
-        return $this->newCollection(array_keys($this->toArray()));
+        return $this->newCollection(Arr::keys($this->items));
     }
 
     /**
@@ -465,7 +469,7 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
      */
     public function map(callable $callback): static
     {
-        return $this->newInstance(Arr::map($this->items, $callback));
+        return $this->newCollection(Arr::map($this->items, $callback));
     }
 
     /**
@@ -580,7 +584,7 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
      */
     public function sampleMany(int $amount): static
     {
-        return $this->newInstance(Arr::sampleMany($this->items, $amount));
+        return $this->newCollection(Arr::sampleMany($this->items, $amount));
     }
 
     /**
@@ -821,7 +825,7 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
      */
     public function unique(int $flag = SORT_STRING): static
     {
-        return $this->newInstance(array_unique($this->toArray(), $flag));
+        return $this->newInstance(Arr::unique($this->items, $flag));
     }
 
     /**
@@ -829,7 +833,7 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
      */
     public function values(): static
     {
-        return $this->newInstance(array_values($this->toArray()));
+        return $this->newInstance(Arr::values($this->toArray()));
     }
 
     /**
