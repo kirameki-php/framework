@@ -308,6 +308,51 @@ class StrTest extends TestCase
         self::assertEquals('', Str::of()->toString());
     }
 
+    public function testPadBoth(): void
+    {
+        self::assertEquals('a', Str::padBoth('a', -1, '_'));
+        self::assertEquals('a', Str::padBoth('a', 0, '_'));
+        self::assertEquals('a_', Str::padBoth('a', 2, '_'));
+        self::assertEquals('__', Str::padBoth('_', 2, '_'));
+        self::assertEquals('_a_', Str::padBoth('a', 3, '_'));
+        self::assertEquals('__a__', Str::padBoth('a', 5, '_'));
+        self::assertEquals('__a___', Str::padBoth('a', 6, '_'));
+    }
+
+    public function testPadLeft(): void
+    {
+        self::assertEquals('a', Str::padLeft('a', -1, '_'));
+        self::assertEquals('a', Str::padLeft('a', 0, '_'));
+        self::assertEquals('_a', Str::padLeft('a', 2, '_'));
+        self::assertEquals('__', Str::padLeft('_', 2, '_'));
+    }
+
+    public function testPadRight(): void
+    {
+        self::assertEquals('a', Str::padRight('a', -1, '_'));
+        self::assertEquals('a', Str::padRight('a', 0, '_'));
+        self::assertEquals('a_', Str::padRight('a', 2, '_'));
+        self::assertEquals('__', Str::padRight('_', 2, '_'));
+    }
+
+    public function testPascalCase(): void
+    {
+        self::assertEquals('A', Str::pascalCase('a'));
+        self::assertEquals('TestMe', Str::pascalCase('test_me'));
+        self::assertEquals('TestMe', Str::pascalCase('test-me'));
+        self::assertEquals('TestMe', Str::pascalCase('test me'));
+        self::assertEquals('TestMe', Str::pascalCase('testMe'));
+        self::assertEquals('TestMe', Str::pascalCase('TestMe'));
+        self::assertEquals('TestMe', Str::pascalCase(' test_me '));
+        self::assertEquals('TestMeNow!', Str::pascalCase('test_me now-!'));
+    }
+
+    public function testPosition(): void
+    {
+        self::assertEquals(0, Str::position('a', 'a'));
+        self::assertEquals(1, Str::position('ab', 'b'));
+    }
+
     public function testRepeat(): void
     {
         self::assertEquals('aaa', Str::repeat('a', 3));

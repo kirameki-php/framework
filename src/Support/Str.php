@@ -378,18 +378,11 @@ class Str
     /**
      * @param string $string
      * @param string $search
-     * @param int $offset
      * @return false|int
      */
-    public static function position(string $string, string $search, int $offset = 0): bool|int
+    public static function position(string $string, string $search): bool|int
     {
-        // ValueError is thrown if $offset is bigger than string size,
-        // so check that here and return false if that's the case.
-        if ($offset !== 0 && abs($offset) > strlen($string)) {
-            return false;
-        }
-
-        return strpos($string, $search, $offset);
+        return strpos($string, $search);
     }
 
     /**

@@ -8,12 +8,10 @@ RUN set -e \
   && apk add --no-cache bash coreutils git libxml2 libstdc++ tzdata \
   && apk add --no-cache --virtual=.build-deps autoconf curl-dev libxml2-dev linux-headers gcc g++ make pcre-dev \
   && docker-php-ext-install -j$(nproc) pdo pdo_mysql opcache pcntl \
-  && if [ ! "${HTTP_PROXY}" = "" ]; then pear config-set http_proxy ${HTTP_PROXY}; fi \
   && pecl install -o -f apcu igbinary msgpack redis \
   && docker-php-ext-enable apcu igbinary msgpack redis \
   && apk del .build-deps \
   && docker-php-source delete \
-  && rm -rf /tmp/* /var/tmp/* \
   && curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin/ --filename=composer \
   && mkdir -p /project
 
