@@ -317,6 +317,8 @@ class StrTest extends TestCase
         self::assertEquals('_a_', Str::padBoth('a', 3, '_'));
         self::assertEquals('__a__', Str::padBoth('a', 5, '_'));
         self::assertEquals('__a___', Str::padBoth('a', 6, '_'));
+        self::assertEquals('12hello123', Str::padBoth('hello', 10, '123'));
+        self::assertEquals('いあい', Str::padBoth('あ', 3, 'い'));
     }
 
     public function testPadLeft(): void

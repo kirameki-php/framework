@@ -5,6 +5,7 @@ namespace Kirameki\Support;
 use DateTimeInterface;
 use Kirameki\Support\Concerns;
 use Ramsey\Uuid\Uuid;
+use RuntimeException;
 use function array_map;
 use function explode;
 use function implode;
@@ -341,7 +342,7 @@ class Str
      */
     public static function padBoth(string $string, int $length, string $pad = ' '): string
     {
-        return str_pad($string, $length, $pad, STR_PAD_BOTH);
+        return static::pad($string, $length, $pad, STR_PAD_BOTH);
     }
 
     /**
@@ -352,7 +353,7 @@ class Str
      */
     public static function padLeft(string $string, int $length, string $pad = ' '): string
     {
-        return str_pad($string, $length, $pad, STR_PAD_LEFT);
+        return static::pad($string, $length, $pad, STR_PAD_LEFT);
     }
 
     /**
@@ -363,7 +364,49 @@ class Str
      */
     public static function padRight(string $string, int $length, string $pad = ' '): string
     {
-        return str_pad($string, $length, $pad, STR_PAD_RIGHT);
+        return static::pad($string, $length, $pad, STR_PAD_RIGHT);
+    }
+
+    /**
+     * @param string $string
+     * @param int $length
+     * @param string $pad
+     * @param int $type
+     * @return string
+     */
+    public static function pad(string $string, int $length, string $pad = ' ', int $type = STR_PAD_RIGHT): string
+    {
+        if ($length <= 0) {
+            return $string;
+        }
+
+        $padLength = mb_strlen($pad);
+
+        if ($padLength === 0) {
+            return $string;
+        }
+
+        if ($type === STR_PAD_RIGHT) {
+            $repeat = (int) ceil($length / $padLength);
+            return mb_substr($string.str_repeat($pad, $repeat), 0, $length);
+        }
+
+        if ($type === STR_PAD_LEFT) {
+            $repeat = (int) ceil($length / $padLength);
+            return mb_substr(str_repeat($pad, $repeat).$string, -$length);
+        }
+
+        if ($type === STR_PAD_BOTH) {
+            $halfLengthFraction = ($length - mb_strlen($string)) / 2;
+            $halfRepeat = (int) ceil($halfLengthFraction / $padLength);
+            $prefixLength = (int) floor($halfLengthFraction);
+            $suffixLength = (int) ceil($halfLengthFraction);
+            $prefix = mb_substr(str_repeat($pad, $halfRepeat), 0, $prefixLength);
+            $suffix = mb_substr(str_repeat($pad, $halfRepeat), 0, $suffixLength);
+            return $prefix.$string.$suffix;
+        }
+
+        throw new RuntimeException('Invalid padding type: '.$type);
     }
 
     /**
