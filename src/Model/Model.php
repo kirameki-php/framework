@@ -112,7 +112,7 @@ abstract class Model implements ArrayAccess, JsonSerializable
     /**
      * @param string $name
      */
-    public function __unset(string $name)
+    public function __unset(string $name): void
     {
         $this->offsetUnset($name);
     }

@@ -19,12 +19,14 @@ use function is_resource;
 use function is_string;
 use function get_class;
 use function get_resource_type;
+use function grapheme_strlen;
+use function grapheme_strpos;
+use function grapheme_strrpos;
+use function grapheme_substr;
 use function lcfirst;
 use function ltrim;
-use function mb_strlen;
 use function mb_strtolower;
 use function mb_strtoupper;
-use function mb_substr;
 use function preg_match;
 use function preg_replace;
 use function preg_split;
@@ -32,7 +34,6 @@ use function rtrim;
 use function spl_object_hash;
 use function str_contains;
 use function str_ends_with;
-use function str_pad;
 use function str_repeat;
 use function str_replace;
 use function str_starts_with;
@@ -54,14 +55,14 @@ class Str
      */
     public static function after(string $string, string $search): string
     {
-        $pos = strpos($string, $search);
+        $pos = grapheme_strpos($string, $search);
 
         // If string is not matched, return blank immediately.
         if ($pos === false) {
             return '';
         }
 
-        return substr($string, $pos + strlen($search));
+        return grapheme_substr($string, $pos + grapheme_strlen($search));
     }
 
     /**
@@ -71,7 +72,7 @@ class Str
      */
     public static function afterIndex(string $string, int $position): string
     {
-        return mb_substr($string, $position, null, self::Encoding);
+        return grapheme_substr($string, $position);
     }
 
     /**
@@ -86,14 +87,14 @@ class Str
             return $string;
         }
 
-        $pos = strrpos($string, $search);
+        $pos = grapheme_strrpos($string, $search);
 
         // If string is not matched, return blank immediately.
         if ($pos === false) {
             return '';
         }
 
-        return substr($string, $pos + strlen($search));
+        return grapheme_substr($string, $pos + grapheme_strlen($search));
     }
 
     /**
@@ -108,14 +109,14 @@ class Str
             return $string;
         }
 
-        $pos = strpos($string, $search);
+        $pos = grapheme_strpos($string, $search);
 
         // If string is not matched, return itself immediately.
         if ($pos === false) {
             return $string;
         }
 
-        return substr($string, 0, $pos);
+        return grapheme_substr($string, 0, $pos);
     }
 
     /**
@@ -125,7 +126,7 @@ class Str
      */
     public static function beforeIndex(string $string, int $position): string
     {
-        return mb_substr($string, 0, $position, self::Encoding);
+        return grapheme_substr($string, 0, $position);
     }
 
     /**
@@ -135,14 +136,14 @@ class Str
      */
     public static function beforeLast(string $string, string $search): string
     {
-        $pos = strrpos($string, $search);
+        $pos = grapheme_strrpos($string, $search);
 
         // If string is not matched, return itself immediately.
         if ($pos === false) {
             return $string;
         }
 
-        return substr($string, 0, $pos);
+        return grapheme_substr($string, 0, $pos);
     }
 
     /**
@@ -160,8 +161,8 @@ class Str
      */
     public static function capitalize(string $string): string
     {
-        $firstChar = mb_strtoupper(mb_substr($string, 0, 1));
-        $otherChars = mb_substr($string, 1, mb_strlen($string));
+        $firstChar = mb_strtoupper(grapheme_substr($string, 0, 1));
+        $otherChars = grapheme_substr($string, 1);
         return $firstChar.$otherChars;
     }
 
@@ -222,24 +223,12 @@ class Str
     /**
      * @param string $string
      * @param string $search
-     * @param int|null $limit
+     * @param int $limit
      * @return string
      */
-    public static function delete(string $string, string $search, ?int $limit = null): string
+    public static function delete(string $string, string $search, int $limit = -1): string
     {
-        $offset = 0;
-        $length = strlen($search);
-        $limit ??= INF;
-        while($limit > 0 && $string !== '') {
-            $pos = static::position($string, $search, $offset);
-            if ($pos === false) {
-                break;
-            }
-            $string = substr_replace($string, '', $pos, $length);
-            $offset = $length - $pos;
-            $limit--;
-        }
-        return $string;
+        return static::replace($string, $search, '', $limit);
     }
 
     /**
@@ -266,9 +255,9 @@ class Str
     public static function insert(string $string, string $insert, int $position): string
     {
         return
-            mb_substr($string, 0, $position, self::Encoding).
+            grapheme_substr($string, 0, $position).
             $insert.
-            mb_substr($string, $position, null, self::Encoding);
+            grapheme_substr($string, $position);
     }
 
     /**
@@ -288,7 +277,7 @@ class Str
      */
     public static function length(string $string): int
     {
-        return mb_strlen($string, self::Encoding);
+        return grapheme_strlen($string);
     }
 
     /**
@@ -380,7 +369,7 @@ class Str
             return $string;
         }
 
-        $padLength = mb_strlen($pad);
+        $padLength = grapheme_strlen($pad);
 
         if ($padLength === 0) {
             return $string;
@@ -388,21 +377,21 @@ class Str
 
         if ($type === STR_PAD_RIGHT) {
             $repeat = (int) ceil($length / $padLength);
-            return mb_substr($string.str_repeat($pad, $repeat), 0, $length);
+            return grapheme_substr($string.str_repeat($pad, $repeat), 0, $length);
         }
 
         if ($type === STR_PAD_LEFT) {
             $repeat = (int) ceil($length / $padLength);
-            return mb_substr(str_repeat($pad, $repeat).$string, -$length);
+            return grapheme_substr(str_repeat($pad, $repeat).$string, -$length);
         }
 
         if ($type === STR_PAD_BOTH) {
-            $halfLengthFraction = ($length - mb_strlen($string)) / 2;
+            $halfLengthFraction = ($length - grapheme_strlen($string)) / 2;
             $halfRepeat = (int) ceil($halfLengthFraction / $padLength);
             $prefixLength = (int) floor($halfLengthFraction);
             $suffixLength = (int) ceil($halfLengthFraction);
-            $prefix = mb_substr(str_repeat($pad, $halfRepeat), 0, $prefixLength);
-            $suffix = mb_substr(str_repeat($pad, $halfRepeat), 0, $suffixLength);
+            $prefix = grapheme_substr(str_repeat($pad, $halfRepeat), 0, $prefixLength);
+            $suffix = grapheme_substr(str_repeat($pad, $halfRepeat), 0, $suffixLength);
             return $prefix.$string.$suffix;
         }
 
@@ -421,11 +410,12 @@ class Str
     /**
      * @param string $string
      * @param string $search
-     * @return false|int
+     * @param int $offset
+     * @return bool|int
      */
-    public static function position(string $string, string $search): bool|int
+    public static function position(string $string, string $search, int $offset = 0): bool|int
     {
-        return strpos($string, $search);
+        return grapheme_strpos($string, $search, $offset);
     }
 
     /**
@@ -442,11 +432,20 @@ class Str
      * @param string $string
      * @param string $search
      * @param string $replace
+     * @param int $limit
      * @return string
      */
-    public static function replace(string $string, string $search, string $replace): string
+    public static function replace(string $string, string $search, string $replace, int $limit = -1): string
     {
-        return str_replace($search, $replace, $string);
+        if ($string === '') {
+            return $string;
+        }
+
+        if ($search === '') {
+            return $string;
+        }
+
+        return static::replaceMatch("/\Q$search\E/", $replace, $string, $limit);
     }
 
     /**
@@ -481,12 +480,12 @@ class Str
      * @param string $string
      * @param string $pattern
      * @param string $replace
-     * @param int|null $limit
+     * @param int $limit
      * @return string
      */
-    public static function replaceMatch(string $string, string $pattern, string $replace, ?int $limit = null): string
+    public static function replaceMatch(string $string, string $pattern, string $replace, int $limit = -1): string
     {
-        return preg_replace($pattern, $replace, $string, $limit ?? -1);
+        return preg_replace($pattern, $replace, $string, $limit);
     }
 
     /**
@@ -550,7 +549,7 @@ class Str
      */
     public static function substring(string $string, int $offset, ?int $length = null): string
     {
-        return mb_substr($string, $offset, $length, self::Encoding);
+        return grapheme_substr($string, $offset, $length);
     }
 
     /**

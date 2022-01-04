@@ -25,6 +25,9 @@ class StrTest extends TestCase
 
         // multi byte
         self::assertEquals('うえ', Str::after('ああいうえ', 'い'));
+
+        // grapheme
+        self::assertEquals('def', Str::after('abc🏴󠁧󠁢󠁳󠁣󠁴󠁿def', '🏴󠁧󠁢󠁳󠁣󠁴󠁿'));
     }
 
     public function testAfterIndex(): void
@@ -37,6 +40,9 @@ class StrTest extends TestCase
         self::assertEquals('e', Str::afterIndex('abcde', -1));
         self::assertEquals('abcde', Str::afterIndex('abcde', -5));
         self::assertEquals('bcde', Str::afterIndex('abcde', -4));
+
+        // grapheme
+        self::assertEquals('def', Str::afterIndex('abc🏴󠁧󠁢󠁳󠁣󠁴󠁿def', 4));
     }
 
     public function testAfterLast(): void
@@ -61,6 +67,9 @@ class StrTest extends TestCase
 
         // multi byte
         self::assertEquals('え', Str::afterLast('ああいういえ', 'い'));
+
+        // grapheme
+        self::assertEquals('🏴󠁧󠁢󠁳󠁣󠁴󠁿f', Str::afterLast('abc🏴󠁧󠁢󠁳󠁣󠁴󠁿d🏴󠁧󠁢󠁳󠁣󠁴󠁿e🏴󠁧󠁢󠁳󠁣󠁴󠁿f', 'e'));
     }
 
     public function testBefore(): void
@@ -82,6 +91,10 @@ class StrTest extends TestCase
 
         // multi byte
         self::assertEquals('ああ', Str::before('ああいういえ', 'い'));
+
+        // grapheme
+        self::assertEquals('abc', Str::before('abc🏴󠁧󠁢󠁳󠁣󠁴󠁿d🏴󠁧󠁢󠁳󠁣󠁴󠁿e🏴󠁧󠁢󠁳󠁣󠁴󠁿f', '🏴󠁧󠁢󠁳󠁣󠁴󠁿'));
+        self::assertEquals('abc🏴󠁧󠁢󠁳󠁣󠁴󠁿d🏴󠁧󠁢󠁳󠁣󠁴󠁿', Str::before('abc🏴󠁧󠁢󠁳󠁣󠁴󠁿d🏴󠁧󠁢󠁳󠁣󠁴󠁿e🏴󠁧󠁢󠁳󠁣󠁴󠁿f', 'e'));
     }
 
     public function testBeforeIndex(): void
@@ -94,6 +107,9 @@ class StrTest extends TestCase
         self::assertEquals('abcd', Str::beforeIndex('abcde', -1));
         self::assertEquals('', Str::beforeIndex('abcde', -5));
         self::assertEquals('a', Str::beforeIndex('abcde', -4));
+
+        // grapheme
+        self::assertEquals('abc🏴󠁧󠁢󠁳󠁣󠁴󠁿', Str::beforeIndex('abc🏴󠁧󠁢󠁳󠁣󠁴󠁿d🏴󠁧󠁢󠁳󠁣󠁴󠁿e🏴󠁧󠁢󠁳󠁣󠁴󠁿f', 4));
     }
 
     public function testBeforeLast(): void
@@ -115,6 +131,9 @@ class StrTest extends TestCase
 
         // multi byte
         self::assertEquals('ああいう', Str::beforeLast('ああいういえ', 'い'));
+
+        // grapheme
+        self::assertEquals('abc🏴󠁧󠁢󠁳󠁣󠁴󠁿d🏴󠁧󠁢󠁳󠁣󠁴󠁿e', Str::beforeLast('abc🏴󠁧󠁢󠁳󠁣󠁴󠁿d🏴󠁧󠁢󠁳󠁣󠁴󠁿e🏴󠁧󠁢󠁳󠁣󠁴󠁿f', '🏴󠁧󠁢󠁳󠁣󠁴󠁿'));
     }
 
     public function testCamelCase(): void
@@ -136,6 +155,7 @@ class StrTest extends TestCase
         self::assertEquals(' test abc', Str::capitalize(' test abc'));
         self::assertEquals('Àbc', Str::capitalize('àbc'));
         self::assertEquals('ゅ', Str::capitalize('ゅ'));
+        self::assertEquals('🏴󠁧󠁢󠁳󠁣󠁴󠁿', Str::capitalize('🏴󠁧󠁢󠁳󠁣󠁴󠁿'));
     }
 
     public function testContains(): void
@@ -367,5 +387,17 @@ class StrTest extends TestCase
         $this->expectErrorMessage('str_repeat(): Argument #2 ($times) must be greater than or equal to 0');
         /** @noinspection PhpExpressionResultUnusedInspection */
         Str::repeat('a', -1);
+    }
+
+    /**
+     * @group test
+     */
+    public function testReplace(): void
+    {
+        self::assertEquals('', Str::replace('', '', ''));
+        self::assertEquals('b', Str::replace('b', '', 'a'));
+        self::assertEquals('a', Str::replace('b', 'b', 'a'));
+        self::assertEquals('', Str::replace('b', 'b', ''));
+        self::assertEquals('🏴󠁧󠁢󠁳󠁣󠁴󠁿', Str::replace('🏴󠁧󠁢󠁳󠁣󠁴󠁿', '🏴', ''));
     }
 }
