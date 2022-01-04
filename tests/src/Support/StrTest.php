@@ -389,15 +389,35 @@ class StrTest extends TestCase
         Str::repeat('a', -1);
     }
 
-    /**
-     * @group test
-     */
     public function testReplace(): void
     {
         self::assertEquals('', Str::replace('', '', ''));
         self::assertEquals('b', Str::replace('b', '', 'a'));
-        self::assertEquals('a', Str::replace('b', 'b', 'a'));
+        self::assertEquals('aa', Str::replace('bb', 'b', 'a'));
         self::assertEquals('', Str::replace('b', 'b', ''));
-        self::assertEquals('🏴󠁧󠁢󠁳󠁣󠁴󠁿', Str::replace('🏴󠁧󠁢󠁳󠁣󠁴󠁿', '🏴', ''));
+        self::assertEquals('あえいえう', Str::replace('あ-い-う', '-', 'え'));
+        self::assertEquals('__🏴󠁧󠁢󠁳󠁣󠁴󠁿', Str::replace('🏴󠁧󠁢󠁳󠁣󠁴󠁿a🏴󠁧󠁢󠁳󠁣󠁴󠁿a🏴󠁧󠁢󠁳󠁣󠁴󠁿', '🏴󠁧󠁢󠁳󠁣󠁴󠁿a', '_'));
+    }
+
+    public function testReplaceFirst(): void
+    {
+        self::assertEquals('', Str::replaceFirst('', '', ''));
+        self::assertEquals('bb', Str::replaceFirst('bb', '', 'a'));
+        self::assertEquals('abb', Str::replaceFirst('bbb', 'b', 'a'));
+        self::assertEquals('b', Str::replaceFirst('bb', 'b', ''));
+        self::assertEquals('あえい-う', Str::replaceFirst('あ-い-う', '-', 'え'));
+        self::assertEquals('🏴󠁧󠁢󠁳󠁣󠁴󠁿 a', Str::replaceFirst('🏴󠁧󠁢󠁳󠁣󠁴󠁿 👨‍👨‍👧‍👦', '👨‍👨‍👧‍👦', 'a'));
+        self::assertEquals('_🏴󠁧󠁢󠁳󠁣󠁴󠁿a🏴󠁧󠁢󠁳󠁣󠁴󠁿', Str::replaceFirst('🏴󠁧󠁢󠁳󠁣󠁴󠁿a🏴󠁧󠁢󠁳󠁣󠁴󠁿a🏴󠁧󠁢󠁳󠁣󠁴󠁿', '🏴󠁧󠁢󠁳󠁣󠁴󠁿a', '_'));
+    }
+
+    public function testReplaceLast(): void
+    {
+        self::assertEquals('', Str::replaceLast('', '', ''));
+        self::assertEquals('bb', Str::replaceLast('bb', '', 'a'));
+        self::assertEquals('bba', Str::replaceLast('bbb', 'b', 'a'));
+        self::assertEquals('b', Str::replaceLast('bb', 'b', ''));
+        self::assertEquals('あ-いえう', Str::replaceLast('あ-い-う', '-', 'え'));
+        self::assertEquals('🏴󠁧󠁢󠁳󠁣󠁴󠁿 a', Str::replaceLast('🏴󠁧󠁢󠁳󠁣󠁴󠁿 👨‍👨‍👧‍👦', '👨‍👨‍👧‍👦', 'a'));
+        self::assertEquals('🏴󠁧󠁢󠁳󠁣󠁴󠁿a_🏴󠁧󠁢󠁳󠁣󠁴󠁿', Str::replaceLast('🏴󠁧󠁢󠁳󠁣󠁴󠁿a🏴󠁧󠁢󠁳󠁣󠁴󠁿a🏴󠁧󠁢󠁳󠁣󠁴󠁿', '🏴󠁧󠁢󠁳󠁣󠁴󠁿a', '_'));
     }
 }

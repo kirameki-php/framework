@@ -437,15 +437,11 @@ class Str
      */
     public static function replace(string $string, string $search, string $replace, int $limit = -1): string
     {
-        if ($string === '') {
-            return $string;
-        }
-
         if ($search === '') {
             return $string;
         }
 
-        return static::replaceMatch("/\Q$search\E/", $replace, $string, $limit);
+        return static::replaceMatch($string, "/\Q$search\E/", $replace, $limit);
     }
 
     /**
@@ -456,6 +452,10 @@ class Str
      */
     public static function replaceFirst(string $string, string $search, string $replace): string
     {
+        if ($search === '') {
+            return $string;
+        }
+
         $pos = strpos($string, $search);
         return $pos !== false
             ? substr_replace($string, $replace, $pos, strlen($search))
@@ -470,6 +470,10 @@ class Str
      */
     public static function replaceLast(string $string, string $search, string $replace): string
     {
+        if ($search === '') {
+            return $string;
+        }
+
         $pos = strrpos($string, $search);
         return $pos !== false
             ? substr_replace($string, $replace, $pos, strlen($search))
@@ -485,6 +489,10 @@ class Str
      */
     public static function replaceMatch(string $string, string $pattern, string $replace, int $limit = -1): string
     {
+        if ($string === '') {
+            return $string;
+        }
+
         return preg_replace($pattern, $replace, $string, $limit);
     }
 
