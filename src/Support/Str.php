@@ -37,6 +37,7 @@ use function str_ends_with;
 use function str_repeat;
 use function str_replace;
 use function str_starts_with;
+use function strlen;
 use function strrev;
 use function substr_replace;
 use function trim;
@@ -502,7 +503,19 @@ class Str
      */
     public static function reverse(string $string): string
     {
-        return strrev($string);
+        $length = grapheme_strlen($string);
+
+        // strrev($string) can only reverse bytes, so it only works for single byte chars.
+        // So call strrev only if we can confirm that it only contains single byte chars.
+        if ($length === strlen($string)) {
+            return strrev($string);
+        }
+
+        $parts = [];
+        for ($i = $length - 1; $i >= 0; $i--) {
+            $parts[] = grapheme_substr($string, $i, 1);
+        }
+        return implode('', $parts);
     }
 
     /**

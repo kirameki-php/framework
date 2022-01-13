@@ -420,4 +420,12 @@ class StrTest extends TestCase
         self::assertEquals('🏴󠁧󠁢󠁳󠁣󠁴󠁿 a', Str::replaceLast('🏴󠁧󠁢󠁳󠁣󠁴󠁿 👨‍👨‍👧‍👦', '👨‍👨‍👧‍👦', 'a'));
         self::assertEquals('🏴󠁧󠁢󠁳󠁣󠁴󠁿a_🏴󠁧󠁢󠁳󠁣󠁴󠁿', Str::replaceLast('🏴󠁧󠁢󠁳󠁣󠁴󠁿a🏴󠁧󠁢󠁳󠁣󠁴󠁿a🏴󠁧󠁢󠁳󠁣󠁴󠁿', '🏴󠁧󠁢󠁳󠁣󠁴󠁿a', '_'));
     }
+
+    public function testReverse(): void
+    {
+        self::assertEquals('', Str::reverse(''));
+        self::assertEquals('ba', Str::reverse('ab'));
+        self::assertEquals('ういあ', Str::reverse('あいう'));
+        self::assertEquals('cbあ🏴󠁧󠁢󠁳󠁣󠁴󠁿', Str::reverse('🏴󠁧󠁢󠁳󠁣󠁴󠁿あbc'));
+    }
 }

@@ -12,12 +12,13 @@ use function array_column;
 use function array_key_exists;
 use function array_key_last;
 use function array_keys;
+use function array_pad;
 use function array_pop;
 use function array_rand;
 use function array_reverse;
+use function array_shift;
 use function array_slice;
 use function array_sum;
-use function array_unique;
 use function array_values;
 use function class_exists;
 use function count;
@@ -33,6 +34,7 @@ use function is_int;
 use function is_iterable;
 use function is_string;
 use function iterator_to_array;
+use function key;
 use function max;
 use function min;
 use function prev;
@@ -486,6 +488,23 @@ class Arr
     }
 
     /**
+     * @param array $array
+     * @param int $index
+     * @param mixed $value
+     * @return void
+     */
+    public static function insertAt(array &$array, int $index, mixed ...$value): void
+    {
+        // Offset is off by one for negative indexes (Ex: -2 inserts at 3rd element from right).
+        // So we add one to correct offset. If adding to one results in 0, we set it to max count
+        // to put it at the end.
+        if ($index < 0) {
+            $index = $index === -1 ? count($array) : $index + 1;
+        }
+        array_splice($array, $index, 0, $value);
+    }
+
+    /**
      * @param iterable $iterable
      * @return bool
      */
@@ -780,6 +799,17 @@ class Arr
 
     /**
      * @param iterable $iterable
+     * @param int $size
+     * @param mixed $value
+     * @return array
+     */
+    public static function pad(iterable $iterable, int $size, mixed $value): array
+    {
+        return array_pad(static::from($iterable), $size, $value);
+    }
+
+    /**
+     * @param iterable $iterable
      * @param int|string $key
      * @return array
      */
@@ -795,6 +825,26 @@ class Arr
             $plucked[] = static::dig($values, $segments);
         }
         return $plucked;
+    }
+
+    /**
+     * @param array $array
+     * @return mixed
+     */
+    public static function pop(array &$array): mixed
+    {
+        return array_pop($array);
+    }
+
+    /**
+     * @param array $array
+     * @param int $amount
+     * @return array
+     */
+    public static function popMany(array &$array, int $amount): array
+    {
+        Assert::greaterThanOrEqualTo(0, $amount);
+        return array_splice($array, -$amount);
     }
 
     /**
@@ -1029,6 +1079,26 @@ class Arr
             $ptr = &$ptr[$segment];
         }
         $ptr[$lastSegment] = $value;
+    }
+
+    /**
+     * @param array $array
+     * @return mixed
+     */
+    public static function shift(array &$array): mixed
+    {
+        return array_shift($array);
+    }
+
+    /**
+     * @param array $array
+     * @param int $amount
+     * @return array
+     */
+    public static function shiftMany(array &$array, int $amount): array
+    {
+        Assert::greaterThanOrEqualTo(0, $amount);
+        return array_splice($array, $amount);
     }
 
     /**

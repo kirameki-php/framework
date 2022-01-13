@@ -3,10 +3,6 @@
 namespace Kirameki\Support;
 
 use ArrayAccess;
-use function array_splice;
-use function array_pad;
-use function array_pop;
-use function array_shift;
 
 /**
  * @template T
@@ -87,15 +83,9 @@ class Collection extends Enumerable implements ArrayAccess
      * @param mixed $value
      * @return $this
      */
-    public function insertAt(int $index, mixed $value): static
+    public function insertAt(int $index, mixed ...$value): static
     {
-        // Offset is off by one for negative indexes (Ex: -2 inserts at 3rd element from right).
-        // So we add one to correct offset. If adding to one results in 0, we set it to max count
-        // to put it at the end.
-        if ($index < 0) {
-            $index = $index === -1 ? $this->count() : $index + 1;
-        }
-        array_splice($this->items, $index, 0, $value);
+        Arr::insertAt($this->items, $index, ...$value);
         return $this;
     }
 
@@ -106,15 +96,24 @@ class Collection extends Enumerable implements ArrayAccess
      */
     public function pad(int $size, mixed $value): static
     {
-        return $this->newInstance(array_pad($this->items, $size, $value));
+        return $this->newInstance(Arr::pad($this->items, $size, $value));
     }
 
     /**
-     * @return mixed
+     * @return T
      */
     public function pop(): mixed
     {
-        return array_pop($this->items);
+        return Arr::pop($this->items);
+    }
+
+    /**
+     * @param int $amount
+     * @return Collection<T>
+     */
+    public function popMany(int $amount): Collection
+    {
+        return $this->newCollection(Arr::popMany($this->items, $amount));
     }
 
     /**
@@ -203,7 +202,16 @@ class Collection extends Enumerable implements ArrayAccess
      */
     public function shift(): mixed
     {
-        return array_shift($this->items);
+        return Arr::shift($this->items);
+    }
+
+    /**
+     * @param int $amount
+     * @return Collection<T>
+     */
+    public function shiftMany(int $amount): Collection
+    {
+        return $this->newCollection(Arr::shiftMany($this->items, $amount));
     }
 
     /**
