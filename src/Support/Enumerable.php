@@ -230,32 +230,35 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
 
     /**
      * @param callable $callback
-     * @return void
+     * @return $this
      */
-    public function each(callable $callback): void
+    public function each(callable $callback): static
     {
         Arr::each($this->items, $callback);
+        return $this;
     }
 
     /**
      * @param int $size
      * @param callable $callback
-     * @return void
+     * @return $this
      */
-    public function eachChunk(int $size, callable $callback): void
+    public function eachChunk(int $size, callable $callback): static
     {
         Arr::eachChunk($this->items, $size, function(array $items, int $count) use ($callback) {
             $callback($this->newInstance($items), $count);
         });
+        return $this;
     }
 
     /**
      * @param callable $callback
-     * @return void
+     * @return $this
      */
-    public function eachWithIndex(callable $callback): void
+    public function eachWithIndex(callable $callback): static
     {
         Arr::eachWithIndex($this->items, $callback);
+        return $this;
     }
 
     /**
