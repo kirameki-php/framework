@@ -12,7 +12,6 @@ use function array_column;
 use function array_is_list;
 use function array_key_exists;
 use function array_key_last;
-use function array_keys;
 use function array_pad;
 use function array_pop;
 use function array_rand;
@@ -87,7 +86,7 @@ class Arr
     }
 
     /**
-     * @param iterable $iterable
+     * @param iterable<mixed> $iterable
      * @return mixed
      */
     public static function coalesce(iterable $iterable): mixed
@@ -122,7 +121,7 @@ class Arr
     }
 
     /**
-     * @param iterable $iterable
+     * @param iterable<mixed> $iterable
      * @param mixed|callable $value
      * @return bool
      */
@@ -140,7 +139,7 @@ class Arr
     }
 
     /**
-     * @param iterable $iterable
+     * @param iterable<mixed> $iterable
      * @param int|string $key
      * @return bool
      */
@@ -159,7 +158,7 @@ class Arr
     }
 
     /**
-     * @param iterable $iterable
+     * @param iterable<mixed> $iterable
      * @return int
      */
     public static function count(iterable $iterable): int
@@ -169,7 +168,7 @@ class Arr
     }
 
     /**
-     * @param iterable $iterable
+     * @param iterable<mixed> $iterable
      * @param callable $condition
      * @return int
      */
@@ -228,7 +227,7 @@ class Arr
     }
 
     /**
-     * @param iterable $iterable
+     * @param iterable<mixed> $iterable
      * @param callable $callback
      * @return void
      */
@@ -240,7 +239,7 @@ class Arr
     }
 
     /**
-     * @param iterable $iterable
+     * @param iterable<mixed> $iterable
      * @param int $size
      * @param callable $callback
      * @return void
@@ -267,7 +266,7 @@ class Arr
     }
 
     /**
-     * @param iterable $iterable
+     * @param iterable<mixed> $iterable
      * @param callable $callback
      * @return void
      */
@@ -337,7 +336,7 @@ class Arr
     }
 
     /**
-     * @param iterable $iterable
+     * @param iterable<mixed> $iterable
      * @param callable $condition
      * @return int|null
      */
@@ -378,9 +377,9 @@ class Arr
     }
 
     /**
-     * @param iterable $iterable
+     * @param iterable<mixed> $iterable
      * @param callable $callback
-     * @return array
+     * @return array<mixed>
      */
     public static function flatMap(iterable $iterable, callable $callback): array
     {
@@ -399,9 +398,9 @@ class Arr
     }
 
     /**
-     * @param iterable $iterable
+     * @param iterable<mixed> $iterable
      * @param int $depth
-     * @return array
+     * @return array<mixed>
      */
     public static function flatten(iterable $iterable, int $depth = 1): array
     {
@@ -422,9 +421,9 @@ class Arr
     }
 
     /**
-     * @param iterable $iterable
+     * @param iterable<mixed> $iterable
      * @param bool $overwrite
-     * @return array
+     * @return array<mixed>
      */
     public static function flip(iterable $iterable, bool $overwrite = false): array
     {
@@ -491,7 +490,7 @@ class Arr
     }
 
     /**
-     * @param iterable $iterable
+     * @param iterable<mixed> $iterable
      * @param string $glue
      * @param string|null $prefix
      * @param string|null $suffix
@@ -521,7 +520,7 @@ class Arr
     }
 
     /**
-     * @param iterable $iterable
+     * @param iterable<mixed> $iterable
      * @return bool
      */
     public static function isAssoc(iterable $iterable): bool
@@ -533,7 +532,7 @@ class Arr
     }
 
     /**
-     * @param iterable $iterable
+     * @param iterable<mixed> $iterable
      * @return bool
      */
     public static function isEmpty(iterable $iterable): bool
@@ -550,7 +549,7 @@ class Arr
     }
 
     /**
-     * @param iterable $iterable
+     * @param iterable<mixed> $iterable
      * @return bool
      */
     public static function isList(iterable $iterable): bool
@@ -559,7 +558,7 @@ class Arr
     }
 
     /**
-     * @param iterable $iterable
+     * @param iterable<mixed> $iterable
      * @return bool
      */
     public static function isNotEmpty(iterable $iterable): bool
@@ -568,12 +567,16 @@ class Arr
     }
 
     /**
-     * @param iterable $iterable
-     * @return array
+     * @param iterable<mixed> $iterable
+     * @return array<int|string>
      */
     public static function keys(iterable $iterable): array
     {
-        return array_keys(static::from($iterable));
+        $keys = [];
+        while(($keys[] = key($iterable)) !== null) {
+            next($iterable);
+        }
+        return $keys;
     }
 
     /**
@@ -647,7 +650,7 @@ class Arr
     }
 
     /**
-     * @param iterable $iterable
+     * @param iterable<mixed> $iterable
      * @param callable $condition
      * @return int|null
      */
@@ -702,9 +705,9 @@ class Arr
     }
 
     /**
-     * @param iterable $iterable
+     * @param iterable<mixed> $iterable
      * @param callable $callback
-     * @return array
+     * @return array<mixed>
      */
     public static function map(iterable $iterable, callable $callback): array
     {
@@ -716,7 +719,7 @@ class Arr
     }
 
     /**
-     * @param iterable $iterable
+     * @param iterable<mixed> $iterable
      * @return mixed
      */
     public static function max(iterable $iterable): mixed
@@ -760,7 +763,7 @@ class Arr
     }
 
     /**
-     * @param iterable $iterable
+     * @param iterable<mixed> $iterable
      * @return mixed
      */
     public static function min(iterable $iterable): mixed
@@ -789,7 +792,7 @@ class Arr
     }
 
     /**
-     * @param iterable $iterable
+     * @param iterable<mixed> $iterable
      * @param mixed|callable $value
      * @return bool
      */
@@ -799,7 +802,7 @@ class Arr
     }
 
     /**
-     * @param iterable $iterable
+     * @param iterable<mixed> $iterable
      * @param int|string $key
      * @return bool
      */
@@ -839,9 +842,9 @@ class Arr
     }
 
     /**
-     * @param iterable $iterable
+     * @param iterable<mixed> $iterable
      * @param int|string $key
-     * @return array
+     * @return array<mixed>
      */
     public static function pluck(iterable $iterable, int|string $key): array
     {
@@ -929,7 +932,7 @@ class Arr
 
     /**
      * @template T
-     * @param iterable $iterable
+     * @param iterable<T> $iterable
      * @param callable $callback
      * @param T|null $initial
      * @return T
@@ -964,7 +967,7 @@ class Arr
     }
 
     /**
-     * @param iterable $iterable
+     * @param array<mixed> $array
      * @param mixed $value
      * @param int|null $limit
      * @return int
@@ -1073,7 +1076,7 @@ class Arr
     }
 
     /**
-     * @param iterable $iterable
+     * @param iterable<mixed> $iterable
      * @param callable $condition
      * @return bool
      */
@@ -1090,7 +1093,7 @@ class Arr
     }
 
     /**
-     * @param iterable $iterable
+     * @param iterable<mixed> $iterable
      * @param callable $condition
      * @return bool
      */
@@ -1231,7 +1234,7 @@ class Arr
     }
 
     /**
-     * @param iterable $iterable
+     * @param iterable<mixed> $iterable
      * @param string|null $namespace
      * @return string
      */
@@ -1317,7 +1320,7 @@ class Arr
     }
 
     /**
-     * @param array $array
+     * @param array<mixed> $array
      * @param mixed ...$values
      * @return void
      */
