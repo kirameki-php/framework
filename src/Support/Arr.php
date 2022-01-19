@@ -2,10 +2,10 @@
 
 namespace Kirameki\Support;
 
-use ArrayAccess;
 use Closure;
 use Kirameki\Exception\DuplicateKeyException;
 use ReflectionFunction;
+use ReflectionNamedType;
 use RuntimeException;
 use Traversable;
 use function array_column;
@@ -70,7 +70,7 @@ class Arr
     }
 
     /**
-     * @param iterable $iterable
+     * @param iterable<int|float> $iterable
      * @param bool|null $allowEmpty
      * @return float|int
      */
@@ -101,9 +101,11 @@ class Arr
     }
 
     /**
-     * @param iterable $iterable
+     * @template TKey
+     * @template TValue
+     * @param iterable<TKey, TValue> $iterable
      * @param int $depth
-     * @return array
+     * @return array<TKey, TValue>
      */
     public static function compact(iterable $iterable, int $depth = 1): array
     {
@@ -150,7 +152,7 @@ class Arr
             return array_key_exists($key, $array);
         }
 
-        $segments = explode('.', $key);
+        $segments = is_string($key) ? explode('.', $key) : [$key];
         $lastSegment = array_pop($segments);
         $ptr = static::dig($array, $segments);
         return is_array($ptr) && array_key_exists($lastSegment, $ptr);
@@ -185,9 +187,10 @@ class Arr
     }
 
     /**
-     * @param iterable $iterable
+     * @template T
+     * @param iterable<T> $iterable
      * @param int $amount
-     * @return array
+     * @return array<T>
      */
     public static function drop(iterable $iterable, int $amount): array
     {
@@ -197,9 +200,10 @@ class Arr
     }
 
     /**
-     * @param iterable $iterable
+     * @template T
+     * @param iterable<T> $iterable
      * @param callable $condition
-     * @return array
+     * @return array<T>
      */
     public static function dropUntil(iterable $iterable, callable $condition): array
     {
@@ -208,9 +212,10 @@ class Arr
     }
 
     /**
-     * @param iterable $iterable
+     * @template T
+     * @param iterable<T> $iterable
      * @param callable $condition
-     * @return array
+     * @return array<T>
      */
     public static function dropWhile(iterable $iterable, callable $condition): array
     {
@@ -276,9 +281,10 @@ class Arr
     }
 
     /**
-     * @param iterable $iterable
-     * @param int[]|string[] $keys
-     * @return array
+     * @template T
+     * @param iterable<T> $iterable
+     * @param array<int|string> $keys
+     * @return array<T>
      */
     public static function except(iterable $iterable, iterable $keys): array
     {
@@ -290,9 +296,10 @@ class Arr
     }
 
     /**
-     * @param iterable $iterable
+     * @template T
+     * @param iterable<T> $iterable
      * @param callable|null $condition
-     * @return array
+     * @return array<T>
      */
     public static function filter(iterable $iterable, ?callable $condition = null): array
     {
@@ -312,7 +319,7 @@ class Arr
      * @template T
      * @param iterable<T> $iterable
      * @param callable|null $condition
-     * @return T
+     * @return T|null
      */
     public static function first(iterable $iterable, ?callable $condition = null): mixed
     {
@@ -349,11 +356,13 @@ class Arr
     }
 
     /**
-     * @param iterable $iterable
+     * @template TKey
+     * @template TValue
+     * @param iterable<TKey, TValue> $iterable
      * @param callable|null $condition
-     * @return int|string|null
+     * @return TKey|null
      */
-    public static function firstKey(iterable $iterable, ?callable $condition = null): int|string|null
+    public static function firstKey(iterable $iterable, ?callable $condition = null): mixed
     {
         foreach ($iterable as $key => $item) {
             if ($condition === null) {
@@ -431,8 +440,9 @@ class Arr
     }
 
     /**
-     * @param iterable $iterable
-     * @return array
+     * @template T
+     * @param iterable<T> $iterable
+     * @return array<T>
      */
     public static function from(iterable $iterable): array
     {
@@ -446,9 +456,10 @@ class Arr
     }
 
     /**
-     * @param iterable $iterable
+     * @template T
+     * @param iterable<T> $iterable
      * @param int|string $key
-     * @return mixed
+     * @return T|null
      */
     public static function get(iterable $iterable, int|string $key): mixed
     {
@@ -457,9 +468,10 @@ class Arr
     }
 
     /**
-     * @param iterable $iterable
+     * @template T
+     * @param iterable<T> $iterable
      * @param string|callable $key
-     * @return array
+     * @return array<array<T>>
      */
     public static function groupBy(iterable $iterable, string|callable $key): array
     {
@@ -491,9 +503,10 @@ class Arr
     }
 
     /**
-     * @param array $array
+     * @template T
+     * @param array<T> $array
      * @param int $index
-     * @param mixed $value
+     * @param T $value
      * @return void
      */
     public static function insertAt(array &$array, int $index, mixed ...$value): void
@@ -564,10 +577,11 @@ class Arr
     }
 
     /**
-     * @param iterable $iterable
+     * @template T
+     * @param iterable<T> $iterable
      * @param string|callable $key
      * @param bool $overwrite
-     * @return array
+     * @return array<T>
      */
     public static function keyBy(iterable $iterable, string|callable $key, bool $overwrite = false): array
     {
@@ -575,11 +589,12 @@ class Arr
     }
 
     /**
-     * @param iterable $iterable
+     * @template T
+     * @param iterable<T> $iterable
      * @param string|callable $key
      * @param bool $overwrite
      * @param int $depth
-     * @return array
+     * @return array<T>
      */
     public static function keyByRecursive(iterable $iterable, string|callable $key, bool $overwrite = false, int $depth = PHP_INT_MAX): array
     {
@@ -604,9 +619,10 @@ class Arr
     }
 
     /**
-     * @param iterable $iterable
+     * @template T
+     * @param iterable<T> $iterable
      * @param callable|null $condition
-     * @return mixed
+     * @return T|null
      */
     public static function last(iterable $iterable, ?callable $condition = null): mixed
     {
@@ -657,11 +673,13 @@ class Arr
     }
 
     /**
-     * @param iterable $iterable
+     * @template TKey
+     * @template TValue
+     * @param iterable<TKey, TValue> $iterable
      * @param callable|null $condition
-     * @return int|string|null
+     * @return TKey|null
      */
-    public static function lastKey(iterable $iterable, ?callable $condition = null): int|string|null
+    public static function lastKey(iterable $iterable, ?callable $condition = null): mixed
     {
         $copy = static::from($iterable);
         end($copy);
@@ -707,9 +725,11 @@ class Arr
     }
 
     /**
-     * @param iterable $iterable1
-     * @param iterable $iterable2
-     * @return array
+     * @template T1
+     * @template T2
+     * @param iterable<T1> $iterable1
+     * @param iterable<T2> $iterable2
+     * @return array<T1|T2>
      */
     public static function merge(iterable $iterable1, iterable $iterable2): array
     {
@@ -717,10 +737,12 @@ class Arr
     }
 
     /**
-     * @param iterable $iterable1
-     * @param iterable $iterable2
+     * @template T1
+     * @template T2
+     * @param iterable<T1> $iterable1
+     * @param iterable<T2> $iterable2
      * @param int $depth
-     * @return array
+     * @return array<T1|T2>
      */
     public static function mergeRecursive(iterable $iterable1, iterable $iterable2, int $depth = PHP_INT_MAX): array
     {
@@ -747,8 +769,9 @@ class Arr
     }
 
     /**
-     * @param iterable $iterable
-     * @return array
+     * @template T
+     * @param iterable<T> $iterable
+     * @return array<int, T|null>
      */
     public static function minMax(iterable $iterable): array
     {
@@ -777,7 +800,7 @@ class Arr
 
     /**
      * @param iterable $iterable
-     * @param mixed|callable $key
+     * @param int|string $key
      * @return bool
      */
     public static function notContainsKey(iterable $iterable, int|string $key): bool
@@ -786,9 +809,11 @@ class Arr
     }
 
     /**
-     * @param iterable $iterable
-     * @param iterable $keys
-     * @return array
+     * @template TKey
+     * @template TValue
+     * @param iterable<TKey, TValue> $iterable
+     * @param iterable<int, TKey> $keys
+     * @return array<TKey, TValue>
      */
     public static function only(iterable $iterable, iterable $keys): array
     {
@@ -801,10 +826,12 @@ class Arr
     }
 
     /**
-     * @param iterable $iterable
+     * @template T1
+     * @template T2
+     * @param iterable<T1> $iterable
      * @param int $size
-     * @param mixed $value
-     * @return array
+     * @param T2 $value
+     * @return array<T1|T2>
      */
     public static function pad(iterable $iterable, int $size, mixed $value): array
     {
@@ -831,8 +858,9 @@ class Arr
     }
 
     /**
-     * @param array $array
-     * @return mixed
+     * @template T
+     * @param array<T> $array
+     * @return T|null
      */
     public static function pop(array &$array): mixed
     {
@@ -840,9 +868,10 @@ class Arr
     }
 
     /**
-     * @param array $array
+     * @template T
+     * @param array<T> $array
      * @param int $amount
-     * @return array
+     * @return array<T>
      */
     public static function popMany(array &$array, int $amount): array
     {
@@ -851,11 +880,13 @@ class Arr
     }
 
     /**
-     * @param array|ArrayAccess $array
-     * @param int|string $key
-     * @return mixed
+     * @template TKey
+     * @template TValue
+     * @param array<TKey, TValue> $array
+     * @param TKey $key
+     * @return TValue|null
      */
-    public static function pull(array|ArrayAccess &$array, int|string $key): mixed
+    public static function pull(array &$array, int|string $key): mixed
     {
         if (static::isNotDottedKey($key)) {
             $value = $array[$key] ?? null;
@@ -863,11 +894,11 @@ class Arr
             return $value;
         }
 
-        $segments = explode('.', $key);
+        $segments = is_string($key) ? explode('.', $key) : [$key];
         $lastSegment = array_pop($segments);
         $ptr = &$array;
         foreach ($segments as $segment) {
-            if (!isset($segment, $ptr)) {
+            if (!isset($ptr[$segment])) {
                 return null;
             }
             $ptr = &$ptr[$segment];
@@ -883,11 +914,13 @@ class Arr
     }
 
     /**
-     * @param array|ArrayAccess $array
-     * @param mixed ...$value
+     * @template TKey
+     * @template TValue
+     * @param array<TKey, TValue> $array
+     * @param TValue ...$value
      * @return void
      */
-    public static function push(array|ArrayAccess &$array, mixed ...$value): void
+    public static function push(array &$array, mixed ...$value): void
     {
         foreach ($value as $v) {
             $array[] = $v;
@@ -907,19 +940,19 @@ class Arr
         if ($initial === null) {
             $ref = new ReflectionFunction($callback);
             $refType = $ref->getParameters()[0]->getType();
-            $name = $refType?->getName();
-            if ($name === 'int') {
-                $initial = 0;
-            } else if ($name === 'float') {
-                $initial = 0.0;
-            } else if ($name === 'string') {
-                $initial = '';
-            } else if ($name === 'array') {
-                $initial = [];
-            } else if ($name !== null && class_exists($name)) {
-                $initial = new $name;
-            } else {
-                throw new RuntimeException('Initial value not set and not guessable.');
+            if ($refType instanceof ReflectionNamedType) {
+                $name = $refType->getName();
+                if ($name === 'int') {
+                    $initial = 0;
+                } else if ($name === 'float') {
+                    $initial = 0.0;
+                } else if ($name === 'string') {
+                    $initial = '';
+                } else if ($name === 'array') {
+                    $initial = [];
+                } else if ($name !== null && class_exists($name)) {
+                    $initial = new $name;
+                }
             }
         }
 
@@ -936,13 +969,13 @@ class Arr
      * @param int|null $limit
      * @return int
      */
-    public static function remove(iterable &$iterable, mixed $value, ?int $limit = null): int
+    public static function remove(array &$array, mixed $value, ?int $limit = null): int
     {
         $counter = 0;
         $limit ??= PHP_INT_MAX;
-        foreach ($iterable as $key => $item) {
+        foreach ($array as $key => $item) {
             if ($counter < $limit && $item === $value) {
-                unset($iterable[$key]);
+                unset($array[$key]);
                 $counter++;
             }
         }
@@ -950,11 +983,12 @@ class Arr
     }
 
     /**
-     * @param array|ArrayAccess $array
-     * @param int|string $key
+     * @template TKey
+     * @param array<TKey, mixed> $array
+     * @param TKey $key
      * @return bool
      */
-    public static function removeKey(array|ArrayAccess &$array, int|string $key): bool
+    public static function removeKey(array &$array, int|string $key): bool
     {
         if (static::isNotDottedKey($key)) {
             if (array_key_exists($key, $array)) {
@@ -984,9 +1018,10 @@ class Arr
     }
 
     /**
-     * @param iterable $iterable
+     * @template T
+     * @param iterable<T> $iterable
      * @param int $times
-     * @return array
+     * @return array<int, T>
      */
     public static function repeat(iterable $iterable, int $times): array
     {
@@ -1002,8 +1037,9 @@ class Arr
     }
 
     /**
-     * @param iterable $iterable
-     * @return array
+     * @template T
+     * @param iterable<T> $iterable
+     * @return array<T>
      */
     public static function reverse(iterable $iterable): array
     {
@@ -1023,15 +1059,16 @@ class Arr
     }
 
     /**
-     * @template T
-     * @param iterable<T> $iterable
+     * @template TKey
+     * @template TValue
+     * @param iterable<TKey, TValue> $iterable
      * @param int $amount
-     * @return T[]
+     * @return array<TKey, TValue>
      */
     public static function sampleMany(iterable $iterable, int $amount): array
     {
         $array = static::from($iterable);
-        $sampledKeys = array_rand($array, $amount);
+        $sampledKeys = (array) array_rand($array, $amount);
         return static::only($array, $sampledKeys);
     }
 
@@ -1063,11 +1100,13 @@ class Arr
     }
 
     /**
-     * @param array|ArrayAccess $array
-     * @param int|string $key
+     * @template TKey of int|string
+     * @template TValue
+     * @param array<TKey, TValue> $array
+     * @param TKey $key
      * @param mixed $value
      */
-    public static function set(array|ArrayAccess &$array, int|string $key, mixed $value): void
+    public static function set(array &$array, int|string $key, mixed $value): void
     {
         if (static::isNotDottedKey($key)) {
             $array[$key] = $value;
@@ -1075,7 +1114,7 @@ class Arr
         }
 
         $ptr = &$array;
-        $segments = explode('.', $key);
+        $segments = is_string($key) ? explode('.', $key) : [$key];
         $lastSegment = array_pop($segments);
         foreach ($segments as $segment) {
             $ptr[$segment] ??= [];
@@ -1085,8 +1124,9 @@ class Arr
     }
 
     /**
-     * @param array $array
-     * @return mixed
+     * @template T
+     * @param array<T> $array
+     * @return T|null
      */
     public static function shift(array &$array): mixed
     {
@@ -1094,9 +1134,10 @@ class Arr
     }
 
     /**
-     * @param array $array
+     * @template T
+     * @param array<T> $array
      * @param int $amount
-     * @return array
+     * @return array<T>
      */
     public static function shiftMany(array &$array, int $amount): array
     {
@@ -1105,8 +1146,9 @@ class Arr
     }
 
     /**
-     * @param iterable $iterable
-     * @return array
+     * @template T
+     * @param iterable<T> $iterable
+     * @return array<T>
      */
     public static function shuffle(iterable $iterable): array
     {
@@ -1124,7 +1166,7 @@ class Arr
     }
 
     /**
-     * @param iterable $iterable
+     * @param iterable<float|int> $iterable
      * @return float|int
      */
     public static function sum(iterable $iterable): float|int
@@ -1137,9 +1179,10 @@ class Arr
     }
 
     /**
-     * @param iterable $iterable
+     * @template T
+     * @param iterable<T> $iterable
      * @param int $amount
-     * @return array
+     * @return array<T>
      */
     public static function take(iterable $iterable, int $amount): array
     {
@@ -1149,9 +1192,10 @@ class Arr
     }
 
     /**
-     * @param iterable $iterable
+     * @template T
+     * @param iterable<T> $iterable
      * @param callable $callback
-     * @return array
+     * @return array<T>
      */
     public static function takeUntil(iterable $iterable, callable $callback): array
     {
@@ -1160,9 +1204,10 @@ class Arr
     }
 
     /**
-     * @param iterable $iterable
+     * @template T
+     * @param iterable<T> $iterable
      * @param callable $condition
-     * @return array
+     * @return array<T>
      */
     public static function takeWhile(iterable $iterable, callable $condition): array
     {
@@ -1171,8 +1216,8 @@ class Arr
     }
 
     /**
-     * @param iterable $iterable
-     * @return array
+     * @param iterable<int|string> $iterable
+     * @return array<int>
      */
     public static function tally(iterable $iterable): array
     {
@@ -1198,9 +1243,11 @@ class Arr
     }
 
     /**
-     * @param iterable $iterable1
-     * @param iterable $iterable2
-     * @return array
+     * @template T1
+     * @template T2
+     * @param iterable<T1> $iterable1
+     * @param iterable<T2> $iterable2
+     * @return array<T1|T2>
      */
     public static function union(iterable $iterable1, iterable $iterable2): array
     {
@@ -1208,10 +1255,12 @@ class Arr
     }
 
     /**
-     * @param iterable $iterable1
-     * @param iterable $iterable2
+     * @template T1
+     * @template T2
+     * @param iterable<T1> $iterable1
+     * @param iterable<T2> $iterable2
      * @param int $depth
-     * @return array
+     * @return array<T1|T2>
      */
     public static function unionRecursive(iterable $iterable1, iterable $iterable2, int $depth = PHP_INT_MAX): array
     {
@@ -1231,8 +1280,9 @@ class Arr
     /**
      * @see uniqueBy for details
      *
-     * @param iterable $iterable
-     * @return array
+     * @template T
+     * @param iterable<T> $iterable
+     * @return array<T>
      */
     public static function unique(iterable $iterable): array
     {
@@ -1243,9 +1293,10 @@ class Arr
      * Must do custom unique because array_unique does a string convertion before comparing.
      * For example, `[1, true, null, false]` will result in: `[0 => 1, 2 => null]` 🤦
      *
-     * @param iterable $iterable
+     * @template T
+     * @param iterable<T> $iterable
      * @param callable $callback
-     * @return array
+     * @return array<T>
      */
     public static function uniqueBy(iterable $iterable, callable $callback): array
     {
@@ -1278,8 +1329,9 @@ class Arr
     }
 
     /**
-     * @param iterable $iterable
-     * @return array
+     * @template T
+     * @param iterable<T> $iterable
+     * @return array<int, T>
      */
     public static function values(iterable $iterable): array
     {
@@ -1287,8 +1339,9 @@ class Arr
     }
 
     /**
-     * @param mixed $value
-     * @return array
+     * @template T
+     * @param T $value
+     * @return array<T>
      */
     public static function wrap(mixed $value): array
     {
@@ -1314,11 +1367,11 @@ class Arr
     }
 
     /**
-     * @param array $array
-     * @param array $keys
+     * @param array<mixed> $array
+     * @param iterable<int|string> $keys
      * @return mixed
      */
-    protected static function dig(array $array, array $keys): mixed
+    protected static function dig(array $array, iterable $keys): mixed
     {
         foreach ($keys as $key) {
             if (!isset($array[$key])) {
