@@ -98,7 +98,7 @@ class Assert
     }
 
     /**
-     * @param int|string $key
+     * @param mixed $key
      * @return void
      */
     public static function validKey(mixed $key): void
