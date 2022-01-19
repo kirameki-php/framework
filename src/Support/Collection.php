@@ -15,14 +15,14 @@ class Collection extends Enumerable implements ArrayAccess
     public function __construct(iterable|null $items = null)
     {
         $items ??= [];
-        $this->items = $this->asArray($items);
+        parent::__construct($this->asArray($items));
     }
 
     /**
      * @param iterable|null $items
-     * @return static
+     * @return self
      */
-    public function newInstance(?iterable $items = null): static
+    public function newInstance(iterable|null $items = null): self
     {
         return new self($items);
     }
@@ -31,7 +31,7 @@ class Collection extends Enumerable implements ArrayAccess
      * @param mixed $offset
      * @return bool
      */
-    public function offsetExists($offset): bool
+    public function offsetExists(mixed $offset): bool
     {
         return isset($this->items[$offset]);
     }
@@ -40,7 +40,7 @@ class Collection extends Enumerable implements ArrayAccess
      * @param mixed $offset
      * @return mixed
      */
-    public function offsetGet($offset): mixed
+    public function offsetGet(mixed $offset): mixed
     {
         return $this->items[$offset];
     }
@@ -50,7 +50,7 @@ class Collection extends Enumerable implements ArrayAccess
      * @param mixed $value
      * @return void
      */
-    public function offsetSet($offset, $value): void
+    public function offsetSet(mixed $offset, mixed $value): void
     {
         if ($offset === null) {
             $this->items[] = $value;
@@ -64,7 +64,7 @@ class Collection extends Enumerable implements ArrayAccess
      * @param mixed $offset
      * @return void
      */
-    public function offsetUnset($offset): void
+    public function offsetUnset(mixed $offset): void
     {
         unset($this->items[$offset]);
     }

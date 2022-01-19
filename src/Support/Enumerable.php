@@ -2,7 +2,6 @@
 
 namespace Kirameki\Support;
 
-use ArrayIterator;
 use Countable;
 use Generator;
 use IteratorAggregate;
@@ -23,21 +22,33 @@ use function ksort;
 /**
  * @template T
  */
-abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializable
+class Enumerable implements Countable, IteratorAggregate, JsonSerializable
 {
     use Concerns\Macroable;
     use Concerns\Tappable;
 
     /**
-     * @var iterable
+     * @var iterable<T>
      */
     protected iterable $items;
 
     /**
-     * @param iterable|null $items
-     * @return static
+     * @param iterable<T>|null $items
      */
-    abstract public function newInstance(?iterable $items = null): static;
+    public function __construct(iterable|null $items)
+    {
+        $items ??= [];
+        $this->items = $items;
+    }
+
+    /**
+     * @param iterable<T>|null $items
+     * @return self<T>
+     */
+    public function newInstance(iterable|null $items = null): self
+    {
+        return new self($items);
+    }
 
     /**
      * @return array
@@ -52,11 +63,13 @@ abstract class Enumerable implements Countable, IteratorAggregate, JsonSerializa
     }
 
     /**
-     * @return ArrayIterator
+     * @return Generator<T>
      */
-    public function getIterator(): ArrayIterator
+    public function getIterator(): Generator
     {
-        return new ArrayIterator($this->items);
+        foreach ($this->items as $key => $item) {
+            yield $key => $item;
+        }
     }
 
     /**
