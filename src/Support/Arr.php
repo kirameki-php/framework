@@ -358,11 +358,10 @@ class Arr
     }
 
     /**
-     * @template TKey
-     * @template TValue
-     * @param iterable<TKey, TValue> $iterable
+     * @template T
+     * @param iterable<T> $iterable
      * @param callable|null $condition
-     * @return TKey|null
+     * @return int|string|null
      */
     public static function firstKey(iterable $iterable, ?callable $condition = null): mixed
     {
@@ -678,7 +677,7 @@ class Arr
 
     /**
      * @template T
-     * @param iterable<int|string, T> $iterable
+     * @param iterable<T> $iterable
      * @param callable|null $condition
      * @return int|string|null
      */
@@ -776,13 +775,15 @@ class Arr
     /**
      * @template T
      * @param iterable<T> $iterable
-     * @return array<int, T|null>
+     * @return array<T>
      */
     public static function minMax(iterable $iterable): array
     {
         $min = null;
         $max = null;
+        $containsValues = false;
         foreach ($iterable as $value) {
+            $containsValues = true;
             if ($min === null || $min > $value) {
                 $min = $value;
             }
@@ -790,7 +791,12 @@ class Arr
                 $max = $value;
             }
         }
-        return [$min, $max];
+
+        if (!$containsValues) {
+            throw new RuntimeException('$iterable must contain at least one element, 0 given.');
+        }
+
+        return [$min, $max]; /** @phpstan-ignore-line */
     }
 
     /**
@@ -971,8 +977,9 @@ class Arr
     }
 
     /**
-     * @param array<mixed> $array
-     * @param mixed $value
+     * @template T
+     * @param array<T> $array
+     * @param T $value
      * @param int|null $limit
      * @return int
      */
@@ -990,9 +997,8 @@ class Arr
     }
 
     /**
-     * @template TKey of int|string
-     * @param array<TKey, mixed> $array
-     * @param TKey $key
+     * @param array<mixed> $array
+     * @param int|string $key
      * @return bool
      */
     public static function removeKey(array &$array, int|string $key): bool
@@ -1028,7 +1034,7 @@ class Arr
      * @template T
      * @param iterable<T> $iterable
      * @param int $times
-     * @return array<int, T>
+     * @return array<T>
      */
     public static function repeat(iterable $iterable, int $times): array
     {
@@ -1373,9 +1379,9 @@ class Arr
     }
 
     /**
-     * @template TValue
-     * @param array<int|string, TValue> $array
-     * @param array<int, int|string> $keys
+     * @template T
+     * @param array<T> $array
+     * @param array<int|string> $keys
      * @return mixed
      */
     protected static function dig(array $array, array $keys): mixed
@@ -1418,5 +1424,4 @@ class Arr
         }
         throw new InvalidKeyException($key);
     }
-
 }
