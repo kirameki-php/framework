@@ -4,6 +4,7 @@ namespace Kirameki\Support;
 
 use Closure;
 use Kirameki\Exception\DuplicateKeyException;
+use Kirameki\Exception\InvalidKeyException;
 use ReflectionFunction;
 use ReflectionNamedType;
 use RuntimeException;
@@ -39,6 +40,7 @@ use function iterator_to_array;
 use function key;
 use function max;
 use function min;
+use function next;
 use function prev;
 use function str_contains;
 
@@ -101,11 +103,10 @@ class Arr
     }
 
     /**
-     * @template TKey
-     * @template TValue
-     * @param iterable<TKey, TValue> $iterable
+     * @template T
+     * @param iterable<T> $iterable
      * @param int $depth
-     * @return array<TKey, TValue>
+     * @return array<T>
      */
     public static function compact(iterable $iterable, int $depth = 1): array
     {
@@ -118,6 +119,7 @@ class Arr
                 $result[$key] = $value;
             }
         }
+        /* @phpstan-ignore-next-line */
         return $result;
     }
 
@@ -153,7 +155,7 @@ class Arr
         }
 
         $segments = is_string($key) ? explode('.', $key) : [$key];
-        $lastSegment = array_pop($segments);
+        $lastSegment = static::verifyKey(array_pop($segments));
         $ptr = static::dig($array, $segments);
         return is_array($ptr) && array_key_exists($lastSegment, $ptr);
     }
@@ -422,17 +424,16 @@ class Arr
     }
 
     /**
-     * @template TKey
-     * @template TValue
-     * @param iterable<TKey, TValue> $iterable
+     * @template T
+     * @param iterable<T> $iterable
      * @param bool $overwrite
-     * @return array<TValue, TKey>
+     * @return array<int|string, mixed>
      */
     public static function flip(iterable $iterable, bool $overwrite = false): array
     {
         $flipped = [];
         foreach ($iterable as $key => $value) {
-            Assert::validKey($value);
+            $value = static::verifyKey($value);
             if (!$overwrite && array_key_exists($value, $flipped)) {
                 throw new DuplicateKeyException($value, $key);
             }
@@ -448,20 +449,16 @@ class Arr
      */
     public static function from(iterable $iterable): array
     {
-        if (is_array($iterable)) {
-            return $iterable;
-        }
-        if ($iterable instanceof Traversable) {
-            return iterator_to_array($iterable);
-        }
-        throw new RuntimeException('Unknown type:'.get_class($iterable));
+        return ($iterable instanceof Traversable)
+            ? iterator_to_array($iterable)
+            : $iterable;
     }
 
     /**
      * @template T
      * @param iterable<T> $iterable
      * @param int|string $key
-     * @return T|null
+     * @return T|mixed
      */
     public static function get(iterable $iterable, int|string $key): mixed
     {
@@ -624,7 +621,7 @@ class Arr
                 : $item;
         }
 
-        return $result;
+        return $result; /* @phpstan-ignore-line */
     }
 
     /**
@@ -638,16 +635,14 @@ class Arr
         $copy = static::from($iterable);
         end($copy);
 
-        if ($condition === null) {
-            return current($copy);
-        }
+        $condition ??= static fn($v, $k) => true;
 
         while(($key = key($copy)) !== null) {
             $item = current($copy);
             $bool = $condition($item, $key);
             Assert::bool($bool);
             if ($bool) {
-                return $item;
+                return $item; /* @phpstan-ignore-line */
             }
             prev($copy);
         }
@@ -682,13 +677,12 @@ class Arr
     }
 
     /**
-     * @template TKey
-     * @template TValue
-     * @param iterable<TKey, TValue> $iterable
+     * @template T
+     * @param iterable<int|string, T> $iterable
      * @param callable|null $condition
-     * @return TKey|null
+     * @return int|string|null
      */
-    public static function lastKey(iterable $iterable, ?callable $condition = null): mixed
+    public static function lastKey(iterable $iterable, ?callable $condition = null): int|string|null
     {
         $copy = static::from($iterable);
         end($copy);
@@ -726,9 +720,8 @@ class Arr
     }
 
     /**
-     * @template T
-     * @param iterable<T> $iterable
-     * @return T
+     * @param iterable<bool|float|int> $iterable
+     * @return bool|float|int
      */
     public static function max(iterable $iterable): mixed
     {
@@ -759,6 +752,7 @@ class Arr
     {
         $merged = static::from($iterable1);
         foreach ($iterable2 as $key => $value) {
+            $key = static::verifyKey($key);
             if (is_int($key)) {
                 $merged[] = $value;
             } else if ($depth > 1 && array_key_exists($key, $merged) && is_iterable($merged[$key]) && is_iterable($value)) {
@@ -767,13 +761,12 @@ class Arr
                 $merged[$key] = $value;
             }
         }
-        return $merged;
+        return $merged; /* @phpstan-ignore-line */
     }
 
     /**
-     * @template T
-     * @param iterable<T> $iterable
-     * @return T
+     * @param iterable<bool|float|int> $iterable
+     * @return bool|float|int
      */
     public static function min(iterable $iterable): mixed
     {
@@ -821,11 +814,10 @@ class Arr
     }
 
     /**
-     * @template TKey
-     * @template TValue
-     * @param iterable<TKey, TValue> $iterable
-     * @param iterable<int, TKey> $keys
-     * @return array<TKey, TValue>
+     * @template T
+     * @param iterable<T> $iterable
+     * @param iterable<int|string> $keys
+     * @return array<T>
      */
     public static function only(iterable $iterable, iterable $keys): array
     {
@@ -851,9 +843,9 @@ class Arr
     }
 
     /**
-     * @param iterable<mixed> $iterable
+     * @param iterable<int|string, mixed> $iterable
      * @param int|string $key
-     * @return array<mixed>
+     * @return array<int, mixed>
      */
     public static function pluck(iterable $iterable, int|string $key): array
     {
@@ -864,7 +856,7 @@ class Arr
         $plucked = [];
         $segments = is_string($key) ? explode('.', $key) : [$key];
         foreach ($iterable as $values) {
-            $plucked[] = static::dig($values, $segments);
+            $plucked[] = static::dig($values, $segments); /* @phpstan-ignore-line */
         }
         return $plucked;
     }
@@ -892,11 +884,10 @@ class Arr
     }
 
     /**
-     * @template TKey
-     * @template TValue
-     * @param array<TKey, TValue> $array
-     * @param TKey $key
-     * @return TValue|null
+     * @template T
+     * @param array<T> $array
+     * @param int|string $key
+     * @return T|mixed
      */
     public static function pull(array &$array, int|string $key): mixed
     {
@@ -910,6 +901,7 @@ class Arr
         $lastSegment = array_pop($segments);
         $ptr = &$array;
         foreach ($segments as $segment) {
+            $segment = static::verifyKey($segment);
             if (!isset($ptr[$segment])) {
                 return null;
             }
@@ -926,10 +918,9 @@ class Arr
     }
 
     /**
-     * @template TKey
-     * @template TValue
-     * @param array<TKey, TValue> $array
-     * @param TValue ...$value
+     * @template T
+     * @param array<T> $array
+     * @param T ...$value
      * @return void
      */
     public static function push(array &$array, mixed ...$value): void
@@ -950,25 +941,29 @@ class Arr
     {
         // Guess initial from first argument of closure if defined
         if ($initial === null) {
-            $ref = new ReflectionFunction($callback);
-            $refType = $ref->getParameters()[0]->getType();
-            if ($refType instanceof ReflectionNamedType) {
-                $name = $refType->getName();
-                if ($name === 'int') {
-                    $initial = 0;
-                } else if ($name === 'float') {
-                    $initial = 0.0;
-                } else if ($name === 'string') {
-                    $initial = '';
-                } else if ($name === 'array') {
-                    $initial = [];
-                } else if ($name !== null && class_exists($name)) {
-                    $initial = new $name;
+            if (is_string($callback) || $callback instanceof Closure) {
+                $ref = new ReflectionFunction($callback);
+                $refType = $ref->getParameters()[0]->getType();
+                if ($refType instanceof ReflectionNamedType) {
+                    $name = $refType->getName();
+                    if ($name === 'int') {
+                        $initial = 0;
+                    } else if ($name === 'float') {
+                        $initial = 0.0;
+                    } else if ($name === 'string') {
+                        $initial = '';
+                    } else if ($name === 'array') {
+                        $initial = [];
+                    } else if ($name !== null && class_exists($name)) {
+                        $initial = new $name;
+                    }
+                } else {
+                    throw new RuntimeException('Initial value not set and not guessable.');
                 }
             }
         }
 
-        $result = $initial ?? [];
+        $result = $initial;
         foreach ($iterable as $key => $item) {
             $result = $callback($result, $item, $key);
         }
@@ -995,7 +990,7 @@ class Arr
     }
 
     /**
-     * @template TKey
+     * @template TKey of int|string
      * @param array<TKey, mixed> $array
      * @param TKey $key
      * @return bool
@@ -1010,8 +1005,8 @@ class Arr
             return false;
         }
 
-        $segments = explode('.', $key);
-        $lastSegment = array_pop($segments);
+        $segments = is_string($key) ? explode('.', $key) : [$key];
+        $lastSegment = static::verifyKey(array_pop($segments));
         $ptr = &$array;
         foreach ($segments as $segment) {
             if (is_array($ptr) && array_key_exists($segment, $ptr)) {
@@ -1049,10 +1044,9 @@ class Arr
     }
 
     /**
-     * @template TKey
-     * @template TValue
-     * @param iterable<TKey, TValue> $iterable
-     * @return array<TKey, TValue>
+     * @template T
+     * @param iterable<T> $iterable
+     * @return array<T>
      */
     public static function reverse(iterable $iterable): array
     {
@@ -1072,11 +1066,10 @@ class Arr
     }
 
     /**
-     * @template TKey
-     * @template TValue
-     * @param iterable<TKey, TValue> $iterable
+     * @template T
+     * @param iterable<T> $iterable
      * @param int $amount
-     * @return array<TKey, TValue>
+     * @return array<T>
      */
     public static function sampleMany(iterable $iterable, int $amount): array
     {
@@ -1113,11 +1106,10 @@ class Arr
     }
 
     /**
-     * @template TKey of int|string
-     * @template TValue
-     * @param array<TKey, TValue> $array
-     * @param TKey $key
-     * @param mixed $value
+     * @template T
+     * @param array<T> $array
+     * @param int|string $key
+     * @param T $value
      */
     public static function set(array &$array, int|string $key, mixed $value): void
     {
@@ -1159,10 +1151,9 @@ class Arr
     }
 
     /**
-     * @template TKey
-     * @template TValue
-     * @param iterable<TKey, TValue> $iterable
-     * @return array<TKey, TValue>
+     * @template T
+     * @param iterable<T> $iterable
+     * @return array<T>
      */
     public static function shuffle(iterable $iterable): array
     {
@@ -1193,11 +1184,10 @@ class Arr
     }
 
     /**
-     * @template TKey
-     * @template TValue
-     * @param iterable<TKey, TValue> $iterable
+     * @template T
+     * @param iterable<T> $iterable
      * @param int $amount
-     * @return array<TKey, TValue>
+     * @return array<T>
      */
     public static function take(iterable $iterable, int $amount): array
     {
@@ -1207,11 +1197,10 @@ class Arr
     }
 
     /**
-     * @template TKey
-     * @template TValue
-     * @param iterable<TKey, TValue> $iterable
+     * @template T
+     * @param iterable<T> $iterable
      * @param callable $condition
-     * @return array<TKey, TValue>
+     * @return array<T>
      */
     public static function takeUntil(iterable $iterable, callable $condition): array
     {
@@ -1220,11 +1209,10 @@ class Arr
     }
 
     /**
-     * @template TKey
-     * @template TValue
-     * @param iterable<TKey, TValue> $iterable
+     * @template T
+     * @param iterable<T> $iterable
      * @param callable $condition
-     * @return array<TKey, TValue>
+     * @return array<T>
      */
     public static function takeWhile(iterable $iterable, callable $condition): array
     {
@@ -1284,6 +1272,7 @@ class Arr
     {
         $union = static::from($iterable1);
         foreach ($iterable2 as $key => $value) {
+            $key = static::verifyKey($key);
             if (is_int($key)) {
                 $union[] = $value;
             } else if (!array_key_exists($key, $union)) {
@@ -1292,16 +1281,15 @@ class Arr
                 $union[$key] = static::unionRecursive($union[$key], $value, $depth - 1);
             }
         }
-        return $union;
+        return $union; /** @phpstan-ignore-line */
     }
 
     /**
      * @see uniqueBy for details
      *
-     * @template TKey
-     * @template TValue
-     * @param iterable<TKey, TValue> $iterable
-     * @return array<TKey, TValue>
+     * @template T
+     * @param iterable<T> $iterable
+     * @return array<T>
      */
     public static function unique(iterable $iterable): array
     {
@@ -1312,11 +1300,9 @@ class Arr
      * Must do custom unique because array_unique does a string convertion before comparing.
      * For example, `[1, true, null, false]` will result in: `[0 => 1, 2 => null]` 🤦
      *
-     * @template TKey
-     * @template TValue
-     * @param iterable<TKey, TValue> $iterable
-     * @param callable $callback
-     * @return array<TKey, TValue>
+     * @template T
+     * @param iterable<T> $iterable
+     * @return array<T>
      */
     public static function uniqueBy(iterable $iterable, callable $callback): array
     {
@@ -1387,10 +1373,9 @@ class Arr
     }
 
     /**
-     * @template TKey
      * @template TValue
-     * @param array<TKey, TValue> $array
-     * @param array<int, TKey> $keys
+     * @param array<int|string, TValue> $array
+     * @param array<int, int|string> $keys
      * @return mixed
      */
     protected static function dig(array $array, array $keys): mixed
@@ -1421,4 +1406,17 @@ class Arr
         $segments = explode('.', $key);
         return static fn($v, $k) => static::dig($v, $segments);
     }
+
+    /**
+     * @param mixed $key
+     * @return int|string
+     */
+    protected static function verifyKey(mixed $key): int|string
+    {
+        if (is_int($key) || is_string($key)) {
+            return $key;
+        }
+        throw new InvalidKeyException($key);
+    }
+
 }
