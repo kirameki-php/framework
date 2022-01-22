@@ -311,15 +311,6 @@ class Enumerable implements Countable, IteratorAggregate, JsonSerializable
     }
 
     /**
-     * @param callable|null $condition
-     * @return T
-     */
-    public function firstOrFail(callable $condition = null): mixed
-    {
-        return Arr::firstOrFail($this->items, $condition);
-    }
-
-    /**
      * @param callable $condition
      * @return int|null
      */
@@ -335,6 +326,15 @@ class Enumerable implements Countable, IteratorAggregate, JsonSerializable
     public function firstKey(callable $condition = null): int|string|null
     {
         return Arr::firstKey($this->items, $condition);
+    }
+
+    /**
+     * @param callable|null $condition
+     * @return T
+     */
+    public function firstOrFail(callable $condition = null): mixed
+    {
+        return Arr::firstOrFail($this->items, $condition);
     }
 
     /**
@@ -497,6 +497,15 @@ class Enumerable implements Countable, IteratorAggregate, JsonSerializable
     public function lastKey(callable $condition = null): int|string|null
     {
         return Arr::lastKey($this->items, $condition);
+    }
+
+    /**
+     * @param callable|null $condition
+     * @return T
+     */
+    public function lastOrFail(callable $condition = null): mixed
+    {
+        return Arr::lastOrFail($this->items, $condition);
     }
 
     /**

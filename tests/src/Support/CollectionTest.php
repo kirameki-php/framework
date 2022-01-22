@@ -496,28 +496,6 @@ class CollectionTest extends TestCase
         self::assertEquals(null, $collect->first(fn() => false));
     }
 
-    public function testFirstOrFail(): void
-    {
-        $collect = $this->collect([10, 20]);
-        self::assertEquals(10, $collect->first());
-        self::assertEquals(20, $collect->first(fn($v, $k) => $k === 1));
-        self::assertEquals(20, $collect->first(fn($v, $k) => $v === 20));
-    }
-
-    public function testFirstOrFail_Empty(): void
-    {
-        $this->expectException(RuntimeException::class);
-        $this->expectExceptionMessage('Iterable must contain at least one item.');
-        $this->collect([])->firstOrFail();
-    }
-
-    public function testFirstOrFail_BadCondition(): void
-    {
-        $this->expectException(RuntimeException::class);
-        $this->expectExceptionMessage('Failed to find matching condition.');
-        $this->collect([1,2])->firstOrFail(fn(int $i) => $i > 2);
-    }
-
     public function testFirstIndex(): void
     {
         $collect = $this->collect([10, 20, 20, 30]);
@@ -535,6 +513,28 @@ class CollectionTest extends TestCase
         $collect = $this->collect(['a' => 10, 'b' => 20, 'c' => 30]);
         self::assertEquals('b', $collect->firstKey(fn($v, $k) => $v === 20));
         self::assertEquals('c', $collect->firstKey(fn($v, $k) => $k === 'c'));
+    }
+
+    public function testFirstOrFail(): void
+    {
+        $collect = $this->collect([10, 20]);
+        self::assertEquals(10, $collect->firstOrFail());
+        self::assertEquals(20, $collect->firstOrFail(fn($v, $k) => $k === 1));
+        self::assertEquals(20, $collect->firstOrFail(fn($v, $k) => $v === 20));
+    }
+
+    public function testFirstOrFail_Empty(): void
+    {
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('Iterable must contain at least one item.');
+        $this->collect([])->firstOrFail();
+    }
+
+    public function testFirstOrFail_BadCondition(): void
+    {
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('Failed to find matching condition.');
+        $this->collect([1,2])->firstOrFail(fn(int $i) => $i > 2);
     }
 
     public function testFlatMap(): void
@@ -829,6 +829,28 @@ class CollectionTest extends TestCase
         self::assertEquals('b', $collect->lastKey(fn($v, $k) => $k === 'b'));
         self::assertEquals('c', $collect->lastKey(fn($v, $k) => $v === 20));
         self::assertEquals(null, $collect->lastKey(fn() => false));
+    }
+
+    public function testLastOrFail(): void
+    {
+        $collect = $this->collect([10, 20]);
+        self::assertEquals(20, $collect->lastOrFail());
+        self::assertEquals(20, $collect->lastOrFail(fn($v, $k) => $k === 1));
+        self::assertEquals(20, $collect->lastOrFail(fn($v, $k) => $v === 20));
+    }
+
+    public function testLastOrFail_Empty(): void
+    {
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('Iterable must contain at least one item.');
+        $this->collect([])->lastOrFail();
+    }
+
+    public function testLastOrFail_BadCondition(): void
+    {
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('Failed to find matching condition.');
+        $this->collect([1,2])->lastOrFail(fn(int $i) => $i > 2);
     }
 
     public function testMacro(): void

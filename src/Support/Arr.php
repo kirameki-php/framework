@@ -5,9 +5,6 @@ namespace Kirameki\Support;
 use Closure;
 use Kirameki\Exception\DuplicateKeyException;
 use Kirameki\Exception\InvalidKeyException;
-use Kirameki\Exception\InvalidValueException;
-use ReflectionFunction;
-use ReflectionNamedType;
 use RuntimeException;
 use Traversable;
 use function array_column;
@@ -24,7 +21,6 @@ use function array_splice;
 use function array_sum;
 use function array_unshift;
 use function array_values;
-use function class_exists;
 use function count;
 use function current;
 use function end;
@@ -340,26 +336,6 @@ class Arr
     }
 
     /**
-     * @template T
-     * @param iterable<T> $iterable
-     * @param callable|null $condition
-     * @return T
-     */
-    public static function firstOrFail(iterable $iterable, callable $condition = null): mixed
-    {
-        $result = static::first($iterable, $condition);
-
-        if ($result === null) {
-            $message = ($condition !== null)
-                ? 'Failed to find matching condition.'
-                : 'Iterable must contain at least one item.';
-            throw new RuntimeException($message);
-        }
-
-        return $result;
-    }
-
-    /**
      * @param iterable<mixed> $iterable
      * @param callable $condition
      * @return int|null
@@ -396,6 +372,26 @@ class Arr
             }
         }
         return null;
+    }
+
+    /**
+     * @template T
+     * @param iterable<T> $iterable
+     * @param callable|null $condition
+     * @return T
+     */
+    public static function firstOrFail(iterable $iterable, callable $condition = null): mixed
+    {
+        $result = static::first($iterable, $condition);
+
+        if ($result === null) {
+            $message = ($condition !== null)
+                ? 'Failed to find matching condition.'
+                : 'Iterable must contain at least one item.';
+            throw new RuntimeException($message);
+        }
+
+        return $result;
     }
 
     /**
@@ -735,6 +731,26 @@ class Arr
     }
 
     /**
+     * @template T
+     * @param iterable<T> $iterable
+     * @param callable|null $condition
+     * @return T
+     */
+    public static function lastOrFail(iterable $iterable, callable $condition = null): mixed
+    {
+        $result = static::last($iterable, $condition);
+
+        if ($result === null) {
+            $message = ($condition !== null)
+                ? 'Failed to find matching condition.'
+                : 'Iterable must contain at least one item.';
+            throw new RuntimeException($message);
+        }
+
+        return $result;
+    }
+
+    /**
      * @template TKey
      * @param iterable<TKey, mixed> $iterable
      * @param callable $callback
@@ -924,34 +940,51 @@ class Arr
      * @template T
      * @param array<T> $array
      * @param int|string $key
+     * @param bool &$found
      * @return T|mixed
      */
-    public static function pull(array &$array, int|string $key): mixed
+    public static function pull(array &$array, int|string $key, bool &$found = null): mixed
     {
+        $found = false;
+
         if (static::isNotDottedKey($key)) {
-            $value = $array[$key] ?? null;
-            unset($array[$key]);
-            return $value;
+            if (array_key_exists($key, $array)) {
+                $found = true;
+                return static::pullInternal($array, $key);
+            }
+            return null;
         }
 
+        $arrayRef = &$array;
         $segments = is_string($key) ? explode('.', $key) : [$key];
-        $lastSegment = array_pop($segments);
-        $ptr = &$array;
+        $lastSegment = static::verifyKey(array_pop($segments));
         foreach ($segments as $segment) {
-            $segment = static::verifyKey($segment);
-            if (!isset($ptr[$segment])) {
+            if (is_array($arrayRef) && array_key_exists($segment, $arrayRef)) {
+                $arrayRef = &$arrayRef[$segment];
+            } else {
                 return null;
             }
-            $ptr = &$ptr[$segment];
         }
 
-        if (isset($ptr[$lastSegment])) {
-            $value = $ptr[$lastSegment];
-            unset($ptr[$lastSegment]);
-            return $value;
+        if (array_key_exists($lastSegment, $arrayRef)) {
+            $found = true;
+            return static::pullInternal($arrayRef, $lastSegment);
         }
 
         return null;
+    }
+
+    /**
+     * @template T
+     * @param array<T> $array
+     * @param int|string $key
+     * @return T
+     */
+    protected static function pullInternal(array &$array, int|string $key)
+    {
+        $value = $array[$key];
+        unset($array[$key]);
+        return $value;
     }
 
     /**
@@ -1010,31 +1043,9 @@ class Arr
      */
     public static function removeKey(array &$array, int|string $key): bool
     {
-        if (static::isNotDottedKey($key)) {
-            if (array_key_exists($key, $array)) {
-                unset($array[$key]);
-                return true;
-            }
-            return false;
-        }
-
-        $segments = is_string($key) ? explode('.', $key) : [$key];
-        $lastSegment = static::verifyKey(array_pop($segments));
-        $ptr = &$array;
-        foreach ($segments as $segment) {
-            if (is_array($ptr) && array_key_exists($segment, $ptr)) {
-                $ptr = &$ptr[$segment];
-            } else {
-                return false;
-            }
-        }
-
-        if (array_key_exists($lastSegment, $ptr)) {
-            unset($ptr[$lastSegment]);
-            return true;
-        }
-
-        return false;
+        $found = false;
+        static::pull($array, $key, $found);
+        return $found;
     }
 
     /**
