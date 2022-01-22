@@ -5,6 +5,7 @@ namespace Kirameki\Support;
 use Closure;
 use Kirameki\Exception\DuplicateKeyException;
 use Kirameki\Exception\InvalidKeyException;
+use Kirameki\Exception\InvalidValueException;
 use RuntimeException;
 use Traversable;
 use function array_column;
@@ -129,9 +130,7 @@ class Arr
     {
         $call = is_callable($value) ? $value : static fn($item) => $item === $value;
         foreach ($iterable as $key => $item) {
-            $bool = $call($item, $key);
-            Assert::bool($bool);
-            if ($bool) {
+            if (static::verify($call, $item, $key)) {
                 return true;
             }
         }
@@ -152,7 +151,7 @@ class Arr
         }
 
         $segments = is_string($key) ? explode('.', $key) : [$key];
-        $lastSegment = static::verifyKey(array_pop($segments));
+        $lastSegment = static::ensureKey(array_pop($segments));
         $ptr = static::dig($array, $segments);
         return is_array($ptr) && array_key_exists($lastSegment, $ptr);
     }
@@ -176,9 +175,7 @@ class Arr
     {
         $counter = 0;
         foreach ($iterable as $key => $item) {
-            $bool = $condition($item, $key);
-            Assert::bool($bool);
-            if ($bool) {
+            if (static::verify($condition, $item, $key)) {
                 $counter++;
             }
         }
@@ -219,10 +216,8 @@ class Arr
     public static function dropWhile(iterable $iterable, callable $condition): array
     {
         $index = static::firstIndex($iterable, static function ($item, $key) use ($condition) {
-                $result = $condition($item, $key);
-                Assert::bool($result);
-                return !$result;
-            }) ?? PHP_INT_MAX;
+            return !static::verify($condition, $item, $key);
+        }) ?? PHP_INT_MAX;
         return static::drop($iterable, $index);
     }
 
@@ -305,9 +300,7 @@ class Arr
         $condition ??= static fn($item, $key) => !empty($item);
         $values = [];
         foreach ($iterable as $key => $item) {
-            $bool = $condition($item, $key);
-            Assert::bool($bool);
-            if ($bool) {
+            if (static::verify($condition, $item, $key)) {
                 $values[$key] = $item;
             }
         }
@@ -326,9 +319,7 @@ class Arr
             if ($condition === null) {
                 return $item;
             }
-            $bool = $condition($item, $key);
-            Assert::bool($bool);
-            if ($bool) {
+            if (static::verify($condition, $item, $key)) {
                 return $item;
             }
         }
@@ -344,9 +335,7 @@ class Arr
     {
         $count = 0;
         foreach ($iterable as $key => $item) {
-            $bool = $condition($item, $key);
-            Assert::bool($bool);
-            if ($bool) {
+            if (static::verify($condition, $item, $key)) {
                 return $count;
             }
             $count++;
@@ -363,12 +352,10 @@ class Arr
     {
         foreach ($iterable as $key => $item) {
             if ($condition === null) {
-                return static::verifyKey($key);
+                return static::ensureKey($key);
             }
-            $bool = $condition($item, $key);
-            Assert::bool($bool);
-            if ($bool) {
-                return static::verifyKey($key);
+            if (static::verify($condition, $item, $key)) {
+                return static::ensureKey($key);
             }
         }
         return null;
@@ -448,7 +435,7 @@ class Arr
     {
         $flipped = [];
         foreach ($iterable as $key => $value) {
-            $value = static::verifyKey($value);
+            $value = static::ensureKey($value);
             if (!$overwrite && array_key_exists($value, $flipped)) {
                 throw new DuplicateKeyException($value, $key);
             }
@@ -634,9 +621,7 @@ class Arr
 
         $result = [];
         foreach ($iterable as $_key => $item) {
-            $newKey = $callable($item, $_key);
-
-            Assert::validKey($newKey);
+            $newKey = static::ensureKey($callable($item, $_key));
 
             if (!$overwrite && array_key_exists($newKey, $result)) {
                 throw new DuplicateKeyException($newKey, $item);
@@ -665,9 +650,7 @@ class Arr
 
         while(($key = key($copy)) !== null) {
             $item = current($copy);
-            $bool = $condition($item, $key);
-            Assert::bool($bool);
-            if ($bool) {
+            if (static::verify($condition, $item, $key)) {
                 return $item; /* @phpstan-ignore-line */
             }
             prev($copy);
@@ -691,9 +674,7 @@ class Arr
         while(($key = key($copy)) !== null) {
             $count--;
             $item = current($copy);
-            $bool = $condition($item, $key);
-            Assert::bool($bool);
-            if ($bool) {
+            if (static::verify($condition, $item, $key)) {
                 return $count;
             }
             prev($copy);
@@ -719,9 +700,7 @@ class Arr
 
         while(($key = key($copy)) !== null) {
             $item = current($copy);
-            $bool = $condition($item, $key);
-            Assert::bool($bool);
-            if ($bool) {
+            if (static::verify($condition, $item, $key)) {
                 return $key;
             }
             prev($copy);
@@ -798,7 +777,7 @@ class Arr
     {
         $merged = static::from($iterable1);
         foreach ($iterable2 as $key => $value) {
-            $key = static::verifyKey($key);
+            $key = static::ensureKey($key);
             if (is_int($key)) {
                 $merged[] = $value;
             } else if ($depth > 1 && array_key_exists($key, $merged) && is_iterable($merged[$key]) && is_iterable($value)) {
@@ -957,7 +936,7 @@ class Arr
 
         $arrayRef = &$array;
         $segments = is_string($key) ? explode('.', $key) : [$key];
-        $lastSegment = static::verifyKey(array_pop($segments));
+        $lastSegment = static::ensureKey(array_pop($segments));
         foreach ($segments as $segment) {
             if (is_array($arrayRef) && array_key_exists($segment, $arrayRef)) {
                 $arrayRef = &$arrayRef[$segment];
@@ -1110,9 +1089,7 @@ class Arr
     public static function satisfyAll(iterable $iterable, callable $condition): bool
     {
         foreach ($iterable as $key => $item) {
-            $bool = $condition($item, $key);
-            Assert::bool($bool);
-            if ($bool === false) {
+            if (static::verify($condition, $item, $key) === false) {
                 return false;
             }
         }
@@ -1330,7 +1307,7 @@ class Arr
     {
         $union = static::from($iterable1);
         foreach ($iterable2 as $key => $value) {
-            $key = static::verifyKey($key);
+            $key = static::ensureKey($key);
             if (is_int($key)) {
                 $union[] = $value;
             } else if (!array_key_exists($key, $union)) {
@@ -1466,10 +1443,25 @@ class Arr
     }
 
     /**
+     * @param callable $condition
+     * @param mixed $item
+     * @param int|string $key
+     * @return bool
+     */
+    protected static function verify(callable $condition, mixed $item, mixed $key): bool
+    {
+        $result = $condition($item, $key);
+        if (is_bool($result)) {
+            return $result;
+        }
+        throw new InvalidValueException('bool', $result);
+    }
+
+    /**
      * @param mixed $key
      * @return int|string
      */
-    protected static function verifyKey(mixed $key): int|string
+    protected static function ensureKey(mixed $key): int|string
     {
         if (is_int($key) || is_string($key)) {
             return $key;
