@@ -141,12 +141,16 @@ class Assert
     }
 
     /**
-     * @param array $array
+     * @param iterable $iterable
+     * @param string $message
+     * @return void
      */
-    public static function arrayIsNotEmpty(array $array): void
+    public static function iterableHasAtleastOneItem(iterable $iterable): void
     {
-        if (count($array) === 0) {
-            throw new RuntimeException('Array cannot be empty.');
+        foreach ($iterable as $_) {
+            return;
         }
+
+        throw new RuntimeException('Iterable must contain at least one item.');
     }
 }

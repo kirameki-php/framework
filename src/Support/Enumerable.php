@@ -35,7 +35,7 @@ class Enumerable implements Countable, IteratorAggregate, JsonSerializable
     /**
      * @param iterable<T>|null $items
      */
-    public function __construct(iterable|null $items)
+    public function __construct(iterable|null $items = null)
     {
         $items ??= [];
         $this->items = $items;
@@ -311,6 +311,15 @@ class Enumerable implements Countable, IteratorAggregate, JsonSerializable
     }
 
     /**
+     * @param callable|null $condition
+     * @return T
+     */
+    public function firstOrFail(callable $condition = null): mixed
+    {
+        return Arr::firstOrFail($this->items, $condition);
+    }
+
+    /**
      * @param callable $condition
      * @return int|null
      */
@@ -353,6 +362,17 @@ class Enumerable implements Countable, IteratorAggregate, JsonSerializable
     public function flip(bool $overwrite = false): static
     {
         return $this->newInstance(Arr::flip($this->items, $overwrite));
+    }
+
+    /**
+     * @template T_INIT
+     * @param callable $callback
+     * @param T_INIT|null $initial
+     * @return T_INIT
+     */
+    public function fold(mixed $initial, callable $callback): mixed
+    {
+        return Arr::fold($this->items, $initial, $callback);
     }
 
     /**
@@ -568,14 +588,12 @@ class Enumerable implements Countable, IteratorAggregate, JsonSerializable
     }
 
     /**
-     * @template T_INIT
      * @param callable $callback
-     * @param T_INIT|null $initial
-     * @return T_INIT
+     * @return mixed
      */
-    public function reduce(callable $callback, mixed $initial = null): mixed
+    public function reduce(callable $callback): mixed
     {
-        return Arr::reduce($this->items, $callback, $initial);
+        return Arr::reduce($this->items, $callback);
     }
 
     /**

@@ -5,6 +5,7 @@ namespace Kirameki\Support;
 use Closure;
 use Kirameki\Exception\DuplicateKeyException;
 use Kirameki\Exception\InvalidKeyException;
+use Kirameki\Exception\InvalidValueException;
 use ReflectionFunction;
 use ReflectionNamedType;
 use RuntimeException;
@@ -339,6 +340,26 @@ class Arr
     }
 
     /**
+     * @template T
+     * @param iterable<T> $iterable
+     * @param callable|null $condition
+     * @return T
+     */
+    public static function firstOrFail(iterable $iterable, callable $condition = null): mixed
+    {
+        $result = static::first($iterable, $condition);
+
+        if ($result === null) {
+            $message = ($condition !== null)
+                ? 'Failed to find matching condition.'
+                : 'Iterable must contain at least one item.';
+            throw new RuntimeException($message);
+        }
+
+        return $result;
+    }
+
+    /**
      * @param iterable<mixed> $iterable
      * @param callable $condition
      * @return int|null
@@ -358,21 +379,20 @@ class Arr
     }
 
     /**
-     * @template T
-     * @param iterable<T> $iterable
+     * @param iterable<mixed> $iterable
      * @param callable|null $condition
      * @return int|string|null
      */
-    public static function firstKey(iterable $iterable, ?callable $condition = null): mixed
+    public static function firstKey(iterable $iterable, ?callable $condition = null): int|string|null
     {
         foreach ($iterable as $key => $item) {
             if ($condition === null) {
-                return $key;
+                return static::verifyKey($key);
             }
             $bool = $condition($item, $key);
             Assert::bool($bool);
             if ($bool) {
-                return $key;
+                return static::verifyKey($key);
             }
         }
         return null;
@@ -439,6 +459,22 @@ class Arr
             $flipped[$value] = $key;
         }
         return $flipped;
+    }
+
+    /**
+     * @template T
+     * @param iterable<T> $iterable
+     * @param T $initial
+     * @param callable $callback
+     * @return T
+     */
+    public static function fold(iterable $iterable, mixed $initial, callable $callback): mixed
+    {
+        $result = $initial;
+        foreach ($iterable as $key => $item) {
+            $result = $callback($result, $item, $key);
+        }
+        return $result;
     }
 
     /**
@@ -536,14 +572,9 @@ class Arr
      */
     public static function isEmpty(iterable $iterable): bool
     {
-        if (is_array($iterable)) {
-            return empty($iterable);
-        }
-
         foreach ($iterable as $_) {
             return false;
         }
-
         return true;
     }
 
@@ -793,7 +824,7 @@ class Arr
         }
 
         if (!$containsValues) {
-            throw new RuntimeException('$iterable must contain at least one element, 0 given.');
+            throw new RuntimeException('Iterable must contain at least one item.');
         }
 
         return [$min, $max]; /** @phpstan-ignore-line */
@@ -940,40 +971,16 @@ class Arr
      * @template T
      * @param iterable<T> $iterable
      * @param callable $callback
-     * @param T|null $initial
      * @return T
      */
-    public static function reduce(iterable $iterable, callable $callback, mixed $initial = null): mixed
+    public static function reduce(iterable $iterable, callable $callback): mixed
     {
-        // Guess initial from first argument of closure if defined
-        if ($initial === null) {
-            if (is_string($callback) || $callback instanceof Closure) {
-                $ref = new ReflectionFunction($callback);
-                $refType = $ref->getParameters()[0]->getType();
-                if ($refType instanceof ReflectionNamedType) {
-                    $name = $refType->getName();
-                    if ($name === 'int') {
-                        $initial = 0;
-                    } else if ($name === 'float') {
-                        $initial = 0.0;
-                    } else if ($name === 'string') {
-                        $initial = '';
-                    } else if ($name === 'array') {
-                        $initial = [];
-                    } else if ($name !== null && class_exists($name)) {
-                        $initial = new $name;
-                    }
-                } else {
-                    throw new RuntimeException('Initial value not set and not guessable.');
-                }
-            }
-        }
+        Assert::iterableHasAtleastOneItem($iterable);
 
-        $result = $initial;
-        foreach ($iterable as $key => $item) {
-            $result = $callback($result, $item, $key);
-        }
-        return $result;
+        $reduceable = static::drop($iterable, 1);
+        $intial = static::firstOrFail($iterable);
+
+        return static::fold($reduceable, $intial, $callback);
     }
 
     /**
@@ -1132,6 +1139,40 @@ class Arr
             $ptr = &$ptr[$segment];
         }
         $ptr[$lastSegment] = $value;
+    }
+
+    /**
+     * @template T
+     * @param array<T> $array
+     * @param int|string $key
+     * @param T $value
+     * @param bool &$result
+     * @return void
+     */
+    public static function setIfNotExists(array &$array, int|string $key, mixed $value, bool &$result = null): void
+    {
+        $result = false;
+        if (static::notContainsKey($array, $key)) {
+            static::set($array, $key, $value);
+            $result = true;
+        }
+    }
+
+    /**
+     * @template T
+     * @param array<T> $array
+     * @param int|string $key
+     * @param T $value
+     * @param bool &$result
+     * @return void
+     */
+    public static function setIfExists(array &$array, int|string $key, mixed $value, bool &$result = null): void
+    {
+        $result = false;
+        if (static::containsKey($array, $key)) {
+            static::set($array, $key, $value);
+            $result = true;
+        }
     }
 
     /**

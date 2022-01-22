@@ -496,6 +496,28 @@ class CollectionTest extends TestCase
         self::assertEquals(null, $collect->first(fn() => false));
     }
 
+    public function testFirstOrFail(): void
+    {
+        $collect = $this->collect([10, 20]);
+        self::assertEquals(10, $collect->first());
+        self::assertEquals(20, $collect->first(fn($v, $k) => $k === 1));
+        self::assertEquals(20, $collect->first(fn($v, $k) => $v === 20));
+    }
+
+    public function testFirstOrFail_Empty(): void
+    {
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('Iterable must contain at least one item.');
+        $this->collect([])->firstOrFail();
+    }
+
+    public function testFirstOrFail_BadCondition(): void
+    {
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('Failed to find matching condition.');
+        $this->collect([1,2])->firstOrFail(fn(int $i) => $i > 2);
+    }
+
     public function testFirstIndex(): void
     {
         $collect = $this->collect([10, 20, 20, 30]);
@@ -569,6 +591,21 @@ class CollectionTest extends TestCase
 
         $collect = $this->collect(['a' => 'b', 'c' => 'd']);
         self::assertEquals(['b' => 'a', 'd' => 'c'], $collect->flip()->toArray());
+    }
+
+    public function testFold(): void
+    {
+        $reduced = $this->collect()->fold(0, fn(int $i) => $i + 1);
+        self::assertEquals(0, $reduced);
+
+        $reduced = $this->collect(['a' => 1, 'b' => 2])->fold($this->collect(), fn(Collection $c, $i, $k) => $c->set($k, $i * 2));
+        self::assertEquals(['a' => 2, 'b' => 4], $reduced->toArray());
+
+        $reduced = $this->collect(['a' => 1, 'b' => 2])->fold((object)[], fn($c, $i, $k) => tap($c, static fn($c) => $c->$k = 0));
+        self::assertEquals(['a' => 0, 'b' => 0], (array) $reduced);
+
+        $reduced = $this->collect([1, 2, 3])->fold(0, fn(int $c, $i, $k) => $c + $i);
+        self::assertEquals(6, $reduced);
     }
 
     public function testGet(): void
@@ -896,14 +933,18 @@ class CollectionTest extends TestCase
 
     public function testMinMax(): void
     {
-        $collect = $this->collect([]);
-        self::assertEquals([null, null], $collect->minMax());
-
         $collect = $this->collect([1]);
         self::assertEquals([1, 1], $collect->minMax());
 
         $collect = $this->collect([1, 10, -100]);
         self::assertEquals([-100, 10], $collect->minMax());
+    }
+
+    public function testMinMax_Empty(): void
+    {
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('Iterable must contain at least one item.');
+        $this->collect([])->minMax();
     }
 
     public function testNewInstance(): void
@@ -1105,18 +1146,11 @@ class CollectionTest extends TestCase
 
     public function testReduce(): void
     {
-        /** @var Collection $reduced */
-        $reduced = $this->collect()->reduce(fn(Collection $c) => $c->push(1));
-        self::assertEquals([], $reduced->toArray());
+        $reduced = $this->collect(['a' => 1])->reduce(fn(int $c, $i, $k) => 0);
+        self::assertEquals(1, $reduced);
 
-        $reduced = $this->collect(['a' => 1])->reduce(fn(Collection $c, $i, $k) => $c->set($k, $i * 2));
-        self::assertEquals(['a' => 2], $reduced->toArray());
-
-        $reduced = $this->collect(['a' => 1, 'b' => 2])->reduce(fn(Collection $c, $i, $k) => $c->set($k, $i * 2));
-        self::assertEquals(['a' => 2, 'b' => 4], $reduced->toArray());
-
-        $reduced = $this->collect(['a' => 1, 'b' => 2])->reduce(fn($c, $i, $k) => tap($c, static fn($c) => $c->$k = 0), (object)[]);
-        self::assertEquals(['a' => 0, 'b' => 0], (array) $reduced);
+        $reduced = $this->collect(['a' => 1, 'b' => 2])->reduce(fn($val, $i) => $i * 2);
+        self::assertEquals(4, $reduced);
 
         $reduced = $this->collect([1, 2, 3])->reduce(fn(int $c, $i, $k) => $c + $i);
         self::assertEquals(6, $reduced);
@@ -1125,8 +1159,8 @@ class CollectionTest extends TestCase
     public function testReduce_UnableToGuessInitial(): void
     {
         $this->expectException(RuntimeException::class);
-        $this->expectExceptionMessage('Initial value not set and not guessable.');
-        $this->collect([1, 2, 3])->reduce(fn($c, $i, $k) => $c + $i);
+        $this->expectExceptionMessage('Iterable must contain at least one item.');
+        $this->collect([])->reduce(fn($c, $i, $k) => $k);
     }
 
     public function testRemove(): void
@@ -1278,56 +1312,56 @@ class CollectionTest extends TestCase
         self::assertEquals(['a' => ['b' => 1]], $this->collect()->set('a.b', 1)->toArray());
     }
 
-    public function testSetIfAlreadyExists(): void
+    public function testSetIfExists(): void
     {
         self::assertEquals(
             [],
-            $this->collect()->setIfAlreadyExists('a', 1)->toArray(),
+            $this->collect()->setIfExists('a', 1)->toArray(),
             'Set when not exists'
         );
 
         self::assertEquals(
             [],
-            $this->collect()->setIfAlreadyExists('a', 1)->setIfAlreadyExists('a', 2)->toArray(),
+            $this->collect()->setIfExists('a', 1)->setIfExists('a', 2)->toArray(),
             'Set when not exists twice on non existing'
         );
 
         self::assertEquals(
             ['a' => 2],
-            $this->collect(['a' => null])->setIfAlreadyExists('a', 1)->setIfAlreadyExists('a', 2)->toArray(),
+            $this->collect(['a' => null])->setIfExists('a', 1)->setIfExists('a', 2)->toArray(),
             'Set when not exists twice on existing'
         );
 
         self::assertEquals(
             ['a' => 1],
-            $this->collect(['a' => 0])->setIfAlreadyExists('a', 1)->toArray(),
+            $this->collect(['a' => 0])->setIfExists('a', 1)->toArray(),
             '$value1 => $value2'
         );
 
         self::assertEquals(
             ['a' => 1],
-            $this->collect(['a' => null])->setIfAlreadyExists('a', 1)->toArray(),
+            $this->collect(['a' => null])->setIfExists('a', 1)->toArray(),
             'null => $value',
         );
 
         self::assertEquals(
             ['a' => null],
-            $this->collect(['a' => 1])->setIfAlreadyExists('a', null)->toArray(),
+            $this->collect(['a' => 1])->setIfExists('a', null)->toArray(),
             '$value => null'
         );
 
         self::assertEquals(
             ['a' => ['b' => 0]],
-            $this->collect(['a' => ['b' => 1]])->setIfAlreadyExists('a.b', 0)->toArray(),
+            $this->collect(['a' => ['b' => 1]])->setIfExists('a.b', 0)->toArray(),
             'Set to existing through dot notation',
         );
 
-        $result = null;
-        $this->collect()->setIfAlreadyExists('a', 1, $result)->toArray();
+        $result = false;
+        $this->collect()->setIfExists('a', 1, $result)->toArray();
         self::assertFalse($result, 'Result for no previous value');
 
-        $result = null;
-        $this->collect(['a' => 0])->setIfAlreadyExists('a', 1, $result)->toArray();
+        $result = false;
+        $this->collect(['a' => 0])->setIfExists('a', 1, $result)->toArray();
         self::assertTrue($result, 'Result for value already existing');
     }
 
@@ -1357,11 +1391,11 @@ class CollectionTest extends TestCase
             'Try to set to existing through dot notation'
         );
 
-        $result = null;
+        $result = false;
         $this->collect()->setIfNotExists('a', 1, $result)->toArray();
         self::assertTrue($result, 'Result for no previous value');
 
-        $result = null;
+        $result = false;
         $this->collect(['a' => 0])->setIfNotExists('a', 1, $result)->toArray();
         self::assertFalse($result, 'Result for value already exiting');
     }
