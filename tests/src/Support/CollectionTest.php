@@ -1424,6 +1424,18 @@ class CollectionTest extends TestCase
         self::assertEquals([1, 2], $collect->toArray());
     }
 
+    public function testSort(): void
+    {
+        $collect = $this->collect([4, 2, 1, 3])->sort()->values();
+        self::assertEquals([1, 2, 3, 4], $collect->toArray());
+
+        $collect = $this->collect(['30', '2', '100'])->sort(SORT_NATURAL)->values();
+        self::assertEquals(['2', '30', '100'], $collect->toArray());
+
+        $collect = $this->collect(['a' => 3, 'b' => 1, 'c' => 2])->sort();
+        self::assertEquals(['b' => 1, 'c' => 2, 'a' => 3], $collect->toArray());
+    }
+
     public function testSortBy(): void
     {
         $collect = $this->collect([4, 2, 1, 3])->sortBy(fn($v) => $v)->values();
@@ -1442,6 +1454,18 @@ class CollectionTest extends TestCase
         self::assertEquals(['c' => 2, 'b' => 0, 'a' => 1], $collect->toArray());
     }
 
+    public function testSortDesc(): void
+    {
+        $collect = $this->collect([4, 2, 1, 3])->sortDesc()->values();
+        self::assertEquals([4, 3, 2, 1], $collect->toArray());
+
+        $collect = $this->collect(['30', '100', '2'])->sortDesc(SORT_NATURAL)->values();
+        self::assertEquals(['100', '30', '2'], $collect->toArray());
+
+        $collect = $this->collect(['a' => 3, 'b' => 1, 'c' => 2])->sortDesc();
+        self::assertEquals(['a' => 3, 'c' => 2, 'b' => 1], $collect->toArray());
+    }
+
     public function testSortKeys(): void
     {
         $collect = $this->collect(['b' => 0, 'a' => 1, 'c' => 2])->sortKeys();
@@ -1449,30 +1473,6 @@ class CollectionTest extends TestCase
 
         $collect = $this->collect(['2' => 0, '100' => 1, '30' => 2])->sortKeys(SORT_NATURAL);
         self::assertEquals(['2' => 0, '30' => 2, '100' => 1], $collect->toArray());
-    }
-
-    public function testSortValues(): void
-    {
-        $collect = $this->collect([4, 2, 1, 3])->sortValues()->values();
-        self::assertEquals([1, 2, 3, 4], $collect->toArray());
-
-        $collect = $this->collect(['30', '2', '100'])->sortValues(SORT_NATURAL)->values();
-        self::assertEquals(['2', '30', '100'], $collect->toArray());
-
-        $collect = $this->collect(['a' => 3, 'b' => 1, 'c' => 2])->sortValues();
-        self::assertEquals(['b' => 1, 'c' => 2, 'a' => 3], $collect->toArray());
-    }
-
-    public function testSortValuesDesc(): void
-    {
-        $collect = $this->collect([4, 2, 1, 3])->sortValuesDesc()->values();
-        self::assertEquals([4, 3, 2, 1], $collect->toArray());
-
-        $collect = $this->collect(['30', '100', '2'])->sortValuesDesc(SORT_NATURAL)->values();
-        self::assertEquals(['100', '30', '2'], $collect->toArray());
-
-        $collect = $this->collect(['a' => 3, 'b' => 1, 'c' => 2])->sortValuesDesc();
-        self::assertEquals(['a' => 3, 'c' => 2, 'b' => 1], $collect->toArray());
     }
 
     public function testSortWith(): void

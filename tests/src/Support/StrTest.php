@@ -184,7 +184,7 @@ class StrTest extends TestCase
     public function testContainsAll_EmptyNeedles(): void
     {
         $this->expectException(RuntimeException::class);
-        $this->expectExceptionMessage('Array cannot be empty.');
+        $this->expectExceptionMessage('Iterable must contain at least one item.');
         Str::containsAll('abcde', []);
     }
 

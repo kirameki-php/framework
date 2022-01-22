@@ -669,6 +669,17 @@ class Enumerable implements Countable, IteratorAggregate, JsonSerializable
     }
 
     /**
+     * @param int $flag
+     * @return static
+     */
+    public function sort(int $flag = SORT_REGULAR): static
+    {
+        $copy = $this->toArray();
+        asort($copy, $flag);
+        return $this->newInstance($copy);
+    }
+
+    /**
      * @param callable $callback
      * @param int $flag
      * @return static
@@ -713,6 +724,17 @@ class Enumerable implements Countable, IteratorAggregate, JsonSerializable
      * @param int $flag
      * @return static
      */
+    public function sortDesc(int $flag = SORT_REGULAR): static
+    {
+        $copy = $this->toArray();
+        arsort($copy, $flag);
+        return $this->newInstance($copy);
+    }
+
+    /**
+     * @param int $flag
+     * @return static
+     */
     public function sortKeys(int $flag = SORT_REGULAR): static
     {
         $copy = $this->toArray();
@@ -728,28 +750,6 @@ class Enumerable implements Countable, IteratorAggregate, JsonSerializable
     {
         $copy = $this->toArray();
         krsort($copy, $flag);
-        return $this->newInstance($copy);
-    }
-
-    /**
-     * @param int $flag
-     * @return static
-     */
-    public function sortValues(int $flag = SORT_REGULAR): static
-    {
-        $copy = $this->toArray();
-        asort($copy, $flag);
-        return $this->newInstance($copy);
-    }
-
-    /**
-     * @param int $flag
-     * @return static
-     */
-    public function sortValuesDesc(int $flag = SORT_REGULAR): static
-    {
-        $copy = $this->toArray();
-        arsort($copy, $flag);
         return $this->newInstance($copy);
     }
 
