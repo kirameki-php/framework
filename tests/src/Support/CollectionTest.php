@@ -1200,26 +1200,26 @@ class CollectionTest extends TestCase
     public function testRemove(): void
     {
         $collect = $this->collect();
-        self::assertEquals(0, $collect->remove(1));
+        self::assertEquals([], $collect->remove(1));
 
         $collect = $this->collect([1]);
-        self::assertEquals(1, $collect->remove(1));
+        self::assertEquals([0], $collect->remove(1));
         self::assertEquals([], $collect->toArray());
 
         $collect = $this->collect([1, 1]);
-        self::assertEquals(2, $collect->remove(1));
+        self::assertEquals([0, 1], $collect->remove(1));
         self::assertEquals([], $collect->toArray());
 
         $collect = $this->collect([1, 1]);
-        self::assertEquals(1, $collect->remove(1, 1));
+        self::assertEquals([0], $collect->remove(1, 1));
         self::assertEquals([1 => 1], $collect->toArray());
 
         $collect = $this->collect(['a' => 1]);
-        self::assertEquals(1, $collect->remove(1));
+        self::assertEquals(['a'], $collect->remove(1));
         self::assertEquals([], $collect->toArray());
 
         $collect = $this->collect(['a' => 1]);
-        self::assertEquals(0, $collect->remove(1, -1));
+        self::assertEquals([], $collect->remove(1, -1));
         self::assertEquals(['a' => 1], $collect->toArray());
     }
 

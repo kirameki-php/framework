@@ -138,9 +138,9 @@ class Collection extends Enumerable implements ArrayAccess
     /**
      * @param T $value
      * @param int|null $limit
-     * @return int
+     * @return array<mixed>
      */
-    public function remove(mixed $value, ?int $limit = null): int
+    public function remove(mixed $value, ?int $limit = null): array
     {
         return Arr::remove($this->items, $value, $limit);
     }

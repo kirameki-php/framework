@@ -1020,19 +1020,21 @@ class Arr
      * @param array<T> $array
      * @param T $value
      * @param int|null $limit
-     * @return int
+     * @return array<mixed>
      */
-    public static function remove(array &$array, mixed $value, ?int $limit = null): int
+    public static function remove(array &$array, mixed $value, ?int $limit = null): array
     {
         $counter = 0;
         $limit ??= PHP_INT_MAX;
+        $removed = [];
         foreach ($array as $key => $item) {
             if ($counter < $limit && $item === $value) {
                 unset($array[$key]);
-                $counter++;
+                $removed[] = $key;
+                ++$counter;
             }
         }
-        return $counter;
+        return $removed;
     }
 
     /**
@@ -1401,7 +1403,7 @@ class Arr
 
     /**
      * @template T
-     * @param T|array<T> $value
+     * @param T|iterable<T> $value
      * @return array<T>
      */
     public static function wrap(mixed $value): array
@@ -1472,7 +1474,7 @@ class Arr
      * @param callable $condition
      * @return mixed
      */
-    protected static function conditionOrFail(callable $condition)
+    protected static function conditionOrFail(callable $condition): mixed
     {
         if (($result = $condition()) !== null) {
             return $result;
