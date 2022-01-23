@@ -597,6 +597,17 @@ class Enumerable implements Countable, IteratorAggregate, JsonSerializable
     }
 
     /**
+     * Move items that match condition to the top of the array.
+     *
+     * @param callable $condition
+     * @return static
+     */
+    public function prioritize(callable $condition): static
+    {
+        return $this->newInstance(Arr::prioritize($this->items, $condition));
+    }
+
+    /**
      * @param callable $callback
      * @return mixed
      */

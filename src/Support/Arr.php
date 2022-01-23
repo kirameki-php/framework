@@ -916,6 +916,26 @@ class Arr
     }
 
     /**
+     * Move items that match condition to the top of the array.
+     *
+     * @template T
+     * @param iterable<T> $iterable
+     * @param callable $condition
+     * @return array<T>
+     */
+    public static function prioritize(iterable $iterable, callable $condition): array
+    {
+        $prioritized = [];
+        $remains = [];
+        foreach ($iterable as $key => $value) {
+            static::verify($condition, $value, $key)
+                ? $prioritized[$key] = $value
+                : $remains[$key] = $value;
+        }
+        return static::merge($prioritized, $remains);
+    }
+
+    /**
      * @template T
      * @param array<T> $array
      * @param int|string $key

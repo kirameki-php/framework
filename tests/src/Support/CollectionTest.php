@@ -1133,6 +1133,18 @@ class CollectionTest extends TestCase
         self::assertEquals(['a' => 1], $collect->toArray());
     }
 
+    public function testPrioritize(): void
+    {
+        $collect = $this->collect([1, 2, 3])->prioritize(fn(int $i) => $i === 2);
+        self::assertEquals([2, 1, 3], $collect->values()->toArray());
+
+        $collect = $this->collect(['a' => 1, 'bc' => 2, 'de' => 2, 'b' => 2])->prioritize(fn($_, string $k) => strlen($k) > 1);
+        self::assertEquals(['bc', 'de', 'a', 'b'], $collect->keys()->toArray());
+
+        $collect = $this->collect([1, 2, 3])->prioritize(fn() => false);
+        self::assertEquals([1, 2, 3], $collect->toArray());
+    }
+
     public function testPull(): void
     {
         $collect = $this->collect();
