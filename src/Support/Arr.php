@@ -130,7 +130,7 @@ class Arr
     {
         $call = is_callable($value) ? $value : static fn($item) => $item === $value;
         foreach ($iterable as $key => $item) {
-            if (static::verify($call, $item, $key)) {
+            if (static::verify($call, $key, $item)) {
                 return true;
             }
         }
@@ -175,7 +175,7 @@ class Arr
     {
         $counter = 0;
         foreach ($iterable as $key => $item) {
-            if (static::verify($condition, $item, $key)) {
+            if (static::verify($condition, $key, $item)) {
                 $counter++;
             }
         }
@@ -216,7 +216,7 @@ class Arr
     public static function dropWhile(iterable $iterable, callable $condition): array
     {
         $index = static::firstIndex($iterable, static function ($item, $key) use ($condition) {
-            return !static::verify($condition, $item, $key);
+            return !static::verify($condition, $key, $item);
         }) ?? PHP_INT_MAX;
         return static::drop($iterable, $index);
     }
@@ -300,7 +300,7 @@ class Arr
         $condition ??= static fn($item, $key) => !empty($item);
         $values = [];
         foreach ($iterable as $key => $item) {
-            if (static::verify($condition, $item, $key)) {
+            if (static::verify($condition, $key, $item)) {
                 $values[$key] = $item;
             }
         }
@@ -319,7 +319,7 @@ class Arr
             if ($condition === null) {
                 return $item;
             }
-            if (static::verify($condition, $item, $key)) {
+            if (static::verify($condition, $key, $item)) {
                 return $item;
             }
         }
@@ -335,7 +335,7 @@ class Arr
     {
         $count = 0;
         foreach ($iterable as $key => $item) {
-            if (static::verify($condition, $item, $key)) {
+            if (static::verify($condition, $key, $item)) {
                 return $count;
             }
             $count++;
@@ -354,7 +354,7 @@ class Arr
             if ($condition === null) {
                 return static::ensureKey($key);
             }
-            if (static::verify($condition, $item, $key)) {
+            if (static::verify($condition, $key, $item)) {
                 return static::ensureKey($key);
             }
         }
@@ -650,7 +650,7 @@ class Arr
 
         while(($key = key($copy)) !== null) {
             $item = current($copy);
-            if (static::verify($condition, $item, $key)) {
+            if (static::verify($condition, $key, $item)) {
                 return $item; /* @phpstan-ignore-line */
             }
             prev($copy);
@@ -674,7 +674,7 @@ class Arr
         while(($key = key($copy)) !== null) {
             $count--;
             $item = current($copy);
-            if (static::verify($condition, $item, $key)) {
+            if (static::verify($condition, $key, $item)) {
                 return $count;
             }
             prev($copy);
@@ -700,7 +700,7 @@ class Arr
 
         while(($key = key($copy)) !== null) {
             $item = current($copy);
-            if (static::verify($condition, $item, $key)) {
+            if (static::verify($condition, $key, $item)) {
                 return $key;
             }
             prev($copy);
@@ -928,7 +928,7 @@ class Arr
         $prioritized = [];
         $remains = [];
         foreach ($iterable as $key => $value) {
-            static::verify($condition, $value, $key)
+            static::verify($condition, $key, $value)
                 ? $prioritized[$key] = $value
                 : $remains[$key] = $value;
         }
@@ -1109,7 +1109,7 @@ class Arr
     public static function satisfyAll(iterable $iterable, callable $condition): bool
     {
         foreach ($iterable as $key => $item) {
-            if (static::verify($condition, $item, $key) === false) {
+            if (static::verify($condition, $key, $item) === false) {
                 return false;
             }
         }
@@ -1406,7 +1406,13 @@ class Arr
      */
     public static function wrap(mixed $value): array
     {
-        return is_array($value) ? $value : [$value];
+        if (is_iterable($value)) {
+            $value = static::from($value);
+        }
+        if (is_array($value)) {
+            return $value;
+        }
+        return [$value];
     }
 
     /**
@@ -1464,11 +1470,23 @@ class Arr
 
     /**
      * @param callable $condition
+     * @return mixed
+     */
+    protected static function conditionOrFail(callable $condition)
+    {
+        if (($result = $condition()) !== null) {
+            return $result;
+        }
+        throw new RuntimeException('No match found for condition.');
+    }
+
+    /**
+     * @param callable $condition
      * @param mixed $item
      * @param int|string $key
      * @return bool
      */
-    protected static function verify(callable $condition, mixed $item, mixed $key): bool
+    protected static function verify(callable $condition, mixed $key, mixed $item): bool
     {
         $result = $condition($item, $key);
         if (is_bool($result)) {
