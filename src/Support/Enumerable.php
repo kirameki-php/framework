@@ -99,6 +99,14 @@ class Enumerable implements Countable, IteratorAggregate, JsonSerializable
     }
 
     /**
+     * @return T
+     */
+    public function coalesceOrFail(): mixed
+    {
+        return Arr::coalesceOrFail($this->items);
+    }
+
+    /**
      * @param int $size
      * @return static
      */

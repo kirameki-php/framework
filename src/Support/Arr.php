@@ -103,6 +103,22 @@ class Arr
     /**
      * @template T
      * @param iterable<T> $iterable
+     * @return T
+     */
+    public static function coalesceOrFail(iterable $iterable): mixed
+    {
+        $result = static::coalesce($iterable);
+
+        if ($result !== null) {
+            return $result;
+        }
+
+        throw new InvalidValueException('not null', null);
+    }
+
+    /**
+     * @template T
+     * @param iterable<T> $iterable
      * @param int $depth
      * @return array<T>
      */

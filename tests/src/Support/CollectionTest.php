@@ -161,6 +161,20 @@ class CollectionTest extends TestCase
         self::assertEquals(1, $result);
     }
 
+    public function testCoaleaseOrFail_Empty(): void
+    {
+        $this->expectException(InvalidValueException::class);
+        $this->expectExceptionMessage('Expected value to be not null. null given.');
+        $this->collect([])->coalesceOrFail();
+    }
+
+    public function testCoaleaseOrFail_OnlyNull(): void
+    {
+        $this->expectException(InvalidValueException::class);
+        $this->expectExceptionMessage('Expected value to be not null. null given.');
+        $this->collect([null])->coalesceOrFail();
+    }
+
     public function testCompact(): void
     {
         // empty but not same instance
