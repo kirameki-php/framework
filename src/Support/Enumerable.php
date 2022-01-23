@@ -33,7 +33,7 @@ class Enumerable implements Countable, IteratorAggregate, JsonSerializable
     protected iterable $items;
 
     /**
-     * @param iterable<T>|null $items
+     * @param iterable|null $items
      */
     public function __construct(iterable|null $items = null)
     {
@@ -122,7 +122,7 @@ class Enumerable implements Countable, IteratorAggregate, JsonSerializable
 
     /**
      * @param int $depth
-     * @return $this
+     * @return static
      */
     public function compact(int $depth = 1): static
     {
@@ -130,10 +130,10 @@ class Enumerable implements Countable, IteratorAggregate, JsonSerializable
     }
 
     /**
-     * @param $value
+     * @param mixed $value
      * @return bool
      */
-    public function contains($value): bool
+    public function contains(mixed $value): bool
     {
         return Arr::contains($this->items, $value);
     }
@@ -365,7 +365,7 @@ class Enumerable implements Countable, IteratorAggregate, JsonSerializable
 
     /**
      * @param bool $overwrite
-     * @return $this
+     * @return static
      */
     public function flip(bool $overwrite = false): static
     {
@@ -374,8 +374,8 @@ class Enumerable implements Countable, IteratorAggregate, JsonSerializable
 
     /**
      * @template T_INIT
-     * @param callable $callback
      * @param T_INIT|null $initial
+     * @param callable $callback
      * @return T_INIT
      */
     public function fold(mixed $initial, callable $callback): mixed
@@ -465,7 +465,7 @@ class Enumerable implements Countable, IteratorAggregate, JsonSerializable
     /**
      * @param string|callable $key
      * @param bool $overwrite
-     * @return $this
+     * @return static
      */
     public function keyBy(string|callable $key, bool $overwrite = false): static
     {
@@ -677,7 +677,7 @@ class Enumerable implements Countable, IteratorAggregate, JsonSerializable
     }
 
     /**
-     * @return $this
+     * @return static
      */
     public function shuffle(): static
     {
@@ -873,7 +873,7 @@ class Enumerable implements Countable, IteratorAggregate, JsonSerializable
 
     /**
      * @param iterable $iterable
-     * @return $this
+     * @return static
      */
     public function union(iterable $iterable): static
     {
@@ -883,7 +883,7 @@ class Enumerable implements Countable, IteratorAggregate, JsonSerializable
     /**
      * @param iterable $iterable
      * @param int $depth
-     * @return $this
+     * @return static
      */
     public function unionRecursive(iterable $iterable, int $depth = PHP_INT_MAX): static
     {
