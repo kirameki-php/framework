@@ -1484,8 +1484,8 @@ class Arr
 
     /**
      * @param callable $condition
+     * @param mixed $key
      * @param mixed $item
-     * @param int|string $key
      * @return bool
      */
     protected static function verify(callable $condition, mixed $key, mixed $item): bool
