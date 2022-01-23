@@ -685,6 +685,16 @@ class Enumerable implements Countable, IteratorAggregate, JsonSerializable
     }
 
     /**
+     * @template T
+     * @param callable|null $condition
+     * @return T
+     */
+    public function single(callable $condition = null): mixed
+    {
+        return Arr::single($this->items, $condition);
+    }
+
+    /**
      * @param int $offset
      * @param int|null $length
      * @return static

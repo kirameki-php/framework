@@ -12,6 +12,7 @@ use function array_column;
 use function array_is_list;
 use function array_key_exists;
 use function array_key_last;
+use function array_filter;
 use function array_pad;
 use function array_pop;
 use function array_rand;
@@ -383,7 +384,7 @@ class Arr
      * @param callable|null $condition
      * @return T
      */
-    public static function firstOrFail(iterable $iterable, callable $condition = null): mixed
+    public static function firstOrFail(iterable $iterable, ?callable $condition = null): mixed
     {
         $result = static::first($iterable, $condition);
 
@@ -731,7 +732,7 @@ class Arr
      * @param callable|null $condition
      * @return T
      */
-    public static function lastOrFail(iterable $iterable, callable $condition = null): mixed
+    public static function lastOrFail(iterable $iterable, ?callable $condition = null): mixed
     {
         $result = static::last($iterable, $condition);
 
@@ -1244,6 +1245,27 @@ class Arr
     }
 
     /**
+     * @template T
+     * @param iterable<T> $iterable
+     * @param callable|null $condition
+     * @return T
+     */
+    public static function single(iterable $iterable, ?callable $condition = null): mixed
+    {
+        $array = static::from($iterable);
+
+        if ($condition !== null) {
+            $array = array_filter($array, $condition);
+        }
+
+        if (($count = count($array)) !== 1) {
+            throw new RuntimeException("Expected only one item in result. $count given.");
+        }
+
+        return current($array);
+    }
+
+    /**
      * @param iterable<float|int> $iterable
      * @return float|int
      */
@@ -1484,18 +1506,6 @@ class Arr
     {
         $segments = explode('.', $key);
         return static fn($v, $k) => static::dig($v, $segments);
-    }
-
-    /**
-     * @param callable $condition
-     * @return mixed
-     */
-    protected static function conditionOrFail(callable $condition): mixed
-    {
-        if (($result = $condition()) !== null) {
-            return $result;
-        }
-        throw new RuntimeException('No match found for condition.');
     }
 
     /**
