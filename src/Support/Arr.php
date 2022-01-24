@@ -134,8 +134,7 @@ class Arr
                 $result[$key] = $value;
             }
         }
-        /* @phpstan-ignore-next-line */
-        return $result;
+        return $result; /* @phpstan-ignore-line */
     }
 
     /**
@@ -332,10 +331,13 @@ class Arr
      */
     public static function first(iterable $iterable, ?callable $condition = null): mixed
     {
-        foreach ($iterable as $key => $item) {
-            if ($condition === null) {
+        if ($condition === null) {
+            foreach ($iterable as $item) {
                 return $item;
             }
+        }
+
+        foreach ($iterable as $key => $item) {
             if (static::verify($condition, $key, $item)) {
                 return $item;
             }
@@ -367,10 +369,13 @@ class Arr
      */
     public static function firstKey(iterable $iterable, ?callable $condition = null): int|string|null
     {
-        foreach ($iterable as $key => $item) {
-            if ($condition === null) {
+        if ($condition === null) {
+            foreach ($iterable as $key => $item) {
                 return static::ensureKey($key);
             }
+        }
+
+        foreach ($iterable as $key => $item) {
             if (static::verify($condition, $key, $item)) {
                 return static::ensureKey($key);
             }
