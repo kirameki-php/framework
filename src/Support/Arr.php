@@ -642,8 +642,8 @@ class Arr
         $callable = is_string($key) ? static::createDigger($key) : $key;
 
         $result = [];
-        foreach ($iterable as $_key => $item) {
-            $newKey = static::ensureKey($callable($item, $_key));
+        foreach ($iterable as $oldKey => $item) {
+            $newKey = static::ensureKey($callable($item, $oldKey));
 
             if (!$overwrite && array_key_exists($newKey, $result)) {
                 throw new DuplicateKeyException($newKey, $item);
