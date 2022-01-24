@@ -685,16 +685,6 @@ class Enumerable implements Countable, IteratorAggregate, JsonSerializable
     }
 
     /**
-     * @template T
-     * @param callable|null $condition
-     * @return T
-     */
-    public function single(callable $condition = null): mixed
-    {
-        return Arr::single($this->items, $condition);
-    }
-
-    /**
      * @param int $offset
      * @param int|null $length
      * @return static
@@ -704,6 +694,16 @@ class Enumerable implements Countable, IteratorAggregate, JsonSerializable
         $array = $this->toArray();
         $sliced = array_slice($array, $offset, $length, Arr::isAssoc($array));
         return $this->newInstance($sliced);
+    }
+
+    /**
+     * @template T
+     * @param callable|null $condition
+     * @return T
+     */
+    public function sole(callable $condition = null): mixed
+    {
+        return Arr::sole($this->items, $condition);
     }
 
     /**

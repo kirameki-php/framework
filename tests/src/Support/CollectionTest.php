@@ -1463,27 +1463,6 @@ class CollectionTest extends TestCase
         self::assertSame(['a' => 1, 'c' => 3, 'b' => 2, 'd' => 4], $this->collect(['a' => 1, 'b' => 2, 'c' => 3, 'd' => 4])->shuffle()->toArray());
     }
 
-    public function testSingle(): void
-    {
-        self::assertEquals(1, $this->collect([1])->single());
-        self::assertEquals(1, $this->collect(['a' => 1])->single());
-        self::assertEquals(2, $this->collect([1, 2, 3])->single(fn(int $i) => $i === 2));
-    }
-
-    public function testSingle_ZeroItem(): void
-    {
-        $this->expectException(RuntimeException::class);
-        $this->expectExceptionMessage('Expected only one item in result. 0 given.');
-        $this->collect([])->single();
-    }
-
-    public function testSingle_MoreThanOneItem(): void
-    {
-        $this->expectException(RuntimeException::class);
-        $this->expectExceptionMessage('Expected only one item in result. 2 given.');
-        $this->collect([1, 2])->single();
-    }
-
     public function testSlice(): void
     {
         $collect = $this->collect([1, 2, 3])->slice(1);
@@ -1491,6 +1470,27 @@ class CollectionTest extends TestCase
 
         $collect = $this->collect([1, 2, 3])->slice(0, -1);
         self::assertEquals([1, 2], $collect->toArray());
+    }
+
+    public function testSole(): void
+    {
+        self::assertEquals(1, $this->collect([1])->sole());
+        self::assertEquals(1, $this->collect(['a' => 1])->sole());
+        self::assertEquals(2, $this->collect([1, 2, 3])->sole(fn(int $i) => $i === 2));
+    }
+
+    public function testSole_ZeroItem(): void
+    {
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('Expected only one item in result. 0 given.');
+        $this->collect([])->sole();
+    }
+
+    public function testSole_MoreThanOneItem(): void
+    {
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('Expected only one item in result. 2 given.');
+        $this->collect([1, 2])->sole();
     }
 
     public function testSort(): void

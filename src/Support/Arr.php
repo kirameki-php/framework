@@ -1255,7 +1255,7 @@ class Arr
      * @param callable|null $condition
      * @return T
      */
-    public static function single(iterable $iterable, ?callable $condition = null): mixed
+    public static function sole(iterable $iterable, ?callable $condition = null): mixed
     {
         $array = static::from($iterable);
 
