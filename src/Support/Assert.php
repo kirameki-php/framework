@@ -141,13 +141,12 @@ class Assert
     }
 
     /**
-     * @param iterable $iterable
-     * @param string $message
+     * @param iterable<mixed> $iterable
      * @return void
      */
     public static function iterableHasAtleastOneItem(iterable $iterable): void
     {
-        foreach ($iterable as $_) {
+        foreach ($iterable as $ignored) {
             return;
         }
 

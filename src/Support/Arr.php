@@ -331,17 +331,14 @@ class Arr
      */
     public static function first(iterable $iterable, ?callable $condition = null): mixed
     {
-        if ($condition === null) {
-            foreach ($iterable as $item) {
-                return $item;
-            }
-        }
+        $condition ??= static fn() => true;
 
         foreach ($iterable as $key => $item) {
             if (static::verify($condition, $key, $item)) {
                 return $item;
             }
         }
+
         return null;
     }
 
@@ -369,17 +366,14 @@ class Arr
      */
     public static function firstKey(iterable $iterable, ?callable $condition = null): int|string|null
     {
-        if ($condition === null) {
-            foreach ($iterable as $key => $item) {
-                return static::ensureKey($key);
-            }
-        }
+        $condition ??= static fn() => true;
 
         foreach ($iterable as $key => $item) {
             if (static::verify($condition, $key, $item)) {
                 return static::ensureKey($key);
             }
         }
+
         return null;
     }
 
@@ -577,7 +571,7 @@ class Arr
      */
     public static function isEmpty(iterable $iterable): bool
     {
-        foreach ($iterable as $_) {
+        foreach ($iterable as $ignored) {
             return false;
         }
         return true;
@@ -813,7 +807,7 @@ class Arr
 
     /**
      * @param iterable<bool|float|int> $iterable
-     * @return bool|float|int
+     * @return mixed
      */
     public static function min(iterable $iterable): mixed
     {
@@ -1267,7 +1261,7 @@ class Arr
             throw new RuntimeException("Expected only one item in result. $count given.");
         }
 
-        return current($array);
+        return current($array); /** @phpstan-ignore-line */
     }
 
     /**
