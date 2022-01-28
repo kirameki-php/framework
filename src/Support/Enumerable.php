@@ -395,7 +395,7 @@ class Enumerable implements Countable, IteratorAggregate, JsonSerializable
     }
 
     /**
-     * @param string|callable $key
+     * @param string|callable(T, mixed): mixed $key
      * @return Collection<static>
      */
     public function groupBy(string|callable $key): Collection
@@ -610,7 +610,7 @@ class Enumerable implements Countable, IteratorAggregate, JsonSerializable
     /**
      * Move items that match condition to the top of the array.
      *
-     * @param callable(T, array-key): bool $condition
+     * @param callable(T, mixed): bool $condition
      * @return static
      */
     public function prioritize(callable $condition): static
@@ -619,7 +619,7 @@ class Enumerable implements Countable, IteratorAggregate, JsonSerializable
     }
 
     /**
-     * @param callable $callback
+     * @param callable(mixed, T, mixed): T $callback
      * @return mixed
      */
     public function reduce(callable $callback): mixed
@@ -662,7 +662,7 @@ class Enumerable implements Countable, IteratorAggregate, JsonSerializable
     }
 
     /**
-     * @param callable $condition
+     * @param callable(T, mixed): bool $condition
      * @return bool
      */
     public function satisfyAll(callable $condition): bool
@@ -671,7 +671,7 @@ class Enumerable implements Countable, IteratorAggregate, JsonSerializable
     }
 
     /**
-     * @param callable $condition
+     * @param callable(T, mixed): bool $condition
      * @return bool
      */
     public function satisfyAny(callable $condition): bool
@@ -700,7 +700,7 @@ class Enumerable implements Countable, IteratorAggregate, JsonSerializable
     }
 
     /**
-     * @param callable(T, array-key): bool|null $condition
+     * @param callable(T, mixed): bool|null $condition
      * @return T
      */
     public function sole(callable $condition = null): mixed
@@ -720,7 +720,7 @@ class Enumerable implements Countable, IteratorAggregate, JsonSerializable
     }
 
     /**
-     * @param callable $callback
+     * @param callable(T, mixed): mixed  $callback
      * @param int $flag
      * @return static
      */
@@ -730,7 +730,7 @@ class Enumerable implements Countable, IteratorAggregate, JsonSerializable
     }
 
     /**
-     * @param callable $callback
+     * @param callable(T, mixed): mixed  $callback
      * @param int $flag
      * @return static
      */
@@ -740,7 +740,7 @@ class Enumerable implements Countable, IteratorAggregate, JsonSerializable
     }
 
     /**
-     * @param callable $callback
+     * @param callable(T, mixed): mixed $callback
      * @param int $flag
      * @param bool $ascending
      * @return static
