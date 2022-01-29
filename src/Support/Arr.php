@@ -168,15 +168,7 @@ class Arr
     public static function containsKey(iterable $iterable, int|string $key): bool
     {
         $array = static::from($iterable);
-
-        if (static::isNotDottedKey($key)) {
-            return array_key_exists($key, $array);
-        }
-
-        $segments = is_string($key) ? explode('.', $key) : [$key];
-        $lastSegment = static::ensureKey(array_pop($segments));
-        $ptr = static::dig($array, $segments);
-        return is_array($ptr) && array_key_exists($lastSegment, $ptr);
+        return array_key_exists($key, $array);
     }
 
     /**
@@ -975,16 +967,7 @@ class Arr
      */
     public static function pluck(iterable $iterable, int|string $key): array
     {
-        if (static::isNotDottedKey($key)) {
-            return array_column(static::from($iterable), $key);
-        }
-
-        $plucked = [];
-        $segments = is_string($key) ? explode('.', $key) : [$key];
-        foreach ($iterable as $values) {
-            $plucked[] = static::dig($values, $segments); /* @phpstan-ignore-line */
-        }
-        return $plucked;
+        return array_column(static::from($iterable), $key);
     }
 
     /**
@@ -1208,22 +1191,11 @@ class Arr
      * @param array<T> $array
      * @param int|string $key
      * @param T $value
+     * @return void
      */
     public static function set(array &$array, int|string $key, mixed $value): void
     {
-        if (static::isNotDottedKey($key)) {
-            $array[$key] = $value;
-            return;
-        }
-
-        $ptr = &$array;
-        $segments = is_string($key) ? explode('.', $key) : [$key];
-        $lastSegment = array_pop($segments);
-        foreach ($segments as $segment) {
-            $ptr[$segment] ??= [];
-            $ptr = &$ptr[$segment];
-        }
-        $ptr[$lastSegment] = $value;
+        $array[$key] = $value;
     }
 
     /**
@@ -1528,24 +1500,6 @@ class Arr
             return $value;
         }
         return [$value];
-    }
-
-    /**
-     * @param int|string $key
-     * @return bool
-     */
-    protected static function isDottedKey(int|string $key): bool
-    {
-        return is_string($key) && str_contains($key, '.');
-    }
-
-    /**
-     * @param int|string $key
-     * @return bool
-     */
-    protected static function isNotDottedKey(int|string $key): bool
-    {
-        return !static::isDottedKey($key);
     }
 
     /**
