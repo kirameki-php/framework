@@ -555,18 +555,6 @@ class Arr
     }
 
     /**
-     * @param iterable<array-key, mixed> $iterable
-     * @param string $glue
-     * @param string|null $prefix
-     * @param string|null $suffix
-     * @return string
-     */
-    public static function implode(iterable $iterable, string $glue, ?string $prefix = null, ?string $suffix = null): string
-    {
-        return $prefix.implode($glue, static::from($iterable)).$suffix;
-    }
-
-    /**
      * @template T
      * @param array<T> $array
      * @param int $index
@@ -629,6 +617,30 @@ class Arr
     }
 
     /**
+     * @param iterable<array-key, mixed> $iterable
+     * @param string $glue
+     * @param string|null $prefix
+     * @param string|null $suffix
+     * @return string
+     */
+    public static function join(iterable $iterable, string $glue, ?string $prefix = null, ?string $suffix = null): string
+    {
+        return $prefix.implode($glue, static::from($iterable)).$suffix;
+    }
+
+    /**
+     * @template T
+     * @param iterable<T> $iterable
+     * @param string|callable(T, mixed): array-key $key
+     * @param bool $overwrite
+     * @return array<T>
+     */
+    public static function keyBy(iterable $iterable, string|callable $key, bool $overwrite = false): array
+    {
+        return static::keyByRecursive($iterable, $key, $overwrite, 1);
+    }
+
+    /**
      * @template TKey of array-key
      * @param iterable<TKey, mixed> $iterable
      * @return array<TKey>
@@ -642,18 +654,6 @@ class Arr
             next($iterable);
         }
         return $keys;
-    }
-
-    /**
-     * @template T
-     * @param iterable<T> $iterable
-     * @param string|callable(T, mixed): array-key $key
-     * @param bool $overwrite
-     * @return array<T>
-     */
-    public static function keyBy(iterable $iterable, string|callable $key, bool $overwrite = false): array
-    {
-        return static::keyByRecursive($iterable, $key, $overwrite, 1);
     }
 
     /**

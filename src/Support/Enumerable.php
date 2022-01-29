@@ -406,17 +406,6 @@ class Enumerable implements Countable, IteratorAggregate, JsonSerializable
     }
 
     /**
-     * @param string $glue
-     * @param string|null $prefix
-     * @param string|null $suffix
-     * @return string
-     */
-    public function implode(string $glue, ?string $prefix = null, ?string $suffix = null): string
-    {
-        return Arr::implode($this->items, $glue, $prefix, $suffix);
-    }
-
-    /**
      * @param iterable<TKey, TValue> $items
      * @return static
      */
@@ -464,6 +453,17 @@ class Enumerable implements Countable, IteratorAggregate, JsonSerializable
     public function isNotEmpty(): bool
     {
         return Arr::isNotEmpty($this->items);
+    }
+
+    /**
+     * @param string $glue
+     * @param string|null $prefix
+     * @param string|null $suffix
+     * @return string
+     */
+    public function join(string $glue, ?string $prefix = null, ?string $suffix = null): string
+    {
+        return Arr::join($this->items, $glue, $prefix, $suffix);
     }
 
     /**
@@ -858,7 +858,7 @@ class Enumerable implements Countable, IteratorAggregate, JsonSerializable
     }
 
     /**
-     * @param int|null $depth
+     * @param int<1, max>|null $depth
      * @return array<TKey, TValue>
      */
     public function toArrayRecursive(?int $depth = null): array

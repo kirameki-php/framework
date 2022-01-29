@@ -662,19 +662,6 @@ class CollectionTest extends TestCase
         self::assertEquals([1 => [['id' => 1], ['id' => 1]], 2 => [['id' => 2]]], $collect->groupBy('id')->toArrayRecursive());
     }
 
-    public function testImplode(): void
-    {
-        $collect = $this->collect([1, 2]);
-        self::assertEquals('1, 2', $collect->implode(', '));
-        self::assertEquals('[1, 2', $collect->implode(', ', '['));
-        self::assertEquals('[1, 2]', $collect->implode(', ', '[', ']'));
-
-        $collect = $this->collect(['a' => 1, 'b' => 2]);
-        self::assertEquals('1, 2', $collect->implode(', '));
-        self::assertEquals('[1, 2', $collect->implode(', ', '['));
-        self::assertEquals('[1, 2]', $collect->implode(', ', '[', ']'));
-    }
-
     public function testInsertAt(): void
     {
         $collect = $this->collect([1, 2]);
@@ -769,6 +756,19 @@ class CollectionTest extends TestCase
 
         $collect = $this->collect(['a' => 1, 'b' => 2]);
         self::assertFalse($collect->isList());
+    }
+
+    public function testJoin(): void
+    {
+        $collect = $this->collect([1, 2]);
+        self::assertEquals('1, 2', $collect->join(', '));
+        self::assertEquals('[1, 2', $collect->join(', ', '['));
+        self::assertEquals('[1, 2]', $collect->join(', ', '[', ']'));
+
+        $collect = $this->collect(['a' => 1, 'b' => 2]);
+        self::assertEquals('1, 2', $collect->join(', '));
+        self::assertEquals('[1, 2', $collect->join(', ', '['));
+        self::assertEquals('[1, 2]', $collect->join(', ', '[', ']'));
     }
 
     public function testJsonSerialize(): void
