@@ -16,9 +16,9 @@ class Time extends DateTimeImmutable implements JsonSerializable, Stringable
     public const RFC3339_HUMAN = 'Y-m-d H:i:s.u P';
 
     /**
-     * @var Closure|static
+     * @var Closure():static|static|null
      */
-    protected static self|Closure $testNow;
+    protected static mixed $testNow = null;
 
     /**
      * @inheritDoc
@@ -50,6 +50,7 @@ class Time extends DateTimeImmutable implements JsonSerializable, Stringable
      */
     public static function createFromFormat($format, $datetime, DateTimeZone $timezone = null): static|false
     {
+        /** @var DateTime $base */
         $base = DateTime::createFromFormat($format, $datetime);
 
         // NOTE: In DateTime class the timezone parameter and the current timezone are ignored when the time parameter
@@ -62,7 +63,7 @@ class Time extends DateTimeImmutable implements JsonSerializable, Stringable
         // NOTE: Invalid dates (ex: Feb 30th) can slip through so we handle that here
         // https://www.php.net/manual/en/datetime.getlasterrors.php#102686
         $errors = DateTime::getLastErrors();
-        if ($errors['error_count'] + $errors['warning_count'] === 0) {
+        if ($errors !== false && $errors['error_count'] + $errors['warning_count'] === 0) {
             // TODO: more precise error handling
             throw new RuntimeException(Json::encode($errors));
         }
@@ -85,7 +86,7 @@ class Time extends DateTimeImmutable implements JsonSerializable, Stringable
      */
     public static function createFromInterface(DateTimeInterface $object): static
     {
-        return new self($object->format(static::RFC3339_HUMAN));
+        return new static($object->format(static::RFC3339_HUMAN));
     }
 
     # endregion Creation -----------------------------------------------------------------------------------------------
@@ -99,7 +100,7 @@ class Time extends DateTimeImmutable implements JsonSerializable, Stringable
      * @param int|null $hours
      * @param int|null $minutes
      * @param float|null $seconds
-     * @return $this
+     * @return static
      */
     public function change(
         ?int $years = null,
@@ -129,7 +130,7 @@ class Time extends DateTimeImmutable implements JsonSerializable, Stringable
      * @param int|null $hours
      * @param int|null $minutes
      * @param float|null $seconds
-     * @return $this
+     * @return static
      */
     public function turn(
         ?int $years = null,
@@ -230,7 +231,7 @@ class Time extends DateTimeImmutable implements JsonSerializable, Stringable
     # region Testing ---------------------------------------------------------------------------------------------------
 
     /**
-     * @param Time|Closure|null $now
+     * @param static|Closure():static|null $now
      */
     public static function setTestNow(Time|Closure|null $now): void
     {
@@ -250,9 +251,11 @@ class Time extends DateTimeImmutable implements JsonSerializable, Stringable
      */
     protected static function invokeTestNow(): ?Time
     {
-        return (static::$testNow instanceof Closure)
-            ? call_user_func(static::$testNow)
-            : static::$testNow;
+        $now = static::$testNow;
+        if ($now instanceof Closure) {
+            return $now();
+        }
+        return $now;
     }
 
     # endregion Testing ------------------------------------------------------------------------------------------------
@@ -264,7 +267,7 @@ class Time extends DateTimeImmutable implements JsonSerializable, Stringable
      */
     public static function now(): static
     {
-        return new self();
+        return new static();
     }
 
     /**
@@ -272,7 +275,7 @@ class Time extends DateTimeImmutable implements JsonSerializable, Stringable
      */
     public static function today(): static
     {
-        return new self('today');
+        return new static('today');
     }
 
     /**
@@ -280,7 +283,7 @@ class Time extends DateTimeImmutable implements JsonSerializable, Stringable
      */
     public static function yesterday(): static
     {
-        return new self('yesterday');
+        return new static('yesterday');
     }
 
     /**
@@ -288,7 +291,7 @@ class Time extends DateTimeImmutable implements JsonSerializable, Stringable
      */
     public static function tomorrow(): static
     {
-        return new self('tomorrow');
+        return new static('tomorrow');
     }
 
     /**

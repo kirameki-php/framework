@@ -17,7 +17,7 @@ class File
     /**
      * @param string $dirPath
      * @param bool $deep
-     * @return Collection<FileInfo>
+     * @return Collection<int, FileInfo>
      */
     public static function list(string $dirPath, bool $deep = false): Collection
     {
@@ -35,7 +35,7 @@ class File
      */
     public static function toAbsolutePath(string $path): string
     {
-        $cwd = getcwd();
+        $cwd = (string) getcwd();
         $path = $cwd.'/'.preg_replace('/^'.preg_quote($cwd, '/').'/', '', $path, 1);
         $parts = array_filter(explode('/', $path), 'strlen');
         $absolutes = [];
@@ -59,7 +59,7 @@ class File
     /**
      * @param string $dirPath
      * @param bool $deep
-     * @return array
+     * @return array<string>
      */
     protected static function scan(string $dirPath, bool $deep = false): array
     {

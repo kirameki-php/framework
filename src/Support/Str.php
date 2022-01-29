@@ -6,6 +6,7 @@ use DateTimeInterface;
 use Kirameki\Support\Concerns;
 use Ramsey\Uuid\Uuid;
 use RuntimeException;
+use Traversable;
 use function array_map;
 use function ceil;
 use function explode;
@@ -66,7 +67,7 @@ class Str
             return '';
         }
 
-        return grapheme_substr($string, $pos + grapheme_strlen($search));
+        return (string) grapheme_substr($string, $pos + grapheme_strlen($search));
     }
 
     /**
@@ -76,7 +77,7 @@ class Str
      */
     public static function afterIndex(string $string, int $position): string
     {
-        return grapheme_substr($string, $position);
+        return (string) grapheme_substr($string, $position);
     }
 
     /**
@@ -98,7 +99,7 @@ class Str
             return '';
         }
 
-        return grapheme_substr($string, $pos + grapheme_strlen($search));
+        return (string) grapheme_substr($string, $pos + grapheme_strlen($search));
     }
 
     /**
@@ -120,7 +121,7 @@ class Str
             return $string;
         }
 
-        return grapheme_substr($string, 0, $pos);
+        return (string) grapheme_substr($string, 0, $pos);
     }
 
     /**
@@ -130,7 +131,7 @@ class Str
      */
     public static function beforeIndex(string $string, int $position): string
     {
-        return grapheme_substr($string, 0, $position);
+        return (string) grapheme_substr($string, 0, $position);
     }
 
     /**
@@ -147,14 +148,14 @@ class Str
             return $string;
         }
 
-        return grapheme_substr($string, 0, $pos);
+        return (string) grapheme_substr($string, 0, $pos);
     }
 
     /**
-     * @param $string
+     * @param string $string
      * @return string
      */
-    public static function camelCase($string): string
+    public static function camelCase(string $string): string
     {
         return lcfirst(static::pascalCase($string));
     }
@@ -165,7 +166,7 @@ class Str
      */
     public static function capitalize(string $string): string
     {
-        $firstChar = mb_strtoupper(grapheme_substr($string, 0, 1));
+        $firstChar = mb_strtoupper((string) grapheme_substr($string, 0, 1));
         $otherChars = grapheme_substr($string, 1);
         return $firstChar.$otherChars;
     }
@@ -182,7 +183,7 @@ class Str
 
     /**
      * @param string $haystack
-     * @param array $needles
+     * @param array<string> $needles
      * @return bool
      */
     public static function containsAll(string $haystack, array $needles): bool
@@ -270,8 +271,8 @@ class Str
      */
     public static function kebabCase(string $string): string
     {
-        $converting = preg_replace(['/([a-z\d])([A-Z])/', '/([^-])([A-Z][a-z])/'], '$1-$2', $string);
-        $converting = preg_replace('/[-_\s]+/', '-', $converting);
+        $converting = (string) preg_replace(['/([a-z\d])([A-Z])/', '/([^-])([A-Z][a-z])/'], '$1-$2', $string);
+        $converting = (string) preg_replace('/[-_\s]+/', '-', $converting);
         return mb_strtolower($converting, self::Encoding);
     }
 
@@ -281,13 +282,13 @@ class Str
      */
     public static function length(string $string): int
     {
-        return grapheme_strlen($string);
+        return (int) grapheme_strlen($string);
     }
 
     /**
      * @param string $string
      * @param string $pattern
-     * @return array
+     * @return array<int, array<string>>
      */
     public static function match(string $string, string $pattern): array
     {
@@ -299,7 +300,7 @@ class Str
     /**
      * @param string $string
      * @param string $pattern
-     * @return array
+     * @return array<int, array<string>>
      */
     public static function matchAll(string $string, string $pattern): array
     {
@@ -381,12 +382,12 @@ class Str
 
         if ($type === STR_PAD_RIGHT) {
             $repeat = (int) ceil($length / $padLength);
-            return grapheme_substr($string.str_repeat($pad, $repeat), 0, $length);
+            return (string) grapheme_substr($string.str_repeat($pad, $repeat), 0, $length);
         }
 
         if ($type === STR_PAD_LEFT) {
             $repeat = (int) ceil($length / $padLength);
-            return grapheme_substr(str_repeat($pad, $repeat).$string, -$length);
+            return (string) grapheme_substr(str_repeat($pad, $repeat).$string, -$length);
         }
 
         if ($type === STR_PAD_BOTH) {
@@ -497,7 +498,7 @@ class Str
             return $string;
         }
 
-        return preg_replace($pattern, $replace, $string, $limit);
+        return (string) preg_replace($pattern, $replace, $string, $limit);
     }
 
     /**
@@ -542,22 +543,26 @@ class Str
      */
     public static function snakeCase(string $string): string
     {
-        $converting = preg_replace(['/([a-z\d])([A-Z])/', '/([^_])([A-Z][a-z])/'], '$1_$2', $string);
-        $converting = str_replace([' ', '-'], '_', $converting);
+        $converting = (string) preg_replace(['/([a-z\d])([A-Z])/', '/([^_])([A-Z][a-z])/'], '$1_$2', $string);
+        $converting = (string) str_replace([' ', '-'], '_', $converting);
         return mb_strtolower($converting, self::Encoding);
     }
 
     /**
      * @param string $string
-     * @param string|string[] $separator
+     * @param non-empty-string|non-empty-string[] $separator
      * @param int|null $limit
-     * @return string[]
+     * @return array<int, string>
      */
     public static function split(string $string, string|array $separator, ?int $limit = null): array
     {
         if (is_array($separator)) {
             $pattern = '/('.implode('|', array_map('preg_quote', $separator)).')/';
-            return preg_split($pattern, $string, $limit ?? -1);
+            $splits = preg_split($pattern, $string, $limit ?? -1);
+            if ($splits === false) {
+                throw new RuntimeException('You should never reach here.');
+            }
+            return $splits;
         }
 
         return $limit !== null
@@ -573,7 +578,7 @@ class Str
      */
     public static function substring(string $string, int $offset, ?int $length = null): string
     {
-        return grapheme_substr($string, $offset, $length);
+        return (string) grapheme_substr($string, $offset, $length);
     }
 
     /**
@@ -711,8 +716,24 @@ class Str
             return $var ? 'true' : 'false';
         }
 
+        if (is_int($var)) {
+            return (string) $var;
+        }
+
+        if (is_float($var)) {
+            return (string) $var;
+        }
+
+        if (is_string($var)) {
+            return $var;
+        }
+
         if (is_array($var)) {
             return Json::encode($var);
+        }
+
+        if ($var instanceof Traversable) {
+            return Json::encode(iterator_to_array($var));
         }
 
         if ($var instanceof DateTimeInterface) {
@@ -727,7 +748,7 @@ class Str
             return get_resource_type($var);
         }
 
-        return (string) $var;
+        throw new RuntimeException('Unknown type: '.$var);
     }
 
     /**

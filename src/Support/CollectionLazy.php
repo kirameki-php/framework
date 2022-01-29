@@ -7,17 +7,19 @@ use Iterator;
 use IteratorAggregate;
 
 /**
- * @template T
+ * @template TKey of array-key
+ * @template TValue
+ * @implements IteratorAggregate<TKey, TValue>
  */
 class CollectionLazy implements IteratorAggregate
 {
     /**
-     * @var Closure
+     * @var Closure(): Iterator<TKey, TValue>
      */
     public Closure $iteratorCaller;
 
     /**
-     * @param iterable|Closure $source
+     * @param iterable<TKey, TValue>|Closure(): Iterator<TKey, TValue> $source
      */
     public function __construct(iterable|Closure $source)
     {
@@ -25,11 +27,12 @@ class CollectionLazy implements IteratorAggregate
     }
 
     /**
-     * @return Iterator
+     * @return Iterator<TKey, TValue>
      */
     public function getIterator(): Iterator
     {
-        return call_user_func($this->iteratorCaller);
+        $caller = $this->iteratorCaller;
+        return $caller();
     }
 
     /**
@@ -46,7 +49,7 @@ class CollectionLazy implements IteratorAggregate
     }
 
     /**
-     * @param callable $callback
+     * @param callable(TValue, TKey): void $callback
      * @return $this
      */
     public function each(callable $callback): static
@@ -60,7 +63,7 @@ class CollectionLazy implements IteratorAggregate
     }
 
     /**
-     * @param callable|null $callback
+     * @param callable(TValue, TKey): bool | null $callback
      * @return $this
      */
     public function filter(?callable $callback = null): static
@@ -90,16 +93,16 @@ class CollectionLazy implements IteratorAggregate
     }
 
     /**
-     * @param Closure $callback
-     * @return $this
+     * @param Closure(): Iterator<TKey, TValue> $callback
+     * @return self<TKey, TValue>
      */
-    protected function newInstance(Closure $callback): static
+    protected function newInstance(Closure $callback): self
     {
         return new self($callback);
     }
 
     /**
-     * @return Collection
+     * @return Collection<TKey, TValue>
      */
     public function collect(): Collection
     {
@@ -107,7 +110,7 @@ class CollectionLazy implements IteratorAggregate
     }
 
     /**
-     * @param iterable|Closure $iterable
+     * @param iterable<TKey, TValue>|Closure(): Iterator<TKey, TValue> $iterable
      * @return Closure
      */
     protected function arrayToIteratorCaller(iterable|Closure $iterable): Closure

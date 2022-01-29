@@ -65,6 +65,6 @@ trait Macroable
         }
         return static::$macros[$method]
             ->bindTo($newThis, static::class)
-            ->call($newThis, ...$parameters);
+            ?->call($newThis, ...$parameters);
     }
 }

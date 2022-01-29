@@ -56,7 +56,7 @@ class StringBuilder implements Stringable
     }
 
     /**
-     * @param string|bool|int|float|Stringable $string
+     * @param bool|float|int|string|null $string
      * @return $this
      */
     public function append(string|bool|int|float|null $string): static
@@ -67,7 +67,7 @@ class StringBuilder implements Stringable
 
     /**
      * @param string $format
-     * @param ...$values
+     * @param bool|float|int|string|null ...$values
      * @return $this
      */
     public function appendFormat(string $format, ...$values): static
@@ -144,7 +144,7 @@ class StringBuilder implements Stringable
     }
 
     /**
-     * @param array $needles
+     * @param array<string> $needles
      * @return bool
      */
     public function containsAll(array $needles): bool
@@ -153,7 +153,7 @@ class StringBuilder implements Stringable
     }
 
     /**
-     * @param array $needles
+     * @param array<string> $needles
      * @return bool
      */
     public function containsAny(array $needles): bool
@@ -175,10 +175,10 @@ class StringBuilder implements Stringable
      */
     public function dd(): static
     {
-        if ($this->dump()) {
+        if ($this->dump()) { /** @phpstan-ignore-line */
             exit(1);
         }
-        return $this;
+        return $this; /** @phpstan-ignore-line */
     }
 
     /**
@@ -188,7 +188,7 @@ class StringBuilder implements Stringable
      */
     public function delete(string $search, int $limit = null): static
     {
-        $this->value = Str::delete($this->value, $search, $limit);
+        $this->value = Str::delete($this->value, $search, $limit ?? -1);
         return $this;
     }
 
@@ -202,7 +202,7 @@ class StringBuilder implements Stringable
     }
 
     /**
-     * @param int $levels
+     * @param int<1, max> $levels
      * @return $this
      */
     public function dirname(int $levels = 1): static
@@ -346,12 +346,12 @@ class StringBuilder implements Stringable
     /**
      * @param string $pattern
      * @param string $replace
-     * @param int|null $limit
+     * @param int $limit
      * @return $this
      */
-    public function replaceMatch(string $pattern, string $replace, ?int $limit = null): static
+    public function replaceMatch(string $pattern, string $replace, int $limit = null): static
     {
-        $this->value = Str::replaceMatch($this->value, $pattern, $replace, $limit);
+        $this->value = Str::replaceMatch($this->value, $pattern, $replace, $limit ?? -1);
         return $this;
     }
 
@@ -374,9 +374,9 @@ class StringBuilder implements Stringable
     }
 
     /**
-     * @param string $separator
+     * @param non-empty-string $separator
      * @param int|null $limit
-     * @return string[]
+     * @return array<int, string>
      */
     public function split(string $separator, int $limit = null): array
     {

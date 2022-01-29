@@ -5,30 +5,30 @@ namespace Kirameki\Support;
 use ArrayAccess;
 
 /**
- * @template T
+ * @template TKey of array-key
+ * @template TValue
+ *
+ * @extends  Enumerable<TKey, TValue>
+ * @implements ArrayAccess<TKey, TValue>
+ *
+ * @property array<TKey, TValue> $items
  */
 class Collection extends Enumerable implements ArrayAccess
 {
     /**
-     * @param iterable|null $items
+     * @param iterable<TKey, TValue>|null $items
      */
     public function __construct(iterable|null $items = null)
     {
-        $items ??= [];
-        parent::__construct($this->asArray($items));
+        if ($items !== null) {
+            $items = Arr::from($items);
+        }
+
+        parent::__construct($items);
     }
 
     /**
-     * @param iterable|null $items
-     * @return self
-     */
-    public function newInstance(iterable|null $items = null): self
-    {
-        return new self($items);
-    }
-
-    /**
-     * @param mixed $offset
+     * @param TKey $offset
      * @return bool
      */
     public function offsetExists(mixed $offset): bool
@@ -37,8 +37,8 @@ class Collection extends Enumerable implements ArrayAccess
     }
 
     /**
-     * @param mixed $offset
-     * @return mixed
+     * @param TKey $offset
+     * @return TValue
      */
     public function offsetGet(mixed $offset): mixed
     {
@@ -46,8 +46,8 @@ class Collection extends Enumerable implements ArrayAccess
     }
 
     /**
-     * @param mixed $offset
-     * @param mixed $value
+     * @param TKey|null $offset
+     * @param TValue $value
      * @return void
      */
     public function offsetSet(mixed $offset, mixed $value): void
@@ -100,7 +100,7 @@ class Collection extends Enumerable implements ArrayAccess
     }
 
     /**
-     * @return T
+     * @return TValue|null
      */
     public function pop(): mixed
     {
@@ -109,7 +109,7 @@ class Collection extends Enumerable implements ArrayAccess
 
     /**
      * @param int $amount
-     * @return Collection<T>
+     * @return Collection<int, TValue>
      */
     public function popMany(int $amount): Collection
     {
@@ -117,8 +117,8 @@ class Collection extends Enumerable implements ArrayAccess
     }
 
     /**
-     * @param int|string $key
-     * @return T
+     * @param TKey $key
+     * @return TValue|null
      */
     public function pull(int|string $key): mixed
     {
@@ -126,7 +126,7 @@ class Collection extends Enumerable implements ArrayAccess
     }
 
     /**
-     * @param T ...$value
+     * @param TValue ...$value
      * @return $this
      */
     public function push(mixed ...$value): static
@@ -136,9 +136,9 @@ class Collection extends Enumerable implements ArrayAccess
     }
 
     /**
-     * @param T $value
+     * @param TValue $value
      * @param int|null $limit
-     * @return array<mixed>
+     * @return array<int, array-key>
      */
     public function remove(mixed $value, ?int $limit = null): array
     {
@@ -146,7 +146,7 @@ class Collection extends Enumerable implements ArrayAccess
     }
 
     /**
-     * @param int|string $key
+     * @param TKey $key
      * @return bool
      */
     public function removeKey(int|string $key): bool
@@ -155,8 +155,8 @@ class Collection extends Enumerable implements ArrayAccess
     }
 
     /**
-     * @param int|string $key
-     * @param mixed $value
+     * @param TKey $key
+     * @param TValue $value
      * @return $this
      */
     public function set(int|string $key, mixed $value): static
@@ -166,8 +166,8 @@ class Collection extends Enumerable implements ArrayAccess
     }
 
     /**
-     * @param int|string $key
-     * @param mixed $value
+     * @param TKey $key
+     * @param TValue $value
      * @param bool|null $result
      * @return $this
      */
@@ -180,8 +180,8 @@ class Collection extends Enumerable implements ArrayAccess
     }
 
     /**
-     * @param int|string $key
-     * @param mixed $value
+     * @param TKey $key
+     * @param TValue $value
      * @param bool|null $result
      * @return $this
      */
@@ -194,7 +194,7 @@ class Collection extends Enumerable implements ArrayAccess
     }
 
     /**
-     * @return T
+     * @return TValue|null
      */
     public function shift(): mixed
     {
@@ -203,7 +203,7 @@ class Collection extends Enumerable implements ArrayAccess
 
     /**
      * @param int $amount
-     * @return Collection<T>
+     * @return Collection<int, TValue>
      */
     public function shiftMany(int $amount): Collection
     {

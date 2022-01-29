@@ -20,8 +20,9 @@ use function krsort;
 use function ksort;
 
 /**
- * @template T
- * @implements IteratorAggregate<mixed, T>
+ * @template TKey of array-key
+ * @template TValue
+ * @implements IteratorAggregate<TKey, TValue>
  */
 class Enumerable implements Countable, IteratorAggregate, JsonSerializable
 {
@@ -29,12 +30,12 @@ class Enumerable implements Countable, IteratorAggregate, JsonSerializable
     use Concerns\Tappable;
 
     /**
-     * @var iterable<T>
+     * @var iterable<TKey, TValue>
      */
     protected iterable $items;
 
     /**
-     * @param iterable<T>|null $items
+     * @param iterable<TKey, TValue>|null $items
      */
     public function __construct(iterable|null $items = null)
     {
@@ -43,13 +44,14 @@ class Enumerable implements Countable, IteratorAggregate, JsonSerializable
     }
 
     /**
+     * @template TNewKey
      * @template TNewValue
-     * @param iterable<TNewValue> $items
+     * @param iterable<TNewKey, TNewValue> $items
      * @return static
      */
-    public function newInstance(iterable $items): self
+    public function newInstance(iterable $items): static
     {
-        return new self($items); /** @phpstan-ignore-line */
+        return new static($items);
     }
 
     /**
@@ -65,7 +67,7 @@ class Enumerable implements Countable, IteratorAggregate, JsonSerializable
     }
 
     /**
-     * @return Generator<T>
+     * @return Generator<TKey, TValue>
      */
     public function getIterator(): Generator
     {
@@ -76,7 +78,7 @@ class Enumerable implements Countable, IteratorAggregate, JsonSerializable
 
     /**
      * @param int $position
-     * @return T|null
+     * @return TValue|null
      */
     public function at(int $position)
     {
@@ -93,7 +95,7 @@ class Enumerable implements Countable, IteratorAggregate, JsonSerializable
     }
 
     /**
-     * @return T|null
+     * @return TValue|null
      */
     public function coalesce(): mixed
     {
@@ -101,7 +103,7 @@ class Enumerable implements Countable, IteratorAggregate, JsonSerializable
     }
 
     /**
-     * @return T
+     * @return TValue
      */
     public function coalesceOrFail(): mixed
     {
@@ -110,14 +112,14 @@ class Enumerable implements Countable, IteratorAggregate, JsonSerializable
 
     /**
      * @param int $size
-     * @return static<static<T>>
+     * @return static<int, static<TKey, TValue>>
      */
     public function chunk(int $size): self
     {
         $array = $this->toArray();
         $chunks = [];
         foreach (array_chunk($array, $size, Arr::isAssoc($array)) as $chunk) {
-            /** @var static<T> $chunk */
+            /** @var static<TKey, TValue> $chunk */
             $converted = $this->newInstance($chunk);
             $chunks[] = $converted;
         }
@@ -125,7 +127,7 @@ class Enumerable implements Countable, IteratorAggregate, JsonSerializable
     }
 
     /**
-     * @param int $depth
+     * @param int<1, max> $depth
      * @return static
      */
     public function compact(int $depth = 1): static
@@ -134,7 +136,7 @@ class Enumerable implements Countable, IteratorAggregate, JsonSerializable
     }
 
     /**
-     * @param mixed|callable(T, array-key): bool $value
+     * @param mixed|callable(TValue, TKey): bool $value
      * @return bool
      */
     public function contains(mixed $value): bool
@@ -168,7 +170,7 @@ class Enumerable implements Countable, IteratorAggregate, JsonSerializable
     }
 
     /**
-     * @param callable(T, mixed): bool $condition
+     * @param callable(TValue, TKey): bool $condition
      * @return int
      */
     public function countBy(callable $condition): int
@@ -177,7 +179,7 @@ class Enumerable implements Countable, IteratorAggregate, JsonSerializable
     }
 
     /**
-     * @return Generator<T>
+     * @return Generator<TKey, TValue>
      */
     public function cursor(): Generator
     {
@@ -197,7 +199,7 @@ class Enumerable implements Countable, IteratorAggregate, JsonSerializable
     }
 
     /**
-     * @param iterable<T> $items
+     * @param iterable<TKey, TValue> $items
      * @return static
      */
     public function diff(iterable $items): static
@@ -206,7 +208,7 @@ class Enumerable implements Countable, IteratorAggregate, JsonSerializable
     }
 
     /**
-     * @param iterable<T> $items
+     * @param iterable<TKey, TValue> $items
      * @return static
      */
     public function diffKeys(iterable $items): static
@@ -224,7 +226,7 @@ class Enumerable implements Countable, IteratorAggregate, JsonSerializable
     }
 
     /**
-     * @param callable(T, mixed): bool $condition
+     * @param callable(TValue, TKey): bool $condition
      * @return static
      */
     public function dropUntil(callable $condition): static
@@ -233,7 +235,7 @@ class Enumerable implements Countable, IteratorAggregate, JsonSerializable
     }
 
     /**
-     * @param callable(T, mixed): bool $condition
+     * @param callable(TValue, TKey): bool $condition
      * @return static
      */
     public function dropWhile(callable $condition): static
@@ -252,7 +254,7 @@ class Enumerable implements Countable, IteratorAggregate, JsonSerializable
     }
 
     /**
-     * @param callable (T, mixed): void $callback
+     * @param callable (TValue, TKey): void $callback
      * @return $this
      */
     public function each(callable $callback): static
@@ -263,7 +265,7 @@ class Enumerable implements Countable, IteratorAggregate, JsonSerializable
 
     /**
      * @param int $size
-     * @param callable (static<T>, int): void $callback
+     * @param callable (static<TKey, TValue>, int): void $callback
      * @return $this
      */
     public function eachChunk(int $size, callable $callback): static
@@ -276,7 +278,7 @@ class Enumerable implements Countable, IteratorAggregate, JsonSerializable
     }
 
     /**
-     * @param callable $callback
+     * @param callable(TValue, TKey, int): void $callback
      * @return $this
      */
     public function eachWithIndex(callable $callback): static
@@ -291,10 +293,10 @@ class Enumerable implements Countable, IteratorAggregate, JsonSerializable
      */
     public function equals(mixed $items): bool
     {
-        return is_iterable($items) && $this->toArray() === $this->asArray($items);
+        return is_iterable($items) && ($this->toArray() === $this->asArray($items)); /** @phpstan-ignore-line */
     }
     /**
-     * @param int[]|string[] $keys
+     * @param array<array-key> $keys
      * @return static
      */
     public function except(iterable $keys): static
@@ -303,17 +305,17 @@ class Enumerable implements Countable, IteratorAggregate, JsonSerializable
     }
 
     /**
-     * @param callable|null $condition
+     * @param callable(TValue, TKey): bool $condition
      * @return static
      */
-    public function filter(callable $condition = null): static
+    public function filter(callable $condition): static
     {
         return $this->newInstance(Arr::filter($this->items, $condition));
     }
 
     /**
-     * @param callable|null $condition
-     * @return T|null
+     * @param callable(TValue, TKey): bool|null $condition
+     * @return TValue|null
      */
     public function first(callable $condition = null): mixed
     {
@@ -321,7 +323,7 @@ class Enumerable implements Countable, IteratorAggregate, JsonSerializable
     }
 
     /**
-     * @param callable $condition
+     * @param callable(TValue, TKey):bool $condition
      * @return int|null
      */
     public function firstIndex(callable $condition): ?int
@@ -330,17 +332,17 @@ class Enumerable implements Countable, IteratorAggregate, JsonSerializable
     }
 
     /**
-     * @param callable|null $condition
-     * @return int|string|null
+     * @param callable(TValue, TKey):bool | null $condition
+     * @return TKey|null
      */
-    public function firstKey(callable $condition = null): int|string|null
+    public function firstKey(callable $condition = null): mixed
     {
         return Arr::firstKey($this->items, $condition);
     }
 
     /**
-     * @param callable|null $condition
-     * @return T
+     * @param callable(TValue, TKey):bool | null $condition
+     * @return TValue
      */
     public function firstOrFail(callable $condition = null): mixed
     {
@@ -348,7 +350,7 @@ class Enumerable implements Countable, IteratorAggregate, JsonSerializable
     }
 
     /**
-     * @param callable $callable
+     * @param callable(TValue, TKey):mixed $callable
      * @return static
      */
     public function flatMap(callable $callable): static
@@ -357,7 +359,7 @@ class Enumerable implements Countable, IteratorAggregate, JsonSerializable
     }
 
     /**
-     * @param int $depth
+     * @param int<1, max> $depth
      * @return static
      */
     public function flatten(int $depth = 1): static
@@ -377,7 +379,7 @@ class Enumerable implements Countable, IteratorAggregate, JsonSerializable
     /**
      * @template U
      * @param U $initial
-     * @param callable(U, T, array-key): U $callback
+     * @param callable(U, TValue, TKey): U $callback
      * @return U
      */
     public function fold(mixed $initial, callable $callback): mixed
@@ -387,7 +389,7 @@ class Enumerable implements Countable, IteratorAggregate, JsonSerializable
 
     /**
      * @param int|string $key
-     * @return T|null
+     * @return TValue|null
      */
     public function get(int|string $key): mixed
     {
@@ -395,8 +397,8 @@ class Enumerable implements Countable, IteratorAggregate, JsonSerializable
     }
 
     /**
-     * @param string|callable(T, mixed): mixed $key
-     * @return Collection<static>
+     * @param string|callable(TValue, TKey): mixed $key
+     * @return Collection<array-key, static>
      */
     public function groupBy(string|callable $key): Collection
     {
@@ -415,7 +417,7 @@ class Enumerable implements Countable, IteratorAggregate, JsonSerializable
     }
 
     /**
-     * @param iterable<T> $items
+     * @param iterable<TKey, TValue> $items
      * @return static
      */
     public function intersect(iterable $items): static
@@ -424,7 +426,7 @@ class Enumerable implements Countable, IteratorAggregate, JsonSerializable
     }
 
     /**
-     * @param iterable<T> $items
+     * @param iterable<TKey, TValue> $items
      * @return static
      */
     public function intersectKeys(iterable $items): static
@@ -475,7 +477,7 @@ class Enumerable implements Countable, IteratorAggregate, JsonSerializable
     }
 
     /**
-     * @return Collection<array-key>
+     * @return Collection<int, array-key>
      */
     public function keys(): Collection
     {
@@ -484,7 +486,7 @@ class Enumerable implements Countable, IteratorAggregate, JsonSerializable
 
     /**
      * @param callable|null $condition
-     * @return T|null
+     * @return TValue|null
      */
     public function last(callable $condition = null): mixed
     {
@@ -501,17 +503,17 @@ class Enumerable implements Countable, IteratorAggregate, JsonSerializable
     }
 
     /**
-     * @param callable|null $condition
-     * @return int|string|null
+     * @param callable(TValue, TKey):bool | null $condition
+     * @return mixed
      */
-    public function lastKey(callable $condition = null): int|string|null
+    public function lastKey(callable $condition = null): mixed
     {
         return Arr::lastKey($this->items, $condition);
     }
 
     /**
-     * @param callable|null $condition
-     * @return T
+     * @param callable(TValue, TKey):bool | null $condition
+     * @return TValue
      */
     public function lastOrFail(callable $condition = null): mixed
     {
@@ -520,8 +522,8 @@ class Enumerable implements Countable, IteratorAggregate, JsonSerializable
 
     /**
      * @template TNew
-     * @param callable(T, array-key): TNew $callback
-     * @return Collection<TNew>
+     * @param callable(TValue, TKey): TNew $callback
+     * @return Collection<array-key, TNew>
      */
     public function map(callable $callback): Collection
     {
@@ -529,7 +531,7 @@ class Enumerable implements Countable, IteratorAggregate, JsonSerializable
     }
 
     /**
-     * @return T
+     * @return TValue
      */
     public function max(): mixed
     {
@@ -537,7 +539,7 @@ class Enumerable implements Countable, IteratorAggregate, JsonSerializable
     }
 
     /**
-     * @param iterable<T> $iterable
+     * @param iterable<TKey, TValue> $iterable
      * @return static
      */
     public function merge(iterable $iterable): static
@@ -546,8 +548,8 @@ class Enumerable implements Countable, IteratorAggregate, JsonSerializable
     }
 
     /**
-     * @param iterable<T> $iterable
-     * @param int $depth
+     * @param iterable<TKey, TValue> $iterable
+     * @param int<1, max> $depth
      * @return static
      */
     public function mergeRecursive(iterable $iterable, int $depth = PHP_INT_MAX): static
@@ -556,7 +558,7 @@ class Enumerable implements Countable, IteratorAggregate, JsonSerializable
     }
 
     /**
-     * @return T
+     * @return TValue
      */
     public function min(): mixed
     {
@@ -564,7 +566,7 @@ class Enumerable implements Countable, IteratorAggregate, JsonSerializable
     }
 
     /**
-     * @return array<T>
+     * @return array<TValue>
      */
     public function minMax(): array
     {
@@ -599,7 +601,7 @@ class Enumerable implements Countable, IteratorAggregate, JsonSerializable
     }
 
     /**
-     * @param iterable<array-key> $keys
+     * @param iterable<TKey> $keys
      * @return static
      */
     public function only(iterable $keys): static
@@ -610,7 +612,7 @@ class Enumerable implements Countable, IteratorAggregate, JsonSerializable
     /**
      * Move items that match condition to the top of the array.
      *
-     * @param callable(T, mixed): bool $condition
+     * @param callable(TValue, TKey): bool $condition
      * @return static
      */
     public function prioritize(callable $condition): static
@@ -619,8 +621,8 @@ class Enumerable implements Countable, IteratorAggregate, JsonSerializable
     }
 
     /**
-     * @param callable(mixed, T, mixed): T $callback
-     * @return mixed
+     * @param callable(TValue, TValue, TKey): TValue $callback
+     * @return TValue
      */
     public function reduce(callable $callback): mixed
     {
@@ -645,7 +647,7 @@ class Enumerable implements Countable, IteratorAggregate, JsonSerializable
     }
 
     /**
-     * @return T|null
+     * @return TValue|null
      */
     public function sample(): mixed
     {
@@ -654,7 +656,7 @@ class Enumerable implements Countable, IteratorAggregate, JsonSerializable
 
     /**
      * @param int $amount
-     * @return Collection<T>
+     * @return Collection<int, TValue>
      */
     public function sampleMany(int $amount): Collection
     {
@@ -662,7 +664,7 @@ class Enumerable implements Countable, IteratorAggregate, JsonSerializable
     }
 
     /**
-     * @param callable(T, mixed): bool $condition
+     * @param callable(TValue, TKey): bool $condition
      * @return bool
      */
     public function satisfyAll(callable $condition): bool
@@ -671,7 +673,7 @@ class Enumerable implements Countable, IteratorAggregate, JsonSerializable
     }
 
     /**
-     * @param callable(T, mixed): bool $condition
+     * @param callable(TValue, TKey): bool $condition
      * @return bool
      */
     public function satisfyAny(callable $condition): bool
@@ -700,8 +702,8 @@ class Enumerable implements Countable, IteratorAggregate, JsonSerializable
     }
 
     /**
-     * @param callable(T, mixed): bool|null $condition
-     * @return T
+     * @param callable(TValue, TKey): bool|null $condition
+     * @return TValue
      */
     public function sole(callable $condition = null): mixed
     {
@@ -720,7 +722,7 @@ class Enumerable implements Countable, IteratorAggregate, JsonSerializable
     }
 
     /**
-     * @param callable(T, mixed): mixed  $callback
+     * @param callable(TValue, TKey): mixed $callback
      * @param int $flag
      * @return static
      */
@@ -730,7 +732,7 @@ class Enumerable implements Countable, IteratorAggregate, JsonSerializable
     }
 
     /**
-     * @param callable(T, mixed): mixed  $callback
+     * @param callable(TValue, TKey): mixed $callback
      * @param int $flag
      * @return static
      */
@@ -740,7 +742,7 @@ class Enumerable implements Countable, IteratorAggregate, JsonSerializable
     }
 
     /**
-     * @param callable(T, mixed): mixed $callback
+     * @param callable(TValue, TKey): mixed $callback
      * @param int $flag
      * @param bool $ascending
      * @return static
@@ -840,7 +842,7 @@ class Enumerable implements Countable, IteratorAggregate, JsonSerializable
     }
 
     /**
-     * @return Collection<int>
+     * @return Collection<array-key, int>
      */
     public function tally(): Collection
     {
@@ -848,7 +850,7 @@ class Enumerable implements Countable, IteratorAggregate, JsonSerializable
     }
 
     /**
-     * @return array<T>
+     * @return array<TKey, TValue>
      */
     public function toArray(): array
     {
@@ -857,7 +859,7 @@ class Enumerable implements Countable, IteratorAggregate, JsonSerializable
 
     /**
      * @param int|null $depth
-     * @return array<T>
+     * @return array<TKey, TValue>
      */
     public function toArrayRecursive(?int $depth = null): array
     {
@@ -866,7 +868,7 @@ class Enumerable implements Countable, IteratorAggregate, JsonSerializable
 
     /**
      * @param int $options
-     * @param int $depth
+     * @param int<1, max> $depth
      * @return string
      */
     public function toJson(int $options = 0, int $depth = 512): string
@@ -884,7 +886,7 @@ class Enumerable implements Countable, IteratorAggregate, JsonSerializable
     }
 
     /**
-     * @param iterable<T> $iterable
+     * @param iterable<TKey, TValue> $iterable
      * @return static
      */
     public function union(iterable $iterable): static
@@ -893,8 +895,8 @@ class Enumerable implements Countable, IteratorAggregate, JsonSerializable
     }
 
     /**
-     * @param iterable<T> $iterable
-     * @param int $depth
+     * @param iterable<TKey, TValue> $iterable
+     * @param int<1, max> $depth
      * @return static
      */
     public function unionRecursive(iterable $iterable, int $depth = PHP_INT_MAX): static
@@ -928,8 +930,10 @@ class Enumerable implements Countable, IteratorAggregate, JsonSerializable
     }
 
     /**
-     * @param iterable<T> $items
-     * @return array<T>
+     * @template TNewKey of array-key
+     * @template TNewValue
+     * @param iterable<TNewKey, TNewValue> $items
+     * @return array<TNewKey, TNewValue>
      */
     protected function asArray(iterable $items): array
     {
@@ -937,10 +941,10 @@ class Enumerable implements Countable, IteratorAggregate, JsonSerializable
     }
 
     /**
-     * @param iterable<T> $items
+     * @param iterable<TKey, TValue> $items
      * @param int $depth
      * @param bool $validate
-     * @return array<T>
+     * @return array<TKey, TValue>
      */
     protected function asArrayRecursive(iterable $items, int $depth, bool $validate = false): array
     {
@@ -954,9 +958,10 @@ class Enumerable implements Countable, IteratorAggregate, JsonSerializable
     }
 
     /**
-     * @template U
-     * @param iterable<U> $items
-     * @return Collection<U>
+     * @template UKey of array-key
+     * @template UValue
+     * @param iterable<UKey, UValue> $items
+     * @return Collection<UKey, UValue>
      */
     protected function newCollection(iterable $items): Collection
     {

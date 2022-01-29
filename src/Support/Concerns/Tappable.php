@@ -5,7 +5,8 @@ namespace Kirameki\Support\Concerns;
 trait Tappable
 {
     /**
-     * @param callable  $callback
+     * @template T
+     * @param callable(T): T $callback
      * @return $this
      */
     public function tap(callable $callback): static

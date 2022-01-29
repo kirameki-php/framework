@@ -4,13 +4,14 @@ namespace Kirameki\Support;
 
 use function json_decode;
 use function json_encode;
+use function file_get_contents;
 
 class Json
 {
     /**
      * @param mixed $data
      * @param int $options
-     * @param int $depth
+     * @param int<1, max> $depth
      * @return string
      */
     public static function encode(mixed $data, int $options = 0, int $depth = 512): string
@@ -20,21 +21,21 @@ class Json
     }
 
     /**
-     * @param mixed $json
-     * @param int $depth
-     * @return array
+     * @param string $json
+     * @param int<1, max> $depth
+     * @return array<mixed>
      */
-    public static function decode(mixed $json, int $depth = 512): array
+    public static function decode(string $json, int $depth = 512): array
     {
-        return json_decode($json, true, $depth, JSON_THROW_ON_ERROR);
+        return json_decode($json, true, $depth, JSON_THROW_ON_ERROR); /** @phpstan-ignore-line */
     }
 
     /**
      * @param string $path
-     * @return array
+     * @return array<mixed>
      */
     public static function decodeFile(string $path): array
     {
-        return static::decode(file_get_contents($path));
+        return static::decode((string) file_get_contents($path));
     }
 }
