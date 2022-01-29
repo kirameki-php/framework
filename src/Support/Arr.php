@@ -132,7 +132,7 @@ class Arr
         $result = [];
         foreach ($iterable as $key => $value) {
             if (is_iterable($value) && $depth > 1) {
-                $value = static::compact($value, $depth - 1);
+                $value = static::compact($value, $depth - 1); /** @phpstan-ignore-line */
             }
             if ($value !== null) {
                 $result[$key] = $value;
@@ -447,7 +447,7 @@ class Arr
      * @template TKey of array-key
      * @param iterable<TKey, mixed> $iterable
      * @param int<1, max> $depth
-     * @return array<mixed>
+     * @return array<array-key, mixed>
      */
     public static function flatten(iterable $iterable, int $depth = 1): array
     {
