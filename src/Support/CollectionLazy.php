@@ -42,6 +42,7 @@ class CollectionLazy implements IteratorAggregate
     {
         return $this->newInstance(function () {
             foreach ($this as $key => $item) {
+                /** @noinspection ForgottenDebugOutputInspection */
                 dump("$key => $item");
                 yield $key => $item;
             }

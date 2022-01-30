@@ -351,7 +351,7 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
 
     /**
      * @param callable(TValue, TKey):mixed $callable
-     * @return static<int, mixed>
+     * @return static
      */
     public function flatMap(callable $callable): static
     {
@@ -397,7 +397,7 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
     }
 
     /**
-     * @template TGroupKey
+     * @template TGroupKey of array-key
      * @param string|callable(TValue, TKey): TGroupKey $key
      * @return Collection<TGroupKey, static>
      */
@@ -540,7 +540,7 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
     }
 
     /**
-     * @return TValue
+     * @return TValue|null
      */
     public function maxBy(callable $callback): mixed
     {
@@ -579,7 +579,7 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
     /**
      * Returns the minimum element in the sequence using the given predicate as the comparison between elements.
      *
-     * @return TValue
+     * @return TValue|null
      */
     public function minBy(callable $callback): mixed
     {

@@ -40,7 +40,6 @@ use function max;
 use function min;
 use function next;
 use function prev;
-use function str_contains;
 
 class Arr
 {
