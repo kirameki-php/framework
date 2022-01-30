@@ -15,6 +15,12 @@ use ValueError;
 
 class CollectionTest extends TestCase
 {
+    /**
+     * @template TKey of array-key
+     * @template TValue
+     * @param iterable<TKey, TValue>|null $items
+     * @return Collection<TKey, TValue>
+     */
     protected function collect(?iterable $items = null): Collection
     {
         return new Collection($items);
@@ -889,6 +895,26 @@ class CollectionTest extends TestCase
         self::assertEquals(90, $collect->max());
     }
 
+    public function testMaxBy(): void
+    {
+        self::assertEquals(
+            null,
+            $this->collect([])->maxBy(fn(array $arr) => 1),
+            'maxBy with empty array'
+        );
+
+        self::assertEquals(
+            2,
+            $this->collect(['a' => 2, 'b' => 1])->maxBy(fn($v, $k) => $v),
+            'maxBy using value'
+        );
+
+        self::assertEquals(1,
+            $this->collect(['a' => 2, 'b' => 1])->maxBy(fn($v, $k) => $k),
+            'maxBy using key'
+        );
+    }
+
     public function testMerge(): void
     {
         $empty = $this->collect();
@@ -951,6 +977,27 @@ class CollectionTest extends TestCase
 
         $collect = $this->collect([1, 10, -100]);
         self::assertEquals(-100, $collect->min());
+    }
+
+    public function testMinBy(): void
+    {
+        self::assertEquals(
+            null,
+            $this->collect([])->minBy(fn(array $arr) => 1),
+            'minBy with empty array'
+        );
+
+        self::assertEquals(
+            1,
+            $this->collect(['a' => 2, 'b' => 1])->minBy(fn($v, $k) => $v),
+            'minBy using value'
+        );
+
+        self::assertEquals(
+            2,
+            $this->collect(['a' => 2, 'b' => 1])->minBy(fn($v, $k) => $k),
+            'minBy using key'
+        );
     }
 
     public function testMinMax(): void
