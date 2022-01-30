@@ -184,7 +184,7 @@ class StrTest extends TestCase
     public function testContainsAll_EmptyNeedles(): void
     {
         $this->expectException(RuntimeException::class);
-        $this->expectExceptionMessage('Iterable must contain at least one item.');
+        $this->expectExceptionMessage('Iterable must contain at least one element.');
         Str::containsAll('abcde', []);
     }
 
@@ -204,7 +204,7 @@ class StrTest extends TestCase
     public function testContainsAny_EmptyNeedles(): void
     {
         $this->expectException(RuntimeException::class);
-        $this->expectExceptionMessage('Iterable must contain at least one item.');
+        $this->expectExceptionMessage('Iterable must contain at least one element.');
         Str::containsAny('abcde', []);
     }
 

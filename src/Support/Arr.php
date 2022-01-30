@@ -59,9 +59,9 @@ class Arr
         $offset = $position >= 0 ? $position : count($array) + $position;
         $counter = 0;
 
-        foreach ($array as $item) {
+        foreach ($array as $val) {
             if ($counter === $offset) {
-                return $item;
+                return $val;
             }
             $counter+= 1;
         }
@@ -95,9 +95,9 @@ class Arr
      */
     public static function coalesce(iterable $iterable): mixed
     {
-        foreach ($iterable as $value) {
-            if ($value !== null) {
-                return $value;
+        foreach ($iterable as $val) {
+            if ($val !== null) {
+                return $val;
             }
         }
         return null;
@@ -130,12 +130,12 @@ class Arr
     public static function compact(iterable $iterable, int $depth = 1): array
     {
         $result = [];
-        foreach ($iterable as $key => $value) {
-            if (is_iterable($value) && $depth > 1) {
-                $value = static::compact($value, $depth - 1); /** @phpstan-ignore-line */
+        foreach ($iterable as $key => $val) {
+            if (is_iterable($val) && $depth > 1) {
+                $val = static::compact($val, $depth - 1); /** @phpstan-ignore-line */
             }
-            if ($value !== null) {
-                $result[$key] = $value;
+            if ($val !== null) {
+                $result[$key] = $val;
             }
         }
         return $result; /* @phpstan-ignore-line */
@@ -150,9 +150,9 @@ class Arr
      */
     public static function contains(iterable $iterable, mixed $value): bool
     {
-        $call = is_callable($value) ? $value : static fn($item) => $item === $value;
-        foreach ($iterable as $key => $item) {
-            if (static::verify($call, $key, $item)) {
+        $call = is_callable($value) ? $value : static fn($val) => $val === $value;
+        foreach ($iterable as $key => $val) {
+            if (static::verify($call, $key, $val)) {
                 return true;
             }
         }
@@ -192,8 +192,8 @@ class Arr
     public static function countBy(iterable $iterable, callable $condition): int
     {
         $counter = 0;
-        foreach ($iterable as $key => $item) {
-            if (static::verify($condition, $key, $item)) {
+        foreach ($iterable as $key => $val) {
+            if (static::verify($condition, $key, $val)) {
                 $counter++;
             }
         }
@@ -234,9 +234,9 @@ class Arr
      */
     public static function dropWhile(iterable $iterable, callable $condition): array
     {
-        $index = static::lastIndex($iterable, static fn($item, $key) => static::verify($condition, $key, $item));
+        $index = static::lastIndex($iterable, static fn($val, $key) => static::verify($condition, $key, $val));
         return ($index !== null)
-            ? static::drop($iterable, $index)
+            ? static::drop($iterable, $index + 1)
             : [];
     }
 
@@ -249,8 +249,8 @@ class Arr
      */
     public static function each(iterable $iterable, callable $callback): void
     {
-        foreach ($iterable as $key => $item) {
-            $callback($item, $key);
+        foreach ($iterable as $key => $val) {
+            $callback($val, $key);
         }
     }
 
@@ -268,8 +268,8 @@ class Arr
         $count = 0;
         $remaining = $size;
         $chunk = [];
-        foreach ($iterable as $key => $item) {
-            $chunk[$key] = $item;
+        foreach ($iterable as $key => $val) {
+            $chunk[$key] = $val;
             $remaining--;
             if ($remaining === 0) {
                 $callback($chunk, $count);
@@ -293,8 +293,8 @@ class Arr
     public static function eachWithIndex(iterable $iterable, callable $callback): void
     {
         $offset = 0;
-        foreach ($iterable as $key => $item) {
-            $callback($item, $key, $offset);
+        foreach ($iterable as $key => $val) {
+            $callback($val, $key, $offset);
             $offset++;
         }
     }
@@ -324,13 +324,13 @@ class Arr
      */
     public static function filter(iterable $iterable, callable $condition): array
     {
-        $values = [];
-        foreach ($iterable as $key => $item) {
-            if (static::verify($condition, $key, $item)) {
-                $values[$key] = $item;
+        $filtered = [];
+        foreach ($iterable as $key => $val) {
+            if (static::verify($condition, $key, $val)) {
+                $filtered[$key] = $val;
             }
         }
-        return $values;
+        return $filtered;
     }
 
     /**
@@ -344,9 +344,9 @@ class Arr
     {
         $condition ??= static fn() => true;
 
-        foreach ($iterable as $key => $item) {
-            if (static::verify($condition, $key, $item)) {
-                return $item;
+        foreach ($iterable as $key => $val) {
+            if (static::verify($condition, $key, $val)) {
+                return $val;
             }
         }
 
@@ -363,8 +363,8 @@ class Arr
     public static function firstIndex(iterable $iterable, callable $condition): ?int
     {
         $count = 0;
-        foreach ($iterable as $key => $item) {
-            if (static::verify($condition, $key, $item)) {
+        foreach ($iterable as $key => $val) {
+            if (static::verify($condition, $key, $val)) {
                 return $count;
             }
             $count++;
@@ -383,8 +383,8 @@ class Arr
     {
         $condition ??= static fn() => true;
 
-        foreach ($iterable as $key => $item) {
-            if (static::verify($condition, $key, $item)) {
+        foreach ($iterable as $key => $val) {
+            if (static::verify($condition, $key, $val)) {
                 return $key;
             }
         }
@@ -406,7 +406,7 @@ class Arr
         if ($result === null) {
             $message = ($condition !== null)
                 ? 'Failed to find matching condition.'
-                : 'Iterable must contain at least one item.';
+                : 'Iterable must contain at least one element.';
             throw new RuntimeException($message);
         }
 
@@ -415,15 +415,16 @@ class Arr
 
     /**
      * @template TKey of array-key
-     * @param iterable<TKey, mixed> $iterable
-     * @param callable $callback
+     * @template TValue
+     * @param iterable<TKey, TValue> $iterable
+     * @param callable(TValue, TKey): mixed $callback
      * @return array<int, mixed>
      */
     public static function flatMap(iterable $iterable, callable $callback): array
     {
         $results = [];
-        foreach ($iterable as $value) {
-            $result = $callback($value);
+        foreach ($iterable as $key => $val) {
+            $result = $callback($val, $key);
             if (is_iterable($result)) {
                 foreach ($result as $each) {
                     $results[] = $each;
@@ -446,12 +447,12 @@ class Arr
         Assert::positiveInt($depth);
 
         $results = [];
-        $func = static function($values, int $depth) use (&$func, &$results) {
-            foreach ($values as $value) {
-                if (is_iterable($value) && $depth > 0) {
-                    $func($value, $depth - 1);
+        $func = static function($_iterable, int $depth) use (&$func, &$results) {
+            foreach ($_iterable as $val) {
+                if (is_iterable($val) && $depth > 0) {
+                    $func($val, $depth - 1);
                 } else {
-                    $results[] = $value;
+                    $results[] = $val;
                 }
             }
         };
@@ -469,12 +470,12 @@ class Arr
     public static function flip(iterable $iterable, bool $overwrite = false): array
     {
         $flipped = [];
-        foreach ($iterable as $key => $value) {
-            $value = static::ensureKey($value);
-            if (!$overwrite && array_key_exists($value, $flipped)) {
-                throw new DuplicateKeyException($value, $key);
+        foreach ($iterable as $key => $val) {
+            $val = static::ensureKey($val);
+            if (!$overwrite && array_key_exists($val, $flipped)) {
+                throw new DuplicateKeyException($val, $key);
             }
-            $flipped[$value] = $key;
+            $flipped[$val] = $key;
         }
         return $flipped;
     }
@@ -491,8 +492,8 @@ class Arr
     public static function fold(iterable $iterable, mixed $initial, callable $callback): mixed
     {
         $result = $initial;
-        foreach ($iterable as $key => $item) {
-            $result = $callback($result, $item, $key);
+        foreach ($iterable as $key => $val) {
+            $result = $callback($result, $val, $key);
         }
         return $result;
     }
@@ -515,11 +516,11 @@ class Arr
      * @template TValue
      * @param iterable<TKey, TValue> $iterable
      * @param int|string $key
-     * @return TValue
+     * @return TValue|null
      */
     public static function get(iterable $iterable, int|string $key): mixed
     {
-        return static::from($iterable)[$key];
+        return static::from($iterable)[$key] ?? null;
     }
 
     /**
@@ -534,12 +535,12 @@ class Arr
         $callable = is_string($key) ? static::createDigger($key) : $key;
 
         $map = [];
-        foreach ($iterable as $k => $item) {
-            $groupKey = $callable($item, $k);
+        foreach ($iterable as $k => $val) {
+            $groupKey = $callable($val, $k);
             if ($groupKey !== null) {
                 Assert::validKey($groupKey);
                 $map[$groupKey] ??= [];
-                $map[$groupKey][] = $item;
+                $map[$groupKey][] = $val;
             }
         }
 
@@ -661,16 +662,16 @@ class Arr
         $callable = is_string($key) ? static::createDigger($key) : $key;
 
         $result = [];
-        foreach ($iterable as $oldKey => $item) {
-            $newKey = static::ensureKey($callable($item, $oldKey));
+        foreach ($iterable as $oldKey => $val) {
+            $newKey = static::ensureKey($callable($val, $oldKey));
 
             if (!$overwrite && array_key_exists($newKey, $result)) {
-                throw new DuplicateKeyException($newKey, $item);
+                throw new DuplicateKeyException($newKey, $val);
             }
 
-            $result[$newKey] = ($depth > 1 && is_iterable($item))
-                ? static::keyByRecursive($item, $callable, $overwrite, $depth - 1)
-                : $item;
+            $result[$newKey] = ($depth > 1 && is_iterable($val))
+                ? static::keyByRecursive($val, $callable, $overwrite, $depth - 1)
+                : $val;
         }
 
         return $result; /* @phpstan-ignore-line */
@@ -692,10 +693,10 @@ class Arr
 
         while(($key = key($copy)) !== null) {
             /** @var TKey $key */
-            /** @var TValue $item */
-            $item = current($copy);
-            if (static::verify($condition, $key, $item)) {
-                return $item;
+            /** @var TValue $val */
+            $val = current($copy);
+            if (static::verify($condition, $key, $val)) {
+                return $val;
             }
             prev($copy);
         }
@@ -719,10 +720,10 @@ class Arr
 
         while(($key = key($copy)) !== null) {
             $count--;
-            $item = current($copy);
+            $val = current($copy);
             /** @var TKey $key */
-            /** @var TValue $item */
-            if (static::verify($condition, $key, $item)) {
+            /** @var TValue $val */
+            if (static::verify($condition, $key, $val)) {
                 return $count;
             }
             prev($copy);
@@ -746,10 +747,10 @@ class Arr
         $condition ??= static fn() => true;
 
         while(($key = key($copy)) !== null) {
-            $item = current($copy);
+            $val = current($copy);
             /** @var TKey $key */
-            /** @var TValue $item */
-            if (static::verify($condition, $key, $item)) {
+            /** @var TValue $val */
+            if (static::verify($condition, $key, $val)) {
                 return $key;
             }
             prev($copy);
@@ -772,7 +773,7 @@ class Arr
         if ($result === null) {
             $message = ($condition !== null)
                 ? 'Failed to find matching condition.'
-                : 'Iterable must contain at least one item.';
+                : 'Iterable must contain at least one element.';
             throw new RuntimeException($message);
         }
 
@@ -789,11 +790,11 @@ class Arr
      */
     public static function map(iterable $iterable, callable $callback): array
     {
-        $values = [];
-        foreach ($iterable as $key => $item) {
-            $values[$key] = $callback($item, $key);
+        $mapped = [];
+        foreach ($iterable as $key => $val) {
+            $mapped[$key] = $callback($val, $key);
         }
-        return $values;
+        return $mapped;
     }
 
     /**
@@ -804,6 +805,34 @@ class Arr
     public static function max(iterable $iterable): mixed
     {
         return max(static::from($iterable)); /** @phpstan-ignore-line */
+    }
+
+    /**
+     * @template TKey
+     * @template TValue
+     * @param iterable<TKey, TValue> $iterable
+     * @param callable(TValue, TKey): mixed $callback
+     * @return TValue|null
+     */
+    public static function maxBy(iterable $iterable, callable $callback)
+    {
+        $maxResult = null;
+        $maxValue = null;
+
+        foreach ($iterable as $key => $val) {
+            $result = $callback($val, $key);
+
+            if ($result === null) {
+                throw new RuntimeException('Non-comparable value "null" returned for key:'.$key);
+            }
+
+            if ($maxResult === null || $result > $maxResult) {
+                $maxResult = $result;
+                $maxValue = $val;
+            }
+        }
+
+        return $maxValue;
     }
 
     /**
@@ -829,13 +858,13 @@ class Arr
     public static function mergeRecursive(iterable $iterable1, iterable $iterable2, int $depth = PHP_INT_MAX): array
     {
         $merged = static::from($iterable1);
-        foreach ($iterable2 as $key => $value) {
+        foreach ($iterable2 as $key => $val) {
             if (is_int($key)) {
-                $merged[] = $value;
-            } else if ($depth > 1 && array_key_exists($key, $merged) && is_iterable($merged[$key]) && is_iterable($value)) {
-                $merged[$key] = static::mergeRecursive($merged[$key], $value, $depth - 1);
+                $merged[] = $val;
+            } else if ($depth > 1 && array_key_exists($key, $merged) && is_iterable($merged[$key]) && is_iterable($val)) {
+                $merged[$key] = static::mergeRecursive($merged[$key], $val, $depth - 1);
             } else {
-                $merged[$key] = $value;
+                $merged[$key] = $val;
             }
         }
         return $merged; /* @phpstan-ignore-line */
@@ -853,30 +882,31 @@ class Arr
     }
 
     /**
-     * @template T
-     * @param iterable<T> $iterable
-     * @param callable $callback
-     * @return T|null
+     * @template TKey
+     * @template TValue
+     * @param iterable<TKey, TValue> $iterable
+     * @param callable(TValue, TKey): mixed $callback
+     * @return TValue|null
      */
     public static function minBy(iterable $iterable, callable $callback)
     {
-        $min = null;
-        $minItem = null;
+        $minResult = null;
+        $minVal = null;
 
-        foreach ($iterable as $key => $item) {
-            $result = $callback($item, $key);
+        foreach ($iterable as $key => $val) {
+            $result = $callback($val, $key);
 
             if ($result === null) {
                 throw new RuntimeException('Non-comparable value "null" returned for key:'.$key);
             }
 
-            if ($min === null || $result < $min) {
-                $min = $result;
-                $minItem = $item;
+            if ($minResult === null || $result < $minResult) {
+                $minResult = $result;
+                $minVal = $val;
             }
         }
 
-        return $minItem;
+        return $minVal;
     }
 
     /**
@@ -889,18 +919,18 @@ class Arr
         $min = null;
         $max = null;
         $containsValues = false;
-        foreach ($iterable as $value) {
+        foreach ($iterable as $val) {
             $containsValues = true;
-            if ($min === null || $min > $value) {
-                $min = $value;
+            if ($min === null || $min > $val) {
+                $min = $val;
             }
-            if ($max === null || $max < $value) {
-                $max = $value;
+            if ($max === null || $max < $val) {
+                $max = $val;
             }
         }
 
         if (!$containsValues) {
-            throw new RuntimeException('Iterable must contain at least one item.');
+            throw new RuntimeException('Iterable must contain at least one element.');
         }
 
         return [$min, $max]; /** @phpstan-ignore-line */
@@ -995,7 +1025,7 @@ class Arr
     }
 
     /**
-     * Move items that match condition to the top of the array.
+     * Move elements that match condition to the top of the array.
      *
      * @template TKey of array-key
      * @template TValue
@@ -1007,10 +1037,10 @@ class Arr
     {
         $prioritized = [];
         $remains = [];
-        foreach ($iterable as $key => $value) {
-            static::verify($condition, $key, $value)
-                ? $prioritized[$key] = $value
-                : $remains[$key] = $value;
+        foreach ($iterable as $key => $val) {
+            static::verify($condition, $key, $val)
+                ? $prioritized[$key] = $val
+                : $remains[$key] = $val;
         }
         return static::merge($prioritized, $remains);
     }
@@ -1056,7 +1086,7 @@ class Arr
      */
     public static function reduce(iterable $iterable, callable $callback): mixed
     {
-        Assert::iterableHasAtleastOneItem($iterable);
+        Assert::iterableHasAtleastOneElement($iterable);
 
         $reduceable = static::drop($iterable, 1);
         $intial = static::firstOrFail($iterable);
@@ -1077,8 +1107,8 @@ class Arr
         $counter = 0;
         $limit ??= PHP_INT_MAX;
         $removed = [];
-        foreach ($array as $key => $item) {
-            if ($counter < $limit && $item === $value) {
+        foreach ($array as $key => $val) {
+            if ($counter < $limit && $val === $value) {
                 unset($array[$key]);
                 $removed[] = $key;
                 ++$counter;
@@ -1111,8 +1141,8 @@ class Arr
 
         $array = [];
         for ($i = 0; $i < $times; $i++) {
-            foreach ($iterable as $value) {
-                $array[] = $value;
+            foreach ($iterable as $val) {
+                $array[] = $val;
             }
         }
         return $array;
@@ -1166,8 +1196,8 @@ class Arr
      */
     public static function satisfyAll(iterable $iterable, callable $condition): bool
     {
-        foreach ($iterable as $key => $item) {
-            if (static::verify($condition, $key, $item) === false) {
+        foreach ($iterable as $key => $val) {
+            if (static::verify($condition, $key, $val) === false) {
                 return false;
             }
         }
@@ -1291,7 +1321,7 @@ class Arr
             : static::from($iterable);
 
         if (($count = count($array)) !== 1) {
-            throw new RuntimeException("Expected only one item in result. $count given.");
+            throw new RuntimeException("Expected only one element in result. $count given.");
         }
 
         /** @var TValue $current */
@@ -1351,7 +1381,7 @@ class Arr
      */
     public static function takeWhile(iterable $iterable, callable $condition): array
     {
-        $index = static::firstIndex($iterable, static fn($item, $key) => !$condition($item, $key)) ?? PHP_INT_MAX;
+        $index = static::firstIndex($iterable, static fn($val, $key) => !$condition($val, $key)) ?? PHP_INT_MAX;
         return static::take($iterable, $index);
     }
 
@@ -1364,10 +1394,10 @@ class Arr
     public static function tally(iterable $iterable): array
     {
         $mapping = [];
-        foreach ($iterable as $item) {
-            Assert::validKey($item);
-            $mapping[$item] ??= 0;
-            $mapping[$item]++;
+        foreach ($iterable as $val) {
+            Assert::validKey($val);
+            $mapping[$val] ??= 0;
+            $mapping[$val]++;
         }
         return $mapping;
     }
@@ -1409,14 +1439,14 @@ class Arr
     public static function unionRecursive(iterable $iterable1, iterable $iterable2, int $depth = PHP_INT_MAX): array
     {
         $union = static::from($iterable1);
-        foreach ($iterable2 as $key => $value) {
+        foreach ($iterable2 as $key => $val) {
             $key = static::ensureKey($key);
             if (is_int($key)) {
-                $union[] = $value;
+                $union[] = $val;
             } else if (!array_key_exists($key, $union)) {
-                $union[$key] = $value;
-            } else if ($depth > 1 && is_iterable($union[$key]) && is_iterable($value)) {
-                $union[$key] = static::unionRecursive($union[$key], $value, $depth - 1);
+                $union[$key] = $val;
+            } else if ($depth > 1 && is_iterable($union[$key]) && is_iterable($val)) {
+                $union[$key] = static::unionRecursive($union[$key], $val, $depth - 1);
             }
         }
         return $union; /** @phpstan-ignore-line */
@@ -1432,7 +1462,7 @@ class Arr
      */
     public static function unique(iterable $iterable): array
     {
-        return static::uniqueBy($iterable, static fn($value) => $value);
+        return static::uniqueBy($iterable, static fn($val) => $val);
     }
 
     /**
@@ -1449,11 +1479,11 @@ class Arr
     {
         $ukeys = [];
         $preserved = [];
-        foreach ($iterable as $key => $value) {
-            $ukey = $callback($value, $key);
+        foreach ($iterable as $key => $val) {
+            $ukey = $callback($val, $key);
             if (! in_array($ukey, $ukeys, true)) {
                 $ukeys[] = $ukey;
-                $preserved[] = [$key, $value];
+                $preserved[] = [$key, $val];
             }
         }
         $results = [];
@@ -1465,13 +1495,13 @@ class Arr
 
     /**
      * @param array<mixed> $array
-     * @param mixed ...$values
+     * @param mixed ...$value
      * @return void
      */
-    public static function unshift(array &$array, mixed ...$values): void
+    public static function unshift(array &$array, mixed ...$value): void
     {
-        for($i = count($values) - 1; $i >= 0; $i--) {
-            array_unshift($array, $values[$i]);
+        for($i = count($value) - 1; $i >= 0; $i--) {
+            array_unshift($array, $value[$i]);
         }
     }
 
@@ -1543,12 +1573,12 @@ class Arr
      * @template TValue
      * @param callable(TValue, TKey): bool $condition
      * @param TKey $key
-     * @param TValue $item
+     * @param TValue $val
      * @return bool
      */
-    protected static function verify(callable $condition, mixed $key, mixed $item): bool
+    protected static function verify(callable $condition, mixed $key, mixed $val): bool
     {
-        $result = $condition($item, $key);
+        $result = $condition($val, $key);
         if (is_bool($result)) {
             return $result;
         }

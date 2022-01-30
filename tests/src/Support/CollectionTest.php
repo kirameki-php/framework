@@ -264,7 +264,6 @@ class CollectionTest extends TestCase
         // empty but not same instance
         $empty = $this->collect();
         self::assertFalse($empty->containsKey('a'));
-        self::assertFalse($empty->containsKey('a.a'));
         self::assertEmpty($empty->containsKey(0));
         self::assertEmpty($empty->containsKey(-1));
 
@@ -277,18 +276,12 @@ class CollectionTest extends TestCase
         self::assertTrue($seq->containsKey(-1));
         self::assertFalse($seq->containsKey(999));
         self::assertFalse($seq->containsKey('0.3'));
-        self::assertFalse($seq->containsKey('2.999'));
-        self::assertFalse($seq->containsKey("1.1.1"));
-        self::assertTrue($seq->containsKey("1.2"));
-        self::assertTrue($seq->containsKey("1.2.2"));
-        self::assertFalse($seq->containsKey("1.2.2.-2"));
         self::assertTrue($seq->containsKey("2"));
 
         // copy assoc
         $assoc = $this->collect(['a' => [1, 2, 3], '-' => 'c', 'd' => ['e'], 'f' => null]);
         self::assertTrue($assoc->containsKey('a'));
         self::assertFalse($assoc->containsKey('a.a'));
-        self::assertTrue($assoc->containsKey('d.0'));
         self::assertTrue($assoc->containsKey('f'));
     }
 
@@ -491,11 +484,11 @@ class CollectionTest extends TestCase
     {
         // sequence: remove ones with empty value
         $collect = $this->collect([0, 1, '', '0', null]);
-        self::assertEquals([1 => 1], $collect->filter()->toArray());
+        self::assertEquals([1 => 1], $collect->filter(fn($item) => !empty($item))->toArray());
 
         // assoc: removes null / false / 0 / empty string / empty array
         $collect = $this->collect(['a' => null, 'b' => false, 'c' => 0, 'd' => '', 'e' => '0', 'f' => []]);
-        self::assertEquals([], $collect->filter()->toArray());
+        self::assertEquals([], $collect->filter(fn($item) => !empty($item))->toArray());
 
         // assoc: removes ones with condition
         self::assertEquals(['d' => ''], $collect->filter(fn($v) => $v === '')->toArray());
@@ -540,7 +533,7 @@ class CollectionTest extends TestCase
     public function testFirstOrFail_Empty(): void
     {
         $this->expectException(RuntimeException::class);
-        $this->expectExceptionMessage('Iterable must contain at least one item.');
+        $this->expectExceptionMessage('Iterable must contain at least one element.');
         $this->collect([])->firstOrFail();
     }
 
@@ -632,14 +625,7 @@ class CollectionTest extends TestCase
         // get existing data
         self::assertEquals([1, 'b' => 2, 'c' => ['d' => 3]], $collect->get('a'));
         self::assertEquals('d', $collect->get('c'));
-        // get non-existing data
-        self::assertNull($collect->get('a.e'));
         self::assertEquals(null, $collect->get(0));
-        // get existing data with dot
-        self::assertEquals(1, $collect->get('a.0'));
-        self::assertEquals(2, $collect->get('a.b'));
-        self::assertEquals(3, $collect->get('a.c.d'));
-        self::assertEquals([], $collect->get('e'));
     }
 
     public function testGetIterator(): void
@@ -856,7 +842,7 @@ class CollectionTest extends TestCase
     public function testLastOrFail_Empty(): void
     {
         $this->expectException(RuntimeException::class);
-        $this->expectExceptionMessage('Iterable must contain at least one item.');
+        $this->expectExceptionMessage('Iterable must contain at least one element.');
         $this->collect([])->lastOrFail();
     }
 
@@ -979,7 +965,7 @@ class CollectionTest extends TestCase
     public function testMinMax_Empty(): void
     {
         $this->expectException(RuntimeException::class);
-        $this->expectExceptionMessage('Iterable must contain at least one item.');
+        $this->expectExceptionMessage('Iterable must contain at least one element.');
         $this->collect([])->minMax();
     }
 
@@ -1171,10 +1157,6 @@ class CollectionTest extends TestCase
         $collect = $this->collect(['a' => 1, 'b' => 2]);
         self::assertEquals(2, $collect->pull('b'));
         self::assertEquals(['a' => 1], $collect->toArray());
-
-        $collect = $this->collect(['a' => ['id' => 1], 'b' => 2]);
-        self::assertEquals(1, $collect->pull('a.id'));
-        self::assertEquals(['a' => [], 'b' => 2], $collect->toArray());
     }
 
     public function testPush(): void
@@ -1207,7 +1189,7 @@ class CollectionTest extends TestCase
     public function testReduce_UnableToGuessInitial(): void
     {
         $this->expectException(RuntimeException::class);
-        $this->expectExceptionMessage('Iterable must contain at least one item.');
+        $this->expectExceptionMessage('Iterable must contain at least one element.');
         $this->collect([])->reduce(fn($c, $i, $k) => $k);
     }
 
@@ -1253,11 +1235,6 @@ class CollectionTest extends TestCase
         $collect = $this->collect(['a' => 1]);
         self::assertEquals(false, $collect->removeKey('b'));
         self::assertEquals(['a' => 1], $collect->toArray());
-
-        $collect = $this->collect(['a' => ['id' => 1], 1]);
-        self::assertEquals(true, $collect->removeKey('a.id'));
-        self::assertEquals(false, $collect->removeKey('1.a'));
-        self::assertEquals(['a' => [], 1], $collect->toArray());
     }
 
     public function testRepeat(): void
@@ -1357,7 +1334,6 @@ class CollectionTest extends TestCase
         self::assertEquals(['a' => 1], $this->collect()->set('a', 1)->toArray());
         self::assertEquals(['a' => 1], $this->collect()->set('a', 0)->set('a', 1)->toArray());
         self::assertEquals(['a' => null], $this->collect()->set('a', null)->toArray());
-        self::assertEquals(['a' => ['b' => 1]], $this->collect()->set('a.b', 1)->toArray());
     }
 
     public function testSetIfExists(): void
@@ -1398,12 +1374,6 @@ class CollectionTest extends TestCase
             '$value => null'
         );
 
-        self::assertEquals(
-            ['a' => ['b' => 0]],
-            $this->collect(['a' => ['b' => 1]])->setIfExists('a.b', 0)->toArray(),
-            'Set to existing through dot notation',
-        );
-
         $result = false;
         $this->collect()->setIfExists('a', 1, $result)->toArray();
         self::assertFalse($result, 'Result for no previous value');
@@ -1431,12 +1401,6 @@ class CollectionTest extends TestCase
             ['a' => null],
             $this->collect()->setIfNotExists('a', null)->toArray(),
             'Set null'
-        );
-
-        self::assertEquals(
-            ['a' => ['b' => 1]],
-            $this->collect(['a' => ['b' => 1]])->setIfNotExists('a.b', 0)->toArray(),
-            'Try to set to existing through dot notation'
         );
 
         $result = false;
@@ -1482,14 +1446,14 @@ class CollectionTest extends TestCase
     public function testSole_ZeroItem(): void
     {
         $this->expectException(RuntimeException::class);
-        $this->expectExceptionMessage('Expected only one item in result. 0 given.');
+        $this->expectExceptionMessage('Expected only one element in result. 0 given.');
         $this->collect([])->sole();
     }
 
     public function testSole_MoreThanOneItem(): void
     {
         $this->expectException(RuntimeException::class);
-        $this->expectExceptionMessage('Expected only one item in result. 2 given.');
+        $this->expectExceptionMessage('Expected only one element in result. 2 given.');
         $this->collect([1, 2])->sole();
     }
 

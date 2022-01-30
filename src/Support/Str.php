@@ -188,7 +188,7 @@ class Str
      */
     public static function containsAll(string $haystack, array $needles): bool
     {
-        Assert::iterableHasAtleastOneItem($needles);
+        Assert::iterableHasAtleastOneElement($needles);
 
         foreach ($needles as $needle) {
             if(!str_contains($haystack, $needle)) {
@@ -205,7 +205,7 @@ class Str
      */
     public static function containsAny(string $haystack, array $needle): bool
     {
-        Assert::iterableHasAtleastOneItem($needle);
+        Assert::iterableHasAtleastOneElement($needle);
 
         foreach ($needle as $each) {
             if(str_contains($haystack, $each)) {

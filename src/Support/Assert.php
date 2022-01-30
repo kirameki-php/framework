@@ -144,12 +144,12 @@ class Assert
      * @param iterable<mixed> $iterable
      * @return void
      */
-    public static function iterableHasAtleastOneItem(iterable $iterable): void
+    public static function iterableHasAtleastOneElement(iterable $iterable): void
     {
         foreach ($iterable as $ignored) {
             return;
         }
 
-        throw new RuntimeException('Iterable must contain at least one item.');
+        throw new RuntimeException('Iterable must contain at least one element.');
     }
 }

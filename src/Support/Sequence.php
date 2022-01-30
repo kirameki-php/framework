@@ -24,7 +24,7 @@ use function ksort;
  * @template TValue
  * @implements IteratorAggregate<TKey, TValue>
  */
-class Enumerable implements Countable, IteratorAggregate, JsonSerializable
+class Sequence implements Countable, IteratorAggregate, JsonSerializable
 {
     use Concerns\Macroable;
     use Concerns\Tappable;
@@ -49,7 +49,7 @@ class Enumerable implements Countable, IteratorAggregate, JsonSerializable
      * @param iterable<TNewKey, TNewValue> $items
      * @return static
      */
-    public function newInstance(iterable $items): static
+    public function newInstance(iterable $items = []): static
     {
         return new static($items);
     }
@@ -296,7 +296,7 @@ class Enumerable implements Countable, IteratorAggregate, JsonSerializable
         return is_iterable($items) && ($this->toArray() === $this->asArray($items)); /** @phpstan-ignore-line */
     }
     /**
-     * @param array<array-key> $keys
+     * @param array<TKey> $keys
      * @return static
      */
     public function except(iterable $keys): static
@@ -351,7 +351,7 @@ class Enumerable implements Countable, IteratorAggregate, JsonSerializable
 
     /**
      * @param callable(TValue, TKey):mixed $callable
-     * @return static
+     * @return static<int, mixed>
      */
     public function flatMap(callable $callable): static
     {
@@ -397,8 +397,9 @@ class Enumerable implements Countable, IteratorAggregate, JsonSerializable
     }
 
     /**
-     * @param string|callable(TValue, TKey): mixed $key
-     * @return Collection<array-key, static>
+     * @template TGroupKey
+     * @param string|callable(TValue, TKey): TGroupKey $key
+     * @return Collection<TGroupKey, static>
      */
     public function groupBy(string|callable $key): Collection
     {
@@ -477,7 +478,7 @@ class Enumerable implements Countable, IteratorAggregate, JsonSerializable
     }
 
     /**
-     * @return Collection<int, array-key>
+     * @return Collection<int, TKey>
      */
     public function keys(): Collection
     {
@@ -523,7 +524,7 @@ class Enumerable implements Countable, IteratorAggregate, JsonSerializable
     /**
      * @template TNew
      * @param callable(TValue, TKey): TNew $callback
-     * @return Collection<array-key, TNew>
+     * @return Collection<TKey, TNew>
      */
     public function map(callable $callback): Collection
     {
@@ -536,6 +537,14 @@ class Enumerable implements Countable, IteratorAggregate, JsonSerializable
     public function max(): mixed
     {
         return Arr::max($this->items);
+    }
+
+    /**
+     * @return TValue
+     */
+    public function maxBy(callable $callback): mixed
+    {
+        return Arr::maxBy($this->items, $callback);
     }
 
     /**
@@ -558,11 +567,23 @@ class Enumerable implements Countable, IteratorAggregate, JsonSerializable
     }
 
     /**
+     * Returns the minimum element in the sequence.
+     *
      * @return TValue
      */
     public function min(): mixed
     {
         return Arr::min($this->items);
+    }
+
+    /**
+     * Returns the minimum element in the sequence using the given predicate as the comparison between elements.
+     *
+     * @return TValue
+     */
+    public function minBy(callable $callback): mixed
+    {
+        return Arr::minBy($this->items, $callback);
     }
 
     /**
