@@ -233,9 +233,9 @@ class Arr
      */
     public static function dropWhile(iterable $iterable, callable $condition): array
     {
-        $index = static::lastIndex($iterable, static fn($val, $key) => static::verify($condition, $key, $val));
+        $index = static::lastIndex($iterable, static fn($val, $key) => !static::verify($condition, $key, $val));
         return ($index !== null)
-            ? static::drop($iterable, $index + 1)
+            ? static::drop($iterable, $index)
             : [];
     }
 
