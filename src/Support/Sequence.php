@@ -39,8 +39,7 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
      */
     public function __construct(iterable|null $items = null)
     {
-        $items ??= [];
-        $this->items = $items;
+        $this->items = $items ?? [];
     }
 
     /**
@@ -770,16 +769,22 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
      */
     protected function sortByInternal(callable $callback, int $flag, bool $ascending): static
     {
-        $refs = [];
         $copy = $this->toArray();
+
+        $refs = [];
         foreach ($copy as $key => $item) {
             $refs[$key] = $callback($item, $key);
         }
-        $ascending ? asort($refs, $flag) : arsort($refs, $flag);
+
+        $ascending
+            ? asort($refs, $flag)
+            : arsort($refs, $flag);
+
         $sorted = [];
         foreach ($refs as $key => $_) {
             $sorted[$key] = $copy[$key];
         }
+
         return $this->newInstance($sorted);
     }
 

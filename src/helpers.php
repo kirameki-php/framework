@@ -17,8 +17,10 @@ function app(): Application
 }
 
 /**
- * @param iterable|null $items
- * @return Collection
+ * @template TKey of array-key
+ * @template TValue
+ * @param iterable<TKey, TValue>|null $items
+ * @return Collection<TKey, TValue>
  */
 function collect(?iterable $items = null): Collection
 {
