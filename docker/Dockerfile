@@ -4,6 +4,8 @@ ENV PATH="${PATH}:/project/vendor/bin"
 ENV TERM xterm-256color
 ENV TZ Asia/Tokyo
 
+COPY docker/files /
+
 RUN set -e \
   && apk add --no-cache bash coreutils git icu-libs libxml2 libstdc++ tzdata \
   && apk add --no-cache --virtual=.build-deps autoconf curl-dev icu-dev libxml2-dev linux-headers gcc g++ make pcre-dev \

@@ -16,17 +16,6 @@ use function collect;
 
 class CollectionTest extends TestCase
 {
-    /**
-     * @template TKey of array-key
-     * @template TValue
-     * @param iterable<TKey, TValue>|null $items
-     * @return Collection<TKey, TValue>
-     */
-    protected function collect(?iterable $items = null): Collection
-    {
-        return new Collection($items);
-    }
-
     public function test__Construct(): void
     {
         // empty

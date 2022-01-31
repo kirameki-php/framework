@@ -8,12 +8,12 @@ use ArrayAccess;
  * @template TKey of array-key
  * @template TValue
  *
- * @extends  Sequence<TKey, TValue>
+ * @extends  Enumerable<TKey, TValue>
  * @implements ArrayAccess<TKey, TValue>
  *
  * @property array<TKey, TValue> $items
  */
-class Collection extends Sequence implements ArrayAccess
+class Collection extends Enumerable implements ArrayAccess
 {
     /**
      * @param iterable<TKey, TValue>|null $items

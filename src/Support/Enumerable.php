@@ -24,7 +24,7 @@ use function ksort;
  * @template TValue
  * @implements IteratorAggregate<TKey, TValue>
  */
-class Sequence implements Countable, IteratorAggregate, JsonSerializable
+class Enumerable implements Countable, IteratorAggregate, JsonSerializable
 {
     use Concerns\Macroable;
     use Concerns\Tappable;
@@ -73,6 +73,14 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
         foreach ($this->items as $key => $item) {
             yield $key => $item;
         }
+    }
+
+    /**
+     * @return array<TKey, TValue>
+     */
+    public function __debugInfo(): array
+    {
+        return $this->toArray();
     }
 
     /**
