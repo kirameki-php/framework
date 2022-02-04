@@ -62,7 +62,7 @@ class Arr
             if ($counter === $offset) {
                 return $val;
             }
-            $counter+= 1;
+            ++$counter;
         }
 
         return null;
@@ -272,7 +272,7 @@ class Arr
             $remaining--;
             if ($remaining === 0) {
                 $callback($chunk, $count);
-                $count += 1;
+                ++$count;
                 $remaining = $size;
                 $chunk = [];
             }
@@ -527,7 +527,7 @@ class Arr
      * @template TValue
      * @param iterable<TKey, TValue> $iterable
      * @param string|callable(TValue, TKey): mixed $key
-     * @return array<array<TKey, TValue>>
+     * @return array<array-key, array<int, TValue>>
      */
     public static function groupBy(iterable $iterable, string|callable $key): array
     {
@@ -596,7 +596,7 @@ class Arr
      */
     public static function isList(iterable $iterable): bool
     {
-        return array_is_list(is_array($iterable) ? $iterable : static::from($iterable));
+        return array_is_list(static::from($iterable));
     }
 
     /**
@@ -861,7 +861,7 @@ class Arr
             if (is_int($key)) {
                 $merged[] = $val;
             } else if ($depth > 1 && array_key_exists($key, $merged) && is_iterable($merged[$key]) && is_iterable($val)) {
-                $merged[$key] = static::mergeRecursive($merged[$key], $val, $depth - 1);
+                $merged[$key] = static::mergeRecursive($merged[$key], $val, $depth - 1); /* @phpstan-ignore-line */
             } else {
                 $merged[$key] = $val;
             }
@@ -870,7 +870,7 @@ class Arr
     }
 
     /**
-     * @template TKey as array-key
+     * @template TKey of array-key
      * @template TValue
      * @param iterable<TKey, TValue> $iterable
      * @return TValue
@@ -881,7 +881,7 @@ class Arr
     }
 
     /**
-     * @template TKey
+     * @template TKey of array-key
      * @template TValue
      * @param iterable<TKey, TValue> $iterable
      * @param callable(TValue, TKey): mixed $callback
@@ -1047,7 +1047,7 @@ class Arr
     /**
      * @template T
      * @param array<T> $array
-     * @param int|string $key
+     * @param array-key $key
      * @param bool $found
      * @return T|null
      */
@@ -1118,7 +1118,7 @@ class Arr
 
     /**
      * @param array<mixed> $array
-     * @param int|string $key
+     * @param array-key $key
      * @return bool
      */
     public static function removeKey(array &$array, int|string $key): bool
@@ -1282,7 +1282,7 @@ class Arr
     public static function shiftMany(array &$array, int $amount): array
     {
         Assert::greaterThanOrEqualTo(0, $amount);
-        return array_splice($array, $amount);
+        return array_values(array_splice($array, $amount));
     }
 
     /**
@@ -1388,7 +1388,7 @@ class Arr
      * @template TKey of array-key
      * @template TValue
      * @param iterable<TKey, TValue> $iterable
-     * @return array<TValue, int>
+     * @return array<array-key, int<0, max>>
      */
     public static function tally(iterable $iterable): array
     {
@@ -1445,7 +1445,7 @@ class Arr
             } else if (!array_key_exists($key, $union)) {
                 $union[$key] = $val;
             } else if ($depth > 1 && is_iterable($union[$key]) && is_iterable($val)) {
-                $union[$key] = static::unionRecursive($union[$key], $val, $depth - 1);
+                $union[$key] = static::unionRecursive($union[$key], $val, $depth - 1); /** @phpstan-ignore-line */
             }
         }
         return $union; /** @phpstan-ignore-line */
@@ -1454,7 +1454,7 @@ class Arr
     /**
      * @see uniqueBy for details
      *
-     * @template TKey
+     * @template TKey of array-key
      * @template TValue
      * @param iterable<TKey, TValue> $iterable
      * @return array<TKey, TValue>
@@ -1465,10 +1465,10 @@ class Arr
     }
 
     /**
-     * Must do custom unique because array_unique does a string convertion before comparing.
+     * Must do custom unique because array_unique does a string conversion before comparing.
      * For example, `[1, true, null, false]` will result in: `[0 => 1, 2 => null]` 🤦
      *
-     * @template TKey
+     * @template TKey of array-key
      * @template TValue
      * @param iterable<TKey, TValue> $iterable
      * @param callable(TValue, TKey): bool $callback
@@ -1482,14 +1482,10 @@ class Arr
             $ukey = $callback($val, $key);
             if (! in_array($ukey, $ukeys, true)) {
                 $ukeys[] = $ukey;
-                $preserved[] = [$key, $val];
+                $preserved[$key] = $val;
             }
         }
-        $results = [];
-        foreach ($preserved as $data) {
-            $results[$data[0]] = $data[1];
-        }
-        return $results;
+        return $preserved;
     }
 
     /**
@@ -1523,7 +1519,7 @@ class Arr
     public static function wrap(mixed $value): array
     {
         if (is_iterable($value)) {
-            $value = static::from($value);
+            $value = static::from($value); /** @phpstan-ignore-line */
         }
         if (is_array($value)) {
             return $value;
@@ -1532,7 +1528,7 @@ class Arr
     }
 
     /**
-     * @template TKey
+     * @template TKey of array-key
      * @template TValue
      * @param array<TKey, TValue> $array
      * @param array<TKey> $keys

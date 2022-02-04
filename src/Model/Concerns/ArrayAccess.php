@@ -33,8 +33,8 @@ trait ArrayAccess
      */
     public function offsetExists(mixed $offset): bool
     {
-        return isset($this->persistedProperties[$offset])
-            || isset($this->resolvedProperties[$offset]);
+        return isset($this->_persistedProperties[$offset])
+            || isset($this->_resolvedProperties[$offset]);
     }
 
     /**

@@ -5,10 +5,13 @@ namespace Kirameki\Model;
 use Closure;
 use Kirameki\Model\Relations\Relation;
 
+/**
+ * @template TModel of Model
+ */
 class Reflection
 {
     /**
-     * @var string
+     * @var class-string<TModel>
      */
     public string $class;
 
@@ -33,9 +36,9 @@ class Reflection
     public array $properties;
 
     /**
-     * @var Relation[]
+     * @var array<Relation<Model, Model>>
      */
-    public array $relations;
+    public array $relations; /** @phpstan-ignore-line */
 
     /**
      * @var Closure[]
@@ -43,7 +46,7 @@ class Reflection
     public array $scopes;
 
     /**
-     * @param string $class
+     * @param class-string<TModel> $class
      */
     public function __construct(string $class)
     {
@@ -53,9 +56,9 @@ class Reflection
     }
 
     /**
-     * @param array $properties
+     * @param array<string, mixed> $properties
      * @param bool $persisted
-     * @return Model
+     * @return TModel
      */
     public function makeModel(array $properties = [], bool $persisted = false): Model
     {

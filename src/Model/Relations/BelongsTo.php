@@ -2,6 +2,13 @@
 
 namespace Kirameki\Model\Relations;
 
+use Kirameki\Model\Model;
+
+/**
+ * @template TSrc of Model
+ * @template TDest of Model
+ * @template-extends OneToOne<TSrc, TDest>
+ */
 class BelongsTo extends OneToOne
 {
     /**
@@ -9,7 +16,15 @@ class BelongsTo extends OneToOne
      */
     public function getSrcKeyName(): string
     {
-        return $this->srcKey ??= lcfirst(class_basename($this->getDestReflection()->class)).'Id';
+        return $this->srcKey ??= $this->guessSrcKeyName();
+    }
+
+    /**
+     * @return string
+     */
+    protected function guessSrcKeyName(): string
+    {
+        return lcfirst(class_basename($this->getDestReflection()->class)).'Id';
     }
 
     /**

@@ -10,6 +10,10 @@ use Kirameki\Model\Reflection;
 use Kirameki\Model\ModelManager;
 use Kirameki\Support\Collection;
 
+/**
+ * @template TSrc of Model
+ * @template TDest of Model
+ */
 abstract class Relation
 {
     /**
@@ -23,17 +27,17 @@ abstract class Relation
     protected string $name;
 
     /**
-     * @var Reflection
+     * @var Reflection<TSrc>
      */
     protected Reflection $srcReflection;
 
     /**
-     * @var Reflection|null
+     * @var Reflection<TDest>|null
      */
     protected ?Reflection $destReflection;
 
     /**
-     * @var string
+     * @var class-string<TDest>
      */
     protected string $destClass;
 
@@ -60,8 +64,8 @@ abstract class Relation
     /**
      * @param ModelManager $manager
      * @param string $name
-     * @param Reflection $srcReflection
-     * @param string $destClass
+     * @param Reflection<TSrc> $srcReflection
+     * @param class-string<TDest> $destClass
      * @param string|null $srcKey
      * @param string|null $refKey
      * @param string|null $inverse
@@ -87,7 +91,7 @@ abstract class Relation
     }
 
     /**
-     * @return Reflection
+     * @return Reflection<TSrc>
      */
     public function getSrcReflection(): Reflection
     {
@@ -100,17 +104,17 @@ abstract class Relation
     abstract public function getSrcKeyName(): string;
 
     /**
-     * @param Model $model
-     * @return string|int|float
+     * @param TSrc $model
+     * @return int|string|null
      */
-    public function getSrcKey(Model $model): string|int|float
+    public function getSrcKey(Model $model): int|string|null
     {
-        return $model->getProperty($this->getSrcKeyName());
+        return $model->getProperty($this->getSrcKeyName()); /** @phpstan-ignore-line */
     }
 
     /**
-     * @param RelationCollection $models
-     * @return Collection
+     * @param RelationCollection<TSrc, TDest> $models
+     * @return Collection<int, array-key>
      */
     public function getSrcKeys(RelationCollection $models): Collection
     {
@@ -118,7 +122,7 @@ abstract class Relation
     }
 
     /**
-     * @return Reflection
+     * @return Reflection<TDest>
      */
     public function getDestReflection(): Reflection
     {
@@ -151,7 +155,7 @@ abstract class Relation
     }
 
     /**
-     * @return QueryBuilder
+     * @return QueryBuilder<TDest>
      */
     public function buildQuery(): QueryBuilder
     {
@@ -166,14 +170,14 @@ abstract class Relation
     }
 
     /**
-     * @param Model $target
-     * @return Model|RelationCollection<Model>
+     * @param TSrc $target
+     * @return TDest|RelationCollection<TSrc, TDest>|null
      */
-    abstract public function loadOnModel(Model $target): Model|RelationCollection;
+    abstract public function loadOnModel(Model $target): Model|RelationCollection|null;
 
     /**
-     * @param ModelCollection $targets
-     * @return Model|ModelCollection<Model>
+     * @param ModelCollection<int, TSrc> $targets
+     * @return TDest|RelationCollection<TSrc, TDest>
      */
-    abstract public function loadOnCollection(ModelCollection $targets): ModelCollection|Model;
+    abstract public function loadOnCollection(ModelCollection $targets): RelationCollection|Model;
 }

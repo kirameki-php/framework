@@ -28,9 +28,9 @@ trait Reflect
     }
 
     /**
-     * @return Reflection
+     * @return Reflection<static>
      */
-    protected static function getReflection(): Reflection
+    public static function getReflection(): Reflection
     {
         if (static::$reflection === null) {
             $modelClass = static::class;

@@ -43,12 +43,12 @@ class Enumerable implements Countable, IteratorAggregate, JsonSerializable
     }
 
     /**
-     * @template TNewKey
+     * @template TNewKey of array-key
      * @template TNewValue
      * @param iterable<TNewKey, TNewValue> $items
-     * @return static
+     * @return static<TNewKey, TNewValue>
      */
-    public function newInstance(iterable $items = []): static
+    public function newInstance(iterable $items = []): static /** @phpstan-ignore-line */
     {
         return new static($items);
     }
@@ -118,7 +118,7 @@ class Enumerable implements Countable, IteratorAggregate, JsonSerializable
     }
 
     /**
-     * @param int $size
+     * @param int<1, max> $size
      * @return static<int, static<TKey, TValue>>
      */
     public function chunk(int $size): self
@@ -475,11 +475,11 @@ class Enumerable implements Countable, IteratorAggregate, JsonSerializable
     }
 
     /**
-     * @param string|callable $key
+     * @param string|callable(TValue, mixed): array-key $key
      * @param bool $overwrite
-     * @return static
+     * @return static<array-key, TValue>
      */
-    public function keyBy(string|callable $key, bool $overwrite = false): static
+    public function keyBy(string|callable $key, bool $overwrite = false): static /** @phpstan-ignore-line */
     {
         return $this->newInstance(Arr::keyBy($this->items, $key, $overwrite));
     }
@@ -876,7 +876,7 @@ class Enumerable implements Countable, IteratorAggregate, JsonSerializable
     }
 
     /**
-     * @return Collection<array-key, int>
+     * @return Collection<array-key, int<0, max>>
      */
     public function tally(): Collection
     {

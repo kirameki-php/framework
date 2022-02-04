@@ -6,30 +6,35 @@ use Kirameki\Model\ModelCollection;
 use Kirameki\Model\Model;
 use Kirameki\Model\Reflection;
 
+/**
+ * @template TSrc of Model
+ * @template TDest of Model
+ * @extends ModelCollection<int, TDest>
+ */
 class RelationCollection extends ModelCollection
 {
     /**
-     * @var Relation
+     * @var Relation<TSrc, TDest>
      */
     protected Relation $relation;
 
     /**
-     * @var Model
+     * @var TSrc
      */
     protected Model $parent;
 
     /**
-     * @var Model[]
+     * @var iterable<int, TDest>
      */
     protected iterable $items;
 
     /**
-     * @param Relation $relation
-     * @param Model $parent
-     * @param Reflection $reflection
-     * @param Model[] $models
+     * @param Relation<TSrc, TDest> $relation
+     * @param TSrc $parent
+     * @param Reflection<TDest> $reflection
+     * @param iterable<int, TDest> $models
      */
-    public function __construct(Relation $relation, Model $parent, Reflection $reflection, array $models = [])
+    public function __construct(Relation $relation, Model $parent, Reflection $reflection, iterable $models)
     {
         parent::__construct($reflection, $models);
         $this->relation = $relation;
@@ -43,7 +48,7 @@ class RelationCollection extends ModelCollection
     }
 
     /**
-     * @return Relation
+     * @return Relation<TSrc, TDest>
      */
     public function getRelation(): Relation
     {
@@ -59,8 +64,8 @@ class RelationCollection extends ModelCollection
     }
 
     /**
-     * @param array $properties
-     * @return Model
+     * @param array<string, mixed> $properties
+     * @return TDest
      */
     public function make(array $properties = []): Model
     {
@@ -69,8 +74,8 @@ class RelationCollection extends ModelCollection
     }
 
     /**
-     * @param array $properties
-     * @return Model
+     * @param array<string, mixed> $properties
+     * @return TDest
      */
     public function create(array $properties = []): Model
     {
@@ -80,16 +85,15 @@ class RelationCollection extends ModelCollection
     }
 
     /**
-     * @param Model $model
-     * @return Model
+     * @template TRefModel of Model
+     * @param TRefModel $model
+     * @return TRefModel
      */
     protected function setRelatedKeys(Model $model): Model
     {
-        if ($this->parent) {
-            $parentKeyName = $this->relation->getDestKeyName();
-            $parentKey = $this->parent->getProperty($this->relation->getSrcKeyName());
-            $model->setProperty($parentKeyName, $parentKey);
-        }
+        $parentKeyName = $this->relation->getDestKeyName();
+        $parentKey = $this->parent->getProperty($this->relation->getSrcKeyName());
+        $model->setProperty($parentKeyName, $parentKey);
         return $model;
     }
 

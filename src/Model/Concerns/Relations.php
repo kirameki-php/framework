@@ -28,7 +28,8 @@ trait Relations
     }
 
     /**
-     * @param Model|RelationCollection $target
+     * @template TModel of Model
+     * @param TModel|RelationCollection<TModel> $target
      * @param array $names
      */
     protected function preloadRecursive(RelationCollection|Model $target, array $names): void
@@ -85,13 +86,14 @@ trait Relations
     }
 
     /**
-     * @param Model|RelationCollection $target
+     * @template TModel of Model
+     * @param TModel|RelationCollection<TModel> $target
      * @param string $name
-     * @return Model|RelationCollection
+     * @return TModel|RelationCollection<TModel>
      */
     protected function loadRelation(RelationCollection|Model $target, string $name): RelationCollection|Model
     {
-        if ($target instanceof ModelCollection) {
+        if ($target instanceof RelationCollection) {
             $relation = $target->getModelReflection()->relations[$name];
             return $relation->loadOnCollection($target);
         }
@@ -101,13 +103,14 @@ trait Relations
     }
 
     /**
+     * @template TModel of Model
      * @param string $name
-     * @param $models
+     * @param TModel|iterable<int, TModel> $models
      * @return $this
      */
-    public function setRelation(string $name, $models): static
+    public function setRelation(string $name, mixed $models): static
     {
-        $this->relations[$name] = $models;
+        $this->relations[$name] = Arr::from($models);
         return $this;
     }
 }

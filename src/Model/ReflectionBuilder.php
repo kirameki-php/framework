@@ -6,6 +6,9 @@ use Closure;
 use Kirameki\Model\Relations\BelongsTo;
 use Kirameki\Model\Relations\HasMany;
 
+/**
+ * @template TModel of Model
+ */
 class ReflectionBuilder
 {
     /**
@@ -14,13 +17,13 @@ class ReflectionBuilder
     protected ModelManager $manager;
 
     /**
-     * @var Reflection
+     * @var Reflection<TModel>
      */
     protected Reflection $reflection;
 
     /**
      * @param ModelManager $manager
-     * @param Reflection $reflection
+     * @param Reflection<TModel> $reflection
      */
     public function __construct(ModelManager $manager, Reflection $reflection)
     {
@@ -59,8 +62,9 @@ class ReflectionBuilder
     }
 
     /**
+     * @template TDest of Model
      * @param string $name
-     * @param string $class
+     * @param class-string<TDest> $class
      * @param string|null $foreignKey
      * @param string|null $referenceKey
      * @param string|null $inverseOf
@@ -71,8 +75,9 @@ class ReflectionBuilder
     }
 
     /**
+     * @template TDest of Model
      * @param string $name
-     * @param string $class
+     * @param class-string<TDest> $class
      * @param string|null $foreignKey
      * @param string|null $referenceKey
      * @param string|null $inverseOf
@@ -84,7 +89,7 @@ class ReflectionBuilder
 
     /**
      * @param string $name
-     * @param Closure<QueryBuilder> $callback
+     * @param Closure(QueryBuilder<TModel>):void $callback
      */
     public function scope(string $name, Closure $callback): void
     {
@@ -97,7 +102,7 @@ class ReflectionBuilder
      */
     public function applyDefaultsIfOmitted(): void
     {
-        $this->reflection->connection ??= config()->get('database.default');
+        $this->reflection->connection ??= config()->getString('database.default');
         $this->reflection->table ??= class_basename($this->reflection->class);
     }
 }

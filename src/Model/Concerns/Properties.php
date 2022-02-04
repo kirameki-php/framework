@@ -16,7 +16,7 @@ trait Properties
      *
      * @var array
      */
-    protected array $persistedProperties = [];
+    protected array $_persistedProperties = [];
 
     /**
      * Stores and caches properties that were casted.
@@ -24,14 +24,14 @@ trait Properties
      *
      * @var array
      */
-    protected array $resolvedProperties = [];
+    protected array $_resolvedProperties = [];
 
     /**
      * Stores initial values for properties that were changed.
      *
      * @var array
      */
-    protected array $changedProperties = [];
+    protected array $_changedProperties = [];
 
     /**
      * Stores previous value of properties.
@@ -39,7 +39,7 @@ trait Properties
      *
      * @var array
      */
-    protected array $previousProperties = [];
+    protected array $_previousProperties = [];
 
     /**
      * @return string[]
@@ -79,14 +79,14 @@ trait Properties
      */
     public function getProperty(string $name): mixed
     {
-        if (array_key_exists($name, $this->resolvedProperties)) {
-            return $this->resolvedProperties[$name];
+        if (array_key_exists($name, $this->_resolvedProperties)) {
+            return $this->_resolvedProperties[$name];
         }
 
         $property = static::getReflection()->properties[$name];
 
-        $value = isset($this->persistedProperties[$name])
-            ? $property->cast->get($this, $name, $this->persistedProperties[$name])
+        $value = isset($this->_persistedProperties[$name])
+            ? $property->cast->get($this, $name, $this->_persistedProperties[$name])
             : null;
 
         $this->cacheResolved($name, $value);
@@ -121,7 +121,7 @@ trait Properties
      */
     protected function setPersistedProperties(array $properties): static
     {
-        $this->persistedProperties = $properties;
+        $this->_persistedProperties = $properties;
         return $this;
     }
 
@@ -145,7 +145,7 @@ trait Properties
      */
     protected function cacheResolved(string $name, $value): static
     {
-        $this->resolvedProperties[$name] = $value;
+        $this->_resolvedProperties[$name] = $value;
         return $this;
     }
 
@@ -154,7 +154,7 @@ trait Properties
      */
     public function clearResultCache(): static
     {
-        $this->resolvedProperties = [];
+        $this->_resolvedProperties = [];
         return $this;
     }
 
@@ -164,7 +164,7 @@ trait Properties
      */
     public function isResultCached(string $name): bool
     {
-        return array_key_exists($name, $this->resolvedProperties);
+        return array_key_exists($name, $this->_resolvedProperties);
     }
 
     /**
@@ -174,10 +174,10 @@ trait Properties
      */
     protected function markAsDirty(string $name, $oldValue): static
     {
-        if (!array_key_exists($name, $this->changedProperties)) {
-            $this->changedProperties[$name] = $oldValue;
+        if (!array_key_exists($name, $this->_changedProperties)) {
+            $this->_changedProperties[$name] = $oldValue;
         }
-        $this->previousProperties[$name] = $oldValue;
+        $this->_previousProperties[$name] = $oldValue;
         return $this;
     }
 
@@ -187,8 +187,8 @@ trait Properties
      */
     public function getInitialProperty(string $name = null): mixed
     {
-        return array_key_exists($name, $this->changedProperties)
-            ? $this->changedProperties[$name]
+        return array_key_exists($name, $this->_changedProperties)
+            ? $this->_changedProperties[$name]
             : $this->getProperty($name);
     }
 
@@ -210,7 +210,7 @@ trait Properties
      */
     public function getPreviousProperty(string $name): mixed
     {
-        return $this->previousProperties[$name] ?? null;
+        return $this->_previousProperties[$name] ?? null;
     }
 
     /**
@@ -218,7 +218,7 @@ trait Properties
      */
     public function getPreviousProperties(): array
     {
-        return $this->previousProperties;
+        return $this->_previousProperties;
     }
 
     /**
@@ -228,8 +228,8 @@ trait Properties
     public function isDirty(string $name = null): bool
     {
         return $name !== null
-            ? array_key_exists($name, $this->previousProperties)
-            : !empty($this->previousProperties);
+            ? array_key_exists($name, $this->_previousProperties)
+            : !empty($this->_previousProperties);
     }
 
     /**
@@ -238,7 +238,7 @@ trait Properties
     public function getDirtyProperties(): array
     {
         $props = [];
-        foreach ($this->previousProperties as $name => $_) {
+        foreach ($this->_previousProperties as $name => $_) {
             $props[$name] = $this->getProperty($name);
         }
         return $props;
@@ -249,7 +249,7 @@ trait Properties
      */
     public function clearDirty(): static
     {
-        $this->previousProperties = [];
+        $this->_previousProperties = [];
         return $this;
     }
 
@@ -258,8 +258,8 @@ trait Properties
      */
     public function clearChanges(): static
     {
-        $this->changedProperties = [];
-        $this->previousProperties = [];
+        $this->_changedProperties = [];
+        $this->_previousProperties = [];
         return $this;
     }
 }

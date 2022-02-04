@@ -8,6 +8,9 @@ use Kirameki\Database\Query\Statements\SelectStatement;
 use Kirameki\Database\Support\Expr;
 use Kirameki\Support\Collection;
 
+/**
+ * @property SelectStatement $statement
+ */
 class SelectBuilder extends ConditionsBuilder
 {
     /**
@@ -226,7 +229,7 @@ class SelectBuilder extends ConditionsBuilder
     }
 
     /**
-     * @return array
+     * @return array<mixed>
      */
     protected function execSelect(): array
     {

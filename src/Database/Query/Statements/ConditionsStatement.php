@@ -10,7 +10,7 @@ abstract class ConditionsStatement extends BaseStatement
     public ?array $where = null;
 
     /**
-     * @var array|null
+     * @var array<string, string>|null
      */
     public ?array $orderBy = null;
 

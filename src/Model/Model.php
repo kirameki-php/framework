@@ -6,15 +6,18 @@ use ArrayAccess;
 use JsonSerializable;
 use RuntimeException;
 
+/**
+ * @implements ArrayAccess<string, mixed>
+ */
 abstract class Model implements ArrayAccess, JsonSerializable
 {
-    use Concerns\ArrayAccess,
-        Concerns\Compare,
-        Concerns\Reflect,
-        Concerns\JsonSerialize,
-        Concerns\Persistence,
-        Concerns\Properties,
-        Concerns\Relations;
+    use Concerns\ArrayAccess;
+    use Concerns\Compare;
+    use Concerns\JsonSerialize;
+    use Concerns\Persistence;
+    use Concerns\Properties;
+    use Concerns\Reflect;
+    use Concerns\Relations;
 
     /**
      * @var ModelManager
@@ -30,7 +33,7 @@ abstract class Model implements ArrayAccess, JsonSerializable
     }
 
     /**
-     * @return ModelManager $manager
+     * @return ModelManager
      */
     protected static function getManager(): ModelManager
     {
@@ -38,7 +41,7 @@ abstract class Model implements ArrayAccess, JsonSerializable
     }
 
     /**
-     * @return QueryBuilder
+     * @return QueryBuilder<static>
      */
     public static function query(): QueryBuilder
     {
@@ -48,14 +51,14 @@ abstract class Model implements ArrayAccess, JsonSerializable
     }
 
     /**
-     * @param array $properties
+     * @param array<string, mixed> $properties
      * @param bool $persisted
      */
     public function __construct(array $properties = [], bool $persisted = false)
     {
         static::getReflection();
 
-        $this->persisted = $persisted;
+        $this->_persisted = $persisted;
 
         if ($persisted) {
             // persisted properties are set directly as raw uncasted value
@@ -70,7 +73,7 @@ abstract class Model implements ArrayAccess, JsonSerializable
 
     /**
      * @param string $name
-     * @return mixed|null
+     * @return mixed
      */
     public function __get(string $name)
     {
@@ -85,11 +88,12 @@ abstract class Model implements ArrayAccess, JsonSerializable
 
     /**
      * @param string $name
-     * @param $value
+     * @param mixed $value
      */
     public function __set(string $name, $value): void
     {
         if ($this->isRelation($name)) {
+            /** @var iterable<int, static> $value */
             $this->setRelation($name, $value);
         }
         elseif ($this->isProperty($name)) {
@@ -118,9 +122,9 @@ abstract class Model implements ArrayAccess, JsonSerializable
     }
 
     /**
-     * @param array $attributes
+     * @param array<string, mixed> $attributes
      * @param bool $persisted
-     * @return $this
+     * @return static
      */
     public function newInstance(array $attributes = [], $persisted = false): static
     {

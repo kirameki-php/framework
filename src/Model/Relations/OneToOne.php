@@ -5,17 +5,26 @@ namespace Kirameki\Model\Relations;
 use Kirameki\Model\Model;
 use Kirameki\Model\ModelCollection;
 
+/**
+ * @template TSrc of Model
+ * @template TDest of Model
+ * @template-extends Relation<TSrc, TDest>
+ */
 abstract class OneToOne extends Relation
 {
     /**
-     * @param Model $target
-     * @return Model
+     * @param TSrc $target
+     * @return TDest|null
      */
-    public function loadOnModel(Model $target): Model
+    public function loadOnModel(Model $target): ?Model
     {
         $model = $this->buildQuery()
             ->where($this->getDestKeyName(), $this->getSrcKey($target))
             ->first();
+
+        if ($model === null) {
+            return null;
+        }
 
         $target->setRelation($this->name, $model);
 
@@ -29,10 +38,10 @@ abstract class OneToOne extends Relation
     }
 
     /**
-     * @param ModelCollection $targets
-     * @return ModelCollection
+     * @param ModelCollection<int, TSrc> $targets
+     * @return RelationCollection<TSrc, TDest>
      */
-    public function loadOnCollection(ModelCollection $targets): ModelCollection
+    public function loadOnCollection(ModelCollection $targets): RelationCollection
     {
         $mappedTargets = $targets->keyBy($this->getSrcKeyName())->compact();
 

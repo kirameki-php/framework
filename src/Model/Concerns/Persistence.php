@@ -17,17 +17,17 @@ trait Persistence
     /**
      * @var bool
      */
-    public bool $persisted = false;
+    public bool $_persisted = false;
 
     /**
      * @var bool
      */
-    public bool $deleted = false;
+    public bool $_deleted = false;
 
     /**
      * @var bool
      */
-    protected bool $processing = false;
+    protected bool $_processing = false;
 
     /**
      * @return $this
@@ -74,7 +74,7 @@ trait Persistence
      */
     public function isNewRecord(): bool
     {
-        return !$this->persisted && !$this->deleted;
+        return !$this->_persisted && !$this->_deleted;
     }
 
     /**
@@ -82,7 +82,7 @@ trait Persistence
      */
     public function isPersisted(): bool
     {
-        return $this->persisted && !$this->deleted;
+        return $this->_persisted && !$this->_deleted;
     }
 
     /**
@@ -99,10 +99,10 @@ trait Persistence
                 ->where($this->getPrimaryKeyName(), $this->getPrimaryKey())
                 ->execute();
 
-            $this->deleted = $count > 0;
+            $this->_deleted = $count > 0;
         });
 
-        return $this->deleted;
+        return $this->_deleted;
     }
 
     /**
@@ -110,7 +110,7 @@ trait Persistence
      */
     public function isDeleted(): bool
     {
-        return $this->deleted;
+        return $this->_deleted;
     }
 
     /**
@@ -119,13 +119,13 @@ trait Persistence
     protected function processing(Closure $callback): void
     {
         try {
-            if (!$this->processing) {
-                $this->processing = true;
+            if (!$this->_processing) {
+                $this->_processing = true;
                 $callback($this->getConnection());
             }
         }
         finally {
-            $this->processing = false;
+            $this->_processing = false;
         }
     }
 
@@ -140,6 +140,7 @@ trait Persistence
         }
         return $properties;
     }
+
     /**
      * @return array
      */

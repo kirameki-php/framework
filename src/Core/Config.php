@@ -5,10 +5,13 @@ namespace Kirameki\Core;
 use ArrayAccess;
 use RuntimeException;
 
+/**
+ * @template-implements ArrayAccess<array-key, mixed>
+ */
 class Config implements ArrayAccess
 {
     /**
-     * @var array
+     * @var array<array-key, mixed>
      */
     protected array $entries;
 
@@ -19,16 +22,23 @@ class Config implements ArrayAccess
     public static function fromDirectory(string $dir): static
     {
         $entries = [];
-        foreach (scandir($dir) as $file) {
+        $files = scandir($dir);
+
+        if ($files === false) {
+            throw new RuntimeException($dir.' is not a directory');
+        }
+
+        foreach ($files as $file) {
             if (str_ends_with($file, '.php')) {
                 $entries[substr(basename($file), 0, -4)] = require $dir.'/'.$file;
             }
         }
+
         return new static($entries);
     }
 
     /**
-     * @param array $entries
+     * @param array<array-key, mixed> $entries
      */
     public function __construct(array &$entries)
     {
@@ -36,7 +46,7 @@ class Config implements ArrayAccess
     }
 
     /**
-     * @return array
+     * @return array<array-key, mixed>
      */
     public function all(): array
     {
@@ -67,7 +77,7 @@ class Config implements ArrayAccess
      */
     public function getString(string $key): string
     {
-        return $this->getOrFail($key);
+        return $this->getOrFail($key); /** @phpstan-ignore-line */
     }
 
     /**
@@ -76,7 +86,7 @@ class Config implements ArrayAccess
      */
     public function getStringOrNull(string $key): string|null
     {
-        return $this->get($key);
+        return $this->get($key); /** @phpstan-ignore-line */
     }
 
     /**
@@ -148,14 +158,14 @@ class Config implements ArrayAccess
         foreach (explode('.', $name) as $segment) {
             $ptr = &$ptr[$segment];
         }
-        return new Config($ptr);
+        return new static($ptr);
     }
 
     /**
      * @param mixed $offset
      * @return bool
      */
-    public function offsetExists($offset): bool
+    public function offsetExists(mixed $offset): bool
     {
         return isset($this->entries);
     }
@@ -164,7 +174,7 @@ class Config implements ArrayAccess
      * @param mixed $offset
      * @return mixed
      */
-    public function offsetGet($offset): mixed
+    public function offsetGet(mixed $offset): mixed
     {
         return $this->entries[$offset];
     }
@@ -174,7 +184,7 @@ class Config implements ArrayAccess
      * @param mixed $value
      * @return void
      */
-    public function offsetSet($offset, $value): void
+    public function offsetSet(mixed $offset, mixed $value): void
     {
         $this->entries[$offset] = $value;
     }
@@ -183,7 +193,7 @@ class Config implements ArrayAccess
      * @param mixed $offset
      * @return void
      */
-    public function offsetUnset($offset): void
+    public function offsetUnset(mixed $offset): void
     {
         unset($this->entries[$offset]);
     }

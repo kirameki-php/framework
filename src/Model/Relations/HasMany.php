@@ -6,6 +6,11 @@ use Kirameki\Model\Model;
 use Kirameki\Model\ModelCollection;
 use Kirameki\Support\Collection;
 
+/**
+ * @template TSrc of Model
+ * @template TDest of Model
+ * @template-extends Relation<TSrc, TDest>
+ */
 class HasMany extends Relation
 {
     /**
@@ -21,12 +26,20 @@ class HasMany extends Relation
      */
     public function getDestKeyName(): string
     {
-        return $this->destKey ??= lcfirst(class_basename($this->getSrcReflection()->class)).'Id';
+        return $this->destKey ??= $this->guessDestKeyName();
     }
 
     /**
-     * @param Model $target
-     * @return Model|RelationCollection<Model>
+     * @return string
+     */
+    public function guessDestKeyName(): string
+    {
+        return lcfirst(class_basename($this->getSrcReflection()->class)).'Id';
+    }
+
+    /**
+     * @param TSrc $target
+     * @return TDest|RelationCollection<TSrc, TDest>
      */
     public function loadOnModel(Model $target): Model|RelationCollection
     {
@@ -34,7 +47,7 @@ class HasMany extends Relation
             ->where($this->getDestKeyName(), $this->getSrcKey($target))
             ->all();
 
-        $collection = new RelationCollection($this, $target, $target->getReflection(), $models->toArray());
+        $collection = new RelationCollection($this, $target, $this->getDestReflection(), $models->toArray());
 
         $target->setRelation($this->getName(), $collection);
 
@@ -42,10 +55,10 @@ class HasMany extends Relation
     }
 
     /**
-     * @param ModelCollection $targets
-     * @return ModelCollection
+     * @param ModelCollection<int, TSrc> $targets
+     * @return RelationCollection<TSrc, TDest>
      */
-    public function loadOnCollection(ModelCollection $targets): ModelCollection
+    public function loadOnCollection(ModelCollection $targets): RelationCollection
     {
         $mappedTargets = $targets->keyBy($this->getSrcKeyName())->compact();
 
