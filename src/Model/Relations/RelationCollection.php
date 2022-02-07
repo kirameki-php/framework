@@ -39,13 +39,7 @@ class RelationCollection extends ModelCollection
         parent::__construct($reflection, $models);
         $this->relation = $relation;
         $this->parent = $parent;
-
-        if ($inverse = $relation->getInverseName()) {
-            foreach ($models as $model) {
-                $model->setRelation($inverse, $parent);
-            }
-        }
-    }
+   }
 
     /**
      * @return Relation<TSrc, TDest>
@@ -69,7 +63,8 @@ class RelationCollection extends ModelCollection
      */
     public function make(array $properties = []): Model
     {
-        return $this->setRelatedKeys($this->reflection->makeModel($properties));
+        $model = $this->reflection->makeModel($properties);
+        return $this->setRelatedKeys($model);
     }
 
     /**
