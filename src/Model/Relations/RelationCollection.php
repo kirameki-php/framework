@@ -69,8 +69,7 @@ class RelationCollection extends ModelCollection
      */
     public function make(array $properties = []): Model
     {
-        $model = $this->reflection->makeModel($properties);
-        return $this->setRelatedKeys($model);
+        return $this->setRelatedKeys($this->reflection->makeModel($properties));
     }
 
     /**
@@ -79,15 +78,23 @@ class RelationCollection extends ModelCollection
      */
     public function create(array $properties = []): Model
     {
-        $model = $this->make($properties);
-        $model->save();
-        return $model;
+        return $this->make($properties)->save();
     }
 
     /**
-     * @template TRefModel of Model
-     * @param TRefModel $model
-     * @return TRefModel
+     * @return void
+     */
+    public function save(): void
+    {
+        foreach ($this->items as $item) {
+            $item->save();
+        }
+    }
+
+    /**
+     * @template UDest of Model
+     * @param UDest $model
+     * @return UDest
      */
     protected function setRelatedKeys(Model $model): Model
     {
@@ -95,15 +102,5 @@ class RelationCollection extends ModelCollection
         $parentKey = $this->parent->getProperty($this->relation->getSrcKeyName());
         $model->setProperty($parentKeyName, $parentKey);
         return $model;
-    }
-
-    /**
-     * @return void
-     */
-    public function saveAll(): void
-    {
-        foreach ($this->items as $item) {
-            $item->save();
-        }
     }
 }

@@ -4,7 +4,6 @@ namespace Kirameki\Model\Relations;
 
 use Kirameki\Model\Model;
 use Kirameki\Model\ModelCollection;
-use Kirameki\Support\Collection;
 
 /**
  * @template TSrc of Model
@@ -38,42 +37,37 @@ class HasMany extends Relation
     }
 
     /**
-     * @param TSrc $target
-     * @return TDest|RelationCollection<TSrc, TDest>
+     * @param TSrc $srcModel
+     * @param ModelCollection<int, TDest> $destModels
+     * @return void
      */
-    public function loadOnModel(Model $target): Model|RelationCollection
+    protected function setDestToSrc(Model $srcModel, ModelCollection $destModels): void
     {
-        $models = $this->buildQuery()
-            ->where($this->getDestKeyName(), $this->getSrcKey($target))
-            ->all();
-
-        $collection = new RelationCollection($this, $target, $this->getDestReflection(), $models->toArray());
-
-        $target->setRelation($this->getName(), $collection);
-
-        return $collection;
+        $srcModel->setRelation($this->getName(), $this->toRelationCollection($srcModel, $destModels));
+        $this->setInverseRelations($srcModel, $destModels);
     }
 
     /**
-     * @param ModelCollection<int, TSrc> $targets
+     * @param TSrc $srcModel
+     * @param iterable<int, TDest> $destModels
      * @return RelationCollection<TSrc, TDest>
      */
-    public function loadOnCollection(ModelCollection $targets): RelationCollection
+    protected function toRelationCollection(Model $srcModel, iterable $destModels): RelationCollection
     {
-        $mappedTargets = $targets->keyBy($this->getSrcKeyName())->compact();
+        return new RelationCollection($this, $srcModel, $this->getDestReflection(), $destModels);
+    }
 
-        $relationName = $this->getName();
-        $relationModels = $this->buildQuery()->where($this->getDestKeyName(), $mappedTargets->keys())->all();
-        $groupedRelationModels = $relationModels->groupBy($this->getDestKeyName());
-        $destReflection = $this->getDestReflection();
-
-        foreach ($mappedTargets->keys() as $key) {
-            if ($target = $mappedTargets->get($key)) {
-                $models = ($groupedRelationModels[$key] ?? new Collection())->toArray();
-                $target->setRelation($relationName, new RelationCollection($this, $target, $destReflection, $models));
+    /**
+     * @param TSrc $srcModel
+     * @param iterable<TDest> $destModels
+     * @return void
+     */
+    protected function setInverseRelations(Model $srcModel, iterable $destModels): void
+    {
+        if ($inverse = $this->getInverseName()) {
+            foreach ($destModels as $destModel) {
+                $destModel->setRelation($inverse, $srcModel);
             }
         }
-
-        return $relationModels;
     }
 }

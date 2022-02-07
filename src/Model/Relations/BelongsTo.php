@@ -3,13 +3,14 @@
 namespace Kirameki\Model\Relations;
 
 use Kirameki\Model\Model;
+use Kirameki\Model\ModelCollection;
 
 /**
  * @template TSrc of Model
  * @template TDest of Model
- * @template-extends OneToOne<TSrc, TDest>
+ * @template-extends Relation<TSrc, TDest>
  */
-class BelongsTo extends OneToOne
+class BelongsTo extends Relation
 {
     /**
      * @return string
@@ -33,5 +34,15 @@ class BelongsTo extends OneToOne
     public function getDestKeyName(): string
     {
         return $this->destKey ??= $this->getDestReflection()->primaryKey;
+    }
+
+    /**
+     * @param TSrc $srcModel
+     * @param ModelCollection<int, TDest> $destModels
+     * @return void
+     */
+    protected function setDestToSrc(Model $srcModel, ModelCollection $destModels): void
+    {
+        $srcModel->setRelation($this->getName(), $destModels[0]);
     }
 }

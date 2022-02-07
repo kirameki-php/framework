@@ -365,7 +365,7 @@ class ConditionBuilder
      */
     public function parameter(mixed $value): static
     {
-        $value = is_array($value) ? $value : [$value];
+        $value = is_iterable($value) ? $value : [$value];
         $this->current->parameters = [];
         foreach ($value as $name => $binding) {
             is_string($name)

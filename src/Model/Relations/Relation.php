@@ -105,20 +105,11 @@ abstract class Relation
 
     /**
      * @param TSrc $model
-     * @return int|string|null
+     * @return scalar
      */
-    public function getSrcKey(Model $model): int|string|null
+    public function getSrcKey(Model $model): mixed
     {
         return $model->getProperty($this->getSrcKeyName()); /** @phpstan-ignore-line */
-    }
-
-    /**
-     * @param RelationCollection<TSrc, TDest> $models
-     * @return Collection<int, array-key>
-     */
-    public function getSrcKeys(RelationCollection $models): Collection
-    {
-        return $models->pluck($this->getSrcKeyName());
     }
 
     /**
@@ -157,7 +148,7 @@ abstract class Relation
     /**
      * @return QueryBuilder<TDest>
      */
-    public function buildQuery(): QueryBuilder
+    protected function buildQuery(): QueryBuilder
     {
         $db = $this->manager->getDatabaseManager();
         $query = new QueryBuilder($db, $this->getDestReflection());
@@ -170,14 +161,41 @@ abstract class Relation
     }
 
     /**
-     * @param TSrc $target
-     * @return TDest|RelationCollection<TSrc, TDest>|null
+     * @param iterable<array-key> $srcKeys
+     * @return ModelCollection<int, TDest>
      */
-    abstract public function loadOnModel(Model $target): Model|RelationCollection|null;
+    protected function getDestModels(iterable $srcKeys): ModelCollection
+    {
+        return $this->buildQuery()
+            ->where($this->getDestKeyName(), $srcKeys)
+            ->all();
+    }
 
     /**
-     * @param ModelCollection<int, TSrc> $targets
-     * @return TDest|RelationCollection<TSrc, TDest>
+     * @param ModelCollection<int, TSrc> $srcModels
+     * @return ModelCollection<int, TDest>
      */
-    abstract public function loadOnCollection(ModelCollection $targets): RelationCollection|Model;
+    public function load(iterable $srcModels): ModelCollection
+    {
+        $mappedSrcModels = (new Collection($srcModels))
+            ->keyBy($this->getSrcKeyName())
+            ->compact();
+
+        $destModels = $this->getDestModels($mappedSrcModels->keys());
+
+        $destModelsGroupedByKey = $destModels->groupBy($this->getDestKeyName());
+
+        foreach ($destModelsGroupedByKey as $key => $groupedDestModels) {
+            $this->setDestToSrc($mappedSrcModels[$key], $groupedDestModels);
+        }
+
+        return $destModels;
+    }
+
+    /**
+     * @param TSrc $srcModel
+     * @param ModelCollection<int, TDest> $destModels
+     * @return void
+     */
+    abstract protected function setDestToSrc(Model $srcModel, ModelCollection $destModels): void;
 }

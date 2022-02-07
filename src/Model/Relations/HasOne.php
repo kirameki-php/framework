@@ -3,13 +3,14 @@
 namespace Kirameki\Model\Relations;
 
 use Kirameki\Model\Model;
+use Kirameki\Model\ModelCollection;
 
 /**
  * @template TSrc of Model
  * @template TDest of Model
- * @template-extends OneToOne<TSrc, TDest>
+ * @template-extends Relation<TSrc, TDest>
  */
-class HasOne extends OneToOne
+class HasOne extends Relation
 {
     /**
      * @return string
@@ -35,4 +36,27 @@ class HasOne extends OneToOne
         return lcfirst(class_basename($this->getSrcReflection()->class)).'Id';
     }
 
+    /**
+     * @param TSrc $srcModel
+     * @param ModelCollection<int, TDest> $destModels
+     * @return void
+     */
+    protected function setDestToSrc(Model $srcModel, ModelCollection $destModels): void
+    {
+        $destModel = $destModels[0];
+        $srcModel->setRelation($this->getName(), $destModel);
+        $this->setInverseRelations($srcModel, $destModel);
+    }
+
+    /**
+     * @param TSrc $srcModel
+     * @param TDest $destModel
+     * @return void
+     */
+    protected function setInverseRelations(Model $srcModel, Model $destModel): void
+    {
+        if ($inverse = $this->getInverseName()) {
+            $destModel->setRelation($inverse, $srcModel);
+        }
+    }
 }

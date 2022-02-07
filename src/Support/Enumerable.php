@@ -261,7 +261,7 @@ class Enumerable implements Countable, IteratorAggregate, JsonSerializable
     }
 
     /**
-     * @param callable (TValue, TKey): void $callback
+     * @param callable (TValue, TKey): void|mixed $callback
      * @return $this
      */
     public function each(callable $callback): static
@@ -404,9 +404,8 @@ class Enumerable implements Countable, IteratorAggregate, JsonSerializable
     }
 
     /**
-     * @template TGroupKey of array-key
-     * @param string|callable(TValue, TKey): TGroupKey $key
-     * @return Collection<TGroupKey, static>
+     * @param string|callable(TValue, TKey): array-key $key
+     * @return Collection<array-key, static>
      */
     public function groupBy(string|callable $key): Collection
     {

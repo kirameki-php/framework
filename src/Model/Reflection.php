@@ -36,9 +36,9 @@ class Reflection
     public array $properties;
 
     /**
-     * @var array<Relation<Model, Model>>
+     * @var array<Relation<TModel, Model>>
      */
-    public array $relations; /** @phpstan-ignore-line */
+    public array $relations;
 
     /**
      * @var Closure[]

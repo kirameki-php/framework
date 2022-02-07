@@ -80,26 +80,20 @@ trait Relations
     public function getRelation(string $name): mixed
     {
         if (!array_key_exists($name, $this->relations)) {
-            $this->loadRelation($this, $name);
+            $this->loadRelation([$this], $name);
         }
         return $this->relations[$name];
     }
 
     /**
      * @template TModel of Model
-     * @param TModel|RelationCollection<TModel> $target
+     * @param iterable<TModel> $srcModels
      * @param string $name
-     * @return TModel|RelationCollection<TModel>
+     * @return ModelCollection<TModel>
      */
-    protected function loadRelation(RelationCollection|Model $target, string $name): RelationCollection|Model
+    protected function loadRelation(iterable $srcModels, string $name): ModelCollection
     {
-        if ($target instanceof RelationCollection) {
-            $relation = $target->getModelReflection()->relations[$name];
-            return $relation->loadOnCollection($target);
-        }
-
-        $relation = $target::getReflection()->relations[$name];
-        return $relation->loadOnModel($target);
+        return static::getReflection()->relations[$name]->load($srcModels);
     }
 
     /**

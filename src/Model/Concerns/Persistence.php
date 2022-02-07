@@ -61,7 +61,7 @@ trait Persistence
                     $relation->save();
                 }
                 elseif ($relation instanceof RelationCollection) {
-                    $relation->saveAll();
+                    $relation->save();
                 }
             }
         });

@@ -505,9 +505,15 @@ class Arr
      */
     public static function from(iterable $iterable): array
     {
-        return ($iterable instanceof Traversable)
-            ? iterator_to_array($iterable)
-            : $iterable;
+        if (is_array($iterable)) {
+            return $iterable;
+        }
+
+        if ($iterable instanceof Collection) {
+            return $iterable->toArray();
+        }
+
+        return iterator_to_array($iterable);
     }
 
     /**
