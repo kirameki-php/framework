@@ -3,12 +3,17 @@
 namespace Kirameki\Container;
 
 use Closure;
+use Webmozart\Assert\Assert;
 use function call_user_func_array;
 
+/**
+ * @template TEntry
+ * @template-implements EntryInterface<TEntry>
+ */
 class ClosureEntry implements EntryInterface
 {
     /**
-     * @var string
+     * @var class-string
      */
     protected string $id;
 
@@ -18,7 +23,7 @@ class ClosureEntry implements EntryInterface
     protected Closure $resolver;
 
     /**
-     * @var array
+     * @var array<mixed>
      */
     protected array $arguments;
 
@@ -33,14 +38,14 @@ class ClosureEntry implements EntryInterface
     protected bool $resolved;
 
     /**
-     * @var mixed
+     * @var TEntry|null
      */
     protected mixed $instance;
 
     /**
-     * @param string $id
+     * @param class-string<TEntry> $id
      * @param Closure $resolver
-     * @param array $arguments
+     * @param array<mixed> $arguments
      * @param bool $cacheable
      */
     public function __construct(string $id, Closure $resolver, array $arguments, bool $cacheable)
@@ -62,20 +67,20 @@ class ClosureEntry implements EntryInterface
     }
 
     /**
-     * @return mixed
+     * @return TEntry
      */
     public function getInstance(): mixed
     {
         if (!$this->cacheable) {
-            return call_user_func_array($this->resolver, $this->arguments);
+            return call_user_func_array($this->resolver, $this->arguments); /** @phpstan-ignore-line */
         }
 
         if (!$this->resolved) {
             $this->resolved = true;
-            $this->instance = call_user_func_array($this->resolver, $this->arguments);
+            $this->instance = call_user_func_array($this->resolver, $this->arguments); /** @phpstan-ignore-line */
         }
 
-        return $this->instance;
+        return $this->instance ?? Assert::notNull($this->instance);
     }
 
     /**

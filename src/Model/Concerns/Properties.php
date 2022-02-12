@@ -159,33 +159,21 @@ trait Properties
     }
 
     /**
-     * @param string $name
+     * @param string|null $name
      * @return bool
      */
-    public function isResultCached(string $name): bool
+    public function isResultCached(string $name = null): bool
     {
-        return array_key_exists($name, $this->_resolvedProperties);
+        return $name !== null
+            ? array_key_exists($name, $this->_resolvedProperties)
+            : !empty($this->_resolvedProperties);
     }
 
     /**
      * @param string $name
-     * @param $oldValue
-     * @return $this
-     */
-    protected function markAsDirty(string $name, $oldValue): static
-    {
-        if (!array_key_exists($name, $this->_changedProperties)) {
-            $this->_changedProperties[$name] = $oldValue;
-        }
-        $this->_previousProperties[$name] = $oldValue;
-        return $this;
-    }
-
-    /**
-     * @param string|null $name
      * @return mixed
      */
-    public function getInitialProperty(string $name = null): mixed
+    public function getInitialProperty(string $name): mixed
     {
         return array_key_exists($name, $this->_changedProperties)
             ? $this->_changedProperties[$name]
@@ -206,19 +194,16 @@ trait Properties
 
     /**
      * @param string $name
-     * @return mixed
+     * @param mixed $oldValue
+     * @return $this
      */
-    public function getPreviousProperty(string $name): mixed
+    protected function markAsDirty(string $name, mixed $oldValue): static
     {
-        return $this->_previousProperties[$name] ?? null;
-    }
-
-    /**
-     * @return array
-     */
-    public function getPreviousProperties(): array
-    {
-        return $this->_previousProperties;
+        if (!array_key_exists($name, $this->_changedProperties)) {
+            $this->_changedProperties[$name] = $oldValue;
+        }
+        $this->_previousProperties[$name] = $oldValue;
+        return $this;
     }
 
     /**
@@ -247,10 +232,38 @@ trait Properties
     /**
      * @return $this
      */
-    public function clearDirty(): static
+    protected function clearDirty(): static
     {
         $this->_previousProperties = [];
         return $this;
+    }
+
+    /**
+     * @param string $name
+     * @return mixed
+     */
+    public function getPreviousProperty(string $name): mixed
+    {
+        return $this->_previousProperties[$name] ?? null;
+    }
+
+    /**
+     * @return array
+     */
+    public function getPreviousProperties(): array
+    {
+        return $this->_previousProperties;
+    }
+
+    /**
+     * @param string|null $name
+     * @return bool
+     */
+    public function wasChanged(string $name = null): bool
+    {
+        return $name !== null
+            ? array_key_exists($name, $this->_changedProperties)
+            : !empty($this->_changedProperties);
     }
 
     /**

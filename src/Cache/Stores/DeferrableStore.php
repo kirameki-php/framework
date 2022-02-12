@@ -2,10 +2,10 @@
 
 namespace Kirameki\Cache\Stores;
 
-use Carbon\Carbon;
 use DateInterval;
 use DateTimeInterface;
 use Kirameki\Support\Str;
+use Kirameki\Support\Time;
 use RuntimeException;
 
 class DeferrableStore extends AbstractStore
@@ -31,7 +31,7 @@ class DeferrableStore extends AbstractStore
     protected array $queue = [];
 
     /**
-     * @var array
+     * @var array<callable>
      */
     protected array $afterCommitCallbacks;
 
@@ -76,7 +76,7 @@ class DeferrableStore extends AbstractStore
     /**
      * @inheritDoc
      */
-    public function tryGet(string $key, &$value): bool
+    public function tryGet(string $key, mixed &$value): bool
     {
         if ($this->deferred && $this->memory->tryGet($key, $value)) {
             return true;
@@ -333,27 +333,24 @@ class DeferrableStore extends AbstractStore
     }
 
     /**
-     * @param $ttl
-     * @return Carbon|null
+     * @param DateTimeInterface|int|null $ttl
+     * @return Time|null
      */
-    protected function toAbsoluteTtl($ttl): ?Carbon
+    protected function toAbsoluteTtl(DateTimeInterface|int|null $ttl): ?Time
     {
         if (is_null($ttl)) {
             return null;
         }
 
         if (is_int($ttl)) {
-            return Carbon::createFromTimestamp(time() + $ttl);
+            return Time::createFromTimestamp(time() + $ttl);
         }
 
-        if ($ttl instanceof Carbon) {
+        if ($ttl instanceof Time) {
             return $ttl;
         }
 
-        if ($ttl instanceof DateTimeInterface) {
-            return Carbon::instance($ttl);
-        }
-
-        throw new RuntimeException('Unknown type for TTL: '.Str::valueOf($ttl));
+        // is DateTimeInterface
+        return Time::createFromInterface($ttl);
     }
 }

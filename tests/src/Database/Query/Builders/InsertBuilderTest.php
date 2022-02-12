@@ -2,7 +2,7 @@
 
 namespace Tests\Kirameki\Database\Query\Builders;
 
-use Carbon\Carbon;
+use Kirameki\Support\Time;
 use Tests\Kirameki\Database\Query\QueryTestCase;
 
 class InsertBuilderTest extends QueryTestCase
@@ -41,7 +41,7 @@ class InsertBuilderTest extends QueryTestCase
 
     public function testInsertDateTime(): void
     {
-        $sql = $this->insertBuilder()->table('User')->value(['createdAt' => new Carbon('2020-01-01T01:12:34.56789Z')])->toSql();
+        $sql = $this->insertBuilder()->table('User')->value(['createdAt' => new Time('2020-01-01T01:12:34.56789Z')])->toSql();
         static::assertEquals("INSERT INTO `User` (`createdAt`) VALUES ('2020-01-01 01:12:34.567890')", $sql);
     }
 }

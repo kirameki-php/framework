@@ -2,21 +2,25 @@
 
 namespace Kirameki\Container;
 
+/**
+ * @template TEntry
+ * @template-implements EntryInterface<TEntry>
+ */
 class InstanceEntry implements EntryInterface
 {
     /**
-     * @var string
+     * @var class-string<TEntry>
      */
     protected string $id;
 
     /**
-     * @var mixed
+     * @var TEntry
      */
     protected mixed $instance;
 
     /**
-     * @param string $id
-     * @param mixed $instance
+     * @param class-string<TEntry> $id
+     * @param TEntry $instance
      */
     public function __construct(string $id, mixed $instance)
     {
@@ -25,7 +29,7 @@ class InstanceEntry implements EntryInterface
     }
 
     /**
-     * @return string
+     * @return class-string<TEntry>
      */
     public function getId(): string
     {
@@ -33,7 +37,7 @@ class InstanceEntry implements EntryInterface
     }
 
     /**
-     * @return mixed
+     * @return TEntry
      */
     public function getInstance(): mixed
     {

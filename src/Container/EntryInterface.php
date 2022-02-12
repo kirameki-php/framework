@@ -2,15 +2,18 @@
 
 namespace Kirameki\Container;
 
+/**
+ * @template TEntry
+ */
 interface EntryInterface
 {
     /**
-     * @return string
+     * @return class-string<TEntry>
      */
     public function getId(): string;
 
     /**
-     * @return mixed
+     * @return TEntry
      */
     public function getInstance(): mixed;
 }

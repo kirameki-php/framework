@@ -60,7 +60,7 @@ class ApcuStore extends AbstractStore
     public function getMulti(string ...$keys): array
     {
         $formattedKeys = $this->formatKeys($keys);
-        $entries = apcu_fetch($formattedKeys) ?: [];
+        $entries = (array) apcu_fetch($formattedKeys) ?: [];
         $results = [];
         foreach ($formattedKeys as $formattedKey) {
             if (array_key_exists($formattedKey, $entries)) {
@@ -128,7 +128,7 @@ class ApcuStore extends AbstractStore
         $formattedEntries = $this->formatEntries($entries);
         $formattedTtl = $this->formatTtl($ttl);
         $result = apcu_store($formattedEntries, null, $formattedTtl);
-        if ($result === false || (is_array($result) && !empty($result))) {
+        if (!empty($result)) {
             $formattedKeysString = implode(', ', array_keys($formattedEntries));
             throw new RuntimeException("Failed to call apcu_store([$formattedKeysString], ...)! Something went wrong!");
         }
@@ -146,7 +146,7 @@ class ApcuStore extends AbstractStore
         $formattedKey = $this->formatKey($key);
         $formattedTtl = $this->formatTtl($ttl);
         $result = apcu_inc($formattedKey, $by, $success, $formattedTtl);
-        if ($result === false || !$success) {
+        if (!$success) {
             throw new RuntimeException("Failed to call apcu_inc('$formattedKey', $by)! Something went wrong!");
         }
         if ($this->triggerEvents) {
@@ -164,7 +164,7 @@ class ApcuStore extends AbstractStore
         $formattedKey = $this->formatKey($key);
         $formattedTtl = $this->formatTtl($ttl);
         $result = apcu_dec($formattedKey, $by, $success, $formattedTtl);
-        if ($result === false || !$success) {
+        if (!$success) {
             throw new RuntimeException("Failed to call apcu_inc('$formattedKey', $by)! Something went wrong!");
         }
         if ($this->triggerEvents) {
@@ -234,7 +234,7 @@ class ApcuStore extends AbstractStore
         $format = APC_ITER_KEY | APC_ITER_CTIME | APC_ITER_TTL;
         $keys = $this->scan('', $format, static function(array $data) use ($now) {
             if ($data['ttl'] > 0) {
-                $expires = $data['creation_time'] + $data['ttl'];
+                $expires = (int) ($data['creation_time'] + $data['ttl']);
                 return $expires <= $now;
             }
             return false;
@@ -263,15 +263,15 @@ class ApcuStore extends AbstractStore
      * @param string $search
      * @param int $format
      * @param Closure|null $filter
-     * @return array
+     * @return array<int, string>
      */
     protected function scan(string $search, int $format = APC_ITER_KEY, Closure $filter = null): array
     {
         $keys = [];
         $search = $this->formatKey($search);
         foreach (new APCuIterator($search, $format) as $data) {
-            if ($filter !== null && $filter($data) !== false) {
-                $keys[] = $data['key'];
+            if (is_array($data) && $filter !== null && $filter($data) !== false) {
+                $keys[] = (string) $data['key'];
             }
         }
         return $keys;

@@ -4,24 +4,23 @@ namespace Kirameki\Container;
 
 use Closure;
 use Kirameki\Support\Collection;
-use Psr\Container\ContainerInterface;
 use function array_key_exists;
 
-class Container implements ContainerInterface
+class Container
 {
     /**
-     * @var EntryInterface[]
+     * @var array<class-string, EntryInterface<mixed>>
      */
     protected array $entries = [];
 
     /**
-     * @template TClass
-     * @param class-string<TClass> $id
-     * @return TClass
+     * @template TEntry
+     * @param class-string<TEntry> $id
+     * @return TEntry
      */
     public function get(string $id): mixed
     {
-        return $this->entries[$id]->getInstance();
+        return $this->entries[$id]->getInstance(); /** @phpstan-ignore-line */
     }
 
     /**
@@ -34,12 +33,12 @@ class Container implements ContainerInterface
     }
 
     /**
-     * @param string $id
-     * @param $entry
+     * @param class-string $id
+     * @param mixed $entry
      * @param bool $cached
      * @return void
      */
-    public function set(string $id, $entry, bool $cached = false): void
+    public function set(string $id, mixed $entry, bool $cached = false): void
     {
         $this->entries[$id] = $entry instanceof Closure
             ? new ClosureEntry($id, $entry, [$this], $cached)
@@ -47,17 +46,17 @@ class Container implements ContainerInterface
     }
 
     /**
-     * @param string $id
-     * @param $entry
+     * @param class-string $id
+     * @param mixed|callable(static): mixed $entry
      * @return void
      */
-    public function singleton(string $id, $entry): void
+    public function singleton(string $id, mixed $entry): void
     {
         $this->set($id, $entry, true);
     }
 
     /**
-     * @param string $id
+     * @param class-string $id
      * @return bool
      */
     public function delete(string $id): bool
@@ -70,19 +69,20 @@ class Container implements ContainerInterface
     }
 
     /**
-     * @param string $id
-     * @return EntryInterface
+     * @template TEntry
+     * @param class-string<TEntry> $id
+     * @return EntryInterface<TEntry>
      */
     public function entry(string $id): EntryInterface
     {
-        return $this->entries[$id];
+        return $this->entries[$id]; /** @phpstan-ignore-line */
     }
 
     /**
-     * @return Collection<EntryInterface>
+     * @return Collection<class-string, EntryInterface<mixed>>
      */
     public function entries(): Collection
     {
-        return new Collection($this->entries);
+        return new Collection($this->entries); /** @phpstan-ignore-line */
     }
 }

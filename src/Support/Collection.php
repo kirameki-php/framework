@@ -5,7 +5,7 @@ namespace Kirameki\Support;
 use ArrayAccess;
 
 /**
- * @template TKey of array-key
+ * @template TKey of array-key|class-string
  * @template TValue
  *
  * @extends  Enumerable<TKey, TValue>

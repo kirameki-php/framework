@@ -2,7 +2,6 @@
 
 namespace Kirameki\Support;
 
-use Carbon\Carbon;
 use function fileatime;
 use function filectime;
 use function filemtime;
@@ -71,11 +70,11 @@ class FileInfo
     }
 
     /**
-     * @return int
+     * @return int<0, max>
      */
     public function size(): int
     {
-        return filesize($this->path);
+        return filesize($this->path); /** @phpstan-ignore-line */
     }
 
     /**
@@ -127,26 +126,26 @@ class FileInfo
     }
 
     /**
-     * @return Carbon
+     * @return Time
      */
-    public function lastModifiedTime(): Carbon
+    public function lastModifiedTime(): Time
     {
-        return Carbon::createFromTimestamp(filemtime($this->path));
+        return Time::createFromTimestamp(filemtime($this->path) ?: 0);
     }
 
     /**
-     * @return Carbon
+     * @return Time
      */
-    public function lastChangedTime(): Carbon
+    public function lastChangedTime(): Time
     {
-        return Carbon::createFromTimestamp(filectime($this->path));
+        return Time::createFromTimestamp(filectime($this->path) ?: 0);
     }
 
     /**
-     * @return Carbon
+     * @return Time
      */
-    public function lastAccessedTime(): Carbon
+    public function lastAccessedTime(): Time
     {
-        return Carbon::createFromTimestamp(fileatime($this->path));
+        return Time::createFromTimestamp(fileatime($this->path) ?: 0);
     }
 }

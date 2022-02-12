@@ -172,7 +172,7 @@ abstract class Relation
     }
 
     /**
-     * @param ModelCollection<int, TSrc> $srcModels
+     * @param iterable<int, TSrc> $srcModels
      * @return ModelCollection<int, TDest>
      */
     public function load(iterable $srcModels): ModelCollection

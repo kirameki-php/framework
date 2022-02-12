@@ -94,6 +94,11 @@ trait Persistence
             return false;
         }
 
+        // trying to delete a record with dirty primary key is dangerous.
+        if ($this->isDirty($this->getPrimaryKeyName())) {
+            throw new RuntimeException('Deleting a record with dirty primary key is not allowed.'); // TODO Better exception handling
+        }
+
         $this->processing(function(Connection $conn) {
             $count = $conn->delete($this->getTable())
                 ->where($this->getPrimaryKeyName(), $this->getPrimaryKey())

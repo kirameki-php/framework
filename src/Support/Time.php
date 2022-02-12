@@ -46,9 +46,9 @@ class Time extends DateTimeImmutable implements JsonSerializable, Stringable
      * @param string $format
      * @param string $datetime
      * @param DateTimeZone|null $timezone
-     * @return false|static
+     * @return static
      */
-    public static function createFromFormat($format, $datetime, DateTimeZone $timezone = null): static|false
+    public static function createFromFormat(string $format, string $datetime, DateTimeZone $timezone = null): static
     {
         /** @var DateTime $base */
         $base = DateTime::createFromFormat($format, $datetime);
@@ -87,6 +87,15 @@ class Time extends DateTimeImmutable implements JsonSerializable, Stringable
     public static function createFromInterface(DateTimeInterface $object): static
     {
         return new static($object->format(static::RFC3339_HUMAN));
+    }
+
+    /**
+     * @param int|float $timestamp
+     * @return static
+     */
+    public static function createFromTimestamp(int|float $timestamp): static
+    {
+        return static::createFromFormat('U.u', number_format($timestamp, 6, '.', ''));
     }
 
     # endregion Creation -----------------------------------------------------------------------------------------------

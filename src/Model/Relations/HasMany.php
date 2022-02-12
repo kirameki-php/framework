@@ -4,6 +4,7 @@ namespace Kirameki\Model\Relations;
 
 use Kirameki\Model\Model;
 use Kirameki\Model\ModelCollection;
+use Webmozart\Assert\Assert;
 
 /**
  * @template TSrc of Model

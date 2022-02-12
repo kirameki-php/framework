@@ -16,14 +16,14 @@ interface StoreInterface
 
     /**
      * @param string $key
-     * @param $value
+     * @param mixed $value
      * @return bool
      */
-    public function tryGet(string $key, &$value): bool;
+    public function tryGet(string $key, mixed &$value): bool;
 
     /**
      * @param string ...$keys
-     * @return array
+     * @return array<mixed>
      */
     public function getMulti(string ...$keys): array;
 
@@ -35,20 +35,20 @@ interface StoreInterface
 
     /**
      * @param string ...$keys
-     * @return array
+     * @return array<string>
      */
     public function existsMulti(string ...$keys): array;
 
     /**
      * @param string $key
-     * @param $value
+     * @param mixed $value
      * @param DateTimeInterface|DateInterval|int|float|null $ttl
      * @return void
      */
     public function set(string $key, $value, DateTimeInterface|DateInterval|int|float|null $ttl = null): void;
 
     /**
-     * @param array $entries
+     * @param array<mixed> $entries
      * @param DateTimeInterface|DateInterval|int|float|null $ttl
      * @return void
      */
@@ -92,7 +92,7 @@ interface StoreInterface
 
     /**
      * @param string $pattern
-     * @return array
+     * @return array<scalar>
      */
     public function deleteMatched(string $pattern): array;
 

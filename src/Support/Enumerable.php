@@ -20,7 +20,7 @@ use function krsort;
 use function ksort;
 
 /**
- * @template TKey of array-key
+ * @template TKey of array-key|class-string
  * @template TValue
  * @implements IteratorAggregate<TKey, TValue>
  */

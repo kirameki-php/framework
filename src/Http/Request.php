@@ -2,10 +2,10 @@
 
 namespace Kirameki\Http;
 
-use Carbon\Carbon;
 use Kirameki\Http\Request\Method;
 use Kirameki\Http\Request\RequestData;
 use Kirameki\Http\Request\RequestHeaders;
+use Kirameki\Support\Time;
 use Stringable;
 use function microtime;
 use function parse_url;
@@ -95,11 +95,11 @@ class Request implements Stringable
     }
 
     /**
-     * @return Carbon
+     * @return Time
      */
-    public function time(): Carbon
+    public function time(): Time
     {
-        return Carbon::createFromTimestampMs($this->timestamp * 1000);
+        return Time::createFromTimestamp($this->timestamp);
     }
 
     /**
