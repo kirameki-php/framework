@@ -24,11 +24,11 @@ abstract class ConditionsBuilder extends StatementBuilder
     }
 
     /**
-     * @param $column
+     * @param string $column
      * @param mixed|null $value
      * @return $this
      */
-    public function whereNot($column, mixed $value): static
+    public function whereNot(string $column, mixed $value): static
     {
         return $this->addWhereCondition($this->buildNotCondition($column, $value));
     }
@@ -114,10 +114,12 @@ abstract class ConditionsBuilder extends StatementBuilder
         $num = func_num_args();
 
         if ($num === 1) {
-            return $column->getDefinition();
+            if ($column instanceof ConditionBuilder) {
+                return $column->getDefinition();
+            }
         }
 
-        if ($num === 2) {
+        if ($num === 2 && is_string($column)) {
             if (is_callable($operator)) {
                 return ConditionBuilder::for($column)->tap($operator)->getDefinition();
             }
@@ -133,7 +135,7 @@ abstract class ConditionsBuilder extends StatementBuilder
             return ConditionBuilder::for($column)->equals($operator)->getDefinition();
         }
 
-        if ($num === 3) {
+        if ($num === 3 && is_string($column) && is_string($operator)) {
             return ConditionBuilder::for($column)->with($operator, $value)->getDefinition();
         }
 

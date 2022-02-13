@@ -109,10 +109,10 @@ class ConditionBuilder
 
     /**
      * @param string $operator
-     * @param $value
+     * @param mixed $value
      * @return $this
      */
-    public function with(string $operator, $value): static
+    public function with(string $operator, mixed $value): static
     {
         return match (strtoupper($operator)) {
             '=' => $this->equals($value),
@@ -133,70 +133,70 @@ class ConditionBuilder
 
     /**
      * @see ConditionBuilder::equals()
-     * @param $value
+     * @param mixed $value
      * @return $this
      */
-    public function eq($value): static
+    public function eq(mixed $value): static
     {
         return $this->equals($value);
     }
 
     /**
      * @see ConditionBuilder::notEquals()
-     * @param $value
+     * @param mixed $value
      * @return $this
      */
-    public function ne($value): static
+    public function ne(mixed $value): static
     {
         return $this->notEquals($value);
     }
 
     /**
      * @see ConditionBuilder::lessThan()
-     * @param $value
+     * @param mixed $value
      * @return $this
      */
-    public function lt($value): static
+    public function lt(mixed $value): static
     {
         return $this->lessThan($value);
     }
 
     /**
      * @see ConditionBuilder::lessThanOrEquals()
-     * @param $value
+     * @param mixed $value
      * @return $this
      */
-    public function lte($value): static
+    public function lte(mixed $value): static
     {
         return $this->lessThanOrEquals($value);
     }
 
     /**
      * @see ConditionBuilder::greaterThan()
-     * @param $value
+     * @param mixed $value
      * @return $this
      */
-    public function gt($value): static
+    public function gt(mixed $value): static
     {
         return $this->greaterThan($value);
     }
 
     /**
      * @see ConditionBuilder::greaterThanOrEquals()
-     * @param $value
+     * @param mixed $value
      * @return $this
      */
-    public function gte($value): static
+    public function gte(mixed $value): static
     {
         return $this->greaterThanOrEquals($value);
     }
 
 
     /**
-     * @param $value
+     * @param mixed $value
      * @return $this
      */
-    public function equals($value): static
+    public function equals(mixed $value): static
     {
         $this->current->negated = false;
         $this->current->operator = '=';
@@ -206,18 +206,19 @@ class ConditionBuilder
     }
 
     /**
-     * @param $value
+     * @param mixed $value
      * @return $this
      */
-    public function notEquals($value): static
+    public function notEquals(mixed $value): static
     {
         return $this->equals($value)->negate();
     }
 
     /**
+     * @param mixed $value
      * @return $this
      */
-    public function greaterThanOrEquals($value): static
+    public function greaterThanOrEquals(mixed $value): static
     {
         $this->current->negated = false;
         $this->current->operator = '>=';
@@ -227,9 +228,10 @@ class ConditionBuilder
     }
 
     /**
+     * @param mixed $value
      * @return $this
      */
-    public function greaterThan($value): static
+    public function greaterThan(mixed $value): static
     {
         $this->current->negated = false;
         $this->current->operator = '>';
@@ -239,10 +241,10 @@ class ConditionBuilder
     }
 
     /**
-     * @param $value
+     * @param mixed $value
      * @return $this
      */
-    public function lessThanOrEquals($value): static
+    public function lessThanOrEquals(mixed $value): static
     {
         $this->current->negated = false;
         $this->current->operator = '<=';
@@ -252,10 +254,10 @@ class ConditionBuilder
     }
 
     /**
-     * @param $value
+     * @param mixed $value
      * @return $this
      */
-    public function lessThan($value): static
+    public function lessThan(mixed $value): static
     {
         $this->current->negated = false;
         $this->current->operator = '<';
@@ -287,38 +289,38 @@ class ConditionBuilder
     }
 
     /**
-     * @param iterable|StatementBuilder $value
+     * @param iterable<mixed>|StatementBuilder $values
      * @return $this
      */
-    public function in(iterable|StatementBuilder $value): static
+    public function in(iterable|StatementBuilder $values): static
     {
         $this->current->negated = false;
         $this->current->operator = 'IN';
-        if (is_iterable($value)) {
-            $value = ($value instanceof Traversable) ? iterator_to_array($value) : (array)$value;
-            $value = array_filter($value, static fn($s) => $s !== null);
-            $value = array_unique($value);
+        if (is_iterable($values)) {
+            $values = ($values instanceof Traversable) ? iterator_to_array($values) : (array)$values;
+            $values = array_filter($values, static fn($s) => $s !== null);
+            $values = array_unique($values);
         }
-        $this->parameter($value);
+        $this->parameter($values);
         $this->markAsDefined();
         return $this;
     }
 
     /**
-     * @param $values
+     * @param iterable<int, mixed>|StatementBuilder $values
      * @return $this
      */
-    public function notIn($values): static
+    public function notIn(iterable|StatementBuilder $values): static
     {
         return $this->in($values)->negate();
     }
 
     /**
-     * @param $min
-     * @param $max
+     * @param mixed $min
+     * @param mixed $max
      * @return $this
      */
-    public function between($min, $max): static
+    public function between(mixed $min, mixed $max): static
     {
         $this->current->negated = false;
         $this->current->operator = 'BETWEEN';
@@ -328,11 +330,11 @@ class ConditionBuilder
     }
 
     /**
-     * @param $min
-     * @param $max
+     * @param mixed $min
+     * @param mixed $max
      * @return $this
      */
-    public function notBetween($min, $max): static
+    public function notBetween(mixed $min, mixed $max): static
     {
         return $this->between($min, $max)->negate();
     }

@@ -7,50 +7,36 @@ use Kirameki\Model\ModelCollection;
 
 /**
  * @template TSrc of Model
- * @template TDest of Model
- * @template-extends Relation<TSrc, TDest>
+ * @template TDst of Model
+ * @template-extends Relation<TSrc, TDst>
  */
 class HasOne extends Relation
 {
     /**
-     * @return string
+     * @return non-empty-array<non-empty-string, non-empty-string>
      */
-    public function getSrcKeyName(): string
+    protected function guessKeyPairs(): array
     {
-        return $this->srcKey ??= $this->getSrcReflection()->primaryKey;
-    }
-
-    /**
-     * @return string
-     */
-    public function getDestKeyName(): string
-    {
-        return $this->destKey ??= $this->guessDestKeyName();
-    }
-
-    /**
-     * @return string
-     */
-    public function guessDestKeyName(): string
-    {
-        return lcfirst(class_basename($this->getSrcReflection()->class)).'Id';
+        $srcKeyName = $this->getSrcReflection()->primaryKey;
+        $dstKeyName = lcfirst(class_basename($this->getSrcReflection()->class)).'Id';
+        return [$srcKeyName => $dstKeyName];
     }
 
     /**
      * @param TSrc $srcModel
-     * @param ModelCollection<int, TDest> $destModels
+     * @param ModelCollection<int, TDst> $dstModels
      * @return void
      */
-    protected function setDestToSrc(Model $srcModel, ModelCollection $destModels): void
+    protected function setDstToSrc(Model $srcModel, ModelCollection $dstModels): void
     {
-        $destModel = $destModels[0];
+        $destModel = $dstModels[0];
         $srcModel->setRelation($this->getName(), $destModel);
         $this->setInverseRelations($srcModel, $destModel);
     }
 
     /**
      * @param TSrc $srcModel
-     * @param TDest $destModel
+     * @param TDst $destModel
      * @return void
      */
     protected function setInverseRelations(Model $srcModel, Model $destModel): void

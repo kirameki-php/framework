@@ -62,29 +62,27 @@ class ReflectionBuilder
     }
 
     /**
-     * @template TDest of Model
-     * @param string $name
-     * @param class-string<TDest> $class
-     * @param string|null $foreignKey
-     * @param string|null $referenceKey
-     * @param string|null $inverseOf
+     * @template TDst of Model
+     * @param non-empty-string $name
+     * @param class-string<TDst> $class
+     * @param non-empty-array<non-empty-string, non-empty-string> $keyPairs
+     * @param non-empty-string|null $inverseOf
      */
-    public function belongsTo(string $name, string $class, ?string $foreignKey = null, ?string $referenceKey = null, ?string $inverseOf = null): void
+    public function belongsTo(string $name, string $class, array $keyPairs = null, ?string $inverseOf = null): void
     {
-        $this->reflection->relations[$name] = new BelongsTo($this->manager, $name, $this->reflection, $class, $foreignKey, $referenceKey, $inverseOf);
+        $this->reflection->relations[$name] = new BelongsTo($this->manager, $name, $this->reflection, $class, $keyPairs, $inverseOf);
     }
 
     /**
-     * @template TDest of Model
-     * @param string $name
-     * @param class-string<TDest> $class
-     * @param string|null $foreignKey
-     * @param string|null $referenceKey
-     * @param string|null $inverseOf
+     * @template TDst of Model
+     * @param non-empty-string $name
+     * @param class-string<TDst> $class
+     * @param non-empty-array<non-empty-string, non-empty-string> $keyPairs
+     * @param non-empty-string|null $inverseOf
      */
-    public function hasMany(string $name, string $class, ?string $foreignKey = null, ?string $referenceKey = null, ?string $inverseOf = null): void
+    public function hasMany(string $name, string $class, array $keyPairs = null, ?string $inverseOf = null): void
     {
-        $this->reflection->relations[$name] = new HasMany($this->manager, $name, $this->reflection, $class, $foreignKey, $referenceKey, $inverseOf);
+        $this->reflection->relations[$name] = new HasMany($this->manager, $name, $this->reflection, $class, $keyPairs, $inverseOf);
     }
 
     /**

@@ -26,7 +26,7 @@ class Reflection
     public string $table;
 
     /**
-     * @var string
+     * @var non-empty-string
      */
     public string $primaryKey;
 
@@ -36,7 +36,7 @@ class Reflection
     public array $properties;
 
     /**
-     * @var array<Relation<TModel, Model>>
+     * @var array<non-empty-string, Relation<TModel, Model>>
      */
     public array $relations;
 

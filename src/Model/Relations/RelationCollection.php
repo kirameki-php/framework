@@ -8,41 +8,41 @@ use Kirameki\Model\Reflection;
 
 /**
  * @template TSrc of Model
- * @template TDest of Model
- * @extends ModelCollection<int, TDest>
+ * @template TDst of Model
+ * @extends ModelCollection<int, TDst>
  */
 class RelationCollection extends ModelCollection
 {
     /**
-     * @var Relation<TSrc, TDest>
+     * @var Relation<TSrc, TDst>
      */
     protected Relation $relation;
 
     /**
      * @var TSrc
      */
-    protected Model $parent;
+    protected Model $srcModel;
 
     /**
-     * @var iterable<int, TDest>
+     * @var iterable<int, TDst>
      */
     protected iterable $items;
 
     /**
-     * @param Relation<TSrc, TDest> $relation
-     * @param TSrc $parent
-     * @param Reflection<TDest> $reflection
-     * @param iterable<int, TDest> $models
+     * @param Relation<TSrc, TDst> $relation
+     * @param TSrc $srcModel
+     * @param Reflection<TDst> $dstReflection
+     * @param iterable<int, TDst> $dstModels
      */
-    public function __construct(Relation $relation, Model $parent, Reflection $reflection, iterable $models)
+    public function __construct(Relation $relation, Model $srcModel, Reflection $dstReflection, iterable $dstModels)
     {
-        parent::__construct($reflection, $models);
+        parent::__construct($dstReflection, $dstModels);
         $this->relation = $relation;
-        $this->parent = $parent;
+        $this->srcModel = $srcModel;
    }
 
     /**
-     * @return Relation<TSrc, TDest>
+     * @return Relation<TSrc, TDst>
      */
     public function getRelation(): Relation
     {
@@ -59,7 +59,7 @@ class RelationCollection extends ModelCollection
 
     /**
      * @param array<string, mixed> $properties
-     * @return TDest
+     * @return TDst
      */
     public function make(array $properties = []): Model
     {
@@ -69,7 +69,7 @@ class RelationCollection extends ModelCollection
 
     /**
      * @param array<string, mixed> $properties
-     * @return TDest
+     * @return TDst
      */
     public function create(array $properties = []): Model
     {
@@ -87,15 +87,16 @@ class RelationCollection extends ModelCollection
     }
 
     /**
-     * @template UDest of Model
-     * @param UDest $model
-     * @return UDest
+     * @template UDst of Model
+     * @param UDst $dstModel
+     * @return UDst
      */
-    protected function setRelatedKeys(Model $model): Model
+    protected function setRelatedKeys(Model $dstModel): Model
     {
-        $parentKeyName = $this->relation->getDestKeyName();
-        $parentKey = $this->parent->getProperty($this->relation->getSrcKeyName());
-        $model->setProperty($parentKeyName, $parentKey);
-        return $model;
+        foreach ($this->relation->getKeyPairs() as $srcKeyName => $dstKeyName) {
+            $srcKey = $this->srcModel->getProperty($srcKeyName);
+            $dstModel->setProperty($dstKeyName, $srcKey);
+        }
+        return $dstModel;
     }
 }

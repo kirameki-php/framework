@@ -84,7 +84,7 @@ trait Relations
      */
     public function preload(string|array $relationNames): static
     {
-        return $this->preloadRecursive($this, $relationNames);
+        return $this->preloadRecursive([$this], $relationNames);
     }
 
     /**

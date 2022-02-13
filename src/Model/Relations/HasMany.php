@@ -4,63 +4,48 @@ namespace Kirameki\Model\Relations;
 
 use Kirameki\Model\Model;
 use Kirameki\Model\ModelCollection;
-use Webmozart\Assert\Assert;
 
 /**
  * @template TSrc of Model
- * @template TDest of Model
- * @template-extends Relation<TSrc, TDest>
+ * @template TDst of Model
+ * @template-extends Relation<TSrc, TDst>
  */
 class HasMany extends Relation
 {
     /**
-     * @return string
+     * @return non-empty-array<non-empty-string, string>
      */
-    public function getSrcKeyName(): string
+    protected function guessKeyPairs(): array
     {
-        return $this->srcKey ??= $this->getSrcReflection()->primaryKey;
-    }
-
-    /**
-     * @return string
-     */
-    public function getDestKeyName(): string
-    {
-        return $this->destKey ??= $this->guessDestKeyName();
-    }
-
-    /**
-     * @return string
-     */
-    public function guessDestKeyName(): string
-    {
-        return lcfirst(class_basename($this->getSrcReflection()->class)).'Id';
+        $srcKeyName = $this->getSrcReflection()->primaryKey;
+        $dstKeyName = lcfirst(class_basename($this->getSrcReflection()->class)).'Id';
+        return [$srcKeyName => $dstKeyName];
     }
 
     /**
      * @param TSrc $srcModel
-     * @param ModelCollection<int, TDest> $destModels
+     * @param ModelCollection<int, TDst> $dstModels
      * @return void
      */
-    protected function setDestToSrc(Model $srcModel, ModelCollection $destModels): void
+    protected function setDstToSrc(Model $srcModel, ModelCollection $dstModels): void
     {
-        $srcModel->setRelation($this->getName(), $this->toRelationCollection($srcModel, $destModels));
-        $this->setInverseRelations($srcModel, $destModels);
+        $srcModel->setRelation($this->getName(), $this->toRelationCollection($srcModel, $dstModels));
+        $this->setInverseRelations($srcModel, $dstModels);
     }
 
     /**
      * @param TSrc $srcModel
-     * @param iterable<int, TDest> $destModels
-     * @return RelationCollection<TSrc, TDest>
+     * @param iterable<int, TDst> $destModels
+     * @return RelationCollection<TSrc, TDst>
      */
     protected function toRelationCollection(Model $srcModel, iterable $destModels): RelationCollection
     {
-        return new RelationCollection($this, $srcModel, $this->getDestReflection(), $destModels);
+        return new RelationCollection($this, $srcModel, $this->getDstReflection(), $destModels);
     }
 
     /**
      * @param TSrc $srcModel
-     * @param iterable<TDest> $destModels
+     * @param iterable<TDst> $destModels
      * @return void
      */
     protected function setInverseRelations(Model $srcModel, iterable $destModels): void

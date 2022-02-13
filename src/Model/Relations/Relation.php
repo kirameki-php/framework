@@ -12,7 +12,7 @@ use Kirameki\Support\Collection;
 
 /**
  * @template TSrc of Model
- * @template TDest of Model
+ * @template TDst of Model
  */
 abstract class Relation
 {
@@ -22,7 +22,7 @@ abstract class Relation
     protected ModelManager $manager;
 
     /**
-     * @var string
+     * @var non-empty-string
      */
     protected string $name;
 
@@ -32,27 +32,22 @@ abstract class Relation
     protected Reflection $srcReflection;
 
     /**
-     * @var Reflection<TDest>|null
+     * @var Reflection<TDst>|null
      */
-    protected ?Reflection $destReflection;
+    protected ?Reflection $dstReflection;
 
     /**
-     * @var class-string<TDest>
+     * @var class-string<TDst>
      */
-    protected string $destClass;
+    protected string $dstClass;
 
     /**
-     * @var ?string
+     * @var Collection<string, string>
      */
-    protected ?string $srcKey;
+    protected Collection $keyPairs;
 
     /**
-     * @var string|null
-     */
-    protected ?string $destKey;
-
-    /**
-     * @var string|null
+     * @var non-empty-string|null
      */
     protected ?string $inverse;
 
@@ -63,32 +58,43 @@ abstract class Relation
 
     /**
      * @param ModelManager $manager
-     * @param string $name
+     * @param non-empty-string $name
      * @param Reflection<TSrc> $srcReflection
-     * @param class-string<TDest> $destClass
-     * @param string|null $srcKey
-     * @param string|null $refKey
-     * @param string|null $inverse
+     * @param class-string<TDst> $dstClass
+     * @param non-empty-array<non-empty-string, non-empty-string> $keyPairs [$srcKeyName => $dstKeyName, ...]
+     * @param non-empty-string|null $inverse
      */
-    public function __construct(ModelManager $manager, string $name, Reflection $srcReflection, string $destClass, ?string $srcKey = null, ?string $refKey = null, ?string $inverse = null)
+    public function __construct(ModelManager $manager, string $name, Reflection $srcReflection, string $dstClass, array $keyPairs = null, ?string $inverse = null)
     {
         $this->manager = $manager;
         $this->name = $name;
         $this->srcReflection = $srcReflection;
-        $this->srcKey = $srcKey;
-        $this->destReflection = null;
-        $this->destClass = $destClass;
-        $this->destKey = $refKey;
+        $this->dstReflection = null;
+        $this->dstClass = $dstClass;
+        $this->keyPairs = new Collection($keyPairs ?: $this->guessKeyPairs());
         $this->inverse = $inverse;
     }
 
     /**
-     * @return string
+     * @return non-empty-string
      */
     public function getName(): string
     {
         return $this->name;
     }
+
+    /**
+     * @return Collection<string, string>
+     */
+    public function getKeyPairs(): Collection
+    {
+        return $this->keyPairs;
+    }
+
+    /**
+     * @return non-empty-array<non-empty-string, non-empty-string>
+     */
+    abstract protected function guessKeyPairs(): array;
 
     /**
      * @return Reflection<TSrc>
@@ -99,31 +105,46 @@ abstract class Relation
     }
 
     /**
-     * @return string
+     * @return Collection<int, string>
      */
-    abstract public function getSrcKeyName(): string;
-
-    /**
-     * @param TSrc $model
-     * @return scalar
-     */
-    public function getSrcKey(Model $model): mixed
+    public function getSrcKeyNames(): Collection
     {
-        return $model->getProperty($this->getSrcKeyName()); /** @phpstan-ignore-line */
+        return $this->getKeyPairs()->keys();
     }
 
     /**
-     * @return Reflection<TDest>
+     * @param TSrc $srcModel
+     * @return Collection<int, mixed>
      */
-    public function getDestReflection(): Reflection
+    protected function getSrcKeys(Model $srcModel): Collection
     {
-        return $this->destReflection ??= $this->manager->reflect($this->destClass);
+        return $this->getSrcKeyNames()->map(static fn(string $name) => $srcModel->getProperty($name));
     }
 
     /**
-     * @return string
+     * @return Reflection<TDst>
      */
-    abstract public function getDestKeyName(): string;
+    public function getDstReflection(): Reflection
+    {
+        return $this->dstReflection ??= $this->manager->reflect($this->dstClass);
+    }
+
+    /**
+     * @return Collection<int, string>
+     */
+    public function getDstKeyNames(): Collection
+    {
+        return $this->getKeyPairs()->values(); /** @phpstan-ignore-line */
+    }
+
+    /**
+     * @param Model $model
+     * @return Collection<int, mixed>
+     */
+    protected function getDstKeys(Model $model): Collection
+    {
+        return $this->getDstKeyNames()->map(static fn(string $name) => $model->getProperty($name));
+    }
 
     /**
      * @return string|null
@@ -140,18 +161,18 @@ abstract class Relation
     public function scope(string ...$names): static
     {
         foreach ($names as $name) {
-            $this->scopes[$name] = $this->getDestReflection()->scopes[$name];
+            $this->scopes[$name] = $this->getDstReflection()->scopes[$name];
         }
         return $this;
     }
 
     /**
-     * @return QueryBuilder<TDest>
+     * @return QueryBuilder<TDst>
      */
     protected function buildQuery(): QueryBuilder
     {
         $db = $this->manager->getDatabaseManager();
-        $query = new QueryBuilder($db, $this->getDestReflection());
+        $query = new QueryBuilder($db, $this->getDstReflection());
 
         foreach ($this->scopes as $scope) {
             $scope($query);
@@ -161,41 +182,45 @@ abstract class Relation
     }
 
     /**
-     * @param iterable<array-key> $srcKeys
-     * @return ModelCollection<int, TDest>
+     * @param ModelCollection<array-key, TSrc> $srcModels
+     * @return ModelCollection<int, TDst>
      */
-    protected function getDestModels(iterable $srcKeys): ModelCollection
+    protected function getDstModels(iterable $srcModels): ModelCollection
     {
-        return $this->buildQuery()
-            ->where($this->getDestKeyName(), $srcKeys)
-            ->all();
+        $query = $this->buildQuery();
+
+        foreach ($this->keyPairs as $srcName => $dstName) {
+            $srcKeys = $srcModels->pluck($srcName)->compact();
+            $query->where($dstName, $srcKeys);
+        }
+
+        return $query->all();
     }
 
     /**
      * @param iterable<int, TSrc> $srcModels
-     * @return ModelCollection<int, TDest>
+     * @return ModelCollection<int, TDst>
      */
     public function load(iterable $srcModels): ModelCollection
     {
-        $mappedSrcModels = (new Collection($srcModels))
-            ->keyBy($this->getSrcKeyName())
-            ->compact();
+        $keyedSrcModels = (new ModelCollection($this->srcReflection, $srcModels))
+            ->keyBy(fn(Model $model) => $this->getSrcKeys($model)->join('|'));
 
-        $destModels = $this->getDestModels($mappedSrcModels->keys());
+        $dstModels = $this->getDstModels($keyedSrcModels);
 
-        $destModelsGroupedByKey = $destModels->groupBy($this->getDestKeyName());
+        $dstModelGroups = $dstModels->groupBy(fn(Model $model) => $this->getDstKeys($model)->join('|'));
 
-        foreach ($destModelsGroupedByKey as $key => $groupedDestModels) {
-            $this->setDestToSrc($mappedSrcModels[$key], $groupedDestModels);
+        foreach ($dstModelGroups as $key => $groupedDstModels) {
+            $this->setDstToSrc($keyedSrcModels[$key], $groupedDstModels);
         }
 
-        return $destModels;
+        return $dstModels;
     }
 
     /**
      * @param TSrc $srcModel
-     * @param ModelCollection<int, TDest> $destModels
+     * @param ModelCollection<int, TDst> $dstModels
      * @return void
      */
-    abstract protected function setDestToSrc(Model $srcModel, ModelCollection $destModels): void;
+    abstract protected function setDstToSrc(Model $srcModel, ModelCollection $dstModels): void;
 }

@@ -72,12 +72,20 @@ class QueryBuilder extends SelectBuilder
     public function where(ConditionBuilder|string $column, mixed $operator = null, mixed $value = null): static
     {
         $num = func_num_args();
-        if ($num === 2 && is_string($column)) {
-            if ($relation = $this->reflection->relations[$column] ?? null) {
-                $column = $relation->getDestKeyName();
-                if ($operator instanceof Model) {
-                    $operator = $operator->getProperty($column);
+
+        if (is_string($column)) {
+            if ($num === 2 && $operator instanceof Model) {
+                $dstModel = $operator;
+            }
+            elseif ($num === 3 && $value instanceof Model && ($operator === null || $operator === '=')) {
+                $dstModel = $value;
+            }
+
+            if (isset($dstModel) && $relation = $this->reflection->relations[$column] ?? false) {
+                foreach ($relation->getKeyPairs() as $srcKeyName => $dstKeyName) {
+                    parent::where($srcKeyName, $dstModel->getProperty($dstKeyName));
                 }
+                return $this;
             }
         }
 

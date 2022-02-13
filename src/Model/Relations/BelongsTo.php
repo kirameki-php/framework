@@ -7,42 +7,28 @@ use Kirameki\Model\ModelCollection;
 
 /**
  * @template TSrc of Model
- * @template TDest of Model
- * @template-extends Relation<TSrc, TDest>
+ * @template TDst of Model
+ * @template-extends Relation<TSrc, TDst>
  */
 class BelongsTo extends Relation
 {
     /**
-     * @return string
+     * @return non-empty-array<non-empty-string, non-empty-string>
      */
-    public function getSrcKeyName(): string
+    protected function guessKeyPairs(): array
     {
-        return $this->srcKey ??= $this->guessSrcKeyName();
-    }
-
-    /**
-     * @return string
-     */
-    protected function guessSrcKeyName(): string
-    {
-        return lcfirst(class_basename($this->getDestReflection()->class)).'Id';
-    }
-
-    /**
-     * @return string
-     */
-    public function getDestKeyName(): string
-    {
-        return $this->destKey ??= $this->getDestReflection()->primaryKey;
+        $srcKeyName = $this->getDstReflection()->primaryKey;
+        $dstKeyName = lcfirst(class_basename($this->getDstReflection()->class)).'Id';
+        return [$srcKeyName => $dstKeyName];
     }
 
     /**
      * @param TSrc $srcModel
-     * @param ModelCollection<int, TDest> $destModels
+     * @param ModelCollection<int, TDst> $dstModels
      * @return void
      */
-    protected function setDestToSrc(Model $srcModel, ModelCollection $destModels): void
+    protected function setDstToSrc(Model $srcModel, ModelCollection $dstModels): void
     {
-        $srcModel->setRelation($this->getName(), $destModels[0]);
+        $srcModel->setRelation($this->getName(), $dstModels[0]);
     }
 }
