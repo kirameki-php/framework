@@ -72,7 +72,7 @@ class Config implements ArrayAccess
     }
 
     /**
-     * @param string $key
+     * @param non-empty-string $key
      * @return string
      */
     public function getString(string $key): string

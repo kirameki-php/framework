@@ -4,6 +4,7 @@ namespace Kirameki\Model;
 
 use ArrayAccess;
 use JsonSerializable;
+use Kirameki\Model\Relations\RelationCollection;
 use RuntimeException;
 
 /**
@@ -92,16 +93,18 @@ abstract class Model implements ArrayAccess, JsonSerializable
      */
     public function __set(string $name, $value): void
     {
-        if ($this->isRelation($name)) {
-            /** @var iterable<int, static> $value */
-            $this->setRelation($name, $value);
-        }
-        elseif ($this->isProperty($name)) {
+        if ($this->isProperty($name)) {
             $this->setProperty($name, $value);
+            return;
         }
-        else {
-            throw new RuntimeException('Tried to set unknown property or relation: '.$name);
+
+        if ($this->isRelation($name)) {
+            /** @var Model|RelationCollection<Model, Model> $value */
+            $this->setRelation($name, $value);
+            return;
         }
+
+        throw new RuntimeException('Tried to set unknown property or relation: '.$name);
     }
 
     /**

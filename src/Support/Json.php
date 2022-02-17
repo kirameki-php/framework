@@ -23,18 +23,18 @@ class Json
     /**
      * @param string $json
      * @param int<1, max> $depth
-     * @return array<mixed>
+     * @return mixed
      */
-    public static function decode(string $json, int $depth = 512): array
+    public static function decode(string $json, int $depth = 512): mixed
     {
-        return json_decode($json, true, $depth, JSON_THROW_ON_ERROR); /** @phpstan-ignore-line */
+        return json_decode($json, true, $depth, JSON_THROW_ON_ERROR);
     }
 
     /**
      * @param string $path
-     * @return array<mixed>
+     * @return mixed
      */
-    public static function decodeFile(string $path): array
+    public static function decodeFile(string $path): mixed
     {
         return static::decode((string) file_get_contents($path));
     }

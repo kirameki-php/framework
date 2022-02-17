@@ -261,7 +261,7 @@ class Enumerable implements Countable, IteratorAggregate, JsonSerializable
     }
 
     /**
-     * @param callable (TValue, TKey): void|mixed $callback
+     * @param callable(TValue, TKey): void $callback
      * @return $this
      */
     public function each(callable $callback): static

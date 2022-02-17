@@ -46,9 +46,9 @@ trait ArrayAccess
     }
 
     /**
-     * @return array
+     * @return array<string, mixed>
      */
-    public function toArray(): array
+    public function toAssoc(): array
     {
         $array = [];
         foreach ($this->getPropertyNames() as $name) {

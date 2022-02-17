@@ -4,6 +4,8 @@ namespace Kirameki\Model\Relations;
 
 use Kirameki\Model\Model;
 use Kirameki\Model\ModelCollection;
+use Kirameki\Model\ModelManager;
+use Kirameki\Model\Reflection;
 
 /**
  * @template TSrc of Model
@@ -13,7 +15,20 @@ use Kirameki\Model\ModelCollection;
 class HasMany extends Relation
 {
     /**
-     * @return non-empty-array<non-empty-string, string>
+     * @param ModelManager $manager
+     * @param string $name
+     * @param Reflection<TSrc> $srcReflection
+     * @param class-string<TDst> $dstClass
+     * @param array<string, string> $keyPairs should look like [$srcKeyName => $dstKeyName, ...]
+     * @param string|null $inverse
+     */
+    public function __construct(ModelManager $manager, string $name, Reflection $srcReflection, string $dstClass, array $keyPairs = null, ?string $inverse = null)
+    {
+        parent::__construct($manager, $name, $srcReflection, $dstClass, $keyPairs, $inverse);
+    }
+
+    /**
+     * @return array<string, string>
      */
     protected function guessKeyPairs(): array
     {

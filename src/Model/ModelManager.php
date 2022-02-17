@@ -14,17 +14,17 @@ class ModelManager
     protected DatabaseManager $databaseManager;
 
     /**
-     * @var Reflection[]
+     * @var array<class-string, Reflection<Model>>
      */
     protected array $reflections;
 
     /**
-     * @var CastInterface[]
+     * @var array<non-empty-string, CastInterface>
      */
     protected array $casts = [];
 
     /**
-     * @var Closure[]
+     * @var array<non-empty-string, callable(): CastInterface>
      */
     protected array $deferredCasts = [];
 
@@ -45,12 +45,13 @@ class ModelManager
     }
 
     /**
-     * @param string $class
-     * @return Reflection
+     * @template T of Model
+     * @param class-string<T> $class
+     * @return Reflection<T>
      */
     public function reflect(string $class): Reflection
     {
-        return $this->reflections[$class] ??= call_user_func("$class::getReflection");
+        return $this->reflections[$class] ??= call_user_func("$class::getReflection"); /** @phpstan-ignore-line */
     }
 
     /**
@@ -59,15 +60,15 @@ class ModelManager
      */
     public function getCast(string $name): CastInterface
     {
-        return $this->casts[$name] ??= call_user_func($this->deferredCasts[$name]);
+        return $this->casts[$name] ??= call_user_func($this->deferredCasts[$name]); /** @phpstan-ignore-line */
     }
 
     /**
      * @param string $name
-     * @param Closure $deferred
+     * @param callable(): CastInterface $deferred
      * @return $this
      */
-    public function setCast(string $name, Closure $deferred): static
+    public function setCast(string $name, callable $deferred): static
     {
         $this->deferredCasts[$name] = $deferred;
         return $this;

@@ -14,13 +14,13 @@ use Kirameki\Model\ReflectionBuilder;
 trait Reflect
 {
     /**
-     * @var Reflection|null
+     * @var Reflection<static>|null
      */
     protected static ?Reflection $reflection = null;
 
     /**
      * @internal only used for test
-     * @param Reflection $reflection
+     * @param Reflection<static> $reflection
      */
     public static function setTestReflection(Reflection $reflection): void
     {

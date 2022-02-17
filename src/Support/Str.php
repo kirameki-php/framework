@@ -550,7 +550,7 @@ class Str
 
     /**
      * @param string $string
-     * @param non-empty-string|non-empty-string[] $separator
+     * @param non-empty-string|array<non-empty-string> $separator
      * @param int|null $limit
      * @return array<int, string>
      */

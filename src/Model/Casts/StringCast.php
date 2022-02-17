@@ -9,10 +9,10 @@ class StringCast implements CastInterface
     /**
      * @param Model $model
      * @param string $key
-     * @param $value
+     * @param mixed $value
      * @return string
      */
-    public function get(Model $model, string $key, $value): string
+    public function get(Model $model, string $key, mixed $value): string
     {
         return (string) $value;
     }
@@ -20,10 +20,10 @@ class StringCast implements CastInterface
     /**
      * @param Model $model
      * @param string $key
-     * @param $value
+     * @param mixed $value
      * @return string
      */
-    public function set(Model $model, string $key, $value): string
+    public function set(Model $model, string $key, mixed $value): string
     {
         return (string) $value;
     }

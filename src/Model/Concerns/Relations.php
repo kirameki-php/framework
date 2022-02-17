@@ -13,12 +13,12 @@ use Kirameki\Support\Arr;
 trait Relations
 {
     /**
-     * @var array
+     * @var array<Model|RelationCollection<static, Model>>
      */
     protected array $relations;
 
     /**
-     * @return array<Model|RelationCollection>
+     * @return array<Model|RelationCollection<static, Model>>
      */
     public function getRelations(): array
     {
@@ -27,7 +27,7 @@ trait Relations
 
     /**
      * @param string $name
-     * @return mixed
+     * @return Model|RelationCollection<static, Model>
      */
     public function getRelation(string $name): mixed
     {
@@ -107,5 +107,4 @@ trait Relations
         }
         return $this;
     }
-
 }

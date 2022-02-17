@@ -510,6 +510,7 @@ class Arr
         }
 
         if ($iterable instanceof Collection) {
+            /** @var Collection<TKey, TValue> $iterable */
             return $iterable->toArray();
         }
 
@@ -998,7 +999,7 @@ class Arr
      * @template TKey of array-key
      * @param iterable<TKey, mixed> $iterable
      * @param TKey $key
-     * @return array<mixed>
+     * @return array<int, mixed>
      */
     public static function pluck(iterable $iterable, int|string $key): array
     {

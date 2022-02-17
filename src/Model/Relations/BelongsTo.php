@@ -13,7 +13,7 @@ use Kirameki\Model\ModelCollection;
 class BelongsTo extends Relation
 {
     /**
-     * @return non-empty-array<non-empty-string, non-empty-string>
+     * @return array<string, string>
      */
     protected function guessKeyPairs(): array
     {

@@ -9,10 +9,10 @@ class IntCast implements CastInterface
     /**
      * @param Model $model
      * @param string $key
-     * @param $value
+     * @param mixed $value
      * @return int
      */
-    public function get(Model $model, string $key, $value): int
+    public function get(Model $model, string $key, mixed $value): int
     {
         return (int) $value;
     }
@@ -20,10 +20,10 @@ class IntCast implements CastInterface
     /**
      * @param Model $model
      * @param string $key
-     * @param $value
+     * @param mixed $value
      * @return int
      */
-    public function set(Model $model, string $key, $value): int
+    public function set(Model $model, string $key, mixed $value): int
     {
         return (int) $value;
     }

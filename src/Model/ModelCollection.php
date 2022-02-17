@@ -45,7 +45,7 @@ class ModelCollection extends Collection
     }
 
     /**
-     * @param TKey $key
+     * @param array-key $key
      * @return Collection<int, mixed>
      */
     public function pluck(int|string $key): Collection

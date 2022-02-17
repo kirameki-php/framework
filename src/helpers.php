@@ -29,12 +29,12 @@ function collect(?iterable $items = null): Collection
 
 /**
  * @param string|object $class
- * @return string
+ * @return non-empty-string
  */
 function class_basename(string|object $class): string
 {
     $class = is_object($class) ? get_class($class) : $class;
-    return basename(str_replace('\\', '/', $class));
+    return basename(str_replace('\\', '/', $class)); /** @phpstan-ignore-line */
 }
 
 /**

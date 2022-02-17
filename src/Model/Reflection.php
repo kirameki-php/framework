@@ -2,7 +2,6 @@
 
 namespace Kirameki\Model;
 
-use Closure;
 use Kirameki\Model\Relations\Relation;
 
 /**
@@ -26,22 +25,22 @@ class Reflection
     public string $table;
 
     /**
-     * @var non-empty-string
+     * @var string
      */
     public string $primaryKey;
 
     /**
-     * @var Property[]
+     * @var array<string, Property>
      */
     public array $properties;
 
     /**
-     * @var array<non-empty-string, Relation<TModel, Model>>
+     * @var array<string, Relation<Model, Model>>
      */
     public array $relations;
 
     /**
-     * @var Closure[]
+     * @var array<callable>
      */
     public array $scopes;
 

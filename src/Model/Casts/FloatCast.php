@@ -9,10 +9,10 @@ class FloatCast implements CastInterface
     /**
      * @param Model $model
      * @param string $key
-     * @param $value
+     * @param mixed $value
      * @return float
      */
-    public function get(Model $model, string $key, $value): float
+    public function get(Model $model, string $key, mixed $value): float
     {
         return (float) $value;
     }
@@ -20,10 +20,10 @@ class FloatCast implements CastInterface
     /**
      * @param Model $model
      * @param string $key
-     * @param $value
+     * @param mixed $value
      * @return float
      */
-    public function set(Model $model, string $key, $value): float
+    public function set(Model $model, string $key, mixed $value): float
     {
         return (float) $value;
     }

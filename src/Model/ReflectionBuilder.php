@@ -2,9 +2,9 @@
 
 namespace Kirameki\Model;
 
-use Closure;
 use Kirameki\Model\Relations\BelongsTo;
 use Kirameki\Model\Relations\HasMany;
+use Kirameki\Model\Relations\Relation;
 
 /**
  * @template TModel of Model
@@ -63,33 +63,42 @@ class ReflectionBuilder
 
     /**
      * @template TDst of Model
-     * @param non-empty-string $name
+     * @param string $name
      * @param class-string<TDst> $class
-     * @param non-empty-array<non-empty-string, non-empty-string> $keyPairs
-     * @param non-empty-string|null $inverseOf
+     * @param array<string, string> $keyPairs
+     * @param string|null $inverse
      */
-    public function belongsTo(string $name, string $class, array $keyPairs = null, ?string $inverseOf = null): void
+    public function belongsTo(string $name, string $class, array $keyPairs = null, ?string $inverse = null): void
     {
-        $this->reflection->relations[$name] = new BelongsTo($this->manager, $name, $this->reflection, $class, $keyPairs, $inverseOf);
+        $this->addRelation(new BelongsTo($this->manager, $name, $this->reflection, $class, $keyPairs, $inverse));
     }
 
     /**
      * @template TDst of Model
-     * @param non-empty-string $name
+     * @param string $name
      * @param class-string<TDst> $class
-     * @param non-empty-array<non-empty-string, non-empty-string> $keyPairs
-     * @param non-empty-string|null $inverseOf
+     * @param array<string, string> $keyPairs
+     * @param string|null $inverse
      */
-    public function hasMany(string $name, string $class, array $keyPairs = null, ?string $inverseOf = null): void
+    public function hasMany(string $name, string $class, array $keyPairs = null, ?string $inverse = null): void
     {
-        $this->reflection->relations[$name] = new HasMany($this->manager, $name, $this->reflection, $class, $keyPairs, $inverseOf);
+        $this->addRelation(new HasMany($this->manager, $name, $this->reflection, $class, $keyPairs, $inverse));
+    }
+
+    /**
+     * @param Relation<Model, Model> $relation
+     * @return void
+     */
+    protected function addRelation(Relation $relation): void
+    {
+        $this->reflection->relations[$relation->getName()] = $relation;
     }
 
     /**
      * @param string $name
-     * @param Closure(QueryBuilder<TModel>):void $callback
+     * @param callable(QueryBuilder<TModel>):void $callback
      */
-    public function scope(string $name, Closure $callback): void
+    public function scope(string $name, callable $callback): void
     {
         $this->reflection->scopes[$name] = $callback;
     }

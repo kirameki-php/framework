@@ -2,7 +2,6 @@
 
 namespace Kirameki\Model\Relations;
 
-use Closure;
 use Kirameki\Model\Model;
 use Kirameki\Model\ModelCollection;
 use Kirameki\Model\QueryBuilder;
@@ -22,7 +21,7 @@ abstract class Relation
     protected ModelManager $manager;
 
     /**
-     * @var non-empty-string
+     * @var string
      */
     protected string $name;
 
@@ -47,22 +46,22 @@ abstract class Relation
     protected Collection $keyPairs;
 
     /**
-     * @var non-empty-string|null
+     * @var string|null
      */
     protected ?string $inverse;
 
     /**
-     * @var Closure[]
+     * @var array<int, callable>
      */
     protected array $scopes;
 
     /**
      * @param ModelManager $manager
-     * @param non-empty-string $name
+     * @param string $name
      * @param Reflection<TSrc> $srcReflection
      * @param class-string<TDst> $dstClass
-     * @param non-empty-array<non-empty-string, non-empty-string> $keyPairs [$srcKeyName => $dstKeyName, ...]
-     * @param non-empty-string|null $inverse
+     * @param array<string, string> $keyPairs should look like [$srcKeyName => $dstKeyName, ...]
+     * @param string|null $inverse
      */
     public function __construct(ModelManager $manager, string $name, Reflection $srcReflection, string $dstClass, array $keyPairs = null, ?string $inverse = null)
     {
@@ -76,7 +75,7 @@ abstract class Relation
     }
 
     /**
-     * @return non-empty-string
+     * @return string
      */
     public function getName(): string
     {
@@ -92,7 +91,7 @@ abstract class Relation
     }
 
     /**
-     * @return non-empty-array<non-empty-string, non-empty-string>
+     * @return array<string, string>
      */
     abstract protected function guessKeyPairs(): array;
 
@@ -155,46 +154,16 @@ abstract class Relation
     }
 
     /**
-     * @param string ...$names
+     * @param string|callable(QueryBuilder<TDst>, ModelCollection<int, TSrc>): QueryBuilder<TDst> $scope
      * @return $this
      */
-    public function scope(string ...$names): static
+    public function scope(string|callable $scope): static
     {
-        foreach ($names as $name) {
-            $this->scopes[$name] = $this->getDstReflection()->scopes[$name];
-        }
+        $this->scopes[] = is_string($scope)
+            ? $this->getDstReflection()->scopes[$scope]
+            : $scope;
+
         return $this;
-    }
-
-    /**
-     * @return QueryBuilder<TDst>
-     */
-    protected function buildQuery(): QueryBuilder
-    {
-        $db = $this->manager->getDatabaseManager();
-        $query = new QueryBuilder($db, $this->getDstReflection());
-
-        foreach ($this->scopes as $scope) {
-            $scope($query);
-        }
-
-        return $query;
-    }
-
-    /**
-     * @param ModelCollection<array-key, TSrc> $srcModels
-     * @return ModelCollection<int, TDst>
-     */
-    protected function getDstModels(iterable $srcModels): ModelCollection
-    {
-        $query = $this->buildQuery();
-
-        foreach ($this->keyPairs as $srcName => $dstName) {
-            $srcKeys = $srcModels->pluck($srcName)->compact();
-            $query->where($dstName, $srcKeys);
-        }
-
-        return $query->all();
     }
 
     /**
@@ -203,11 +172,10 @@ abstract class Relation
      */
     public function load(iterable $srcModels): ModelCollection
     {
-        $keyedSrcModels = (new ModelCollection($this->srcReflection, $srcModels))
-            ->keyBy(fn(Model $model) => $this->getSrcKeys($model)->join('|'));
+        $srcModels = $this->srcModelsToCollection($srcModels);
+        $dstModels = $this->getDstModels($srcModels);
 
-        $dstModels = $this->getDstModels($keyedSrcModels);
-
+        $keyedSrcModels = $srcModels->keyBy(fn(Model $model) => $this->getSrcKeys($model)->join('|'));
         $dstModelGroups = $dstModels->groupBy(fn(Model $model) => $this->getDstKeys($model)->join('|'));
 
         foreach ($dstModelGroups as $key => $groupedDstModels) {
@@ -215,6 +183,68 @@ abstract class Relation
         }
 
         return $dstModels;
+    }
+
+    /**
+     * @param iterable<int, TSrc> $srcModels
+     * @return ModelCollection<int, TSrc>
+     */
+    protected function srcModelsToCollection(iterable $srcModels): ModelCollection
+    {
+        if ($srcModels instanceof ModelCollection) {
+            return $srcModels;
+        }
+
+        if ($srcModels instanceof Collection) {
+            $srcModels = $srcModels->toArray();
+        }
+
+        return new ModelCollection($this->srcReflection, $srcModels);
+    }
+
+    /**
+     * @param ModelCollection<int, TSrc> $srcModels
+     * @return ModelCollection<int, TDst>
+     */
+    protected function getDstModels(ModelCollection $srcModels): ModelCollection
+    {
+        $query = $this->newQuery();
+        $this->addConstraintsToQuery($query, $srcModels);
+        $this->addScopesToQuery($query, $srcModels);
+        return $query->all();
+    }
+
+    /**
+     * @return QueryBuilder<TDst>
+     */
+    protected function newQuery(): QueryBuilder
+    {
+        return new QueryBuilder($this->manager->getDatabaseManager(), $this->getDstReflection());
+    }
+
+    /**
+     * @param QueryBuilder<TDst> $query
+     * @param ModelCollection<int, TSrc> $srcModels
+     * @return void
+     */
+    protected function addConstraintsToQuery(QueryBuilder $query, ModelCollection $srcModels): void
+    {
+        foreach ($this->keyPairs as $srcName => $dstName) {
+            $srcKeys = $srcModels->pluck($srcName)->compact();
+            $query->where($dstName, $srcKeys);
+        }
+    }
+
+    /**
+     * @param QueryBuilder<TDst> $query
+     * @param ModelCollection<int, TSrc> $srcModels
+     * @return void
+     */
+    protected function addScopesToQuery(QueryBuilder $query, ModelCollection $srcModels): void
+    {
+        foreach ($this->scopes as $scope) {
+            $scope($query, $srcModels);
+        }
     }
 
     /**
