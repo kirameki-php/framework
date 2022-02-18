@@ -2,7 +2,7 @@
 
 namespace Kirameki\Database\Schema\Statements;
 
-class BaseStatement
+abstract class BaseStatement
 {
     /**
      * @var string

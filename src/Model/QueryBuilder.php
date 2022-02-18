@@ -24,11 +24,11 @@ class QueryBuilder extends SelectBuilder
      */
     public function __construct(DatabaseManager $db, Reflection $reflection)
     {
-        $connection = $db->using($reflection->connection);
+        $connection = $db->using($reflection->connectionName);
         parent::__construct($connection);
         $this->reflection = $reflection;
 
-        $this->from($reflection->table);
+        $this->from($reflection->tableName);
     }
 
     /**

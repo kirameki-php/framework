@@ -23,12 +23,12 @@ abstract class PdoAdapter implements AdapterInterface
     protected ?PDO $pdo = null;
 
     /**
-     * @var array
+     * @var array<string, mixed>
      */
     protected array $config;
 
     /**
-     * @param array $config
+     * @param array<string, mixed> $config
      */
     public function __construct(array $config)
     {
@@ -36,7 +36,7 @@ abstract class PdoAdapter implements AdapterInterface
     }
 
     /**
-     * @return array
+     * @return array<string, mixed>
      */
     public function getConfig(): array
     {
@@ -53,17 +53,22 @@ abstract class PdoAdapter implements AdapterInterface
 
     /**
      * @param string $statement
-     * @param array|null $bindings
-     * @return array
+     * @param array<mixed>|null $bindings
+     * @return array<mixed>
      */
     public function query(string $statement, ?array $bindings = null): array
     {
-        return $this->execQuery($statement, $bindings)->fetchAll(PDO::FETCH_ASSOC);
+        $prepared = $this->execQuery($statement, $bindings);
+        $result = $prepared->fetchAll(PDO::FETCH_ASSOC);
+        if ($result === false) {
+            $this->throwException($prepared);
+        }
+        return $result;
     }
 
     /**
      * @param string $statement
-     * @param array|null $bindings
+     * @param array<mixed>|null $bindings
      * @return int
      */
     public function affectingQuery(string $statement, ?array $bindings = null): int
@@ -73,13 +78,20 @@ abstract class PdoAdapter implements AdapterInterface
 
     /**
      * @param string $statement
-     * @param array $bindings
-     * @return Generator
+     * @param array<mixed> $bindings
+     * @return Generator<mixed>
      */
     public function cursor(string $statement, array $bindings): Generator
     {
         $prepared = $this->execQuery($statement, $bindings);
-        while ($data = $prepared->fetch()) {
+        while (true) {
+            $data = $prepared->fetch();
+            if ($data === false) {
+                if ($prepared->errorCode() === '00000') {
+                    break;
+                }
+                $this->throwException($prepared);
+            }
             yield $data;
         }
     }
@@ -173,7 +185,7 @@ abstract class PdoAdapter implements AdapterInterface
 
     /**
      * @param string $statement
-     * @param array|null $bindings
+     * @param array<mixed>|null $bindings
      * @return PDOStatement
      */
     protected function execQuery(string $statement, ?array $bindings): PDOStatement
@@ -184,15 +196,15 @@ abstract class PdoAdapter implements AdapterInterface
     }
 
     /**
-     * @param array $bindings
-     * @return array
+     * @param array<mixed> $bindings
+     * @return array<mixed>
      */
     protected function prepareBindings(array $bindings): array
     {
         $formatter = $this->getQueryFormatter();
         $prepared = [];
         foreach($bindings as $name => $binding) {
-            $prepared[$name] = $formatter->parameter($binding);
+            $prepared[$name] = $formatter->parameterize($binding);
         }
         return $prepared;
     }
@@ -205,7 +217,7 @@ abstract class PdoAdapter implements AdapterInterface
         if ($this->pdo === null) {
             $this->connect();
         }
-        return $this->pdo;
+        return $this->pdo; /** @phpstan-ignore-line */
     }
 
     /**
@@ -218,5 +230,14 @@ abstract class PdoAdapter implements AdapterInterface
             throw new RuntimeException('Invalid string: "'.$str.'". Only alphanumeric characters, "_", and "-" are allowed.');
         }
         return $str;
+    }
+
+    /**
+     * @param PDOStatement $statement
+     * @return void
+     */
+    protected function throwException(PDOStatement $statement): void
+    {
+        throw new RuntimeException(implode(' | ', $statement->errorInfo()));
     }
 }

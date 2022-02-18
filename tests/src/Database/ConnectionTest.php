@@ -20,4 +20,17 @@ class ConnectionTest extends DatabaseTestCase
         self::assertTrue($this->mysqlConnection()->tableExists('Dummy'));
     }
 
+    public function testCursor(): void
+    {
+        $this->createDummyTable();
+        $conn = $this->mysqlConnection();
+        $conn->insertInto('Dummy')->value(['id' => 'test'])->execute();
+
+        $count = 0;
+        foreach ($this->mysqlConnection()->cursor('SELECT * FROM Dummy') as $value) {
+            $this->assertEquals(['id' => 'test'], $value);
+            $count++;
+        }
+        $this->assertEquals(1, $count);
+    }
 }

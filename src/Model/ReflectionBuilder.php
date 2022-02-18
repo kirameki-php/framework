@@ -32,22 +32,22 @@ class ReflectionBuilder
     }
 
     /**
-     * @param string $connection
+     * @param string $name
      * @return $this
      */
-    public function connection(string $connection): static
+    public function connection(string $name): static
     {
-        $this->reflection->connection = $connection;
+        $this->reflection->connectionName = $name;
         return $this;
     }
 
     /**
-     * @param string $table
+     * @param string $name
      * @return $this
      */
-    public function table(string $table): static
+    public function table(string $name): static
     {
-        $this->reflection->table = $table;
+        $this->reflection->tableName = $name;
         return $this;
     }
 
@@ -109,7 +109,7 @@ class ReflectionBuilder
      */
     public function applyDefaultsIfOmitted(): void
     {
-        $this->reflection->connection ??= config()->getString('database.default');
-        $this->reflection->table ??= class_basename($this->reflection->class);
+        $this->reflection->connectionName ??= config()->getString('database.default');
+        $this->reflection->tableName ??= class_basename($this->reflection->class);
     }
 }

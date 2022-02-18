@@ -6,6 +6,9 @@ use Kirameki\Database\Connection;
 use Kirameki\Database\Query\Statements\InsertStatement;
 use Traversable;
 
+/**
+ * @property InsertStatement $statement
+ */
 class InsertBuilder extends StatementBuilder
 {
     /**
@@ -18,7 +21,7 @@ class InsertBuilder extends StatementBuilder
     }
 
     /**
-     * @param array $data
+     * @param array<string, mixed> $data
      * @return $this
      */
     public function value(array $data): static
@@ -28,7 +31,7 @@ class InsertBuilder extends StatementBuilder
     }
 
     /**
-     * @param iterable $dataset
+     * @param iterable<array<string, mixed>> $dataset
      * @return $this
      */
     public function values(iterable $dataset): static
@@ -52,7 +55,7 @@ class InsertBuilder extends StatementBuilder
     }
 
     /**
-     * @return array
+     * @return array<string, string|array<mixed>>
      */
     public function inspect(): array
     {

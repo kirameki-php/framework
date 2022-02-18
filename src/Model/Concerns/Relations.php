@@ -38,9 +38,8 @@ trait Relations
     }
 
     /**
-     * @template TModel of Model
      * @param string $name
-     * @param TModel|RelationCollection<static, TModel> $models
+     * @param Model|RelationCollection<static, Model> $models
      * @return $this
      */
     public function setRelation(string $name, Model|RelationCollection $models): static

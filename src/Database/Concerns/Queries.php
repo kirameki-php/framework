@@ -27,7 +27,7 @@ trait Queries
 
     /**
      * @param string $statement
-     * @param array|null $bindings
+     * @param array<mixed>|null $bindings
      * @return array
      */
     public function query(string $statement, ?array $bindings = null): array
@@ -41,7 +41,7 @@ trait Queries
 
     /**
      * @param string $statement
-     * @param array|null $bindings
+     * @param array<mixed>|null $bindings
      * @return int
      */
     public function affectingQuery(string $statement, ?array $bindings = null): int
@@ -55,10 +55,10 @@ trait Queries
 
     /**
      * @param string $statement
-     * @param array $bindings
-     * @return Generator
+     * @param array<mixed>|null $bindings
+     * @return Generator<mixed>
      */
-    public function cursor(string $statement, array $bindings): Generator
+    public function cursor(string $statement, ?array $bindings = []): Generator
     {
         $then = microtime(true);
         $result = $this->adapter->cursor($statement, $bindings);

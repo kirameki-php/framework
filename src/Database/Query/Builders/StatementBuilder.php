@@ -47,7 +47,7 @@ abstract class StatementBuilder
     }
 
     /**
-     * @return array
+     * @return array<string, string|array<mixed>>
      */
     abstract public function inspect(): array;
 
@@ -56,7 +56,9 @@ abstract class StatementBuilder
      */
     public function toSql(): string
     {
-        $formatter = $this->connection->getQueryFormatter();
-        return $formatter->interpolate(...array_values($this->inspect()));
+        $inspect = $this->inspect();
+        return $this->connection
+            ->getQueryFormatter()
+            ->interpolate((string)$inspect['statement'], (array) $inspect['bindings']);
     }
 }

@@ -5,9 +5,9 @@ namespace Kirameki\Database\Query\Statements;
 abstract class BaseStatement
 {
     /**
-     * @var string|null
+     * @var string
      */
-    public ?string $table = null;
+    public string $table;
 
     /**
      * @var string|null

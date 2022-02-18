@@ -9,7 +9,7 @@ use Kirameki\Database\Schema\Formatters\Formatter as SchemaFormatter;
 interface AdapterInterface
 {
     /**
-     * @return array
+     * @return array<string, scalar>
      */
     public function getConfig(): array;
 
@@ -30,22 +30,22 @@ interface AdapterInterface
 
     /**
      * @param string $statement
-     * @param array|null $bindings
+     * @param array<mixed>|null $bindings
      * @return array
      */
     public function query(string $statement, ?array $bindings = null): array;
 
     /**
      * @param string $statement
-     * @param array|null $bindings
+     * @param array<mixed>|null $bindings
      * @return int
      */
     public function affectingQuery(string $statement, ?array $bindings = null): int;
 
     /**
      * @param string $statement
-     * @param array $bindings
-     * @return Generator
+     * @param array<mixed> $bindings
+     * @return Generator<mixed>
      */
     public function cursor(string $statement, array $bindings): Generator;
 

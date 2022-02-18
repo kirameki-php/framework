@@ -40,8 +40,6 @@ trait Reflect
                 $builder = new ReflectionBuilder(static::getManager(), $reflection);
                 call_user_func($modelClass.'::define', $builder);
                 $builder->applyDefaultsIfOmitted();
-            } else {
-                // TODO: auto resolve from table info
             }
 
             static::$reflection = $reflection;
@@ -56,7 +54,7 @@ trait Reflect
     {
         $db = static::getManager()->getDatabaseManager();
         $reflection = static::getReflection();
-        return $db->using($reflection->connection);
+        return $db->using($reflection->connectionName);
     }
 
     /**
@@ -64,7 +62,7 @@ trait Reflect
      */
     public function getTable(): string
     {
-        return static::getReflection()->table;
+        return static::getReflection()->tableName;
     }
 
     /**

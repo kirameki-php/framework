@@ -5,6 +5,9 @@ namespace Kirameki\Database\Query\Builders;
 use Kirameki\Database\Connection;
 use Kirameki\Database\Query\Statements\UpdateStatement;
 
+/**
+ * @property UpdateStatement $statement
+ */
 class UpdateBuilder extends ConditionsBuilder
 {
     /**
@@ -17,7 +20,7 @@ class UpdateBuilder extends ConditionsBuilder
     }
 
     /**
-     * @param array $assignments
+     * @param array<string, mixed> $assignments
      * @return $this
      */
     public function set(array $assignments): static
@@ -38,7 +41,7 @@ class UpdateBuilder extends ConditionsBuilder
     }
 
     /**
-     * @return array
+     * @return array<string, string|array<mixed>>
      */
     public function inspect(): array
     {

@@ -17,12 +17,12 @@ class Reflection
     /**
      * @var string
      */
-    public string $connection;
+    public string $connectionName;
 
     /**
      * @var string
      */
-    public string $table;
+    public string $tableName;
 
     /**
      * @var string

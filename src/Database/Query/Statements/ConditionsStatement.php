@@ -5,7 +5,7 @@ namespace Kirameki\Database\Query\Statements;
 abstract class ConditionsStatement extends BaseStatement
 {
     /**
-     * @var ConditionDefinition[]
+     * @var array<ConditionDefinition>|null
      */
     public ?array $where = null;
 

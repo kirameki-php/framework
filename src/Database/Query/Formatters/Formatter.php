@@ -13,6 +13,7 @@ use Kirameki\Database\Query\Statements\InsertStatement;
 use Kirameki\Database\Query\Statements\SelectStatement;
 use Kirameki\Database\Query\Statements\UpdateStatement;
 use Kirameki\Support\Arr;
+use Kirameki\Support\Json;
 use Kirameki\Support\Str;
 use RuntimeException;
 
@@ -28,30 +29,22 @@ class Formatter
     {
         $parts = [];
         $parts[] = $this->selectPart($statement);
-        if ($statement->table !== null) {
-            $parts[] = $this->fromPart($statement);
-        }
-        if ($statement->where !== null) {
-            $parts[] = $this->wherePart($statement);
-        }
-        if ($statement->groupBy !== null) {
-            $parts[] = $this->groupByPart($statement);
-        }
-        if ($statement->orderBy !== null) {
-            $parts[] = $this->orderByPart($statement);
-        }
+        $parts[] = $this->fromPart($statement);
+        $parts[] = $this->wherePart($statement);
+        $parts[] = $this->groupByPart($statement);
+        $parts[] = $this->orderByPart($statement);
         if ($statement->limit !== null) {
             $parts[] = 'LIMIT ' . $statement->limit;
         }
         if ($statement->offset !== null) {
             $parts[] = 'OFFSET ' . $statement->offset;
         }
-        return implode(' ', $parts);
+        return implode(' ', array_filter($parts));
     }
 
     /**
      * @param SelectStatement $statement
-     * @return array
+     * @return array<mixed>
      */
     public function selectBindings(SelectStatement $statement): array
     {
@@ -88,7 +81,7 @@ class Formatter
 
     /**
      * @param InsertStatement $statement
-     * @return array
+     * @return array<mixed>
      */
     public function insertBindings(InsertStatement $statement): array
     {
@@ -128,7 +121,7 @@ class Formatter
 
     /**
      * @param UpdateStatement $statement
-     * @return array
+     * @return array<mixed>
      */
     public function updateBindings(UpdateStatement $statement): array
     {
@@ -150,7 +143,7 @@ class Formatter
 
     /**
      * @param DeleteStatement $statement
-     * @return array
+     * @return array<mixed>
      */
     public function deleteBindings(DeleteStatement $statement): array
     {
@@ -161,13 +154,13 @@ class Formatter
      * FOR DEBUGGING ONLY
      *
      * @param string $statement
-     * @param array $bindings
+     * @param array<mixed> $bindings
      * @return string
      */
     public function interpolate(string $statement, array $bindings): string
     {
         $remains = count($bindings);
-        return preg_replace_callback('/\?\??/', function ($matches) use (&$bindings, &$remains) {
+        return (string) preg_replace_callback('/\?\??/', function ($matches) use (&$bindings, &$remains) {
             if ($matches[0] === '?' && $remains > 0) {
                 $current = current($bindings);
                 next($bindings);
@@ -182,10 +175,10 @@ class Formatter
                 }
 
                 if (is_string($current)) {
-                    return $this->stringLiteral($current);
+                    return $this->toStringLiteral($current);
                 }
 
-                return $this->parameter($current);
+                return $this->parameterize($current);
             }
 
             return $matches[0];
@@ -201,6 +194,7 @@ class Formatter
         if (empty($statement->columns)) {
             $statement->columns[] = '*';
         }
+
         $expressions = [];
 
         $distinct = '';
@@ -214,6 +208,7 @@ class Formatter
                 continue;
             }
 
+            /** @var array<string> $segments */
             $segments = preg_split('/\s+as\s+/i', $name);
             if (count($segments) > 1) {
                 $expressions[] = $this->columnName($segments[0]) . ' AS ' . $segments[1];
@@ -254,19 +249,12 @@ class Formatter
     public function conditionsPart(ConditionsStatement $statement): string
     {
         $parts = [];
-        if ($statement->where !== null) {
-            $parts[] = $this->wherePart($statement);
-        }
-
-        if ($statement->orderBy !== null) {
-            $parts[] = $this->orderByPart($statement);
-        }
-
+        $parts[] = $this->wherePart($statement);
+        $parts[] = $this->orderByPart($statement);
         if ($statement->limit !== null) {
             $parts[] = 'LIMIT ' . $statement->limit;
         }
-
-        return implode(' ', $parts);
+        return implode(' ', array_filter($parts));
     }
 
     /**
@@ -300,15 +288,15 @@ class Formatter
     {
         // treat it as raw query
         if ($def->column === null) {
-            return (string) $def->parameters;
+            return (string) $def->value; /** @phpstan-ignore-line */
         }
 
         $column = $this->columnName($def->column, $table);
         $operator = $def->operator;
         $negated = $def->negated;
-        $value = $def->parameters;
+        $value = $def->value;
 
-        if ($operator === null) {
+        if ($operator === null && is_string($value)) {
             return $column.' '.$value;
         }
 
@@ -321,7 +309,7 @@ class Formatter
             return $column.' '.$operator.' '.$this->bindName();
         }
 
-        if ($operator === 'IN') {
+        if ($operator === 'IN' && is_array($value)) {
             if (empty($value)) {
                 return '1 = 0';
             }
@@ -362,7 +350,7 @@ class Formatter
             throw new RuntimeException("Negation not valid for '$operator'");
         }
 
-        if (count($value) > 1) {
+        if (is_array($value) && count($value) > 1) {
             throw new RuntimeException(count($value).' parameters for condition detected where only 1 is expected.');
         }
 
@@ -375,6 +363,9 @@ class Formatter
      */
     protected function wherePart(ConditionsStatement $statement): string
     {
+        if ($statement->where === null) {
+            return '';
+        }
         $clause = [];
         foreach ($statement->where as $condition) {
             $clause[] = $this->condition($condition, $statement->tableAlias);
@@ -388,6 +379,9 @@ class Formatter
      */
     protected function groupByPart(SelectStatement $statement): string
     {
+        if ($statement->groupBy === null) {
+            return '';
+        }
         $clause = [];
         foreach ($statement->groupBy as $column) {
             $clause[] = $this->columnName($column, $statement->tableAlias);
@@ -401,6 +395,9 @@ class Formatter
      */
     protected function orderByPart(ConditionsStatement $statement): string
     {
+        if ($statement->orderBy === null) {
+            return '';
+        }
         $clause = [];
         foreach ($statement->orderBy as $column => $sort) {
             $clause[] = $this->columnName($column, $statement->tableAlias) . ' ' . $sort;
@@ -437,20 +434,25 @@ class Formatter
     }
 
     /**
-     * @param $value
+     * @param mixed $value
      * @return mixed
      */
-    public function parameter($value): mixed
+    public function parameterize(mixed $value): mixed
     {
+        if (is_iterable($value)) {
+            return Json::encode(Arr::from($value));
+        }
+
         if ($value instanceof DateTimeInterface) {
             return '\''.$value->format(DateTimeInterface::RFC3339_EXTENDED).'\'';
         }
+
         return $value;
     }
 
     /**
      * @param ConditionsStatement $statement
-     * @return array
+     * @return array<mixed>
      */
     protected function bindingsForCondition(ConditionsStatement $statement): array
     {
@@ -458,13 +460,12 @@ class Formatter
         if ($statement->where !== null) {
             foreach ($statement->where as $cond) {
                 while ($cond !== null) {
-                    $parameters = ($cond->parameters instanceof Range)
-                        ? $cond->parameters->getBounds()
-                        : $cond->parameters;
-                    foreach ($parameters as $name => $binding) {
-                        is_string($name)
-                            ? $bindings[$name] = $binding
-                            : $bindings[] = $binding;
+                    if (is_iterable($cond->value)) {
+                        foreach ($cond->value as $binding) {
+                            $bindings[] = $binding;
+                        }
+                    } else {
+                        $bindings[] = $cond->value;
                     }
                     $cond = $cond->next;
                 }
@@ -489,7 +490,7 @@ class Formatter
      * @param string $str
      * @return string
      */
-    protected function stringLiteral(string $str): string
+    protected function toStringLiteral(string $str): string
     {
         return "'".str_replace("'", "''", $str)."'";
     }

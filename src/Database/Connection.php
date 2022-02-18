@@ -18,11 +18,6 @@ class Connection
         Tappable;
 
     /**
-     * @var string
-     */
-    protected string $name;
-
-    /**
      * @var AdapterInterface
      */
     protected AdapterInterface $adapter;
@@ -37,9 +32,8 @@ class Connection
      * @param AdapterInterface $adapter
      * @param EventManager $events
      */
-    public function __construct(string $name, AdapterInterface $adapter, EventManager $events)
+    public function __construct(AdapterInterface $adapter, EventManager $events)
     {
-        $this->name = $name;
         $this->adapter = $adapter;
         $this->events = $events;
     }
@@ -49,7 +43,7 @@ class Connection
      */
     public function getName(): string
     {
-        return $this->name;
+        return $this->adapter->getConfig()['connection'];
     }
 
     /**

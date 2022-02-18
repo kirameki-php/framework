@@ -83,10 +83,10 @@ trait Properties
             return $this->_resolvedProperties[$name];
         }
 
-        $property = static::getReflection()->properties[$name];
+        $meta = static::getReflection()->properties[$name];
 
         $value = isset($this->_persistedProperties[$name])
-            ? $property->cast->get($this, $name, $this->_persistedProperties[$name])
+            ? $meta->cast->get($this, $name, $this->_persistedProperties[$name])
             : null;
 
         $this->cacheResolved($name, $value);
@@ -230,9 +230,19 @@ trait Properties
     }
 
     /**
+     * @return void
+     */
+    protected function setDirtyPropertiesAsPersisted(): void
+    {
+        foreach($this->_previousProperties as $name => $value) {
+            $this->_persistedProperties[$name] = $value;
+        }
+    }
+
+    /**
      * @return $this
      */
-    protected function clearDirty(): static
+    protected function clearDirtyProperties(): static
     {
         $this->_previousProperties = [];
         return $this;

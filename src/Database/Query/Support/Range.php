@@ -2,7 +2,13 @@
 
 namespace Kirameki\Database\Query\Support;
 
-class Range
+use IteratorAggregate;
+use Traversable;
+
+/**
+ * @template-implements IteratorAggregate<int, mixed>
+ */
+class Range implements IteratorAggregate
 {
     public mixed $lowerBound;
     public bool $lowerClosed;
@@ -10,64 +16,64 @@ class Range
     public bool $upperClosed;
 
     /**
-     * @param $lower
-     * @param $upper
+     * @param mixed $lower
+     * @param mixed $upper
      * @return static
      */
-    public static function closed($lower, $upper): static
+    public static function closed(mixed $lower, mixed $upper): static
     {
         return new static($lower, true, $upper, true);
     }
 
     /**
-     * @param $lower
-     * @param $upper
+     * @param mixed $lower
+     * @param mixed $upper
      * @return static
      */
-    public static function open($lower, $upper): static
+    public static function open(mixed $lower, mixed $upper): static
     {
         return new static($lower, false, $upper, false);
     }
 
     /**
-     * @param $lower
-     * @param $upper
+     * @param mixed $lower
+     * @param mixed $upper
      * @return static
      */
-    public static function halfOpen($lower, $upper): static
+    public static function halfOpen(mixed $lower, mixed $upper): static
     {
         return new static($lower, true, $upper, false);
     }
 
     /**
      * @see closed()
-     * @param $lower
-     * @param $upper
+     * @param mixed $lower
+     * @param mixed $upper
      * @return static
      */
-    public static function included($lower, $upper): static
+    public static function included(mixed $lower, mixed $upper): static
     {
         return static::closed($lower, $upper);
     }
 
     /**
      * @see open()
-     * @param $lower
-     * @param $upper
+     * @param mixed $lower
+     * @param mixed $upper
      * @return static
      */
-    public static function excluded($lower, $upper): static
+    public static function excluded(mixed $lower, mixed $upper): static
     {
         return static::open($lower, $upper);
     }
 
     /**
      * @see halfOpen()
-     * @param $lower
-     * @param $upper
+     * @param mixed $lower
+     * @param mixed $upper
      * @return static
      */
-    public static function endExcluded($lower, $upper): static
+    public static function endExcluded(mixed $lower, mixed $upper): static
     {
         return static::halfOpen($lower, $upper);
     }
@@ -87,13 +93,11 @@ class Range
     }
 
     /**
-     * @return array
+     * @return Traversable<mixed>
      */
-    public function getBounds(): array
+    public function getIterator(): Traversable
     {
-        return [
-            $this->lowerBound,
-            $this->upperBound,
-        ];
+        yield 0 => $this->lowerBound;
+        yield 1 => $this->upperBound;
     }
 }

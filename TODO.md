@@ -3,8 +3,6 @@ Core
    - ex: error in dev / info in prd
 
 Database
-- distinct
-- groupby / having
 - local / utc timezone
 - atomic increment/decrement
 - xa transaction

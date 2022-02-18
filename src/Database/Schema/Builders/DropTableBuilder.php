@@ -4,6 +4,7 @@ namespace Kirameki\Database\Schema\Builders;
 
 use Kirameki\Database\Connection;
 use Kirameki\Database\Schema\Statements\BaseStatement;
+use Kirameki\Database\Schema\Statements\DropTableStatement;
 
 class DropTableBuilder extends StatementBuilder
 {
@@ -14,7 +15,7 @@ class DropTableBuilder extends StatementBuilder
     public function __construct(Connection $connection, string $table)
     {
         $this->connection = $connection;
-        $this->statement = new BaseStatement($table);
+        $this->statement = new DropTableStatement($table);
     }
 
     /**

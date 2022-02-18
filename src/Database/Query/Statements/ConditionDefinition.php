@@ -9,16 +9,34 @@ class ConditionDefinition
 {
     use Tappable;
 
+    /**
+     * @var string|null
+     */
     public ?string $column;
 
+    /**
+     * @var string|null
+     */
     public ?string $operator;
 
+    /**
+     * @var bool
+     */
     public bool $negated;
 
-    public Range|array|null $parameters;
+    /**
+     * @var mixed
+     */
+    public mixed $value;
 
+    /**
+     * @var string|null
+     */
     public ?string $nextLogic;
 
+    /**
+     * @var static|null
+     */
     public ?self $next;
 
     /**
@@ -29,7 +47,7 @@ class ConditionDefinition
         $this->column = $column;
         $this->negated = false;
         $this->operator = null;
-        $this->parameters = null;
+        $this->value = null;
         $this->nextLogic = null;
         $this->next = null;
     }

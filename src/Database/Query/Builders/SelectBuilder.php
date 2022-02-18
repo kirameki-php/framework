@@ -33,7 +33,7 @@ class SelectBuilder extends ConditionsBuilder
     }
 
     /**
-     * @param mixed ...$columns
+     * @param string|Expr ...$columns
      * @return $this
      */
     public function columns(...$columns): static
@@ -93,7 +93,7 @@ class SelectBuilder extends ConditionsBuilder
     }
 
     /**
-     * @return Collection
+     * @return Collection<int, mixed>
      */
     public function all(): Collection
     {
@@ -101,9 +101,9 @@ class SelectBuilder extends ConditionsBuilder
     }
 
     /**
-     * @return array|null
+     * @return mixed|null
      */
-    public function one(): ?array
+    public function one(): mixed
     {
         return $this->copy()->limit(1)->execSelect()[0] ?? null;
     }
@@ -113,28 +113,30 @@ class SelectBuilder extends ConditionsBuilder
      */
     public function exists(): bool
     {
-        return !empty($this->copy()->columns(1)->limit(1)->execSelect());
+        return !empty($this->copy()->columns("1")->limit(1)->execSelect());
     }
 
     /**
-     * @return array|int
+     * @return array<int>|int
      */
     public function count(): array|int
     {
         // If GROUP BY exists but no SELECT is defined, use the first GROUP BY column that was defined.
-        if ($this->statement->groupBy !== null &&
-            $this->statement->columns === null) {
-            $this->addToSelect(current($this->statement->groupBy));
+        if ($this->statement->columns === null && is_array($this->statement->groupBy)) {
+            $this->addToSelect($this->statement->groupBy[0]);
         }
 
+        /** @var array<array<string|int>> $results */
         $results = $this->copy()->addToSelect(Expr::raw('count(*) AS total'))->execSelect();
 
         // when GROUP BY is defined, return in [columnValue => count] format
-        if ($this->statement->groupBy !== null) {
-            $key = array_key_first($this->statement->columns);
+        if (is_array($this->statement->groupBy)) {
+            $keyName = $this->statement->groupBy[0];
             $aggregated = [];
             foreach ($results as $result) {
-                $result[$key] = $result['total'];
+                $groupKey = $result[$keyName];
+                $groupTotal = (int) $result['total'];
+                $aggregated[$groupKey] = $groupTotal;
             }
             return $aggregated;
         }
@@ -143,7 +145,7 @@ class SelectBuilder extends ConditionsBuilder
             return 0;
         }
 
-        return $results[0]['total'];
+        return (int) $results[0]['total'];
     }
 
     /**
@@ -183,21 +185,7 @@ class SelectBuilder extends ConditionsBuilder
     }
 
     /**
-     * @return array
-     */
-    public function getBindings(): array
-    {
-        $bindings = [];
-        foreach ($this->statement->where as $where) {
-            foreach($where->getBindings() as $binding) {
-                $bindings[] = $binding;
-            }
-        }
-        return $bindings;
-    }
-
-    /**
-     * @return array
+     * @return array<string, string|array<mixed>>
      */
     public function inspect(): array
     {
@@ -248,7 +236,7 @@ class SelectBuilder extends ConditionsBuilder
     {
         $formatter = $this->connection->getQueryFormatter();
         $column = $formatter->columnName($column);
-        $results = $this->copy()->columns($function.'('.$column.') AS cnt')->execSelect();
-        return !empty($results) ? $results[0]['cnt'] : 0;
+        $results = $this->copy()->columns($function.'('.$column.') AS aggregate')->execSelect();
+        return !empty($results) ? $results[0]['aggregate'] : 0;
     }
 }

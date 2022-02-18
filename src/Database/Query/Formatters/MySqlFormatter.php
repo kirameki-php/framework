@@ -10,7 +10,7 @@ class MySqlFormatter extends Formatter
      * @param $value
      * @return string
      */
-    public function parameter($value): string
+    public function parameterize($value): string
     {
         if ($value instanceof DateTimeInterface) {
             return '\''.$value->format('Y-m-d H:i:s.u').'\'';

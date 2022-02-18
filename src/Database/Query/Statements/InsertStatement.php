@@ -5,17 +5,17 @@ namespace Kirameki\Database\Query\Statements;
 class InsertStatement extends BaseStatement
 {
     /**
-     * @var array[]|null
+     * @var array<int, array<string, mixed>>
      */
-    public ?array $dataset = null;
+    public array $dataset;
 
     /**
-     * @var array|null
+     * @var array<string>|null
      */
     protected ?array $cachedColumns = null;
 
     /**
-     * @return array
+     * @return array<string>
      */
     public function columns(): array
     {

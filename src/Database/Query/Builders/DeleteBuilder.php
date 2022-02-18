@@ -5,6 +5,9 @@ namespace Kirameki\Database\Query\Builders;
 use Kirameki\Database\Connection;
 use Kirameki\Database\Query\Statements\DeleteStatement;
 
+/**
+ * @property DeleteStatement $statement;
+ */
 class DeleteBuilder extends ConditionsBuilder
 {
     /**
@@ -28,7 +31,7 @@ class DeleteBuilder extends ConditionsBuilder
     }
 
     /**
-     * @return array
+     * @return array<string, string|array<mixed>>
      */
     public function inspect(): array
     {

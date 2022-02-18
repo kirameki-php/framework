@@ -5,7 +5,7 @@ namespace Kirameki\Database\Query\Statements;
 class UpdateStatement extends ConditionsStatement
 {
     /**
-     * @var array|null
+     * @var array<string, mixed>
      */
-    public ?array $data = null;
+    public array $data;
 }

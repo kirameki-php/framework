@@ -14,7 +14,7 @@ class MySqlAdapter extends PdoAdapter
      */
     public function connect(): static
     {
-        $config = $this->config;
+        $config = $this->getConfig();
         $parts = [];
         if (isset($config['socket'])) {
             $parts[] = 'unix_socket='.$config['socket'];
@@ -36,7 +36,7 @@ class MySqlAdapter extends PdoAdapter
         $options+= [
             PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
             PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-            PDO::MYSQL_ATTR_FOUND_ROWS => TRUE,
+            PDO::MYSQL_ATTR_FOUND_ROWS => true,
         ];
         $this->pdo = new PDO($dsn, $username, $password, $options);
         return $this;

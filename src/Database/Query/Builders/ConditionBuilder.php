@@ -76,12 +76,9 @@ class ConditionBuilder
      */
     public function and(?string $column = null): static
     {
-        $nextDefinition = new ConditionDefinition($column);
         $this->current->nextLogic = 'AND';
-        $this->current->next = $nextDefinition;
-        $this->current = $nextDefinition;
-        $this->defined = false;
-        return $this;
+        $this->current->next = new ConditionDefinition($column ?? $this->current->column);
+        return $this->setCurrent($this->current->next);
     }
 
     /**
@@ -90,10 +87,18 @@ class ConditionBuilder
      */
     public function or(?string $column = null): static
     {
-        $nextDefinition = new ConditionDefinition($column ?? $this->current->column);
         $this->current->nextLogic = 'OR';
-        $this->current->next = $nextDefinition;
-        $this->current = $nextDefinition;
+        $this->current->next = new ConditionDefinition($column ?? $this->current->column);
+        return $this->setCurrent($this->current->next);
+    }
+
+    /**
+     * @param ConditionDefinition $next
+     * @return $this
+     */
+    protected function setCurrent(ConditionDefinition $next): static
+    {
+        $this->current = $next;
         $this->defined = false;
         return $this;
     }
@@ -324,7 +329,7 @@ class ConditionBuilder
     {
         $this->current->negated = false;
         $this->current->operator = 'BETWEEN';
-        $this->current->parameters = [$min, $max];
+        $this->current->value = [$min, $max];
         $this->markAsDefined();
         return $this;
     }
@@ -347,7 +352,7 @@ class ConditionBuilder
     {
         $this->current->negated = false;
         $this->current->operator = 'RANGE';
-        $this->current->parameters = $range;
+        $this->current->value = $range;
         $this->markAsDefined();
         return $this;
     }
@@ -368,11 +373,11 @@ class ConditionBuilder
     public function parameter(mixed $value): static
     {
         $value = is_iterable($value) ? $value : [$value];
-        $this->current->parameters = [];
+        $this->current->value = [];
         foreach ($value as $name => $binding) {
             is_string($name)
-                ? $this->current->parameters[$name] = $binding
-                : $this->current->parameters[] = $binding;
+                ? $this->current->value[$name] = $binding
+                : $this->current->value[] = $binding;
         }
         return $this;
     }

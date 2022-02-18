@@ -44,17 +44,14 @@ trait Persistence
         $this->processing(function(Connection $conn) {
             $table = $this->getTable();
 
-            if ($this->isNewRecord()) {
-                $properties = $this->getPropertiesForInsert();
-                $conn->insertInto($table)->value($properties)->execute();
-            }
-            else {
-                $properties = $this->getPropertiesForUpdate();
-                $conn->update($table)->set($properties)->execute();
-            }
+            $properties = $this->getPropertiesForSave();
 
-            $this->setPersistedProperties($properties);
-            $this->clearDirty();
+            $this->isNewRecord()
+                ? $conn->insertInto($table)->value($properties)->execute()
+                : $conn->update($table)->set($properties)->execute();
+
+            $this->setDirtyPropertiesAsPersisted();
+            $this->clearDirtyProperties();
 
             foreach ($this->getRelations() as $relation) {
                 if ($relation instanceof Model) {
@@ -135,26 +132,10 @@ trait Persistence
     }
 
     /**
-     * @return array
+     * @return array<string, mixed>
      */
-    protected function getPropertiesForInsert(): array
+    protected function getPropertiesForSave(): array
     {
-        $properties = [];
-        foreach ($this->getProperties() as $name => $value) {
-            $properties[$name] = $this->getCast($name)->set($this, $name, $value);
-        }
-        return $properties;
-    }
-
-    /**
-     * @return array
-     */
-    protected function getPropertiesForUpdate(): array
-    {
-        $properties = [];
-        foreach ($this->getDirtyProperties() as $name => $value) {
-            $properties[$name] = $this->getCast($name)->set($this, $name, $value);
-        }
-        return $properties;
+        return $this->getDirtyProperties();
     }
 }

@@ -24,7 +24,7 @@ class ModelManager
     protected array $casts = [];
 
     /**
-     * @var array<non-empty-string, callable(): CastInterface>
+     * @var array<string, callable(): CastInterface>
      */
     protected array $deferredCasts = [];
 

@@ -2,15 +2,17 @@
 
 namespace Kirameki\Database\Query\Statements;
 
+use Kirameki\Database\Support\Expr;
+
 class SelectStatement extends ConditionsStatement
 {
     /**
-     * @var string[]|null
+     * @var array<string|Expr>|null
      */
     public ?array $columns = null;
 
     /**
-     * @var array|null
+     * @var array<string>|null
      */
     public ?array $groupBy = null;
 

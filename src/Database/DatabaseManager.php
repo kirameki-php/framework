@@ -3,6 +3,7 @@
 namespace Kirameki\Database;
 
 use Closure;
+use Kirameki\Database\Adapters\AdapterInterface;
 use Kirameki\Database\Adapters\MySqlAdapter;
 use Kirameki\Database\Adapters\SqliteAdapter;
 use Kirameki\Event\EventManager;
@@ -41,15 +42,7 @@ class DatabaseManager
      */
     public function using(string $name): Connection
     {
-        if(isset($this->connections[$name])) {
-            return $this->connections[$name];
-        }
-
-        $config = $this->getConfig($name);
-        $resolver = $this->getAdapterResolver($config['adapter']);
-        $adapter = $resolver($config);
-        $connection = new Connection($name, $adapter, $this->events);
-        return $this->connections[$name] = $connection;
+        return $this->connections[$name] ??= $this->createConnection($this->getConfig($name));
     }
 
     /**
@@ -83,13 +76,25 @@ class DatabaseManager
 
     /**
      * @param string $name
-     * @param Closure $deferred
+     * @param callable(array<string, scalar>): AdapterInterface $deferred
      * @return $this
      */
     public function addAdapter(string $name, Closure $deferred): static
     {
         $this->adapters[$name] = $deferred;
         return $this;
+    }
+
+    /**
+     * @param string $name
+     * @param array<string, mixed> $config
+     * @return Connection
+     */
+    protected function createConnection(array $config): Connection
+    {
+        $adapterResolver = $this->getAdapterResolver($config['adapter']);
+        $adapter = $adapterResolver($config);
+        return new Connection($adapter, $this->events);
     }
 
     /**
@@ -101,26 +106,26 @@ class DatabaseManager
     }
 
     /**
-     * @param string $connection
+     * @param string $name
      * @return array
      */
-    protected function getConfig(string $connection): array
+    public function getConfig(string $name): array
     {
-        $config = config()->get('database.connections.'.$connection);
+        $config = config()->get('database.connections.'.$name);
 
         if ($config === null) {
-            throw new RuntimeException('Undefined database connection: '.$connection);
+            throw new RuntimeException('Undefined database connection: '.$name);
         }
 
-        $config['connection'] = $connection;
-        $config['database'] ??= $connection;
+        $config['connection'] = $name;
+        $config['database'] ??= $name;
 
         return $config;
     }
 
     /**
      * @param string $name
-     * @return Closure
+     * @return Closure(array<string, scalar>): AdapterInterface
      */
     protected function getAdapterResolver(string $name): Closure
     {
@@ -132,7 +137,7 @@ class DatabaseManager
 
     /**
      * @param string $adapter
-     * @return Closure
+     * @return Closure(array<string, scalar>): AdapterInterface
      */
     protected function getDefaultAdapterResolver(string $adapter): Closure
     {

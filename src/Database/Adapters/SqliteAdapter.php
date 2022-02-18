@@ -7,6 +7,9 @@ use function unlink;
 
 class SqliteAdapter extends PdoAdapter
 {
+    /**
+     * @param array<string, mixed> $config
+     */
     public function __construct(array $config)
     {
         $config['path'] ??= app()->getStoragePath($config['connection'].'.db');

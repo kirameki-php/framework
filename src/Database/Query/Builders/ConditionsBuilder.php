@@ -124,12 +124,12 @@ abstract class ConditionsBuilder extends StatementBuilder
                 return ConditionBuilder::for($column)->tap($operator)->getDefinition();
             }
 
-            if (is_iterable($operator)) {
-                return ConditionBuilder::for($column)->in($operator)->getDefinition();
-            }
-
             if ($operator instanceof Range) {
                 return ConditionBuilder::for($column)->inRange($operator)->getDefinition();
+            }
+
+            if (is_iterable($operator)) {
+                return ConditionBuilder::for($column)->in($operator)->getDefinition();
             }
 
             return ConditionBuilder::for($column)->equals($operator)->getDefinition();

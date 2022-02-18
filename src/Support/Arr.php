@@ -514,7 +514,15 @@ class Arr
             return $iterable->toArray();
         }
 
-        return iterator_to_array($iterable);
+        if ($iterable instanceof Traversable) {
+            return iterator_to_array($iterable);
+        }
+
+        $array = [];
+        foreach ($iterable as $key => $value) {
+            $array[$key] = $value;
+        }
+        return $array;
     }
 
     /**
