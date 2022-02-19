@@ -54,12 +54,7 @@ trait Persistence
             $this->clearDirtyProperties();
 
             foreach ($this->getRelations() as $relation) {
-                if ($relation instanceof Model) {
-                    $relation->save();
-                }
-                elseif ($relation instanceof RelationCollection) {
-                    $relation->save();
-                }
+                $relation->save();
             }
         });
 
