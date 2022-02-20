@@ -14,7 +14,7 @@ abstract class Model implements ArrayAccess, JsonSerializable
 {
     use Concerns\ArrayAccess;
     use Concerns\Compare;
-    use Concerns\JsonSerialize;
+    use Concerns\Serialization;
     use Concerns\Persistence;
     use Concerns\Properties;
     use Concerns\Reflect;

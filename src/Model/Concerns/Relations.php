@@ -22,7 +22,7 @@ trait Relations
      */
     public function getRelations(): array
     {
-        return $this->relations ??= [];
+        return $this->relations ?? [];
     }
 
     /**
@@ -31,9 +31,14 @@ trait Relations
      */
     public function getRelation(string $name): mixed
     {
+        if (!isset($this->relations)) {
+            return null;
+        }
+
         if (!array_key_exists($name, $this->relations)) {
             $this->loadRelation([$this], $name);
         }
+
         return $this->relations[$name];
     }
 
@@ -44,6 +49,7 @@ trait Relations
      */
     public function setRelation(string $name, Model|RelationCollection $models): static
     {
+        $this->relations ??= [];
         $this->relations[$name] = $models;
         return $this;
     }
@@ -74,7 +80,7 @@ trait Relations
      */
     public function isRelationLoaded(string $name): bool
     {
-        return array_key_exists($name, $this->relations);
+        return isset($this->relations) && array_key_exists($name, $this->relations);
     }
 
     /**

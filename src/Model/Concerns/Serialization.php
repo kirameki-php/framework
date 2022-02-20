@@ -8,7 +8,7 @@ use Kirameki\Support\Json;
 /**
  * @mixin Model
  */
-trait JsonSerialize
+trait Serialization
 {
     /**
      * @return array
