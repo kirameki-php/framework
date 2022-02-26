@@ -2,15 +2,16 @@
 
 namespace Kirameki\Database\Adapters;
 
+use Kirameki\Core\Config;
 use PDO;
 use function unlink;
 
 class SqliteAdapter extends PdoAdapter
 {
     /**
-     * @param array<string, mixed> $config
+     * @param Config $config
      */
-    public function __construct(array $config)
+    public function __construct(Config $config)
     {
         $config['path'] ??= app()->getStoragePath($config['connection'].'.db');
         parent::__construct($config);
@@ -22,8 +23,8 @@ class SqliteAdapter extends PdoAdapter
     public function connect(): static
     {
         $config = $this->getConfig();
-        $dsn = 'sqlite:'.$config['path'];
-        $options = $config['options'] ?? [];
+        $dsn = 'sqlite:'.$config->getString('path');
+        $options = (array) ($config['options'] ?? []);
         $options+= [
             PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
             PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,

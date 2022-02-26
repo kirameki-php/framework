@@ -5,6 +5,9 @@ namespace Kirameki\Model;
 use Kirameki\Database\DatabaseManager;
 use Kirameki\Database\Query\Builders\ConditionBuilder;
 use Kirameki\Database\Query\Builders\SelectBuilder;
+use Kirameki\Model\Paginators\BasicPaginator;
+use Kirameki\Model\Paginators\CursorPaginator;
+use Kirameki\Model\Paginators\OffsetPaginator;
 use Kirameki\Support\Arr;
 use RuntimeException;
 
@@ -58,9 +61,47 @@ class QueryBuilder extends SelectBuilder
     /**
      * @return T
      */
-    public function firstOrFail(): ?Model
+    public function firstOrFail(): Model
     {
         return $this->first() ?? throw new RuntimeException('No record found for query: '.$this->toSql());
+    }
+
+    /**
+     * @param int $per
+     * @param int $page
+     * @return OffsetPaginator<T>
+     */
+    public function offsetPaginate(int $per, int $page): OffsetPaginator
+    {
+        $models = $this->offset($per * $page)->limit($per)->all();
+        $totalRows = (int) $this->count();
+        return new OffsetPaginator($models, $totalRows, $per, $page);
+    }
+
+    /**
+     * @param int $per
+     * @param string|null $cursor
+     * @return ModelCollection<int, T>
+     */
+    public function cursorPaginate(int $per, ?string $cursor): ModelCollection
+    {
+        $orderBy = $this->statement->orderBy ?? [];
+
+        if (empty($orderBy)) {
+            throw new RuntimeException("Cursor pagination requires at least one column in ORDER BY");
+        }
+
+        if ($cursor !== null) {
+            $column = array_key_first($orderBy);
+            $operator = strtolower($orderBy[$column]) === 'asc' ? '<' : '>';
+            $this->where($column, $operator, $cursor);
+        }
+
+        $models = $this->limit($per + 1)->all();
+
+        $nextCursor = $models->pop();
+
+        return new CursorPaginator($models);
     }
 
     /**

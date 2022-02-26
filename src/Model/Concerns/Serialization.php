@@ -3,6 +3,7 @@
 namespace Kirameki\Model\Concerns;
 
 use Kirameki\Model\Model;
+use Kirameki\Support\Arr;
 use Kirameki\Support\Json;
 
 /**
@@ -11,11 +12,11 @@ use Kirameki\Support\Json;
 trait Serialization
 {
     /**
-     * @return array
+     * @return array<string, mixed>
      */
     public function jsonSerialize(): array
     {
-        return $this->toAssoc();
+        return $this->getProperties();
     }
 
     /**

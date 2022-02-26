@@ -63,8 +63,8 @@ class Application extends Container
         $this->basePath = $basePath;
         $this->startTime = microtime(true) * 1000;
         $this->config = Config::fromDirectory($basePath.'/config');
-        $this->setName($this->config->get('app.name'));
-        $this->setTimeZone($this->config->get('app.timezone'));
+        $this->setName($this->config->getString('app.name'));
+        $this->setTimeZone($this->config->getString('app.timezone'));
         $this->initialize();
     }
 
@@ -150,7 +150,7 @@ class Application extends Container
      */
     public function inDebugMode(): bool
     {
-        return (bool) $this->config->get('app.debug');
+        return $this->config->getBool('app.debug');
     }
 
     /**

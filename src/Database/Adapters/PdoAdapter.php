@@ -3,6 +3,7 @@
 namespace Kirameki\Database\Adapters;
 
 use Generator;
+use Kirameki\Core\Config;
 use Kirameki\Database\Connection;
 use Kirameki\Database\Query\Formatters\Formatter as QueryFormatter;
 use Kirameki\Database\Schema\Formatters\Formatter as SchemaFormatter;
@@ -23,22 +24,30 @@ abstract class PdoAdapter implements AdapterInterface
     protected ?PDO $pdo = null;
 
     /**
-     * @var array<string, mixed>
+     * @var Config
      */
-    protected array $config;
+    protected Config $config;
 
     /**
-     * @param array<string, mixed> $config
+     * @param Config $config
      */
-    public function __construct(array $config)
+    public function __construct(Config $config)
     {
         $this->config = $config;
     }
 
     /**
-     * @return array<string, mixed>
+     * @return void
      */
-    public function getConfig(): array
+    public function __clone(): void
+    {
+        $this->config = clone $this->config;
+    }
+
+    /**
+     * @return Config
+     */
+    public function getConfig(): Config
     {
         return $this->config;
     }
@@ -63,7 +72,7 @@ abstract class PdoAdapter implements AdapterInterface
         if ($result === false) {
             $this->throwException($prepared);
         }
-        return $result;
+        return (array) $result;
     }
 
     /**

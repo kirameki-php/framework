@@ -14,7 +14,7 @@ trait Properties
      * For example, the datetime values are stored as string
      * and will not cast until it is actually used.
      *
-     * @var array
+     * @var array<string, mixed>
      */
     protected array $_persistedProperties = [];
 
@@ -22,14 +22,14 @@ trait Properties
      * Stores and caches properties that were casted.
      * Casting occurs when a value is set or when a value is called though get.
      *
-     * @var array
+     * @var array<string, mixed>
      */
     protected array $_resolvedProperties = [];
 
     /**
      * Stores initial values for properties that were changed.
      *
-     * @var array
+     * @var array<string, mixed>
      */
     protected array $_changedProperties = [];
 
@@ -37,12 +37,12 @@ trait Properties
      * Stores previous value of properties.
      * It will get cleared when the model is saved.
      *
-     * @var array
+     * @var array<string, mixed>
      */
     protected array $_previousProperties = [];
 
     /**
-     * @return string[]
+     * @return <int, string>
      */
     public function getPropertyNames(): array
     {
@@ -50,7 +50,7 @@ trait Properties
     }
 
     /**
-     * @return array
+     * @return array<string, mixed>
      */
     public function getProperties(): array
     {
@@ -62,7 +62,7 @@ trait Properties
     }
 
     /**
-     * @param array $properties
+     * @param array<string, mixed> $properties
      * @return $this
      */
     public function setProperties(array $properties = []): static
@@ -83,26 +83,24 @@ trait Properties
             return $this->_resolvedProperties[$name];
         }
 
-        $meta = static::getReflection()->properties[$name];
-
         $value = isset($this->_persistedProperties[$name])
-            ? $meta->cast->get($this, $name, $this->_persistedProperties[$name])
+            ? $this->getCast($name)->get($this, $name, $this->_persistedProperties[$name])
             : null;
 
-        $this->cacheResolved($name, $value);
+        $this->setResolvedProperty($name, $value);
 
         return $value;
     }
 
     /**
      * @param string $name
-     * @param $value
+     * @param mixed $value
      * @return $this
      */
-    public function setProperty(string $name, $value): static
+    public function setProperty(string $name, mixed $value): static
     {
         $this->markAsDirty($name, $this->getProperty($name));
-        $this->cacheResolved($name, $value);
+        $this->setResolvedProperty($name, $value);
         return $this;
     }
 
@@ -116,7 +114,7 @@ trait Properties
     }
 
     /**
-     * @param array $properties
+     * @param array<string, mixed> $properties
      * @return $this
      */
     protected function setPersistedProperties(array $properties): static
@@ -126,6 +124,7 @@ trait Properties
     }
 
     /**
+     * @param array<string, mixed> $excludes
      * @return $this
      */
     protected function setDefaultProperties(array $excludes = []): static
@@ -143,7 +142,7 @@ trait Properties
      * @param $value
      * @return $this
      */
-    protected function cacheResolved(string $name, $value): static
+    protected function setResolvedProperty(string $name, $value): static
     {
         $this->_resolvedProperties[$name] = $value;
         return $this;
@@ -152,7 +151,7 @@ trait Properties
     /**
      * @return $this
      */
-    public function clearResultCache(): static
+    public function clearResolvedProperties(): static
     {
         $this->_resolvedProperties = [];
         return $this;
@@ -162,7 +161,7 @@ trait Properties
      * @param string|null $name
      * @return bool
      */
-    public function isResultCached(string $name = null): bool
+    public function isResolved(string $name = null): bool
     {
         return $name !== null
             ? array_key_exists($name, $this->_resolvedProperties)
@@ -258,7 +257,7 @@ trait Properties
     }
 
     /**
-     * @return array
+     * @return array<string, mixed>
      */
     public function getPreviousProperties(): array
     {

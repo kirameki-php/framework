@@ -16,23 +16,23 @@ class MySqlAdapter extends PdoAdapter
     {
         $config = $this->getConfig();
         $parts = [];
-        if (isset($config['socket'])) {
-            $parts[] = 'unix_socket='.$config['socket'];
+        if ($config->isNotNull('socket')) {
+            $parts[] = 'unix_socket='.$config->getString('socket');
         } else {
-            $host = 'host='.$config['host'];
-            $host.= isset($config['port']) ? 'port='.$config['port'] : '';
+            $host = 'host='.$config->getString('host');
+            $host.= isset($config['port']) ? 'port='.$config->getString('port') : '';
             $parts[] = $host;
         }
-        if (isset($config['database'])) {
-            $parts[] = 'dbname='.$config['database'];
+        if ($config->isNotNull('database')) {
+            $parts[] = 'dbname='.$config->getString('database');
         }
-        if (isset($config['charset'])) {
-            $parts[] = 'charset='.$config['charset'];
+        if ($config->isNotNull('charset')) {
+            $parts[] = 'charset='.$config->getString('charset');
         }
         $dsn = 'mysql:'.implode(';', $parts);
-        $username = $config['username'] ?? 'root';
-        $password = $config['password'] ?? null;
-        $options = $config['options'] ?? [];
+        $username = $config->getStringOrNull('username') ?? 'root';
+        $password = $config->getStringOrNull('password');
+        $options = (array) ($config->getStringOrNull('options') ?? []);
         $options+= [
             PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
             PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
@@ -65,11 +65,11 @@ class MySqlAdapter extends PdoAdapter
     public function createDatabase(bool $ifNotExist = true): void
     {
         $copy = (clone $this);
-        $copy->config['database'] = null;
+        $copy->config->set('database', null);
         $copy->execute(implode(' ', array_filter([
             'CREATE DATABASE',
             $ifNotExist ? 'IF NOT EXISTS' : null,
-            $this->config['database'],
+            $this->config->getString('database'),
         ])));
     }
 
@@ -79,11 +79,11 @@ class MySqlAdapter extends PdoAdapter
     public function dropDatabase(bool $ifNotExist = true): void
     {
         $copy = (clone $this);
-        $copy->config['database'] = null;
+        $copy->config->set('database', null);
         $copy->execute(implode(' ', array_filter([
             'DROP DATABASE',
             $ifNotExist ? 'IF EXISTS' : null,
-            $this->config['database'],
+            $this->config->getString('database'),
         ])));
     }
 

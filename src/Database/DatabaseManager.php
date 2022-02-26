@@ -3,6 +3,7 @@
 namespace Kirameki\Database;
 
 use Closure;
+use Kirameki\Core\Config;
 use Kirameki\Database\Adapters\AdapterInterface;
 use Kirameki\Database\Adapters\MySqlAdapter;
 use Kirameki\Database\Adapters\SqliteAdapter;
@@ -17,7 +18,7 @@ class DatabaseManager
     protected array $connections;
 
     /**
-     * @var Closure[]
+     * @var callable[]
      */
     protected array $adapters;
 
@@ -42,7 +43,7 @@ class DatabaseManager
      */
     public function using(string $name): Connection
     {
-        return $this->connections[$name] ??= $this->createConnection($this->getConfig($name));
+        return $this->connections[$name] ??= $this->createConnection($name, $this->getConfig($name));
     }
 
     /**
@@ -76,10 +77,10 @@ class DatabaseManager
 
     /**
      * @param string $name
-     * @param callable(array<string, scalar>): AdapterInterface $deferred
+     * @param callable(Config): AdapterInterface $deferred
      * @return $this
      */
-    public function addAdapter(string $name, Closure $deferred): static
+    public function addAdapter(string $name, callable $deferred): static
     {
         $this->adapters[$name] = $deferred;
         return $this;
@@ -87,14 +88,14 @@ class DatabaseManager
 
     /**
      * @param string $name
-     * @param array<string, mixed> $config
+     * @param Config $config
      * @return Connection
      */
-    protected function createConnection(array $config): Connection
+    protected function createConnection(string $name, Config $config): Connection
     {
-        $adapterResolver = $this->getAdapterResolver($config['adapter']);
+        $adapterResolver = $this->getAdapterResolver($config->getString('adapter'));
         $adapter = $adapterResolver($config);
-        return new Connection($adapter, $this->events);
+        return new Connection($name, $adapter, $this->events);
     }
 
     /**
@@ -107,15 +108,11 @@ class DatabaseManager
 
     /**
      * @param string $name
-     * @return array
+     * @return Config
      */
-    public function getConfig(string $name): array
+    public function getConfig(string $name): Config
     {
-        $config = config()->get('database.connections.'.$name);
-
-        if ($config === null) {
-            throw new RuntimeException('Undefined database connection: '.$name);
-        }
+        $config = config()->for('database.connections.'.$name);
 
         $config['connection'] = $name;
         $config['database'] ??= $name;
@@ -125,9 +122,9 @@ class DatabaseManager
 
     /**
      * @param string $name
-     * @return Closure(array<string, scalar>): AdapterInterface
+     * @return callable(Config): AdapterInterface
      */
-    protected function getAdapterResolver(string $name): Closure
+    protected function getAdapterResolver(string $name): callable
     {
         if (!isset($this->adapters[$name])) {
             $this->addAdapter($name, $this->getDefaultAdapterResolver($name));
@@ -137,13 +134,14 @@ class DatabaseManager
 
     /**
      * @param string $adapter
-     * @return Closure(array<string, scalar>): AdapterInterface
+     * @return Closure(Config): AdapterInterface
      */
     protected function getDefaultAdapterResolver(string $adapter): Closure
     {
         return match ($adapter) {
-            'mysql' => static fn(array $config) => new MySqlAdapter($config),
-            'sqlite' => static fn(array $config) => new SqliteAdapter($config),
+            'mysql' => static fn(Config $config) => new MySqlAdapter($config),
+            'sqlite' => static fn(Config $config) => new SqliteAdapter($config),
+            default => throw new RuntimeException("Adapter: $adapter does not exist"),
         };
     }
 }

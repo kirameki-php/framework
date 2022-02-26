@@ -20,7 +20,7 @@ class LogInitializer implements InitializerInterface
         $manager->addLogger('multi', fn($opt) => new Loggers\MultiLogger(Arr::map($opt['channels'], fn($c) => $manager->channel($c))));
         $manager->addLogger('null', fn() => new Loggers\NullLogger);
         $manager->addLogger('stdout', fn($opt) => new Loggers\StdoutLogger($opt));
-        $manager->setDefaultChannel($config->get('default'));
+        $manager->setDefaultChannel($config->getString('default'));
         $app->singleton(LogManager::class, $manager);
     }
 }

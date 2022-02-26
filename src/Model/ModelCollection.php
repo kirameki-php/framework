@@ -39,14 +39,14 @@ class ModelCollection extends Collection
     /**
      * @return Reflection<TModel>
      */
-    public function getModelReflection(): Reflection
+    public function getReflection(): Reflection
     {
         return $this->reflection;
     }
 
     /**
-     * @param array-key $key
-     * @return Collection<int, mixed>
+     * @param TKey $key
+     * @return Collection<int, TKey>
      */
     public function pluck(int|string $key): Collection
     {

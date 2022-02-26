@@ -2,7 +2,9 @@
 
 namespace Kirameki\Database\Support;
 
-class Expr
+use Stringable;
+
+class Expr implements Stringable
 {
     /**
      * @var string

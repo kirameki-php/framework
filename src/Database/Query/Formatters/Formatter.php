@@ -3,6 +3,7 @@
 namespace Kirameki\Database\Query\Formatters;
 
 use DateTimeInterface;
+use Kirameki\Database\Query\Builders\ConditionBuilder;
 use Kirameki\Database\Query\Statements\ConditionDefinition;
 use Kirameki\Database\Query\Support\Range;
 use Kirameki\Database\Support\Expr;
@@ -48,7 +49,7 @@ class Formatter
      */
     public function selectBindings(SelectStatement $statement): array
     {
-        return $this->bindingsForCondition($statement);
+        return $this->bindingsForConditions($statement);
     }
 
     /**
@@ -125,7 +126,7 @@ class Formatter
      */
     public function updateBindings(UpdateStatement $statement): array
     {
-        return array_merge($statement->data, $this->bindingsForCondition($statement));
+        return array_merge($statement->data, $this->bindingsForConditions($statement));
     }
 
     /**
@@ -147,7 +148,7 @@ class Formatter
      */
     public function deleteBindings(DeleteStatement $statement): array
     {
-        return $this->bindingsForCondition($statement);
+        return $this->bindingsForConditions($statement);
     }
 
     /**
@@ -209,7 +210,7 @@ class Formatter
             }
 
             /** @var array<string> $segments */
-            $segments = preg_split('/\s+as\s+/i', $name);
+            $segments = preg_split('/\s+as\s+/i', (string) $name);
             if (count($segments) > 1) {
                 $expressions[] = $this->columnName($segments[0]) . ' AS ' . $segments[1];
                 continue;
@@ -296,9 +297,17 @@ class Formatter
         $negated = $def->negated;
         $value = $def->value;
 
-        if ($operator === null && is_string($value)) {
-            return $column.' '.$value;
+        if ($operator === null) {
+            // Handles raw expression
+            if ($value instanceof Expr) {
+                return $column.' '.$value->toString();
+            }
+            // Handles nested condition
+            if ($value instanceof ConditionDefinition) {
+                return $this->condition($value, null);
+            }
         }
+
 
         if ($operator === '=') {
             if ($value === null) {
@@ -454,24 +463,40 @@ class Formatter
      * @param ConditionsStatement $statement
      * @return array<mixed>
      */
-    protected function bindingsForCondition(ConditionsStatement $statement): array
+    protected function bindingsForConditions(ConditionsStatement $statement): array
     {
         $bindings = [];
         if ($statement->where !== null) {
             foreach ($statement->where as $cond) {
                 while ($cond !== null) {
-                    if (is_iterable($cond->value)) {
-                        foreach ($cond->value as $binding) {
-                            $bindings[] = $binding;
-                        }
-                    } else {
-                        $bindings[] = $cond->value;
-                    }
+                    $this->addBindingsForCondition($bindings, $cond);
                     $cond = $cond->next;
                 }
             }
         }
         return $bindings;
+    }
+
+    /**
+     * @param array<int, mixed> $bindings
+     * @param ConditionDefinition $cond
+     * @return void
+     */
+    protected function addBindingsForCondition(array &$bindings, ConditionDefinition $cond): void
+    {
+        if ($cond->value instanceof ConditionDefinition) {
+            $this->addBindingsForCondition($bindings, $cond->value);
+            return;
+        }
+
+        if (is_iterable($cond->value)) {
+            foreach ($cond->value as $binding) {
+                $bindings[] = $binding;
+            }
+            return;
+        }
+
+        $bindings[] = $cond->value;
     }
 
     /**

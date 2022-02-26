@@ -2,6 +2,7 @@
 
 namespace Kirameki\Testing\Concerns;
 
+use Kirameki\Core\Config;
 use Kirameki\Database\Adapters\MySqlAdapter;
 use Kirameki\Database\Connection;
 use Kirameki\Testing\TestCase;
@@ -13,10 +14,11 @@ trait UsesDatabases
 {
     public function createTempConnection(string $driver, array $options = []): Connection
     {
-        $name = uniqid('test_');
+        $name = 'test_'.mt_rand();
+        $options += ['host' => 'mysql', 'database' => $name];
 
         $adapter = match ($driver) {
-            'mysql' => new MySqlAdapter($options + ['host' => 'mysql', 'database' => $name]),
+            'mysql' => new MySqlAdapter(new Config($options)),
         };
         $adapter->createDatabase();
         $this->runAfterTearDown(fn() => $adapter->dropDatabase());

@@ -17,15 +17,4 @@ class ArrayCast implements CastInterface
     {
         return (array) Json::decode($value);
     }
-
-    /**
-     * @param Model $model
-     * @param string $key
-     * @param mixed $value
-     * @return string
-     */
-    public function set(Model $model, string $key, mixed $value): string
-    {
-        return Json::encode($value);
-    }
 }

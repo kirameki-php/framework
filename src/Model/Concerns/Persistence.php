@@ -44,11 +44,9 @@ trait Persistence
         $this->processing(function(Connection $conn) {
             $table = $this->getTable();
 
-            $properties = $this->getPropertiesForSave();
-
             $this->isNewRecord()
-                ? $conn->insertInto($table)->value($properties)->execute()
-                : $conn->update($table)->set($properties)->execute();
+                ? $conn->insertInto($table)->value($this->getPropertiesForInsert())->execute()
+                : $conn->update($table)->set($this->getPropertiesForUpdate())->execute();
 
             $this->setDirtyPropertiesAsPersisted();
             $this->clearDirtyProperties();
@@ -129,7 +127,15 @@ trait Persistence
     /**
      * @return array<string, mixed>
      */
-    protected function getPropertiesForSave(): array
+    protected function getPropertiesForInsert(): array
+    {
+        return $this->getProperties();
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    protected function getPropertiesForUpdate(): array
     {
         return $this->getDirtyProperties();
     }

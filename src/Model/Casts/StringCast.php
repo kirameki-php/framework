@@ -16,15 +16,4 @@ class StringCast implements CastInterface
     {
         return (string) $value;
     }
-
-    /**
-     * @param Model $model
-     * @param string $key
-     * @param mixed $value
-     * @return string
-     */
-    public function set(Model $model, string $key, mixed $value): string
-    {
-        return (string) $value;
-    }
 }

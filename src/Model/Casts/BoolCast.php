@@ -16,15 +16,4 @@ class BoolCast implements CastInterface
     {
         return (bool) $value;
     }
-
-    /**
-     * @param Model $model
-     * @param string $key
-     * @param mixed $value
-     * @return bool
-     */
-    public function set(Model $model, string $key, mixed $value): bool
-    {
-        return (bool) $value;
-    }
 }

@@ -37,9 +37,9 @@ class CryptoManager
      */
     public function __construct(Config $config)
     {
-        $this->algorithm = $config->get('algorithm') ?? static::$defaultAlgorithm;
-        $this->key = $config->get('key');
-        $this->ivSize = openssl_cipher_iv_length($this->algorithm);
+        $this->algorithm = $config->getStringOrNull('algorithm') ?? static::$defaultAlgorithm;
+        $this->key = $config->getString('key');
+        $this->ivSize = (int) openssl_cipher_iv_length($this->algorithm);
 
         if (($keySize = strlen($this->key)) !== 32) {
             throw new RuntimeException("Key for crypto should contain 32 characters. $keySize given.");
@@ -60,7 +60,7 @@ class CryptoManager
 
     /**
      * @param string $data
-     * @return bool
+     * @return string
      */
     public function decrypt(string $data): string
     {
@@ -69,6 +69,6 @@ class CryptoManager
         $tag = substr($encrypted, $this->ivSize, static::$tagSize);
         $data = substr($encrypted, $this->ivSize + static::$tagSize);
 
-        return openssl_decrypt($data, $this->algorithm, $this->key, OPENSSL_RAW_DATA, $iv, $tag);
+        return (string) openssl_decrypt($data, $this->algorithm, $this->key, OPENSSL_RAW_DATA, $iv, $tag);
     }
 }

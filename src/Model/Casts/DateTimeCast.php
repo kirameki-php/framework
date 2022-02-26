@@ -18,16 +18,4 @@ class DateTimeCast implements CastInterface
     {
         return new Time((string) $value);
     }
-
-    /**
-     * @param Model $model
-     * @param string $key
-     * @param mixed $value
-     * @return mixed
-     */
-    public function set(Model $model, string $key, mixed $value): mixed
-    {
-        // don't convert here, let the formatter take care of it
-        return $value;
-    }
 }

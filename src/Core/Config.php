@@ -40,9 +40,9 @@ class Config implements ArrayAccess
     /**
      * @param array<array-key, mixed> $entries
      */
-    public function __construct(array &$entries)
+    public function __construct(array $entries)
     {
-        $this->entries = &$entries;
+        $this->entries = $entries;
     }
 
     /**
@@ -55,20 +55,20 @@ class Config implements ArrayAccess
 
     /**
      * @param string $key
-     * @return mixed
+     * @return bool
      */
-    public function get(string $key): mixed
+    public function getBool(string $key): bool
     {
-        return $this->getInternal($key, false);
+        return (bool) $this->getInternal($key, true);
     }
 
     /**
      * @param string $key
-     * @return mixed
+     * @return bool
      */
-    public function getOrFail(string $key): mixed
+    public function getBoolOrNull(string $key): bool|null
     {
-        return $this->getInternal($key, true);
+        return $this->getInternal($key, false);
     }
 
     /**
@@ -77,7 +77,7 @@ class Config implements ArrayAccess
      */
     public function getString(string $key): string
     {
-        return $this->getOrFail($key); /** @phpstan-ignore-line */
+        return $this->getInternal($key, true); /** @phpstan-ignore-line */
     }
 
     /**
@@ -86,7 +86,7 @@ class Config implements ArrayAccess
      */
     public function getStringOrNull(string $key): string|null
     {
-        return $this->get($key); /** @phpstan-ignore-line */
+        return $this->getInternal($key, false); /** @phpstan-ignore-line */
     }
 
     /**
@@ -149,6 +149,36 @@ class Config implements ArrayAccess
     }
 
     /**
+     * @param string $key
+     * @return bool
+     */
+    public function exists(string $key): bool
+    {
+        if (!str_contains($key, '.')) {
+            return array_key_exists($key, $this->entries);
+        }
+
+        $curr = &$this->entries;
+        foreach (explode('.', $key) as $segment) {
+            if (!isset($curr[$segment])) {
+                return false;
+            }
+            $curr = &$curr[$segment];
+        }
+
+        return true;
+    }
+
+    /**
+     * @param string $key
+     * @return bool
+     */
+    public function isNotNull(string $key): bool
+    {
+        return $this->getInternal($key, false) !== null;
+    }
+
+    /**
      * @param string $name
      * @return static
      */
@@ -156,6 +186,9 @@ class Config implements ArrayAccess
     {
         $ptr = &$this->entries;
         foreach (explode('.', $name) as $segment) {
+            if (!array_key_exists($segment, $ptr)) {
+                throw new RuntimeException("Config: $name does not exist");
+            }
             $ptr = &$ptr[$segment];
         }
         return new static($ptr);
@@ -167,7 +200,7 @@ class Config implements ArrayAccess
      */
     public function offsetExists(mixed $offset): bool
     {
-        return isset($this->entries);
+        return isset($this->entries[$offset]);
     }
 
     /**

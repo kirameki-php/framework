@@ -13,12 +13,4 @@ interface CastInterface
      * @return mixed
      */
     public function get(Model $model, string $key, mixed $value): mixed;
-
-    /**
-     * @param Model $model
-     * @param string $key
-     * @param mixed $value
-     * @return mixed
-     */
-    public function set(Model $model, string $key, mixed $value): mixed;
 }

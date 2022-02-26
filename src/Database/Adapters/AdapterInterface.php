@@ -3,15 +3,16 @@
 namespace Kirameki\Database\Adapters;
 
 use Generator;
+use Kirameki\Core\Config;
 use Kirameki\Database\Query\Formatters\Formatter as QueryFormatter;
 use Kirameki\Database\Schema\Formatters\Formatter as SchemaFormatter;
 
 interface AdapterInterface
 {
     /**
-     * @return array<string, scalar>
+     * @return Config
      */
-    public function getConfig(): array;
+    public function getConfig(): Config;
 
     /**
      * @return $this
@@ -31,7 +32,7 @@ interface AdapterInterface
     /**
      * @param string $statement
      * @param array<mixed>|null $bindings
-     * @return array
+     * @return array<mixed>
      */
     public function query(string $statement, ?array $bindings = null): array;
 

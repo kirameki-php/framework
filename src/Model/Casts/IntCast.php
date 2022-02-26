@@ -16,15 +16,4 @@ class IntCast implements CastInterface
     {
         return (int) $value;
     }
-
-    /**
-     * @param Model $model
-     * @param string $key
-     * @param mixed $value
-     * @return int
-     */
-    public function set(Model $model, string $key, mixed $value): int
-    {
-        return (int) $value;
-    }
 }

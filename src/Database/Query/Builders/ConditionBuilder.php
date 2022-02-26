@@ -4,6 +4,7 @@ namespace Kirameki\Database\Query\Builders;
 
 use Kirameki\Database\Query\Statements\ConditionDefinition;
 use Kirameki\Database\Query\Support\Range;
+use Kirameki\Database\Support\Expr;
 use Kirameki\Support\Concerns\Tappable;
 use RuntimeException;
 use Traversable;
@@ -43,7 +44,7 @@ class ConditionBuilder
     public static function raw(string $raw): static
     {
         $instance = new static();
-        $instance->parameter($raw);
+        $instance->current->value = Expr::raw($raw);
         return $instance;
     }
 
@@ -195,7 +196,6 @@ class ConditionBuilder
     {
         return $this->greaterThanOrEquals($value);
     }
-
 
     /**
      * @param mixed $value
@@ -379,6 +379,16 @@ class ConditionBuilder
                 ? $this->current->value[$name] = $binding
                 : $this->current->value[] = $binding;
         }
+        return $this;
+    }
+
+    /**
+     * @param callable(static): static $callable
+     * @return $this
+     */
+    public function nest(callable $callable): static
+    {
+        $this->current->value = $callable(new static())->getDefinition();
         return $this;
     }
 
