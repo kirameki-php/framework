@@ -59,7 +59,7 @@ class Config implements ArrayAccess
      */
     public function getBool(string $key): bool
     {
-        return (bool) $this->getInternal($key, true);
+        return $this->getInternal($key, true); /** @phpstan-ignore-line */
     }
 
     /**
@@ -68,7 +68,7 @@ class Config implements ArrayAccess
      */
     public function getBoolOrNull(string $key): bool|null
     {
-        return $this->getInternal($key, false);
+        return $this->getInternal($key, false); /** @phpstan-ignore-line */
     }
 
     /**

@@ -2,7 +2,7 @@
 
 return [
     'name' => 'test-app',
-    'env' => getenv('APP_ENV'),
-    'debug' => getenv('APP_DEBUG'),
+    'env' => env('APP_ENV'),
+    'debug' => env('APP_DEBUG'),
     'timezone' => 'Asia/Tokyo',
 ];

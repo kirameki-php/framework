@@ -29,10 +29,10 @@ class Env
      */
     public static function applyDotFile(string $filePath): void
     {
-        $content = file_get_contents($filePath);
-        $lines = preg_split("/(\r\n|\n|\r)/", rtrim($content));
+        $content = (string) file_get_contents($filePath);
+        $lines = (array) preg_split("/(\r\n|\n|\r)/", rtrim($content));
         foreach ($lines as $line) {
-            putenv($line);
+            putenv((string) $line);
         }
     }
 }
