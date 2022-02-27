@@ -78,7 +78,7 @@ class SelectBuilder extends ConditionsBuilder
      */
     public function having(ConditionBuilder|string $column, mixed $operator, mixed $value = null): static
     {
-        $this->addHavingCondition($this->buildCondition(...func_get_args()));
+        $this->addHavingCondition($this->buildCondition(...func_get_args())->getDefinition());
         return $this;
     }
 
@@ -121,17 +121,19 @@ class SelectBuilder extends ConditionsBuilder
      */
     public function count(): array|int
     {
+        $statement = $this->statement;
+
         // If GROUP BY exists but no SELECT is defined, use the first GROUP BY column that was defined.
-        if ($this->statement->columns === null && is_array($this->statement->groupBy)) {
-            $this->addToSelect($this->statement->groupBy[0]);
+        if ($statement->columns === null && is_array($statement->groupBy)) {
+            $this->addToSelect($statement->groupBy[0]);
         }
 
         /** @var array<array<string|int>> $results */
         $results = $this->copy()->addToSelect(Expr::raw('count(*) AS total'))->execSelect();
 
         // when GROUP BY is defined, return in [columnValue => count] format
-        if (is_array($this->statement->groupBy)) {
-            $keyName = $this->statement->groupBy[0];
+        if (is_array($statement->groupBy)) {
+            $keyName = $statement->groupBy[0];
             $aggregated = [];
             foreach ($results as $result) {
                 $groupKey = $result[$keyName];
@@ -185,17 +187,6 @@ class SelectBuilder extends ConditionsBuilder
     }
 
     /**
-     * @return array<string, string|array<mixed>>
-     */
-    public function inspect(): array
-    {
-        $formatter = $this->connection->getQueryFormatter();
-        $statement = $formatter->selectStatement($this->statement);
-        $bindings = $formatter->selectBindings($this->statement);
-        return compact('statement', 'bindings');
-    }
-
-    /**
      * @param string|Expr $select
      * @return $this
      */
@@ -211,9 +202,26 @@ class SelectBuilder extends ConditionsBuilder
      */
     protected function addHavingCondition(ConditionDefinition $condition): static
     {
-        $this->statement->having ??= [];
-        $this->statement->having[] = $condition;
+        $statement = $this->statement;
+        $statement->having ??= [];
+        $statement->having[] = $condition;
         return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function prepare(): string
+    {
+        return $this->getQueryFormatter()->selectStatement($this->statement);
+    }
+
+    /**
+     * @return array<mixed>
+     */
+    public function getBindings(): array
+    {
+        return $this->getQueryFormatter()->selectBindings($this->statement);
     }
 
     /**
@@ -221,10 +229,7 @@ class SelectBuilder extends ConditionsBuilder
      */
     protected function execSelect(): array
     {
-        $formatter = $this->connection->getQueryFormatter();
-        $statement = $formatter->selectStatement($this->statement);
-        $bindings = $formatter->selectBindings($this->statement);
-        return $this->connection->query($statement, $bindings);
+        return $this->connection->query($this->prepare(), $this->getBindings());
     }
 
     /**
@@ -236,7 +241,8 @@ class SelectBuilder extends ConditionsBuilder
     {
         $formatter = $this->connection->getQueryFormatter();
         $column = $formatter->columnName($column);
-        $results = $this->copy()->columns($function.'('.$column.') AS aggregate')->execSelect();
-        return !empty($results) ? $results[0]['aggregate'] : 0;
+        /** @var array{ aggregate: int } $results */
+        $results = $this->copy()->columns($function.'('.$column.') AS aggregate')->execSelect()[0] ?? ['aggregate' => 0];
+        return $results['aggregate'];
     }
 }

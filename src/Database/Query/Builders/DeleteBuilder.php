@@ -24,20 +24,22 @@ class DeleteBuilder extends ConditionsBuilder
      */
     public function execute(): int
     {
-        $formatter = $this->connection->getQueryFormatter();
-        $statement = $formatter->deleteStatement($this->statement);
-        $bindings = $formatter->deleteBindings($this->statement);
-        return $this->connection->affectingQuery($statement, $bindings);
+        return $this->connection->affectingQuery($this->prepare(), $this->getBindings());
     }
 
     /**
-     * @return array<string, string|array<mixed>>
+     * @return string
      */
-    public function inspect(): array
+    public function prepare(): string
     {
-        $formatter = $this->connection->getQueryFormatter();
-        $statement = $formatter->deleteStatement($this->statement);
-        $bindings = $formatter->deleteBindings($this->statement);
-        return compact('statement', 'bindings');
+        return $this->getQueryFormatter()->deleteStatement($this->statement);
+    }
+
+    /**
+     * @return array<mixed>
+     */
+    public function getBindings(): array
+    {
+        return $this->getQueryFormatter()->deleteBindings($this->statement);
     }
 }

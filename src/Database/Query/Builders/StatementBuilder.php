@@ -3,6 +3,7 @@
 namespace Kirameki\Database\Query\Builders;
 
 use Kirameki\Database\Connection;
+use Kirameki\Database\Query\Formatters\Formatter;
 use Kirameki\Database\Query\Statements\BaseStatement;
 
 abstract class StatementBuilder
@@ -47,18 +48,41 @@ abstract class StatementBuilder
     }
 
     /**
-     * @return array<string, string|array<mixed>>
+     * @return string
      */
-    abstract public function inspect(): array;
+    abstract public function prepare(): string;
+
+    /**
+     * @return array<mixed>
+     */
+    abstract public function getBindings(): array;
+
+    /**
+     * @return Connection
+     */
+    public function getConnection(): Connection
+    {
+        return $this->connection;
+    }
+
+    public function getStatement(): BaseStatement
+    {
+        return $this->statement;
+    }
+
+    /**
+     * @return Formatter
+     */
+    protected function getQueryFormatter(): Formatter
+    {
+        return $this->connection->getQueryFormatter();
+    }
 
     /**
      * @return string
      */
     public function toSql(): string
     {
-        $inspect = $this->inspect();
-        return $this->connection
-            ->getQueryFormatter()
-            ->interpolate((string)$inspect['statement'], (array) $inspect['bindings']);
+        return $this->getQueryFormatter()->interpolate($this->prepare(), $this->getBindings());
     }
 }

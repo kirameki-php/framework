@@ -42,26 +42,28 @@ class InsertBuilder extends StatementBuilder
     }
 
     /**
+     * @return string
+     */
+    public function prepare(): string
+    {
+        return $this->getQueryFormatter()->insertStatement($this->statement);
+    }
+
+    /**
+     * @return array<mixed>
+     */
+    public function getBindings(): array
+    {
+        return $this->getQueryFormatter()->insertBindings($this->statement);
+    }
+
+    /**
      * @return void
      */
     public function execute(): void
     {
         if (!empty($this->statement->dataset)) {
-            $formatter = $this->connection->getQueryFormatter();
-            $statement = $formatter->insertStatement($this->statement);
-            $bindings = $formatter->insertBindings($this->statement);
-            $this->connection->affectingQuery($statement, $bindings);
+            $this->connection->affectingQuery($this->prepare(), $this->getBindings());
         }
-    }
-
-    /**
-     * @return array<string, string|array<mixed>>
-     */
-    public function inspect(): array
-    {
-        $formatter = $this->connection->getQueryFormatter();
-        $statement = $formatter->insertStatement($this->statement);
-        $bindings = $formatter->insertBindings($this->statement);
-        return compact('statement', 'bindings');
     }
 }

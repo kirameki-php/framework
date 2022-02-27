@@ -30,24 +30,26 @@ class UpdateBuilder extends ConditionsBuilder
     }
 
     /**
+     * @return string
+     */
+    public function prepare(): string
+    {
+        return $this->getQueryFormatter()->updateStatement($this->statement);
+    }
+
+    /**
+     * @return array<mixed>
+     */
+    public function getBindings(): array
+    {
+        return $this->getQueryFormatter()->updateBindings($this->statement);
+    }
+
+    /**
      * @return int
      */
     public function execute(): int
     {
-        $formatter = $this->connection->getQueryFormatter();
-        $statement = $formatter->updateStatement($this->statement);
-        $bindings = $formatter->updateBindings($this->statement);
-        return $this->connection->affectingQuery($statement, $bindings);
-    }
-
-    /**
-     * @return array<string, string|array<mixed>>
-     */
-    public function inspect(): array
-    {
-        $formatter = $this->connection->getQueryFormatter();
-        $statement = $formatter->updateStatement($this->statement);
-        $bindings = $formatter->updateBindings($this->statement);
-        return compact('statement', 'bindings');
+        return $this->connection->affectingQuery($this->prepare(), $this->getBindings());
     }
 }
