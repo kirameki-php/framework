@@ -3,7 +3,6 @@
 namespace Kirameki\Database\Query\Formatters;
 
 use DateTimeInterface;
-use Kirameki\Database\Query\Builders\ConditionBuilder;
 use Kirameki\Database\Query\Statements\ConditionDefinition;
 use Kirameki\Database\Query\Support\Range;
 use Kirameki\Database\Support\Expr;
@@ -287,9 +286,9 @@ class Formatter
      */
     protected function conditionSegment(ConditionDefinition $def, ?string $table): string
     {
-        // treat it as raw query
+        // Handles raw expression
         if ($def->column === null) {
-            return (string) $def->value; /** @phpstan-ignore-line */
+            return $def->column.' '.$def->value;
         }
 
         $column = $this->columnName($def->column, $table);
@@ -297,17 +296,10 @@ class Formatter
         $negated = $def->negated;
         $value = $def->value;
 
-        if ($operator === null) {
-            // Handles raw expression
-            if ($value instanceof Expr) {
-                return $column.' '.$value->toString();
-            }
-            // Handles nested condition
-            if ($value instanceof ConditionDefinition) {
-                return $this->condition($value, null);
-            }
+        // Handles nested condition
+        if ($operator === null && $value instanceof ConditionDefinition) {
+            return $this->condition($value, null);
         }
-
 
         if ($operator === '=') {
             if ($value === null) {
@@ -468,10 +460,7 @@ class Formatter
         $bindings = [];
         if ($statement->where !== null) {
             foreach ($statement->where as $cond) {
-                while ($cond !== null) {
-                    $this->addBindingsForCondition($bindings, $cond);
-                    $cond = $cond->next;
-                }
+                $this->addBindingsForCondition($bindings, $cond);
             }
         }
         return $bindings;
@@ -484,19 +473,25 @@ class Formatter
      */
     protected function addBindingsForCondition(array &$bindings, ConditionDefinition $cond): void
     {
-        if ($cond->value instanceof ConditionDefinition) {
-            $this->addBindingsForCondition($bindings, $cond->value);
-            return;
-        }
-
-        if (is_iterable($cond->value)) {
-            foreach ($cond->value as $binding) {
-                $bindings[] = $binding;
+        while ($cond !== null) {
+            if ($cond->value instanceof Expr) {
+                // Expressions are evaluated as raw string so it has no parameter
             }
-            return;
+            elseif ($cond->value instanceof ConditionDefinition) {
+                $this->addBindingsForCondition($bindings, $cond->value);
+            }
+            elseif (is_iterable($cond->value)) {
+                foreach ($cond->value as $binding) {
+                    $bindings[] = $binding;
+                }
+            }
+            else {
+                $bindings[] = $cond->value;
+            }
+
+            $cond = $cond->next;
         }
 
-        $bindings[] = $cond->value;
     }
 
     /**
