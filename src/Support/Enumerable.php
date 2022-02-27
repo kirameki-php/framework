@@ -76,14 +76,6 @@ class Enumerable implements Countable, IteratorAggregate, JsonSerializable
     }
 
     /**
-     * @return array<TKey, TValue>
-     */
-    public function __debugInfo(): array
-    {
-        return $this->toArray();
-    }
-
-    /**
      * @param int $position
      * @return TValue|null
      */
