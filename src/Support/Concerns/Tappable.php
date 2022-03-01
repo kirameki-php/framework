@@ -6,7 +6,7 @@ trait Tappable
 {
     /**
      * @template T
-     * @param callable(T): T $callback
+     * @param callable(T): mixed $callback
      * @return $this
      */
     public function tap(callable $callback): static

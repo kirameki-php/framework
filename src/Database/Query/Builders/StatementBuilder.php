@@ -5,9 +5,12 @@ namespace Kirameki\Database\Query\Builders;
 use Kirameki\Database\Connection;
 use Kirameki\Database\Query\Formatters\Formatter;
 use Kirameki\Database\Query\Statements\BaseStatement;
+use Kirameki\Support\Concerns\Tappable;
 
 abstract class StatementBuilder
 {
+    use Tappable;
+
     /**
      * @var Connection
      */
@@ -40,6 +43,19 @@ abstract class StatementBuilder
     }
 
     /**
+     * @return Connection
+     */
+    public function getConnection(): Connection
+    {
+        return $this->connection;
+    }
+
+    public function getStatement(): BaseStatement
+    {
+        return $this->statement;
+    }
+
+    /**
      * @return static
      */
     protected function copy(): static
@@ -56,19 +72,6 @@ abstract class StatementBuilder
      * @return array<mixed>
      */
     abstract public function getBindings(): array;
-
-    /**
-     * @return Connection
-     */
-    public function getConnection(): Connection
-    {
-        return $this->connection;
-    }
-
-    public function getStatement(): BaseStatement
-    {
-        return $this->statement;
-    }
 
     /**
      * @return Formatter
