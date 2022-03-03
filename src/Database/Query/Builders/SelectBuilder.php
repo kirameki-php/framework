@@ -239,8 +239,7 @@ class SelectBuilder extends ConditionsBuilder
      */
     protected function execAggregate(string $function, string $column): int
     {
-        $formatter = $this->connection->getQueryFormatter();
-        $column = $formatter->columnName($column);
+        $column = $this->getQueryFormatter()->columnName($column);
         /** @var array{ aggregate: int } $results */
         $results = $this->copy()->columns($function.'('.$column.') AS aggregate')->execSelect()[0] ?? ['aggregate' => 0];
         return $results['aggregate'];

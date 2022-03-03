@@ -3,6 +3,7 @@
 namespace Kirameki\Database\Query\Builders;
 
 use Kirameki\Database\Query\Statements\ConditionDefinition;
+use Kirameki\Database\Query\Support\Operator;
 use Kirameki\Database\Query\Support\Range;
 use Kirameki\Database\Support\Expr;
 use Kirameki\Support\Concerns\Tappable;
@@ -43,9 +44,16 @@ class ConditionBuilder
      */
     public static function raw(string $raw): static
     {
-        $instance = new static();
-        $instance->current->value = Expr::raw($raw);
-        return $instance;
+        return (new static())->expr(Expr::raw($raw));
+    }
+
+    /**
+     * @param SelectBuilder $builder
+     * @return static
+     */
+    public static function nest(SelectBuilder $builder): static
+    {
+        return (new static())->nested($builder);
     }
 
     /**
@@ -105,42 +113,9 @@ class ConditionBuilder
     }
 
     /**
-     * @return $this
-     */
-    protected function negate(): static
-    {
-        $this->current->negated = true;
-        return $this;
-    }
-
-    /**
-     * @param string $operator
      * @param mixed $value
      * @return $this
-     */
-    public function with(string $operator, mixed $value): static
-    {
-        return match (strtoupper($operator)) {
-            '=' => $this->equals($value),
-            '!=', '<>' => $this->notEquals($value),
-            '>' => $this->greaterThan($value),
-            '>=' => $this->greaterThanOrEquals($value),
-            '<' => $this->lessThan($value),
-            '<=' => $this->lessThanOrEquals($value),
-            'IN' => $this->in($value),
-            'NOT IN' => $this->notIn($value),
-            'BETWEEN' => $this->between($value[0], $value[1]),
-            'NOT BETWEEN' => $this->notBetween($value[0], $value[1]),
-            'LIKE' => $this->like($value),
-            'NOT LIKE' => $this->notLike($value),
-            default => throw new RuntimeException('Unknown operator:' . $operator),
-        };
-    }
-
-    /**
-     * @see ConditionBuilder::equals()
-     * @param mixed $value
-     * @return $this
+     * @see equals()
      */
     public function eq(mixed $value): static
     {
@@ -148,9 +123,9 @@ class ConditionBuilder
     }
 
     /**
-     * @see ConditionBuilder::notEquals()
      * @param mixed $value
      * @return $this
+     * @see notEquals()
      */
     public function ne(mixed $value): static
     {
@@ -158,9 +133,9 @@ class ConditionBuilder
     }
 
     /**
-     * @see ConditionBuilder::lessThan()
      * @param mixed $value
      * @return $this
+     * @see lessThan()
      */
     public function lt(mixed $value): static
     {
@@ -168,19 +143,19 @@ class ConditionBuilder
     }
 
     /**
-     * @see ConditionBuilder::lessThanOrEquals()
      * @param mixed $value
      * @return $this
+     *@see lessThanOrEqualTo()
      */
     public function lte(mixed $value): static
     {
-        return $this->lessThanOrEquals($value);
+        return $this->lessThanOrEqualTo($value);
     }
 
     /**
-     * @see ConditionBuilder::greaterThan()
      * @param mixed $value
      * @return $this
+     *@see greaterThan()
      */
     public function gt(mixed $value): static
     {
@@ -188,13 +163,13 @@ class ConditionBuilder
     }
 
     /**
-     * @see ConditionBuilder::greaterThanOrEquals()
      * @param mixed $value
      * @return $this
+     *@see greaterThanOrEqualTo()
      */
     public function gte(mixed $value): static
     {
-        return $this->greaterThanOrEquals($value);
+        return $this->greaterThanOrEqualTo($value);
     }
 
     /**
@@ -203,11 +178,12 @@ class ConditionBuilder
      */
     public function equals(mixed $value): static
     {
-        $this->current->negated = false;
-        $this->current->operator = '=';
-        $this->parameter($value);
-        $this->markAsDefined();
-        return $this;
+        if (is_iterable($value)) {
+            throw new RuntimeException('Iterable should use in(iterable $iterable) method instead');
+        }
+        // value will not be set for binding if null since it will be converted to IS [NOT] NULL
+        $value = $value !== null ? [$value] : null;
+        return $this->define(Operator::Equals, $value);
     }
 
     /**
@@ -223,13 +199,9 @@ class ConditionBuilder
      * @param mixed $value
      * @return $this
      */
-    public function greaterThanOrEquals(mixed $value): static
+    public function greaterThanOrEqualTo(mixed $value): static
     {
-        $this->current->negated = false;
-        $this->current->operator = '>=';
-        $this->parameter($value);
-        $this->markAsDefined();
-        return $this;
+        return $this->define(Operator::GreaterThanOrEqualTo, [$value]);
     }
 
     /**
@@ -238,24 +210,16 @@ class ConditionBuilder
      */
     public function greaterThan(mixed $value): static
     {
-        $this->current->negated = false;
-        $this->current->operator = '>';
-        $this->parameter($value);
-        $this->markAsDefined();
-        return $this;
+        return $this->define(Operator::GreaterThan, [$value]);
     }
 
     /**
      * @param mixed $value
      * @return $this
      */
-    public function lessThanOrEquals(mixed $value): static
+    public function lessThanOrEqualTo(mixed $value): static
     {
-        $this->current->negated = false;
-        $this->current->operator = '<=';
-        $this->parameter($value);
-        $this->markAsDefined();
-        return $this;
+        return $this->define(Operator::LessThanOrEqualTo, [$value]);
     }
 
     /**
@@ -264,11 +228,23 @@ class ConditionBuilder
      */
     public function lessThan(mixed $value): static
     {
-        $this->current->negated = false;
-        $this->current->operator = '<';
-        $this->parameter($value);
-        $this->markAsDefined();
-        return $this;
+        return $this->define(Operator::LessThan, [$value]);
+    }
+
+    /**
+     * @return $this
+     */
+    public function isNull(): static
+    {
+        return $this->equals(null);
+    }
+
+    /**
+     * @return $this
+     */
+    public function isNotNull(): static
+    {
+        return $this->isNull()->negate();
     }
 
     /**
@@ -277,11 +253,7 @@ class ConditionBuilder
      */
     public function like(string $value): static
     {
-        $this->current->negated = false;
-        $this->current->operator = 'LIKE';
-        $this->parameter($value);
-        $this->markAsDefined();
-        return $this;
+        return $this->define(Operator::Like, [$value]);
     }
 
     /**
@@ -294,28 +266,24 @@ class ConditionBuilder
     }
 
     /**
-     * @param iterable<mixed>|StatementBuilder $values
+     * @param iterable<mixed>|SelectBuilder $values
      * @return $this
      */
-    public function in(iterable|StatementBuilder $values): static
+    public function in(iterable|SelectBuilder $values): static
     {
-        $this->current->negated = false;
-        $this->current->operator = 'IN';
         if (is_iterable($values)) {
-            $values = ($values instanceof Traversable) ? iterator_to_array($values) : (array)$values;
+            $values = ($values instanceof Traversable) ? iterator_to_array($values) : (array) $values;
             $values = array_filter($values, static fn($s) => $s !== null);
             $values = array_unique($values);
         }
-        $this->parameter($values);
-        $this->markAsDefined();
-        return $this;
+        return $this->define(Operator::In, $values);
     }
 
     /**
-     * @param iterable<int, mixed>|StatementBuilder $values
+     * @param iterable<int, mixed>|SelectBuilder $values
      * @return $this
      */
-    public function notIn(iterable|StatementBuilder $values): static
+    public function notIn(iterable|SelectBuilder $values): static
     {
         return $this->in($values)->negate();
     }
@@ -327,11 +295,7 @@ class ConditionBuilder
      */
     public function between(mixed $min, mixed $max): static
     {
-        $this->current->negated = false;
-        $this->current->operator = 'BETWEEN';
-        $this->current->value = [$min, $max];
-        $this->markAsDefined();
-        return $this;
+        return $this->define(Operator::Between, [$min, $max]);
     }
 
     /**
@@ -350,11 +314,7 @@ class ConditionBuilder
      */
     public function inRange(Range $range): static
     {
-        $this->current->negated = false;
-        $this->current->operator = 'RANGE';
-        $this->current->value = $range;
-        $this->markAsDefined();
-        return $this;
+        return $this->define(Operator::Range, $range);
     }
 
     /**
@@ -367,28 +327,76 @@ class ConditionBuilder
     }
 
     /**
-     * @param mixed $value
+     * @param Expr $expr
      * @return $this
      */
-    public function parameter(mixed $value): static
+    public function expr(Expr $expr): static
     {
-        $value = is_iterable($value) ? $value : [$value];
-        $this->current->value = [];
-        foreach ($value as $name => $binding) {
-            is_string($name)
-                ? $this->current->value[$name] = $binding
-                : $this->current->value[] = $binding;
-        }
+        return $this->define(Operator::Raw, $expr);
+    }
+
+    /**
+     * @param SelectBuilder $builder
+     * @return $this
+     */
+    public function exists(SelectBuilder $builder): static
+    {
+        return $this->define(Operator::Exists, $builder);
+    }
+
+    /**
+     * @param SelectBuilder $builder
+     * @return $this
+     */
+    public function nested(SelectBuilder $builder): static
+    {
+        return $this->define(Operator::Nested, $builder);
+    }
+
+    /**
+     * @param static $builder
+     * @return $this
+     */
+    public function apply(self $builder): static
+    {
+        $this->current->column = $builder->current->column;
+        $this->current->operator = $builder->current->operator;
+        $this->current->value = $builder->current->value;
+        $this->current->negated = $builder->current->negated;
+        $this->defined = true;
         return $this;
     }
 
     /**
-     * @param callable(static): static $callable
+     * @param string $operator
+     * @param mixed $value
      * @return $this
      */
-    public function nest(callable $callable): static
+    public function match(string $operator, mixed $value): static
     {
-        $this->current->value = $callable(new static())->getDefinition();
+        return match (strtoupper(trim($operator))) {
+            '=' => $this->equals($value),
+            '!=', '<>' => $this->notEquals($value),
+            '>' => $this->greaterThan($value),
+            '>=' => $this->greaterThanOrEqualTo($value),
+            '<' => $this->lessThan($value),
+            '<=' => $this->lessThanOrEqualTo($value),
+            'IN' => $this->in($value),
+            'NOT IN' => $this->notIn($value),
+            'BETWEEN' => $this->between($value[0], $value[1]),
+            'NOT BETWEEN' => $this->notBetween($value[0], $value[1]),
+            'LIKE' => $this->like($value),
+            'NOT LIKE' => $this->notLike($value),
+            default => throw new RuntimeException('Unknown operator:' . $operator),
+        };
+    }
+
+    /**
+     * @return $this
+     */
+    public function negate(): static
+    {
+        $this->current->negated = !$this->current->negated;
         return $this;
     }
 
@@ -401,10 +409,14 @@ class ConditionBuilder
     }
 
     /**
+     * @param Operator $operator
+     * @param Expr|SelectBuilder|iterable<mixed>|null $value
      * @return $this
      */
-    protected function markAsDefined(): static
+    protected function define(Operator $operator, Expr|SelectBuilder|iterable|null $value): static
     {
+        $this->current->operator = $operator;
+        $this->current->value = $value;
         if ($this->defined) {
             throw new RuntimeException('Tried to set condition when it was already set!');
         }

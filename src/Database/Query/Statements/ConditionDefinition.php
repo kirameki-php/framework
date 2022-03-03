@@ -2,7 +2,9 @@
 
 namespace Kirameki\Database\Query\Statements;
 
-use Kirameki\Database\Query\Support\Range;
+use Kirameki\Database\Query\Builders\SelectBuilder;
+use Kirameki\Database\Query\Support\Operator;
+use Kirameki\Database\Support\Expr;
 use Kirameki\Support\Concerns\Tappable;
 
 class ConditionDefinition
@@ -15,9 +17,9 @@ class ConditionDefinition
     public ?string $column;
 
     /**
-     * @var string|null
+     * @var Operator|null
      */
-    public ?string $operator;
+    public ?Operator $operator;
 
     /**
      * @var bool
@@ -25,9 +27,9 @@ class ConditionDefinition
     public bool $negated;
 
     /**
-     * @var mixed
+     * @var Expr|SelectBuilder|iterable<mixed>|null
      */
-    public mixed $value;
+    public Expr|SelectBuilder|iterable|null $value;
 
     /**
      * @var string|null

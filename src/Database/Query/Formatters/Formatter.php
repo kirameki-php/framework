@@ -3,7 +3,9 @@
 namespace Kirameki\Database\Query\Formatters;
 
 use DateTimeInterface;
+use Kirameki\Database\Query\Builders\SelectBuilder;
 use Kirameki\Database\Query\Statements\ConditionDefinition;
+use Kirameki\Database\Query\Support\Operator;
 use Kirameki\Database\Query\Support\Range;
 use Kirameki\Database\Support\Expr;
 use Kirameki\Database\Query\Statements\BaseStatement;
@@ -258,6 +260,22 @@ class Formatter
     }
 
     /**
+     * @param ConditionsStatement $statement
+     * @return string
+     */
+    protected function wherePart(ConditionsStatement $statement): string
+    {
+        if ($statement->where === null) {
+            return '';
+        }
+        $clause = [];
+        foreach ($statement->where as $condition) {
+            $clause[] = $this->condition($condition, $statement->tableAlias);
+        }
+        return 'WHERE ' . implode(' AND ', $clause);
+    }
+
+    /**
      * @param ConditionDefinition $def
      * @param string|null $table
      * @return string
@@ -286,53 +304,177 @@ class Formatter
      */
     protected function conditionSegment(ConditionDefinition $def, ?string $table): string
     {
-        // Handles raw expression
-        if ($def->column === null) {
-            return $def->column.' '.$def->value;
+        return match ($def->operator) {
+            Operator::Raw => $this->conditionForRaw($def, $table),
+            Operator::Equals => $this->conditionForEqual($def, $table),
+            Operator::LessThanOrEqualTo => $this->conditionForLessThanOrEqualTo($def, $table),
+            Operator::LessThan => $this->conditionForLessThan($def, $table),
+            Operator::GreaterThanOrEqualTo => $this->conditionForGreaterThanOrEqualTo($def, $table),
+            Operator::GreaterThan => $this->conditionForGreaterThan($def, $table),
+            Operator::In => $this->conditionForIn($def, $table),
+            Operator::Between => $this->conditionForBetween($def, $table),
+            Operator::Exists => $this->conditionForExists($def, $table),
+            Operator::Like => $this->conditionForLike($def, $table),
+            Operator::Range => $this->conditionForRange($def, $table),
+            Operator::Nested => $this->conditionForNested($def, $table),
+            default => throw new RuntimeException('Unknown Operator: '.Str::valueOf($def->operator?->value)),
+        };
+    }
+
+    /**
+     * @param ConditionDefinition $def
+     * @param string|null $table
+     * @return string
+     */
+    protected function conditionForRaw(ConditionDefinition $def, ?string $table): string
+    {
+        if ($def->value instanceof Expr) {
+            return $def->value->toString();
         }
 
-        $column = $this->columnName($def->column, $table);
-        $operator = $def->operator;
+        throw new RuntimeException('Unknown condition');
+    }
+
+    /**
+     * @param ConditionDefinition $def
+     * @param string|null $table
+     * @return string
+     */
+    protected function conditionForEqual(ConditionDefinition $def, ?string $table): string
+    {
+        $column = $this->columnName((string) $def->column, $table);
+        return $def->value !== null
+            ? $column.' '.($def->negated ? '!=': '=').' '.$this->bindName()
+            : $column.' '.($def->negated ? 'IS NOT NULL' : 'IS NULL');
+    }
+
+    /**
+     * @param ConditionDefinition $def
+     * @param string|null $table
+     * @return string
+     */
+    protected function conditionForLessThanOrEqualTo(ConditionDefinition $def, ?string $table): string
+    {
+        $column = $this->columnName((string) $def->column, $table);
+        $operator = $def->negated ? '>' : '<=';
+        return $column.' '.$operator.' '.$this->bindName();
+    }
+
+    /**
+     * @param ConditionDefinition $def
+     * @param string|null $table
+     * @return string
+     */
+    protected function conditionForLessThan(ConditionDefinition $def, ?string $table): string
+    {
+        $column = $this->columnName((string) $def->column, $table);
+        $operator = $def->negated ? '>=' : '<';
+        return $column.' '.$operator.' '.$this->bindName();
+    }
+
+    /**
+     * @param ConditionDefinition $def
+     * @param string|null $table
+     * @return string
+     */
+    protected function conditionForGreaterThanOrEqualTo(ConditionDefinition $def, ?string $table): string
+    {
+        $column = $this->columnName((string) $def->column, $table);
+        $operator = $def->negated ? '<' : '>=';
+        return $column.' '.$operator.' '.$this->bindName();
+    }
+
+    /**
+     * @param ConditionDefinition $def
+     * @param string|null $table
+     * @return string
+     */
+    protected function conditionForGreaterThan(ConditionDefinition $def, ?string $table): string
+    {
+        $column = $this->columnName((string) $def->column, $table);
+        $operator = $def->negated ? '<=' : '>';
+        return $column.' '.$operator.' '.$this->bindName();
+    }
+
+    /**
+     * @param ConditionDefinition $def
+     * @param string|null $table
+     * @return string
+     */
+    protected function conditionForIn(ConditionDefinition $def, ?string $table): string
+    {
+        $column = $this->columnName((string) $def->column, $table);
+        $operator = $def->negated ? 'NOT IN' : 'IN';
+        $value = $def->value;
+
+        if (is_array($value)) {
+            if (!empty($value)) {
+                $boundNames = array_map(fn() => $this->bindName(), $value);
+                return $column.' '.$operator.' ('.implode(', ', $boundNames).')';
+            }
+            return '1 = 0';
+        }
+
+        if ($value instanceof SelectBuilder) {
+            return $column.' '.$operator.' '.$this->subQuery($value);
+        }
+
+        throw new RuntimeException('Unknown condition');
+    }
+
+    /**
+     * @param ConditionDefinition $def
+     * @param string|null $table
+     * @return string
+     */
+    protected function conditionForBetween(ConditionDefinition $def, ?string $table): string
+    {
+        $column = $this->columnName((string) $def->column, $table);
+        return $column.' '.($def->negated ? 'NOT ' : '').'BETWEEN '.$this->bindName().' AND '.$this->bindName();
+    }
+
+    /**
+     * @param ConditionDefinition $def
+     * @param string|null $table
+     * @return string
+     */
+    protected function conditionForExists(ConditionDefinition $def, ?string $table): string
+    {
+        $column = $this->columnName((string) $def->column, $table);
+        $operator = $def->negated ? 'NOT EXISTS' : 'EXISTS';
+        $value = $def->value;
+
+        if ($value instanceof SelectBuilder) {
+            return $column.' '.$operator.' '.$this->subQuery($value);
+        }
+
+        throw new RuntimeException('Unknown condition');
+    }
+
+    /**
+     * @param ConditionDefinition $def
+     * @param string|null $table
+     * @return string
+     */
+    protected function conditionForLike(ConditionDefinition $def, ?string $table): string
+    {
+        $column = $this->columnName((string) $def->column, $table);
+        $operator = $def->negated ? 'NOT LIKE' : 'LIKE';
+        return $column.' '.$operator.' '.$this->bindName();
+    }
+
+    /**
+     * @param ConditionDefinition $def
+     * @param string|null $table
+     * @return string
+     */
+    protected function conditionForRange(ConditionDefinition $def, ?string $table): string
+    {
+        $column = $this->columnName((string) $def->column, $table);
         $negated = $def->negated;
         $value = $def->value;
 
-        // Handles nested condition
-        if ($operator === null && $value instanceof ConditionDefinition) {
-            return $this->condition($value, null);
-        }
-
-        if ($operator === '=') {
-            if ($value === null) {
-                $expr = $negated ? 'IS NOT NULL' : 'IS NULL';
-                return $column.' '.$expr;
-            }
-            $operator = $negated ? '!'.$operator : $operator;
-            return $column.' '.$operator.' '.$this->bindName();
-        }
-
-        if ($operator === 'IN' && is_array($value)) {
-            if (empty($value)) {
-                return '1 = 0';
-            }
-            $operator = $negated ? 'NOT '.$operator : $operator;
-            $bindNames = [];
-            for($i = 0, $size = count($value); $i < $size; $i++) {
-                $bindNames[] = $this->bindName();
-            }
-            return $column.' '.$operator.' ('.implode(', ', $bindNames).')';
-        }
-
-        if ($operator === 'BETWEEN') {
-            $operator = $negated ? 'NOT '.$operator : $operator;
-            return $column.' '.$operator.' '.$this->bindName().' AND '.$this->bindName();
-        }
-
-        if ($operator === 'LIKE') {
-            $operator = $negated ? 'NOT '.$operator : $operator;
-            return $column.' '.$operator.' '.$this->bindName();
-        }
-
-        if ($operator === 'RANGE' && $value instanceof Range) {
+        if ($value instanceof Range) {
             $lowerOperator = $negated
                 ? ($value->lowerClosed ? '<' : '<=')
                 : ($value->lowerClosed ? '>=' : '>');
@@ -345,33 +487,30 @@ class Formatter
             return $expr;
         }
 
-        // ">", ">=", "<", "<=" and raw cannot be negated
-        if ($negated) {
-            // TODO needs better exception
-            throw new RuntimeException("Negation not valid for '$operator'");
-        }
-
-        if (is_array($value) && count($value) > 1) {
-            throw new RuntimeException(count($value).' parameters for condition detected where only 1 is expected.');
-        }
-
-        return $column.' '.$operator.' '.$this->bindName();
+        throw new RuntimeException('Unknown condition');
     }
 
     /**
-     * @param ConditionsStatement $statement
+     * @param ConditionDefinition $def
+     * @param string|null $table
      * @return string
      */
-    protected function wherePart(ConditionsStatement $statement): string
+    protected function conditionForNested(ConditionDefinition $def, ?string $table): string
     {
-        if ($statement->where === null) {
-            return '';
+        if ($def->value instanceof SelectBuilder) {
+            return $this->subQuery($def->value);
         }
-        $clause = [];
-        foreach ($statement->where as $condition) {
-            $clause[] = $this->condition($condition, $statement->tableAlias);
-        }
-        return 'WHERE ' . implode(' AND ', $clause);
+
+        throw new RuntimeException('Unknown condition');
+    }
+
+    /**
+     * @param SelectBuilder $builder
+     * @return string
+     */
+    protected function subQuery(SelectBuilder $builder): string
+    {
+        return '('.$builder->prepare().')';
     }
 
     /**
@@ -468,30 +607,24 @@ class Formatter
 
     /**
      * @param array<int, mixed> $bindings
-     * @param ConditionDefinition $cond
+     * @param ConditionDefinition $def
      * @return void
      */
-    protected function addBindingsForCondition(array &$bindings, ConditionDefinition $cond): void
+    protected function addBindingsForCondition(array &$bindings, ConditionDefinition $def): void
     {
-        while ($cond !== null) {
-            if ($cond->value instanceof Expr) {
-                // Expressions are evaluated as raw string so it has no parameter
-            }
-            elseif ($cond->value instanceof ConditionDefinition) {
-                $this->addBindingsForCondition($bindings, $cond->value);
-            }
-            elseif (is_iterable($cond->value)) {
-                foreach ($cond->value as $binding) {
+        while ($def !== null) {
+            if (is_iterable($def->value)) {
+                foreach ($def->value as $binding) {
                     $bindings[] = $binding;
                 }
             }
-            else {
-                $bindings[] = $cond->value;
+            elseif ($def->value instanceof SelectBuilder) {
+                foreach ($def->value->getBindings() as $binding) {
+                    $bindings[] = $binding;
+                }
             }
-
-            $cond = $cond->next;
+            $def = $def->next;
         }
-
     }
 
     /**

@@ -2,10 +2,14 @@
 
 namespace Kirameki\Database\Query\Builders;
 
+use Closure;
 use Kirameki\Database\Query\Statements\ConditionDefinition;
 use Kirameki\Database\Query\Statements\ConditionsStatement;
+use Kirameki\Database\Query\Statements\SelectStatement;
+use Kirameki\Database\Query\Statements\UpdateStatement;
 use Kirameki\Database\Query\Support\Range;
 use RuntimeException;
+use Webmozart\Assert\Assert;
 
 /**
  * @property ConditionsStatement $statement
@@ -13,24 +17,31 @@ use RuntimeException;
 abstract class ConditionsBuilder extends StatementBuilder
 {
     /**
-     * @param string|ConditionBuilder $column
-     * @param mixed|null $operator
-     * @param mixed|null $value
+     * @var ConditionBuilder|null
+     */
+    protected ConditionBuilder|null $lastCondition = null;
+
+    /**
+     * @param mixed ...$args
      * @return $this
      */
-    public function where(ConditionBuilder|string $column, mixed $operator = null, mixed $value = null): static
+    public function where(mixed ...$args): static
     {
-        return $this->addWhereCondition($this->buildCondition(...func_get_args()));
+        Assert::countBetween($args, 1, 3);
+        $this->lastCondition = $this->buildCondition(...$args);
+        return $this->addWhereCondition($this->lastCondition->getDefinition());
     }
 
     /**
-     * @param string $column
-     * @param mixed|null $value
+     * @param mixed ...$args
      * @return $this
      */
-    public function whereNot(string $column, mixed $value): static
+    public function whereNot(mixed ...$args): static
     {
-        return $this->addWhereCondition($this->buildNotCondition($column, $value));
+        // only 2 because operators are not supported for NOT's
+        Assert::countBetween($args, 1, 2);
+        $this->lastCondition = $this->buildCondition(...$args)->negate();
+        return $this->addWhereCondition($this->lastCondition->getDefinition());
     }
 
     /**
@@ -40,6 +51,30 @@ abstract class ConditionsBuilder extends StatementBuilder
     public function whereRaw(string $raw): static
     {
         return $this->addWhereCondition(ConditionBuilder::raw($raw)->getDefinition());
+    }
+
+    /**
+     * @param mixed ...$args
+     * @return $this
+     */
+    public function and(mixed ...$args): static
+    {
+        if ($this->lastCondition?->and()->apply($this->buildCondition(...$args)) !== null) {
+            return $this;
+        }
+        throw new RuntimeException('and called without a previous condition. Define a where before declaring and');
+    }
+
+    /**
+     * @param mixed ...$args
+     * @return $this
+     */
+    public function or(mixed ...$args): static
+    {
+        if ($this->lastCondition?->or()->apply($this->buildCondition(...$args)) !== null) {
+            return $this;
+        }
+        throw new RuntimeException('or called without a previous condition. Define a where before declaring or');
     }
 
     /**
@@ -54,7 +89,8 @@ abstract class ConditionsBuilder extends StatementBuilder
             throw new RuntimeException('Invalid sorting: '.$sort. ' Only ASC or DESC is allowed.');
         }
 
-        if ($this->statement instanceof ConditionsStatement) {
+        if ($this->statement instanceof SelectStatement ||
+            $this->statement instanceof UpdateStatement) {
             $this->statement->orderBy ??= [];
             $this->statement->orderBy[$column] = $sort;
         } else {
@@ -104,60 +140,54 @@ abstract class ConditionsBuilder extends StatementBuilder
     }
 
     /**
-     * @param string|ConditionBuilder $column
-     * @param mixed|null $operator
-     * @param mixed|null $value
-     * @return ConditionDefinition
+     * @param mixed ...$args
+     * @return ConditionBuilder
      */
-    protected function buildCondition(ConditionBuilder|string $column, mixed $operator = null, mixed $value = null): ConditionDefinition
+    protected function buildCondition(mixed ...$args): ConditionBuilder
     {
         $num = func_num_args();
 
         if ($num === 1) {
-            if ($column instanceof ConditionBuilder) {
-                return $column->getDefinition();
+            $condition = $args[0];
+            if ($condition instanceof Closure) {
+                $query = new SelectBuilder($this->connection);
+                return ConditionBuilder::nest($condition($query) ?? $query);
+            }
+            if ($condition instanceof SelectBuilder) {
+                return ConditionBuilder::nest($condition);
+            }
+            if ($condition instanceof ConditionBuilder) {
+                return $condition;
             }
         }
 
-        if ($num === 2 && is_string($column)) {
-            if (is_callable($operator)) {
-                return ConditionBuilder::for($column)->tap($operator)->getDefinition();
+        if ($num === 2 && is_string($args[0])) {
+            $column = $args[0];
+            $value = $args[1];
+
+            if ($value instanceof Closure) {
+                return ConditionBuilder::for($column)->tap($value);
             }
 
-            if ($operator instanceof Range) {
-                return ConditionBuilder::for($column)->inRange($operator)->getDefinition();
+            if ($value instanceof Range) {
+                return ConditionBuilder::for($column)->inRange($value);
             }
 
-            if (is_iterable($operator)) {
-                return ConditionBuilder::for($column)->in($operator)->getDefinition();
+            if (is_iterable($value)) {
+                return ConditionBuilder::for($column)->in($value);
             }
 
-            return ConditionBuilder::for($column)->equals($operator)->getDefinition();
+            return ConditionBuilder::for($column)->equals($value);
         }
 
-        if ($num === 3 && is_string($column) && is_string($operator)) {
-            return ConditionBuilder::for($column)->with($operator, $value)->getDefinition();
+        if ($num === 3 && is_string($args[0]) && is_string($args[1])) {
+            $column = $args[0];
+            $operator = $args[1];
+            $value = $args[2];
+            return ConditionBuilder::for($column)->match($operator, $value);
         }
 
         throw new RuntimeException('Invalid number of arguments. expected: 1~3. '.$num.' given.');
-    }
-
-    /**
-     * @param string $column
-     * @param mixed|null $value
-     * @return ConditionDefinition
-     */
-    protected function buildNotCondition(string $column, mixed $value): ConditionDefinition
-    {
-        if (is_array($value)) {
-            return ConditionBuilder::for($column)->notIn($value)->getDefinition();
-        }
-
-        if ($value instanceof Range) {
-            return ConditionBuilder::for($column)->notInRange($value)->getDefinition();
-        }
-
-        return ConditionBuilder::for($column)->notEquals($value)->getDefinition();
     }
 
     /**
