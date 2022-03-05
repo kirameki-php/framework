@@ -2,6 +2,7 @@
 
 namespace Kirameki\Database\Query\Formatters;
 
+use BackedEnum;
 use DateTimeInterface;
 use Kirameki\Database\Query\Builders\SelectBuilder;
 use Kirameki\Database\Query\Statements\ConditionDefinition;
@@ -580,11 +581,16 @@ class Formatter
     public function parameterize(mixed $value): mixed
     {
         if (is_iterable($value)) {
+            /** @var iterable<array-key, mixed> $value */
             return Json::encode(Arr::from($value));
         }
 
         if ($value instanceof DateTimeInterface) {
             return '\''.$value->format(DateTimeInterface::RFC3339_EXTENDED).'\'';
+        }
+
+        if ($value instanceof BackedEnum) {
+            return $value->value;
         }
 
         return $value;

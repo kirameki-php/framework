@@ -5,6 +5,7 @@ namespace Kirameki\Model;
 use Closure;
 use Kirameki\Database\DatabaseManager;
 use Kirameki\Model\Casts\CastInterface;
+use RuntimeException;
 
 class ModelManager
 {
@@ -19,12 +20,12 @@ class ModelManager
     protected array $reflections;
 
     /**
-     * @var array<non-empty-string, CastInterface>
+     * @var array<string, CastInterface>
      */
     protected array $casts = [];
 
     /**
-     * @var array<string, callable(): CastInterface>
+     * @var array<string, callable(string): CastInterface>
      */
     protected array $deferredCasts = [];
 
@@ -51,7 +52,7 @@ class ModelManager
      */
     public function reflect(string $class): Reflection
     {
-        return $this->reflections[$class] ??= call_user_func("$class::getReflection"); /** @phpstan-ignore-line */
+        return $this->reflections[$class] ??= $class::getReflection(); /** @phpstan-ignore-line */
     }
 
     /**
@@ -60,15 +61,28 @@ class ModelManager
      */
     public function getCast(string $name): CastInterface
     {
-        return $this->casts[$name] ??= call_user_func($this->deferredCasts[$name]); /** @phpstan-ignore-line */
+        if (isset($this->casts[$name])) {
+            return $this->casts[$name];
+        }
+
+        if (isset($this->deferredCasts[$name])) {
+            $this->casts[$name] = $this->deferredCasts[$name]($name);
+            return $this->casts[$name];
+        }
+
+        if (enum_exists($name)) {
+            return $this->casts[$name] = $this->deferredCasts['{enum}']($name);
+        }
+
+        throw new RuntimeException('Unknown cast:' .$name);
     }
 
     /**
      * @param string $name
-     * @param callable(): CastInterface $deferred
+     * @param Closure(string): CastInterface $deferred
      * @return $this
      */
-    public function setCast(string $name, callable $deferred): static
+    public function setCast(string $name, Closure $deferred): static
     {
         $this->deferredCasts[$name] = $deferred;
         return $this;

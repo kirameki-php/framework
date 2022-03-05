@@ -7,6 +7,7 @@ use Kirameki\Support\Concerns;
 use Ramsey\Uuid\Uuid;
 use RuntimeException;
 use Traversable;
+use UnitEnum;
 use function array_map;
 use function ceil;
 use function explode;
@@ -656,35 +657,39 @@ class Str
     public static function typeOf(mixed $var): string
     {
         if (is_null($var)) {
-            return "null";
+            return 'null';
         }
 
         if (is_bool($var)) {
-            return "bool";
+            return 'bool';
         }
 
         if (is_int($var)) {
-            return "int";
+            return 'int';
         }
 
         if (is_float($var)) {
-            return "float";
+            return 'float';
         }
 
         if (is_string($var)) {
-            return "string";
+            return 'string';
         }
 
         if (is_array($var)) {
-            return "array";
+            return 'array';
         }
 
         if ($var instanceof DateTimeInterface) {
             return 'datetime';
         }
 
+        if ($var instanceof UnitEnum) {
+            return 'enum';
+        }
+
         if (is_object($var)) {
-            return "object";
+            return 'object';
         }
 
         if (is_resource($var)) {
@@ -738,6 +743,10 @@ class Str
 
         if ($var instanceof DateTimeInterface) {
             return $var->format(DATE_RFC3339_EXTENDED);
+        }
+
+        if ($var instanceof UnitEnum) {
+            return $var->name;
         }
 
         if (is_object($var)) {
