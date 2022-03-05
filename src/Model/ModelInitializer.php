@@ -10,7 +10,7 @@ use Kirameki\Model\Casts\DateTimeCast;
 use Kirameki\Model\Casts\EnumCast;
 use Kirameki\Model\Casts\FloatCast;
 use Kirameki\Model\Casts\IntCast;
-use Kirameki\Model\Casts\ArrayCast;
+use Kirameki\Model\Casts\CollectionCast;
 use Kirameki\Model\Casts\StringCast;
 
 class ModelInitializer implements InitializerInterface
@@ -25,7 +25,7 @@ class ModelInitializer implements InitializerInterface
             $registrar->setCast('float', static fn() => new FloatCast());
             $registrar->setCast('string', static fn() => new StringCast());
             $registrar->setCast('datetime', static fn() => new DateTimeCast());
-            $registrar->setCast('array', static fn() => new ArrayCast());
+            $registrar->setCast('collection', static fn() => new CollectionCast());
             $registrar->setCast('{enum}', static fn(string $name) => new EnumCast($name));
             return $registrar;
         });
