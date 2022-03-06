@@ -207,7 +207,7 @@ class Formatter
 
         foreach ($statement->columns as $name) {
             if ($name instanceof Expr) {
-                $expressions[] = $name->toString();
+                $expressions[] = $name->toSql($this);
                 continue;
             }
 
@@ -330,7 +330,7 @@ class Formatter
     protected function conditionForRaw(ConditionDefinition $def, ?string $table): string
     {
         if ($def->value instanceof Expr) {
-            return $def->value->toString();
+            return $def->value->toSql($this);
         }
 
         throw new RuntimeException('Unknown condition');
@@ -343,7 +343,7 @@ class Formatter
      */
     protected function conditionForEqual(ConditionDefinition $def, ?string $table): string
     {
-        $column = $this->columnName((string) $def->column, $table);
+        $column = $this->columnName($this->definedColumn($def), $table);
         return $def->value !== null
             ? $column.' '.($def->negated ? '!=': '=').' '.$this->bindName()
             : $column.' '.($def->negated ? 'IS NOT NULL' : 'IS NULL');
@@ -356,7 +356,7 @@ class Formatter
      */
     protected function conditionForLessThanOrEqualTo(ConditionDefinition $def, ?string $table): string
     {
-        $column = $this->columnName((string) $def->column, $table);
+        $column = $this->columnName($this->definedColumn($def), $table);
         $operator = $def->negated ? '>' : '<=';
         return $column.' '.$operator.' '.$this->bindName();
     }
@@ -368,7 +368,7 @@ class Formatter
      */
     protected function conditionForLessThan(ConditionDefinition $def, ?string $table): string
     {
-        $column = $this->columnName((string) $def->column, $table);
+        $column = $this->columnName($this->definedColumn($def), $table);
         $operator = $def->negated ? '>=' : '<';
         return $column.' '.$operator.' '.$this->bindName();
     }
@@ -380,7 +380,7 @@ class Formatter
      */
     protected function conditionForGreaterThanOrEqualTo(ConditionDefinition $def, ?string $table): string
     {
-        $column = $this->columnName((string) $def->column, $table);
+        $column = $this->columnName($this->definedColumn($def), $table);
         $operator = $def->negated ? '<' : '>=';
         return $column.' '.$operator.' '.$this->bindName();
     }
@@ -392,7 +392,7 @@ class Formatter
      */
     protected function conditionForGreaterThan(ConditionDefinition $def, ?string $table): string
     {
-        $column = $this->columnName((string) $def->column, $table);
+        $column = $this->columnName($this->definedColumn($def), $table);
         $operator = $def->negated ? '<=' : '>';
         return $column.' '.$operator.' '.$this->bindName();
     }
@@ -404,7 +404,7 @@ class Formatter
      */
     protected function conditionForIn(ConditionDefinition $def, ?string $table): string
     {
-        $column = $this->columnName((string) $def->column, $table);
+        $column = $this->columnName($this->definedColumn($def), $table);
         $operator = $def->negated ? 'NOT IN' : 'IN';
         $value = $def->value;
 
@@ -430,7 +430,7 @@ class Formatter
      */
     protected function conditionForBetween(ConditionDefinition $def, ?string $table): string
     {
-        $column = $this->columnName((string) $def->column, $table);
+        $column = $this->columnName($this->definedColumn($def), $table);
         return $column.' '.($def->negated ? 'NOT ' : '').'BETWEEN '.$this->bindName().' AND '.$this->bindName();
     }
 
@@ -441,7 +441,7 @@ class Formatter
      */
     protected function conditionForExists(ConditionDefinition $def, ?string $table): string
     {
-        $column = $this->columnName((string) $def->column, $table);
+        $column = $this->columnName($this->definedColumn($def), $table);
         $operator = $def->negated ? 'NOT EXISTS' : 'EXISTS';
         $value = $def->value;
 
@@ -459,7 +459,7 @@ class Formatter
      */
     protected function conditionForLike(ConditionDefinition $def, ?string $table): string
     {
-        $column = $this->columnName((string) $def->column, $table);
+        $column = $this->columnName($this->definedColumn($def), $table);
         $operator = $def->negated ? 'NOT LIKE' : 'LIKE';
         return $column.' '.$operator.' '.$this->bindName();
     }
@@ -471,7 +471,7 @@ class Formatter
      */
     protected function conditionForRange(ConditionDefinition $def, ?string $table): string
     {
-        $column = $this->columnName((string) $def->column, $table);
+        $column = $this->columnName($this->definedColumn($def), $table);
         $negated = $def->negated;
         $value = $def->value;
 
@@ -564,14 +564,31 @@ class Formatter
     }
 
     /**
-     * @param string $name
+     * @param string|Expr $name
      * @param string|null $table
-     * @return string
+     * @return string|null
      */
-    public function columnName(string $name, ?string $table = null): string
+    public function columnName(string|Expr $name, ?string $table = null): ?string
     {
+        if ($name instanceof Expr) {
+            return $name->toSql($this);
+        }
+
         $name = $name !== '*' ? $this->addQuotes($name) : $name;
         return $table !== null ? $this->tableName($table).'.'.$name : $name;
+    }
+
+    /**
+     * @param string $column
+     * @param string $path
+     * @param bool $unwrap
+     * @return string
+     */
+    public function jsonExtract(string $column, string $path, bool $unwrap): string
+    {
+        $directive = $unwrap ? '->>' : '->';
+        $path = str_starts_with($path, '$.') ? $path : '$.'.$path;
+        return $this->columnName($column).$directive.'"'.$path.'"';
     }
 
     /**
@@ -594,6 +611,15 @@ class Formatter
         }
 
         return $value;
+    }
+
+    /**
+     * @param ConditionDefinition $def
+     * @return string
+     */
+    protected function definedColumn(ConditionDefinition $def): string
+    {
+        return $def->column ?? throw new RuntimeException('Column name expected but null given');
     }
 
     /**

@@ -12,6 +12,9 @@ class DatabaseTestCase extends TestCase
 {
     use UsesDatabases;
 
+    /**
+     * @var array<Connection>
+     */
     protected array $connections = [];
 
     public function mysqlConnection(): Connection

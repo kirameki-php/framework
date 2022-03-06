@@ -26,11 +26,11 @@ class EnumCast implements CastInterface
     /**
      * @param Model $model
      * @param string $key
-     * @param mixed $value
+     * @param string|int $value
      * @return T
      */
     public function get(Model $model, string $key, mixed $value): BackedEnum
     {
-        return $this->class::from($value); /** @phpstan-ignore-line */
+        return $this->class::from($value);
     }
 }

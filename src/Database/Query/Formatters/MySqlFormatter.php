@@ -7,14 +7,14 @@ use DateTimeInterface;
 class MySqlFormatter extends Formatter
 {
     /**
-     * @param $value
-     * @return string
+     * @param mixed $value
+     * @return mixed
      */
-    public function parameterize($value): string
+    public function parameterize(mixed $value): mixed
     {
         if ($value instanceof DateTimeInterface) {
             return '\''.$value->format('Y-m-d H:i:s.u').'\'';
         }
-        return (string) $value;
+        return parent::parameterize($value);
     }
 }

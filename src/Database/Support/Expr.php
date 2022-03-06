@@ -2,45 +2,32 @@
 
 namespace Kirameki\Database\Support;
 
-use Stringable;
+use Kirameki\Database\Query\Formatters\Formatter;
 
-class Expr implements Stringable
+abstract class Expr
 {
     /**
-     * @var string
-     */
-    protected string $value;
-
-    /**
      * @param string $value
-     * @return static
+     * @return Raw
      */
-    public static function raw(string $value): static
+    public static function raw(string $value): Raw
     {
-        return new static($value);
+        return new Raw($value);
     }
 
     /**
-     * @param string $value
+     * @param string $column
+     * @param string $path
+     * @return JsonExtract
      */
-    public function __construct(string $value)
+    public static function jsonExtract(string $column, string $path): JsonExtract
     {
-        $this->value = $value;
+        return new JsonExtract($column, $path);
     }
 
     /**
+     * @param Formatter $formatter
      * @return string
      */
-    public function toString(): string
-    {
-        return (string) $this;
-    }
-
-    /**
-     * @return string
-     */
-    public function __toString(): string
-    {
-        return $this->value;
-    }
+    abstract public function toSql(Formatter $formatter): string;
 }

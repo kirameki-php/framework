@@ -16,14 +16,6 @@ use function collect;
 
 class CollectionTest extends TestCase
 {
-    /**
-     * @group test
-     */
-    public function testa()
-    {
-        dump(($count / $div));
-    }
-
     public function test__Construct(): void
     {
         // empty
