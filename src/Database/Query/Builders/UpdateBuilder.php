@@ -34,7 +34,7 @@ class UpdateBuilder extends ConditionsBuilder
      */
     public function prepare(): string
     {
-        return $this->getQueryFormatter()->updateStatement($this->statement);
+        return $this->getQueryFormatter()->formatUpdate($this->statement);
     }
 
     /**
@@ -42,7 +42,7 @@ class UpdateBuilder extends ConditionsBuilder
      */
     public function getBindings(): array
     {
-        return $this->getQueryFormatter()->updateBindings($this->statement);
+        return $this->getQueryFormatter()->getBindingsForUpdate($this->statement);
     }
 
     /**

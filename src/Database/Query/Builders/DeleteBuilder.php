@@ -32,7 +32,7 @@ class DeleteBuilder extends ConditionsBuilder
      */
     public function prepare(): string
     {
-        return $this->getQueryFormatter()->deleteStatement($this->statement);
+        return $this->getQueryFormatter()->formatDelete($this->statement);
     }
 
     /**
@@ -40,6 +40,6 @@ class DeleteBuilder extends ConditionsBuilder
      */
     public function getBindings(): array
     {
-        return $this->getQueryFormatter()->deleteBindings($this->statement);
+        return $this->getQueryFormatter()->getBindingsForDelete($this->statement);
     }
 }

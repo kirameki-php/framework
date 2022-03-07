@@ -213,7 +213,7 @@ class SelectBuilder extends ConditionsBuilder
      */
     public function prepare(): string
     {
-        return $this->getQueryFormatter()->selectStatement($this->statement);
+        return $this->getQueryFormatter()->formatSelect($this->statement);
     }
 
     /**
@@ -221,7 +221,7 @@ class SelectBuilder extends ConditionsBuilder
      */
     public function getBindings(): array
     {
-        return $this->getQueryFormatter()->selectBindings($this->statement);
+        return $this->getQueryFormatter()->getBindingsForSelect($this->statement);
     }
 
     /**
@@ -239,7 +239,7 @@ class SelectBuilder extends ConditionsBuilder
      */
     protected function execAggregate(string $function, string $column): int
     {
-        $column = $this->getQueryFormatter()->columnName($column);
+        $column = $this->getQueryFormatter()->formatColumnName($column);
         /** @var array{ aggregate: int } $results */
         $results = $this->copy()->columns($function.'('.$column.') AS aggregate')->execSelect()[0] ?? ['aggregate' => 0];
         return $results['aggregate'];

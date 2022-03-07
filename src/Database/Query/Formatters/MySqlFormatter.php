@@ -2,19 +2,14 @@
 
 namespace Kirameki\Database\Query\Formatters;
 
-use DateTimeInterface;
-
 class MySqlFormatter extends Formatter
 {
     /**
-     * @param mixed $value
-     * @return mixed
+     * @return string
      */
-    public function parameterize(mixed $value): mixed
+    protected function getDateTimeFormat(): string
     {
-        if ($value instanceof DateTimeInterface) {
-            return '\''.$value->format('Y-m-d H:i:s.u').'\'';
-        }
-        return parent::parameterize($value);
+        return 'Y-m-d H:i:s.u';
     }
+
 }
