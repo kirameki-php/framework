@@ -42,11 +42,21 @@ class InsertBuilder extends StatementBuilder
     }
 
     /**
+     * @param string ...$columns
+     * @return $this
+     */
+    public function returning(string ...$columns): static
+    {
+        $this->statement->returningColumns = $columns;
+        return $this;
+    }
+
+    /**
      * @return string
      */
     public function prepare(): string
     {
-        return $this->getQueryFormatter()->formatInsert($this->statement);
+        return $this->getQueryFormatter()->formatInsertStatement($this->statement);
     }
 
     /**

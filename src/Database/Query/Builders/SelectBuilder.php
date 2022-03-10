@@ -5,6 +5,7 @@ namespace Kirameki\Database\Query\Builders;
 use Kirameki\Database\Connection;
 use Kirameki\Database\Query\Statements\ConditionDefinition;
 use Kirameki\Database\Query\Statements\SelectStatement;
+use Kirameki\Database\Query\Support\LockType;
 use Kirameki\Database\Support\Expr;
 use Kirameki\Support\Collection;
 
@@ -54,9 +55,18 @@ class SelectBuilder extends ConditionsBuilder
     /**
      * @return $this
      */
-    public function lock(): static
+    public function forShare(): static
     {
-        $this->statement->lock = true;
+        $this->statement->lock = LockType::Shared;
+        return $this;
+    }
+
+    /**
+     * @return $this
+     */
+    public function forUpdate(): static
+    {
+        $this->statement->lock = LockType::Exclusive;
         return $this;
     }
 
@@ -213,7 +223,7 @@ class SelectBuilder extends ConditionsBuilder
      */
     public function prepare(): string
     {
-        return $this->getQueryFormatter()->formatSelect($this->statement);
+        return $this->getQueryFormatter()->formatSelectStatement($this->statement);
     }
 
     /**

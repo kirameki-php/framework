@@ -12,7 +12,7 @@ class QueryExecuted extends DatabaseEvent
     public string $statement;
 
     /**
-     * @var array
+     * @var array<int, mixed>
      */
     public array $bindings;
 
@@ -24,7 +24,7 @@ class QueryExecuted extends DatabaseEvent
     /**
      * @param Connection $connection
      * @param string $statement
-     * @param array $bindings
+     * @param array<int, mixed> $bindings
      * @param float $elapsedMs
      */
     public function __construct(Connection $connection, string $statement, array $bindings, float $elapsedMs)
@@ -40,7 +40,6 @@ class QueryExecuted extends DatabaseEvent
      */
     public function toSql(): string
     {
-        $formatter = $this->connection->getQueryFormatter();
-        return $formatter->interpolate($this->statement, $this->bindings);
+        return $this->connection->getQueryFormatter()->interpolate($this->statement, $this->bindings);
     }
 }

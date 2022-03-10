@@ -34,7 +34,7 @@ class UpdateBuilder extends ConditionsBuilder
      */
     public function prepare(): string
     {
-        return $this->getQueryFormatter()->formatUpdate($this->statement);
+        return $this->getQueryFormatter()->formatUpdateStatement($this->statement);
     }
 
     /**

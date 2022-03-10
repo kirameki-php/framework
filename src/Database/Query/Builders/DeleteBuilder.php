@@ -32,7 +32,7 @@ class DeleteBuilder extends ConditionsBuilder
      */
     public function prepare(): string
     {
-        return $this->getQueryFormatter()->formatDelete($this->statement);
+        return $this->getQueryFormatter()->formatDeleteStatement($this->statement);
     }
 
     /**

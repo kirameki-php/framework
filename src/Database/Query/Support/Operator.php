@@ -2,7 +2,6 @@
 
 namespace Kirameki\Database\Query\Support;
 
-
 enum Operator: string
 {
     case Equals = '=';

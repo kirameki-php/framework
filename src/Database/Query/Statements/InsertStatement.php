@@ -12,6 +12,11 @@ class InsertStatement extends BaseStatement
     /**
      * @var array<string>|null
      */
+    public ?array $returningColumns = null;
+
+    /**
+     * @var array<string>|null
+     */
     protected ?array $cachedColumns = null;
 
     /**

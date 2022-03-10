@@ -6,6 +6,7 @@ use BackedEnum;
 use DateTimeInterface;
 use Kirameki\Database\Query\Builders\SelectBuilder;
 use Kirameki\Database\Query\Statements\ConditionDefinition;
+use Kirameki\Database\Query\Support\LockType;
 use Kirameki\Database\Query\Support\Operator;
 use Kirameki\Database\Query\Support\Range;
 use Kirameki\Database\Support\Expr;
@@ -28,7 +29,7 @@ class Formatter
      * @param SelectStatement $statement
      * @return string
      */
-    public function formatSelect(SelectStatement $statement): string
+    public function formatSelectStatement(SelectStatement $statement): string
     {
         $parts = [];
         $parts[] = $this->formatSelectPart($statement);
@@ -58,7 +59,7 @@ class Formatter
      * @param InsertStatement $statement
      * @return string
      */
-    public function formatInsert(InsertStatement $statement): string
+    public function formatInsertStatement(InsertStatement $statement): string
     {
         $columns = $statement->columns();
         $columnCount = count($columns);
@@ -106,7 +107,7 @@ class Formatter
      * @param UpdateStatement $statement
      * @return string
      */
-    public function formatUpdate(UpdateStatement $statement): string
+    public function formatUpdateStatement(UpdateStatement $statement): string
     {
         $assignments = [];
         foreach (array_keys($statement->data) as $name) {
@@ -135,7 +136,7 @@ class Formatter
      * @param DeleteStatement $statement
      * @return string
      */
-    public function formatDelete(DeleteStatement $statement): string
+    public function formatDeleteStatement(DeleteStatement $statement): string
     {
         return implode(' ', array_filter([
             'DELETE FROM',
@@ -194,17 +195,16 @@ class Formatter
      */
     public function formatSelectPart(SelectStatement $statement): string
     {
+        $distinct = null;
+        if ($statement->distinct) {
+            $distinct = 'DISTINCT ';
+        }
+
         if (empty($statement->columns)) {
             $statement->columns[] = '*';
         }
 
         $expressions = [];
-
-        $distinct = '';
-        if ($statement->distinct) {
-            $distinct = 'DISTINCT ';
-        }
-
         foreach ($statement->columns as $name) {
             if ($name instanceof Expr) {
                 $expressions[] = $name->toSql($this);
@@ -226,7 +226,21 @@ class Formatter
 
             $expressions[] = $segments[0];
         }
-        return 'SELECT ' . $distinct . implode(', ', $expressions);
+
+        $lock = null;
+        if ($statement->lock !== null) {
+            $lock = match ($statement->lock) {
+                LockType::Exclusive => 'FOR UPDATE',
+                LockType::Shared => 'FOR SHARE',
+            };
+        }
+
+        return implode(' ', array_filter([
+            'SELECT',
+            $distinct,
+            implode(', ', $expressions),
+            $lock,
+        ]));
     }
 
     /**
@@ -566,9 +580,9 @@ class Formatter
     /**
      * @param string|Expr $name
      * @param string|null $table
-     * @return string|null
+     * @return string
      */
-    public function formatColumnName(string|Expr $name, ?string $table = null): ?string
+    public function formatColumnName(string|Expr $name, ?string $table = null): string
     {
         if ($name instanceof Expr) {
             return $name->toSql($this);

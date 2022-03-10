@@ -2,6 +2,7 @@
 
 namespace Kirameki\Database\Query\Statements;
 
+use Kirameki\Database\Query\Support\LockType;
 use Kirameki\Database\Support\Expr;
 
 class SelectStatement extends ConditionsStatement
@@ -32,7 +33,7 @@ class SelectStatement extends ConditionsStatement
     public ?bool $distinct = null;
 
     /**
-     * @var bool|null
+     * @var LockType|null
      */
-    public ?bool $lock = null;
+    public LockType|null $lock = null;
 }
