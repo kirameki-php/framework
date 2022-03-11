@@ -2,6 +2,9 @@ Core
 - flag to handle Deprecations on dev/prd
 - ex: error in dev / info in prd
 
+Http
+- mask request parameters from logging
+
 Database
 - pagination of results
 - local / utc timezone
