@@ -4,6 +4,6 @@ namespace Kirameki\Database\Query\Support;
 
 enum LockType
 {
-    case Shared;
     case Exclusive;
+    case Shared;
 }
