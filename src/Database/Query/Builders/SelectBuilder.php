@@ -5,6 +5,7 @@ namespace Kirameki\Database\Query\Builders;
 use Kirameki\Database\Connection;
 use Kirameki\Database\Query\Statements\ConditionDefinition;
 use Kirameki\Database\Query\Statements\SelectStatement;
+use Kirameki\Database\Query\Support\LockOption;
 use Kirameki\Database\Query\Support\LockType;
 use Kirameki\Database\Support\Expr;
 use Kirameki\Support\Collection;
@@ -20,7 +21,7 @@ class SelectBuilder extends ConditionsBuilder
     public function __construct(Connection $connection)
     {
         $this->connection = $connection;
-        $this->statement = new SelectStatement;
+        $this->statement = new SelectStatement();
     }
 
     /**
@@ -57,16 +58,18 @@ class SelectBuilder extends ConditionsBuilder
      */
     public function forShare(): static
     {
-        $this->statement->lock = LockType::Shared;
+        $this->statement->lockType = LockType::Shared;
         return $this;
     }
 
     /**
+     * @param LockOption|null $option
      * @return $this
      */
-    public function forUpdate(): static
+    public function forUpdate(LockOption $option = null): static
     {
-        $this->statement->lock = LockType::Exclusive;
+        $this->statement->lockType = LockType::Exclusive;
+        $this->statement->lockOption = $option;
         return $this;
     }
 
@@ -249,7 +252,7 @@ class SelectBuilder extends ConditionsBuilder
      */
     protected function execAggregate(string $function, string $column): int
     {
-        $column = $this->getQueryFormatter()->formatColumnName($column);
+        $column = $this->getQueryFormatter()->columnize($column);
         /** @var array{ aggregate: int } $results */
         $results = $this->copy()->columns($function.'('.$column.') AS aggregate')->execSelect()[0] ?? ['aggregate' => 0];
         return $results['aggregate'];

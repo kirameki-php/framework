@@ -11,5 +11,4 @@ class MySqlFormatter extends Formatter
     {
         return 'Y-m-d H:i:s.u';
     }
-
 }

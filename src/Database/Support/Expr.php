@@ -16,16 +16,6 @@ abstract class Expr
     }
 
     /**
-     * @param string $column
-     * @param string $path
-     * @return JsonExtract
-     */
-    public static function jsonExtract(string $column, string $path): JsonExtract
-    {
-        return new JsonExtract($column, $path);
-    }
-
-    /**
      * @param Formatter $formatter
      * @return string
      */

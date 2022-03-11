@@ -3,6 +3,7 @@
 namespace Kirameki\Database\Adapters;
 
 use Kirameki\Core\Config;
+use Kirameki\Database\Query\Formatters\SqliteFormatter as SqliteQueryFormatter;
 use PDO;
 use function unlink;
 
@@ -40,6 +41,14 @@ class SqliteAdapter extends PdoAdapter
     {
         $this->pdo = null;
         return $this;
+    }
+
+    /**
+     * @return SqliteQueryFormatter
+     */
+    public function getQueryFormatter(): SqliteQueryFormatter
+    {
+        return new SqliteQueryFormatter();
     }
 
     /**
