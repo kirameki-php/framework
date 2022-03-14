@@ -30,7 +30,6 @@ use function http_build_query;
 use function implode;
 use function in_array;
 use function is_array;
-use function is_callable;
 use function is_int;
 use function is_iterable;
 use function is_string;
@@ -144,12 +143,12 @@ class Arr
      * @template TKey of array-key
      * @template TValue
      * @param iterable<TKey, TValue> $iterable
-     * @param mixed|callable(TValue, TKey): bool $value
+     * @param mixed|Closure(TValue, TKey): bool $value
      * @return bool
      */
     public static function contains(iterable $iterable, mixed $value): bool
     {
-        $call = is_callable($value) ? $value : static fn($val) => $val === $value;
+        $call = ($value instanceof Closure) ? $value : static fn($val) => $val === $value;
         foreach ($iterable as $key => $val) {
             if (static::verify($call, $key, $val)) {
                 return true;
@@ -541,10 +540,10 @@ class Arr
      * @template TKey
      * @template TValue
      * @param iterable<TKey, TValue> $iterable
-     * @param string|callable(TValue, TKey): mixed $key
+     * @param string|Closure(TValue, TKey): mixed $key
      * @return array<array-key, array<int, TValue>>
      */
-    public static function groupBy(iterable $iterable, string|callable $key): array
+    public static function groupBy(iterable $iterable, string|Closure $key): array
     {
         $callable = is_string($key) ? static::createDigger($key) : $key;
 
@@ -638,11 +637,11 @@ class Arr
     /**
      * @template T
      * @param iterable<T> $iterable
-     * @param string|callable(T, mixed): array-key $key
+     * @param string|Closure(T, mixed): array-key $key
      * @param bool $overwrite
      * @return array<T>
      */
-    public static function keyBy(iterable $iterable, string|callable $key, bool $overwrite = false): array
+    public static function keyBy(iterable $iterable, string|Closure $key, bool $overwrite = false): array
     {
         return static::keyByRecursive($iterable, $key, $overwrite, 1);
     }
@@ -666,12 +665,12 @@ class Arr
     /**
      * @template T
      * @param iterable<T> $iterable
-     * @param string|callable $key
+     * @param string|Closure(T, mixed): array-key $key
      * @param bool $overwrite
      * @param int<1, max> $depth
      * @return array<T>
      */
-    public static function keyByRecursive(iterable $iterable, string|callable $key, bool $overwrite = false, int $depth = PHP_INT_MAX): array
+    public static function keyByRecursive(iterable $iterable, string|Closure $key, bool $overwrite = false, int $depth = PHP_INT_MAX): array
     {
         $callable = is_string($key) ? static::createDigger($key) : $key;
 
@@ -954,7 +953,7 @@ class Arr
      * @template TKey of array-key
      * @template TValue
      * @param iterable<TKey, TValue> $iterable
-     * @param mixed|callable(TValue, TKey): bool $value
+     * @param mixed|Closure(TValue, TKey): bool $value
      * @return bool
      */
     public static function notContains(iterable $iterable, mixed $value): bool

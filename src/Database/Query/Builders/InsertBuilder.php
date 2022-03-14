@@ -4,6 +4,7 @@ namespace Kirameki\Database\Query\Builders;
 
 use Kirameki\Database\Connection;
 use Kirameki\Database\Query\Statements\InsertStatement;
+use RuntimeException;
 use Traversable;
 
 /**
@@ -68,12 +69,13 @@ class InsertBuilder extends StatementBuilder
     }
 
     /**
-     * @return void
+     * @return array<mixed>
      */
-    public function execute(): void
+    public function execute(): array
     {
-        if (!empty($this->statement->dataset)) {
-            $this->connection->affectingQuery($this->prepare(), $this->getBindings());
+        if (empty($this->statement->dataset)) {
+            throw new RuntimeException('Values must be set in order to execute an insert query');
         }
+        return $this->connection->query($this->prepare(), $this->getBindings());
     }
 }
