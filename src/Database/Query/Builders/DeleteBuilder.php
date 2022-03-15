@@ -3,6 +3,7 @@
 namespace Kirameki\Database\Query\Builders;
 
 use Kirameki\Database\Connection;
+use Kirameki\Database\Query\Result;
 use Kirameki\Database\Query\Statements\DeleteStatement;
 
 /**
@@ -16,15 +17,17 @@ class DeleteBuilder extends ConditionsBuilder
     public function __construct(Connection $connection)
     {
         $this->connection = $connection;
-        $this->statement = new DeleteStatement;
+        $this->statement = new DeleteStatement();
     }
 
     /**
-     * @return int
+     * @param string ...$columns
+     * @return $this
      */
-    public function execute(): int
+    public function returning(string ...$columns): static
     {
-        return $this->connection->affectingQuery($this->prepare(), $this->getBindings());
+        $this->statement->returningColumns = $columns;
+        return $this;
     }
 
     /**

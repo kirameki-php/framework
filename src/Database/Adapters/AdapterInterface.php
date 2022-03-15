@@ -5,6 +5,7 @@ namespace Kirameki\Database\Adapters;
 use Generator;
 use Kirameki\Core\Config;
 use Kirameki\Database\Query\Formatters\Formatter as QueryFormatter;
+use Kirameki\Database\Query\Result;
 use Kirameki\Database\Schema\Formatters\Formatter as SchemaFormatter;
 
 interface AdapterInterface
@@ -32,16 +33,9 @@ interface AdapterInterface
     /**
      * @param string $statement
      * @param array<mixed>|null $bindings
-     * @return array<mixed>
+     * @return Result
      */
-    public function query(string $statement, ?array $bindings = null): array;
-
-    /**
-     * @param string $statement
-     * @param array<mixed>|null $bindings
-     * @return int
-     */
-    public function affectingQuery(string $statement, ?array $bindings = null): int;
+    public function query(string $statement, ?array $bindings = null): Result;
 
     /**
      * @param string $statement

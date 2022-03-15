@@ -5,6 +5,8 @@ namespace Kirameki\Database\Adapters;
 use Kirameki\Core\Config;
 use Kirameki\Database\Query\Formatters\SqliteFormatter as SqliteQueryFormatter;
 use PDO;
+use function app;
+use function file_exists;
 use function unlink;
 
 class SqliteAdapter extends PdoAdapter
@@ -68,7 +70,7 @@ class SqliteAdapter extends PdoAdapter
         if ($ifNotExist && !$this->databaseExists()) {
             return;
         }
-        unlink($this->config['path']);
+        unlink($this->config->getString('path'));
     }
 
     /**
@@ -76,7 +78,7 @@ class SqliteAdapter extends PdoAdapter
      */
     public function databaseExists(): bool
     {
-        return file_exists($this->config['path']);
+        return file_exists($this->config->getString('path'));
     }
 
     /**

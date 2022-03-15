@@ -6,6 +6,7 @@ use Generator;
 use Kirameki\Core\Config;
 use Kirameki\Database\Connection;
 use Kirameki\Database\Query\Formatters\Formatter as QueryFormatter;
+use Kirameki\Database\Query\Result;
 use Kirameki\Database\Schema\Formatters\Formatter as SchemaFormatter;
 use PDO;
 use PDOStatement;
@@ -63,26 +64,13 @@ abstract class PdoAdapter implements AdapterInterface
     /**
      * @param string $statement
      * @param array<mixed>|null $bindings
-     * @return array<mixed>
+     * @return Result
      */
-    public function query(string $statement, ?array $bindings = null): array
+    public function query(string $statement, ?array $bindings = null): Result
     {
         $prepared = $this->execQuery($statement, $bindings);
         $result = $prepared->fetchAll(PDO::FETCH_ASSOC);
-        if ($result === false) {
-            $this->throwException($prepared);
-        }
-        return (array) $result;
-    }
-
-    /**
-     * @param string $statement
-     * @param array<mixed>|null $bindings
-     * @return int
-     */
-    public function affectingQuery(string $statement, ?array $bindings = null): int
-    {
-        return $this->execQuery($statement, $bindings)->rowCount();
+        return new Result($result, static fn() => $prepared->rowCount());
     }
 
     /**

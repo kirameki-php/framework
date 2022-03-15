@@ -1,8 +1,9 @@
 <?php declare(strict_types=1);
 
-namespace Kirameki\Database\Support;
+namespace Kirameki\Database\Query\Support;
 
 use Kirameki\Database\Query\Formatters\Formatter;
+use Kirameki\Database\Support\Expr;
 
 class JsonExtract extends Expr
 {

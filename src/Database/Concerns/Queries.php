@@ -6,6 +6,7 @@ use Generator;
 use Kirameki\Database\Connection;
 use Kirameki\Database\Events\QueryExecuted;
 use Kirameki\Database\Query\Formatters\Formatter as QueryFormatter;
+use Kirameki\Database\Query\Result;
 
 /**
  * @mixin Connection
@@ -28,26 +29,12 @@ trait Queries
     /**
      * @param string $statement
      * @param array<mixed>|null $bindings
-     * @return array
+     * @return Result
      */
-    public function query(string $statement, ?array $bindings = null): array
+    public function query(string $statement, ?array $bindings = null): Result
     {
         $then = microtime(true);
         $result = $this->adapter->query($statement, $bindings);
-        $elapsedMs = (microtime(true) - $then) * 1000;
-        $this->events->dispatchClass(QueryExecuted::class, $this, $statement, $bindings, $elapsedMs);
-        return $result;
-    }
-
-    /**
-     * @param string $statement
-     * @param array<mixed>|null $bindings
-     * @return int
-     */
-    public function affectingQuery(string $statement, ?array $bindings = null): int
-    {
-        $then = microtime(true);
-        $result = $this->adapter->affectingQuery($statement, $bindings);
         $elapsedMs = (microtime(true) - $then) * 1000;
         $this->events->dispatchClass(QueryExecuted::class, $this, $statement, $bindings, $elapsedMs);
         return $result;

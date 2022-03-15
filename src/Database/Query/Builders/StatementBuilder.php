@@ -4,11 +4,14 @@ namespace Kirameki\Database\Query\Builders;
 
 use Kirameki\Database\Connection;
 use Kirameki\Database\Query\Formatters\Formatter;
+use Kirameki\Database\Query\Result;
 use Kirameki\Database\Query\Statements\BaseStatement;
+use Kirameki\Support\Concerns\Macroable;
 use Kirameki\Support\Concerns\Tappable;
 
 abstract class StatementBuilder
 {
+    use Macroable;
     use Tappable;
 
     /**
@@ -72,6 +75,14 @@ abstract class StatementBuilder
      * @return array<mixed>
      */
     abstract public function getBindings(): array;
+
+    /**
+     * @return Result
+     */
+    protected function execute(): Result
+    {
+        return $this->connection->query($this->prepare(), $this->getBindings());
+    }
 
     /**
      * @return Formatter

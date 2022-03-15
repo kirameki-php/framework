@@ -18,16 +18,17 @@ use Kirameki\Database\Query\Statements\InsertStatement;
 use Kirameki\Database\Query\Statements\SelectStatement;
 use Kirameki\Database\Query\Statements\UpdateStatement;
 use Kirameki\Support\Arr;
+use Kirameki\Support\Concerns\Macroable;
 use Kirameki\Support\Json;
 use Kirameki\Support\Str;
 use RuntimeException;
-use function implode;
 use function array_filter;
 use function array_keys;
 use function array_map;
 use function array_merge;
 use function count;
 use function current;
+use function implode;
 use function is_array;
 use function is_bool;
 use function is_iterable;
@@ -35,9 +36,12 @@ use function is_null;
 use function is_string;
 use function next;
 use function preg_replace_callback;
+use function str_starts_with;
 
-class Formatter
+abstract class Formatter
 {
+    use Macroable;
+
     /**
      * @param SelectStatement $statement
      * @return string
@@ -224,20 +228,7 @@ class Formatter
                 continue;
             }
 
-            /** @var array<string> $segments */
-            $segments = preg_split('/\s+as\s+/i', (string) $name);
-            if (count($segments) > 1) {
-                $expressions[] = $this->columnize($segments[0]) . ' AS ' . $segments[1];
-                continue;
-            }
-
-            // consists of only alphanumerics so assume it's just a column
-            if (ctype_alnum($segments[0])) {
-                $expressions[] = $this->columnize($segments[0], $statement->tableAlias);
-                continue;
-            }
-
-            $expressions[] = $segments[0];
+            $expressions[] = $this->columnize($name, $statement->tableAlias);
         }
         return $this->asCsv($expressions);
     }

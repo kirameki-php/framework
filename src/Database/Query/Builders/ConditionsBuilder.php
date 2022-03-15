@@ -10,6 +10,9 @@ use Kirameki\Database\Query\Statements\UpdateStatement;
 use Kirameki\Database\Query\Support\Range;
 use RuntimeException;
 use Webmozart\Assert\Assert;
+use function in_array;
+use function is_string;
+use function strtoupper;
 
 /**
  * @property ConditionsStatement $statement
@@ -95,7 +98,7 @@ abstract class ConditionsBuilder extends StatementBuilder
             $this->statement->orderBy[$column] = $sort;
         } else {
             $table = $this->statement->table;
-            $class = get_class($this->statement);
+            $class = $this->statement::class;
             throw new RuntimeException("Invalid statement orderBy applied to $class for $table->$column.");
         }
 

@@ -6,9 +6,11 @@ use Kirameki\Database\Query\Statements\ConditionDefinition;
 use Kirameki\Database\Query\Support\Operator;
 use Kirameki\Database\Query\Support\Range;
 use Kirameki\Database\Support\Expr;
+use Kirameki\Database\Support\Raw;
 use Kirameki\Support\Concerns\Tappable;
 use RuntimeException;
 use Traversable;
+use function is_iterable;
 
 class ConditionBuilder
 {
@@ -44,7 +46,7 @@ class ConditionBuilder
      */
     public static function raw(string $raw): static
     {
-        return (new static())->expr(Expr::raw($raw));
+        return (new static())->expr(new Raw($raw));
     }
 
     /**

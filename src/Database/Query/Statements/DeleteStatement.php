@@ -4,4 +4,8 @@ namespace Kirameki\Database\Query\Statements;
 
 class DeleteStatement extends ConditionsStatement
 {
+    /**
+     * @var array<string>|null
+     */
+    public ?array $returningColumns = null;
 }

@@ -8,7 +8,9 @@ use Kirameki\Database\Query\Statements\SelectStatement;
 use Kirameki\Database\Query\Support\LockOption;
 use Kirameki\Database\Query\Support\LockType;
 use Kirameki\Database\Support\Expr;
+use Kirameki\Database\Support\Raw;
 use Kirameki\Support\Collection;
+use function is_array;
 
 /**
  * @property SelectStatement $statement
@@ -110,7 +112,7 @@ class SelectBuilder extends ConditionsBuilder
      */
     public function all(): Collection
     {
-        return new Collection($this->execSelect());
+        return new Collection($this->execute());
     }
 
     /**
@@ -118,7 +120,7 @@ class SelectBuilder extends ConditionsBuilder
      */
     public function one(): mixed
     {
-        return $this->copy()->limit(1)->execSelect()[0] ?? null;
+        return $this->copy()->limit(1)->execute()[0] ?? null;
     }
 
     /**
@@ -126,7 +128,7 @@ class SelectBuilder extends ConditionsBuilder
      */
     public function exists(): bool
     {
-        return !empty($this->copy()->columns("1")->limit(1)->execSelect());
+        return $this->copy()->columns("1")->limit(1)->execute()->isNotEmpty();
     }
 
     /**
@@ -142,7 +144,7 @@ class SelectBuilder extends ConditionsBuilder
         }
 
         /** @var array<array<string|int>> $results */
-        $results = $this->copy()->addToSelect(Expr::raw('count(*) AS total'))->execSelect();
+        $results = $this->copy()->addToSelect(new Raw('count(*) AS total'))->execute();
 
         // when GROUP BY is defined, return in [columnValue => count] format
         if (is_array($statement->groupBy)) {
@@ -169,7 +171,7 @@ class SelectBuilder extends ConditionsBuilder
      */
     public function sum(string $column): float|int
     {
-        return $this->execAggregate($column, 'SUM');
+        return $this->aggregate($column, 'SUM');
     }
 
     /**
@@ -178,7 +180,7 @@ class SelectBuilder extends ConditionsBuilder
      */
     public function avg(string $column): float|int
     {
-        return $this->execAggregate($column, 'AVG');
+        return $this->aggregate($column, 'AVG');
     }
 
     /**
@@ -187,7 +189,7 @@ class SelectBuilder extends ConditionsBuilder
      */
     public function min(string $column): int
     {
-        return $this->execAggregate($column, 'MIN');
+        return $this->aggregate($column, 'MIN');
     }
 
     /**
@@ -196,7 +198,7 @@ class SelectBuilder extends ConditionsBuilder
      */
     public function max(string $column): int
     {
-        return $this->execAggregate($column, 'MAX');
+        return $this->aggregate($column, 'MAX');
     }
 
     /**
@@ -238,23 +240,16 @@ class SelectBuilder extends ConditionsBuilder
     }
 
     /**
-     * @return array<mixed>
-     */
-    protected function execSelect(): array
-    {
-        return $this->connection->query($this->prepare(), $this->getBindings());
-    }
-
-    /**
      * @param string $function
      * @param string $column
      * @return int
      */
-    protected function execAggregate(string $function, string $column): int
+    protected function aggregate(string $function, string $column): int
     {
         $column = $this->getQueryFormatter()->columnize($column);
+        $select = new Raw("$function($column) AS aggregate");
         /** @var array{ aggregate: int } $results */
-        $results = $this->copy()->columns($function.'('.$column.') AS aggregate')->execSelect()[0] ?? ['aggregate' => 0];
+        $results = $this->copy()->columns($select)->execute()->first() ?? ['aggregate' => 0];
         return $results['aggregate'];
     }
 }

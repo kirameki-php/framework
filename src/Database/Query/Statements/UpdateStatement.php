@@ -8,4 +8,9 @@ class UpdateStatement extends ConditionsStatement
      * @var array<string, mixed>
      */
     public array $data;
+
+    /**
+     * @var array<string>|null
+     */
+    public ?array $returningColumns = null;
 }

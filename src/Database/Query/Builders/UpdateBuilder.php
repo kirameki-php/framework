@@ -16,7 +16,7 @@ class UpdateBuilder extends ConditionsBuilder
     public function __construct(Connection $connection)
     {
         $this->connection = $connection;
-        $this->statement = new UpdateStatement;
+        $this->statement = new UpdateStatement();
     }
 
     /**
@@ -26,6 +26,16 @@ class UpdateBuilder extends ConditionsBuilder
     public function set(array $assignments): static
     {
         $this->statement->data = $assignments;
+        return $this;
+    }
+
+    /**
+     * @param string ...$columns
+     * @return $this
+     */
+    public function returning(string ...$columns): static
+    {
+        $this->statement->returningColumns = $columns;
         return $this;
     }
 
@@ -43,13 +53,5 @@ class UpdateBuilder extends ConditionsBuilder
     public function getBindings(): array
     {
         return $this->getQueryFormatter()->getBindingsForUpdate($this->statement);
-    }
-
-    /**
-     * @return int
-     */
-    public function execute(): int
-    {
-        return $this->connection->affectingQuery($this->prepare(), $this->getBindings());
     }
 }
