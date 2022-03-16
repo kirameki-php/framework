@@ -70,7 +70,7 @@ abstract class PdoAdapter implements AdapterInterface
     {
         $prepared = $this->execQuery($statement, $bindings);
         $result = $prepared->fetchAll(PDO::FETCH_ASSOC);
-        return new Result($result, static fn() => $prepared->rowCount());
+        return new Result($result, $prepared->rowCount(...));
     }
 
     /**
@@ -167,10 +167,7 @@ abstract class PdoAdapter implements AdapterInterface
     /**
      * @return QueryFormatter
      */
-    public function getQueryFormatter(): QueryFormatter
-    {
-        return new QueryFormatter();
-    }
+    abstract public function getQueryFormatter(): QueryFormatter;
 
     /**
      * @return SchemaFormatter

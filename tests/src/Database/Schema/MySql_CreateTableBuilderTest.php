@@ -2,7 +2,7 @@
 
 namespace Tests\Kirameki\Database\Schema;
 
-use Kirameki\Database\Support\Expr;
+use Kirameki\Database\Schema\Expressions\Raw;
 use RuntimeException;
 
 class MySql_CreateTableBuilderTest extends SchemaTestCase
@@ -113,7 +113,7 @@ class MySql_CreateTableBuilderTest extends SchemaTestCase
     {
         $builder = $this->createTableBuilder('users');
         $builder->int('id')->primaryKey();
-        $builder->datetime('loginAt')->default(Expr::raw('CURRENT_TIMESTAMP'));
+        $builder->datetime('loginAt')->default(new Raw('CURRENT_TIMESTAMP'));
         $schema = $builder->toString();
         static::assertEquals('CREATE TABLE users (id BIGINT, loginAt DATETIME(6) DEFAULT CURRENT_TIMESTAMP, PRIMARY KEY (id ASC));', $schema);
     }

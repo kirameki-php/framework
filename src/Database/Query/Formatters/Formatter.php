@@ -10,7 +10,7 @@ use Kirameki\Database\Query\Support\LockOption;
 use Kirameki\Database\Query\Support\LockType;
 use Kirameki\Database\Query\Support\Operator;
 use Kirameki\Database\Query\Support\Range;
-use Kirameki\Database\Support\Expr;
+use Kirameki\Database\Query\Expressions\Expr;
 use Kirameki\Database\Query\Statements\BaseStatement;
 use Kirameki\Database\Query\Statements\ConditionsStatement;
 use Kirameki\Database\Query\Statements\DeleteStatement;
@@ -74,14 +74,14 @@ abstract class Formatter
      */
     public function formatInsertStatement(InsertStatement $statement): string
     {
-        return implode(' ', [
+        return implode(' ', array_filter([
             'INSERT INTO',
             $this->quote($statement->table),
             $this->formatInsertColumnsPart($statement),
             'VALUES',
             $this->formatInsertValuesPart($statement),
-            $this->formatInsertReturningPart($statement),
-        ]);
+            $this->formatReturningPart($statement),
+        ]));
     }
 
     /**
@@ -115,6 +115,7 @@ abstract class Formatter
             'SET',
             $this->formatUpdateAssignmentsPart($statement),
             $this->formatConditionsPart($statement),
+            $this->formatReturningPart($statement),
         ]));
     }
 
@@ -149,6 +150,7 @@ abstract class Formatter
             'DELETE FROM',
             $this->quote($statement->table),
             $this->formatConditionsPart($statement),
+            $this->formatReturningPart($statement),
         ]));
     }
 
@@ -303,20 +305,6 @@ abstract class Formatter
             $placeholders[] = '(' . $this->asCsv($binders) . ')';
         }
         return $this->asCsv($placeholders);
-    }
-
-    /**
-     * @param InsertStatement $statement
-     * @return string
-     */
-    protected function formatInsertReturningPart(InsertStatement $statement): string
-    {
-        if ($statement->returningColumns === null) {
-            return '';
-        }
-
-        $columns = array_map(fn($column) => $this->columnize($column), $statement->returningColumns);
-        return 'RETURNING ' . $this->asCsv($columns);
     }
 
     /**
@@ -640,6 +628,20 @@ abstract class Formatter
         return $statement->offset !== null
             ? 'OFFSET ' . $statement->offset
             : '';
+    }
+
+    /**
+     * @param InsertStatement|UpdateStatement|DeleteStatement $statement
+     * @return string
+     */
+    protected function formatReturningPart(InsertStatement|UpdateStatement|DeleteStatement $statement): string
+    {
+        if ($statement->returningColumns === null) {
+            return '';
+        }
+
+        $columns = array_map(fn($column) => $this->columnize($column), $statement->returningColumns);
+        return 'RETURNING ' . $this->asCsv($columns);
     }
 
     /**

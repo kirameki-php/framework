@@ -1,9 +1,9 @@
 <?php declare(strict_types=1);
 
-namespace Kirameki\Database\Query\Support;
+namespace Kirameki\Database\Query\Expressions;
 
+use Kirameki\Database\Query\Expressions\Expr;
 use Kirameki\Database\Query\Formatters\Formatter;
-use Kirameki\Database\Support\Expr;
 
 class Column extends Expr
 {

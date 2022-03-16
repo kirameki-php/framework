@@ -59,7 +59,7 @@ class DropIndexBuilder extends StatementBuilder
         $this->preprocess();
         $formatter = $this->connection->getSchemaFormatter();
         return [
-            $formatter->dropIndexStatement($this->statement)
+            $formatter->formatDropIndexStatement($this->statement)
         ];
     }
 

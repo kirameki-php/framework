@@ -19,7 +19,7 @@ class CryptoManagerTest extends TestCase
 
     public function testEncryptWithoutKey(): void
     {
-        $this->expectErrorMessage('Cannot assign null to property Kirameki\Security\CryptoManager::$key of type string');
+        $this->expectErrorMessage('Return value must be of type string, null returned');
 
         $this->app->config()->set('security.crypto.key', null);
 

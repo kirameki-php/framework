@@ -8,11 +8,12 @@ use Kirameki\Database\Schema\Statements\AlterRenameColumnAction;
 use Kirameki\Database\Schema\Statements\CreateIndexStatement;
 use Kirameki\Database\Schema\Statements\BaseStatement;
 use Kirameki\Database\Schema\Statements\DropIndexStatement;
-use Kirameki\Database\Schema\Support\CurrentTimestamp;
-use Kirameki\Database\Support\Expr;
+use Kirameki\Database\Schema\Expressions\CurrentTimestamp;
+use Kirameki\Database\Schema\Expressions\Expr;
 use Kirameki\Database\Schema\Statements\ColumnDefinition;
 use Kirameki\Database\Schema\Statements\CreateTableStatement;
 use Kirameki\Support\Arr;
+use Kirameki\Support\Str;
 use RuntimeException;
 use function array_filter;
 use function array_keys;
@@ -20,36 +21,32 @@ use function array_merge;
 use function implode;
 use function is_bool;
 use function is_string;
+use function str_replace;
 use function strtoupper;
 
 class Formatter
 {
     /**
-     * @var string
-     */
-    protected string $quote = '`';
-
-    /**
      * @param CreateTableStatement $statement
      * @return string
      */
-    public function createTableStatement(CreateTableStatement $statement): string
+    public function formatCreateTableStatement(CreateTableStatement $statement): string
     {
         $parts = [];
         $parts[] = 'CREATE TABLE';
         $parts[] = $statement->table;
         $columnParts = [];
         foreach ($statement->columns as $definition) {
-            $columnParts[] = $this->column($definition);
+            $columnParts[] = $this->formatColumnDefinition($definition);
         }
         $pkParts = [];
-        foreach ($statement->primaryKey->columns as $column => $order) {
+        foreach (($statement->primaryKey?->columns ?? []) as $column => $order) {
             $pkParts[] = "$column $order";
         }
         if (!empty($pkParts)) {
-            $columnParts[] = 'PRIMARY KEY ('.implode(', ', $pkParts).')';
+            $columnParts[] = 'PRIMARY KEY (' . implode(', ', $pkParts) . ')';
         }
-        $parts[] = '('.implode(', ', $columnParts).')';
+        $parts[] = '(' . implode(', ', $columnParts) . ')';
         return implode(' ', $parts).';';
     }
 
@@ -57,11 +54,11 @@ class Formatter
      * @param AlterColumnAction $action
      * @return string
      */
-    public function addColumnAction(AlterColumnAction $action): string
+    public function formatAddColumnAction(AlterColumnAction $action): string
     {
         $parts = [];
         $parts[] = 'ADD COLUMN';
-        $parts[] = $this->column($action->definition);
+        $parts[] = $this->formatColumnDefinition($action->definition);
         $parts[] = $action->positionType;
         $parts[] = $action->positionColumn;
         return implode(' ', array_filter($parts));
@@ -71,11 +68,11 @@ class Formatter
      * @param AlterColumnAction $action
      * @return string
      */
-    public function modifyColumnAction(AlterColumnAction $action): string
+    public function formatModifyColumnAction(AlterColumnAction $action): string
     {
         $parts = [];
         $parts[] = 'MODIFY COLUMN';
-        $parts[] = $this->column($action->definition);
+        $parts[] = $this->formatColumnDefinition($action->definition);
         $parts[] = $action->positionType;
         $parts[] = $action->positionColumn;
         return implode(' ', array_filter($parts));
@@ -85,11 +82,11 @@ class Formatter
      * @param AlterDropColumnAction $action
      * @return string
      */
-    public function dropColumnAction(AlterDropColumnAction $action): string
+    public function formatDropColumnAction(AlterDropColumnAction $action): string
     {
         $parts = [];
         $parts[] = 'DROP COLUMN';
-        $parts[] = $this->addQuotes($action->column);
+        $parts[] = $this->quote($action->column);
         return implode(' ', $parts);
     }
 
@@ -97,13 +94,13 @@ class Formatter
      * @param AlterRenameColumnAction $action
      * @return string
      */
-    public function renameColumnAction(AlterRenameColumnAction $action): string
+    public function formatRenameColumnAction(AlterRenameColumnAction $action): string
     {
         $parts = [];
         $parts[] = 'RENAME COLUMN';
-        $parts[] = $this->addQuotes($action->from);
+        $parts[] = $this->quote($action->from);
         $parts[] = 'TO';
-        $parts[] = $this->addQuotes($action->to);
+        $parts[] = $this->quote($action->to);
         return implode(' ', $parts);
     }
 
@@ -112,16 +109,16 @@ class Formatter
      * @param string $to
      * @return string
      */
-    public function renameTableStatement(string $from, string $to): string
+    public function formatRenameTableStatement(string $from, string $to): string
     {
-        return 'ALTER TABLE '.$this->addQuotes($from).' RENAME TO '.$this->addQuotes($to).';';
+        return 'ALTER TABLE '.$this->quote($from).' RENAME TO '.$this->quote($to).';';
     }
 
     /**
      * @param BaseStatement $statement
      * @return string
      */
-    public function dropTableStatement(BaseStatement $statement): string
+    public function formatDropTableStatement(BaseStatement $statement): string
     {
         return 'DROP TABLE '.$statement->table.';';
     }
@@ -130,7 +127,7 @@ class Formatter
      * @param CreateIndexStatement $statement
      * @return string
      */
-    public function createIndexStatement(CreateIndexStatement $statement): string
+    public function formatCreateIndexStatement(CreateIndexStatement $statement): string
     {
         $parts = [];
         $parts[] = 'CREATE';
@@ -145,18 +142,18 @@ class Formatter
         foreach ($statement->columns as $column => $order) {
             $columnParts[] = "$column $order";
         }
-        $parts[] = '('.implode(', ', $columnParts).')';
+        $parts[] = '(' . implode(', ', $columnParts) . ')';
         if ($statement->comment !== null) {
-            $parts[] = $this->stringLiteral($statement->comment);
+            $parts[] = $this->literalize($statement->comment);
         }
-        return implode(' ', $parts).';';
+        return implode(' ', $parts) . ';';
     }
 
     /**
      * @param DropIndexStatement $statement
      * @return string
      */
-    public function dropIndexStatement(DropIndexStatement $statement): string
+    public function formatDropIndexStatement(DropIndexStatement $statement): string
     {
         $name = $statement->name ?? implode('_', array_merge([$statement->table], $statement->columns));
         return 'DROP INDEX '.$name.' ON '.$statement->table.';';
@@ -166,22 +163,22 @@ class Formatter
      * @param ColumnDefinition $def
      * @return string
      */
-    public function column(ColumnDefinition $def): string
+    public function formatColumnDefinition(ColumnDefinition $def): string
     {
         $parts = [];
         $parts[] = $def->name;
-        $parts[] = $this->columnType($def);
+        $parts[] = $this->formatColumnType($def);
         if (!$def->nullable) {
             $parts[] = 'NOT NULL';
         }
         if ($def->default !== null) {
-            $parts[] = 'DEFAULT '.$this->defaultValue($def);
+            $parts[] = 'DEFAULT '.$this->formatDefaultValue($def);
         }
         if ($def->autoIncrement) {
             $parts[] = 'AUTO_INCREMENT';
         }
         if ($def->comment !== null) {
-            $parts[] = 'COMMENT '.$this->stringLiteral($def->comment);
+            $parts[] = 'COMMENT '.$this->literalize($def->comment);
         }
         return implode(' ', $parts);
     }
@@ -190,7 +187,7 @@ class Formatter
      * @param ColumnDefinition $def
      * @return string
      */
-    protected function columnType(ColumnDefinition $def): string
+    protected function formatColumnType(ColumnDefinition $def): string
     {
         if ($def->type === 'int') {
             return match ($def->size) {
@@ -203,63 +200,73 @@ class Formatter
         }
         if ($def->type === 'decimal') {
             $args = Arr::compact([$def->size, $def->scale]);
-            return 'DECIMAL'.(!empty($args) ? '('.implode(',', $args).')' : '');
+            return 'DECIMAL' . (!empty($args) ? '(' . implode(',', $args) . ')' : '');
         }
         if ($def->type === 'datetime') {
             $def->size ??= 6;
-            return 'DATETIME('.$def->size.')';
+            return 'DATETIME(' . $def->size . ')';
         }
         if ($def->type === 'string') {
             $def->size ??= 191;
-            return 'VARCHAR('.$def->size.')';
+            return 'VARCHAR(' . $def->size . ')';
         }
         if ($def->type === 'uuid') {
             return 'VARCHAR(36)';
         }
+        if ($def->type === null) {
+            throw new RuntimeException('Definition type cannot be set to null');
+        }
+
         $args = Arr::compact([$def->size, $def->scale]);
-        return strtoupper($def->type).(!empty($args) ? '('.implode(',', $args).')' : '');
-    }
-
-    /**
-     * @param string $text
-     * @return string
-     */
-    protected function addQuotes(string $text): string
-    {
-        $quoted = $this->quote;
-        $quoted.= str_replace($this->quote, $this->quote.$this->quote, $text);
-        $quoted.= $this->quote;
-        return $quoted;
-    }
-
-    /**
-     * @param ColumnDefinition $def
-     * @return string
-     */
-    protected function defaultValue(ColumnDefinition $def): string
-    {
-        $value = $def->default;
-
-        if (is_string($value)) {
-            return $this->stringLiteral($value);
-        }
-        if (is_bool($value)) {
-            return $value ? 'TRUE' : 'FALSE';
-        }
-        if ($value instanceof Expr) {
-            $value = $value->toString();
-        }
-        if ($value instanceof CurrentTimestamp) {
-            $value = 'CURRENT_TIMESTAMP'.($def->size ? '('.$def->size.')' : '');
-        }
-        return $value;
+        return strtoupper($def->type) . (!empty($args) ? '(' . implode(',', $args) . ')' : '');
     }
 
     /**
      * @param string $str
      * @return string
      */
-    protected function stringLiteral(string $str): string
+    public function quote(string $str): string
+    {
+        $char = '`';
+        return $char . str_replace($char, $char . $char, $str) . $char;
+    }
+
+    /**
+     * @param ColumnDefinition $def
+     * @return string
+     */
+    protected function formatDefaultValue(ColumnDefinition $def): string
+    {
+        $value = $def->default;
+
+        if (is_int($value) || is_float($value)) {
+            return (string) $value;
+        }
+
+        if (is_bool($value)) {
+            return $value ? 'TRUE' : 'FALSE';
+        }
+
+        if (is_string($value)) {
+            return $this->literalize($value);
+        }
+
+        if ($value instanceof Expr) {
+            return $value->toSql($this);
+        }
+
+        if ($value instanceof CurrentTimestamp) {
+            return 'CURRENT_TIMESTAMP' . ($def->size ? '(' . $def->size . ')' : '');
+        }
+
+        throw new RuntimeException('Unknown default value type: '.Str::valueOf($value));
+    }
+
+    /**
+     * @param string $str
+     * @return string
+     */
+    public function literalize(string $str): string
     {
         return "'".str_replace("'", "''", $str)."'";
     }

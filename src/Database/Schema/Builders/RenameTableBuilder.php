@@ -40,7 +40,7 @@ class RenameTableBuilder implements BuilderInterface
     {
         $formatter = $this->connection->getSchemaFormatter();
         return [
-            $formatter->renameTableStatement($this->from, $this->to),
+            $formatter->formatRenameTableStatement($this->from, $this->to),
         ];
     }
 }

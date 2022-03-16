@@ -4,7 +4,7 @@ namespace Kirameki\Database\Query\Statements;
 
 use Kirameki\Database\Query\Support\LockOption;
 use Kirameki\Database\Query\Support\LockType;
-use Kirameki\Database\Support\Expr;
+use Kirameki\Database\Query\Expressions\Expr;
 
 class SelectStatement extends ConditionsStatement
 {

@@ -4,7 +4,7 @@ namespace Kirameki\Database\Query\Statements;
 
 use Kirameki\Database\Query\Builders\SelectBuilder;
 use Kirameki\Database\Query\Support\Operator;
-use Kirameki\Database\Support\Expr;
+use Kirameki\Database\Query\Expressions\Expr;
 use Kirameki\Support\Concerns\Tappable;
 
 class ConditionDefinition

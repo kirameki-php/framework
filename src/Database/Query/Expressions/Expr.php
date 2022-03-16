@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Kirameki\Database\Support;
+namespace Kirameki\Database\Query\Expressions;
 
 use Kirameki\Database\Query\Formatters\Formatter;
 

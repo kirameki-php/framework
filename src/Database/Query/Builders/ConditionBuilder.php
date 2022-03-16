@@ -5,8 +5,8 @@ namespace Kirameki\Database\Query\Builders;
 use Kirameki\Database\Query\Statements\ConditionDefinition;
 use Kirameki\Database\Query\Support\Operator;
 use Kirameki\Database\Query\Support\Range;
-use Kirameki\Database\Support\Expr;
-use Kirameki\Database\Support\Raw;
+use Kirameki\Database\Query\Expressions\Expr;
+use Kirameki\Database\Query\Expressions\Raw;
 use Kirameki\Support\Concerns\Tappable;
 use RuntimeException;
 use Traversable;
@@ -329,12 +329,12 @@ class ConditionBuilder
     }
 
     /**
-     * @param Expr $expr
+     * @param Raw $raw
      * @return $this
      */
-    public function expr(Expr $expr): static
+    public function expr(Raw $raw): static
     {
-        return $this->define(Operator::Raw, $expr);
+        return $this->define(Operator::Raw, $raw);
     }
 
     /**

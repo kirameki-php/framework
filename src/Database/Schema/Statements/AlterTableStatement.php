@@ -5,14 +5,14 @@ namespace Kirameki\Database\Schema\Statements;
 class AlterTableStatement extends BaseStatement
 {
     /**
-     * @var array
+     * @var array<mixed>
      */
     public array $actions;
 
     /**
-     * @param $action
+     * @param mixed $action
      */
-    public function addAction($action): void
+    public function addAction(mixed $action): void
     {
         $this->actions[] = $action;
     }

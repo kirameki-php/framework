@@ -26,7 +26,7 @@ class ModelInitializer implements InitializerInterface
             $registrar->setCast('string', static fn() => new StringCast());
             $registrar->setCast('datetime', static fn() => new DateTimeCast());
             $registrar->setCast('collection', static fn() => new CollectionCast());
-            $registrar->setCast('{enum}', static fn(string $name) => new EnumCast($name));
+            $registrar->setCast('{enum}', static fn(string $name) => new EnumCast($name)); /** @phpstan-ignore-line */
             return $registrar;
         });
     }

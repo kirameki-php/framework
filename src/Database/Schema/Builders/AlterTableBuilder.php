@@ -98,22 +98,22 @@ class AlterTableBuilder extends StatementBuilder
         foreach ($this->statement->actions as $action) {
             if ($action instanceof AlterColumnAction) {
                 if ($action->isAdd()) {
-                    $statements[] = $formatter->addColumnAction($action);
+                    $statements[] = $formatter->formatAddColumnAction($action);
                 } else {
-                    $statements[] = $formatter->modifyColumnAction($action);
+                    $statements[] = $formatter->formatModifyColumnAction($action);
                 }
             }
             elseif ($action instanceof AlterDropColumnAction) {
-                $statements[] = $formatter->dropColumnAction($action);
+                $statements[] = $formatter->formatDropColumnAction($action);
             }
             elseif ($action instanceof AlterRenameColumnAction) {
-                $statements[] = $formatter->renameColumnAction($action);
+                $statements[] = $formatter->formatRenameColumnAction($action);
             }
             elseif ($action instanceof CreateIndexStatement) {
-                $statements[] = $formatter->createIndexStatement($action);
+                $statements[] = $formatter->formatCreateIndexStatement($action);
             }
             elseif ($action instanceof DropIndexStatement) {
-                $statements[] = $formatter->dropIndexStatement($action);
+                $statements[] = $formatter->formatDropIndexStatement($action);
             }
         }
         return $statements;

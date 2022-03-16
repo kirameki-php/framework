@@ -4,6 +4,7 @@ namespace Tests\Kirameki\Model;
 
 use DateTime;
 use Kirameki\Model\Reflection;
+use Kirameki\Support\Collection;
 use Kirameki\Support\Str;
 
 class PropertyTest extends ModelTestCase
@@ -118,25 +119,25 @@ class PropertyTest extends ModelTestCase
         self::assertEquals($value, $propValue);
     }
 
-    public function testDefiningArray(): void
+    public function testDefiningCollection(): void
     {
         $reflection = new Reflection(SampleUser::class);
         $builder = $this->makeReflectionBuilder($reflection);
-        $builder->property('ids', 'array');
+        $builder->property('ids', 'collection');
         SampleUser::setTestReflection($reflection);
 
         $model = new SampleUser();
-        $value = [1, 2];
+        $value = new Collection([1, 2]);
         $model->setProperty('ids', $value);
 
         // with cache
         $propValue = $model->getProperty('ids');
-        self::assertIsArray($propValue);
+        self::assertInstanceOf(Collection::class, $propValue);
         self::assertEquals($value, $propValue);
 
         // no cache
         $propValue = $model->getProperty('ids');
-        self::assertIsArray($propValue);
+        self::assertInstanceOf(Collection::class, $propValue);
         self::assertEquals($value, $propValue);
 
         // raw value

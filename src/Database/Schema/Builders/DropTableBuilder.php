@@ -25,7 +25,7 @@ class DropTableBuilder extends StatementBuilder
     {
         $formatter = $this->connection->getSchemaFormatter();
         return [
-            $formatter->dropTableStatement($this->statement)
+            $formatter->formatDropTableStatement($this->statement)
         ];
     }
 }

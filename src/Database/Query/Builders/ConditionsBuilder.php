@@ -5,6 +5,7 @@ namespace Kirameki\Database\Query\Builders;
 use Closure;
 use Kirameki\Database\Query\Statements\ConditionDefinition;
 use Kirameki\Database\Query\Statements\ConditionsStatement;
+use Kirameki\Database\Query\Statements\DeleteStatement;
 use Kirameki\Database\Query\Statements\SelectStatement;
 use Kirameki\Database\Query\Statements\UpdateStatement;
 use Kirameki\Database\Query\Support\Range;
@@ -92,8 +93,7 @@ abstract class ConditionsBuilder extends StatementBuilder
             throw new RuntimeException('Invalid sorting: '.$sort. ' Only ASC or DESC is allowed.');
         }
 
-        if ($this->statement instanceof SelectStatement ||
-            $this->statement instanceof UpdateStatement) {
+        if ($this->statement instanceof ConditionsStatement) {
             $this->statement->orderBy ??= [];
             $this->statement->orderBy[$column] = $sort;
         } else {

@@ -71,7 +71,7 @@ class CreateIndexBuilder extends StatementBuilder
         $this->preprocess();
         $formatter = $this->connection->getSchemaFormatter();
         return [
-            $formatter->createIndexStatement($this->statement),
+            $formatter->formatCreateIndexStatement($this->statement),
         ];
     }
 
