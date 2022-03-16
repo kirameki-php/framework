@@ -5,7 +5,7 @@ namespace Kirameki\Database\Events;
 use Kirameki\Database\Connection;
 use Kirameki\Event\Event;
 
-class DatabaseEvent extends Event
+abstract class DatabaseEvent extends Event
 {
     /**
      * @var Connection

@@ -12,10 +12,10 @@ use Kirameki\Support\Concerns\Tappable;
 
 class Connection
 {
-    use Concerns\Queries,
-        Concerns\Schemas,
-        Concerns\Transactions,
-        Tappable;
+    use Concerns\Queries;
+    use Concerns\Schemas;
+    use Concerns\Transactions;
+    use Tappable;
 
     /**
      * @var string
