@@ -5,7 +5,7 @@ namespace Kirameki\Database\Events;
 use Kirameki\Database\Connection;
 use Kirameki\Database\Transaction\SavepointRollback;
 
-class SavepointRollbackExecuted extends DatabaseEvent
+class TransactionRolledBackToSavepoint extends DatabaseEvent
 {
     /**
      * @var SavepointRollback

@@ -3,11 +3,11 @@
 namespace Kirameki\Database\Concerns;
 
 use Kirameki\Database\Connection;
-use Kirameki\Database\Events\BeginExecuted;
-use Kirameki\Database\Events\CommitExecuted;
-use Kirameki\Database\Events\RollbackExecuted;
-use Kirameki\Database\Events\SavepointExecuted;
-use Kirameki\Database\Events\SavepointRollbackExecuted;
+use Kirameki\Database\Events\TransactionBegan;
+use Kirameki\Database\Events\TransactionCommitted;
+use Kirameki\Database\Events\TransactionRolledBack;
+use Kirameki\Database\Events\TransactionSaved;
+use Kirameki\Database\Events\TransactionRolledBackToSavepoint;
 use Kirameki\Database\Transaction\Rollback;
 use Kirameki\Database\Transaction\Savepoint;
 use Kirameki\Database\Transaction\SavepointRollback;
@@ -92,13 +92,13 @@ trait Transactions
 
         $this->adapter->beginTransaction();
 
-        $this->events->dispatchClass(BeginExecuted::class, $tx);
+        $this->events->dispatchClass(TransactionBegan::class, $tx);
 
         $result = $callback($tx);
 
         $this->adapter->commit();
 
-        $this->events->dispatchClass(CommitExecuted::class);
+        $this->events->dispatchClass(TransactionCommitted::class);
 
         return $result;
     }
@@ -115,7 +115,7 @@ trait Transactions
 
         $this->adapter->setSavepoint($savepointId);
 
-        $this->events->dispatchClass(SavepointExecuted::class, $tx);
+        $this->events->dispatchClass(TransactionSaved::class, $tx);
 
         return $callback($tx);
     }
@@ -127,7 +127,7 @@ trait Transactions
     {
         $this->adapter->rollbackSavepoint($rollback->id);
 
-        $this->events->dispatchClass(SavepointRollbackExecuted::class, $rollback);
+        $this->events->dispatchClass(TransactionRolledBackToSavepoint::class, $rollback);
 
         while($tx = array_pop($this->txStack)) {
             if ($tx instanceof Savepoint && $tx->id === $rollback->id) {
@@ -147,7 +147,7 @@ trait Transactions
 
         if (empty($this->txStack)) {
             $this->adapter->rollback();
-            $this->events->dispatchClass(RollbackExecuted::class, $rollback);
+            $this->events->dispatchClass(TransactionRolledBack::class, $rollback);
             return;
         }
 
@@ -163,7 +163,7 @@ trait Transactions
 
         if (empty($this->txStack)) {
             $this->adapter->rollback();
-            $this->events->dispatchClass(RollbackExecuted::class, $throwable);
+            $this->events->dispatchClass(TransactionRolledBack::class, $throwable);
         }
 
         throw $throwable;

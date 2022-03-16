@@ -5,7 +5,7 @@ namespace Kirameki\Database\Events;
 use Kirameki\Database\Connection;
 use Kirameki\Database\Transaction\Transaction;
 
-class BeginExecuted extends DatabaseEvent
+class TransactionBegan extends DatabaseEvent
 {
     /**
      * @var Transaction
