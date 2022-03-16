@@ -54,24 +54,11 @@ class Formatter
      * @param AlterColumnAction $action
      * @return string
      */
-    public function formatAddColumnAction(AlterColumnAction $action): string
+    public function formatAlterColumnAction(AlterColumnAction $action): string
     {
         $parts = [];
-        $parts[] = 'ADD COLUMN';
-        $parts[] = $this->formatColumnDefinition($action->definition);
-        $parts[] = $action->positionType;
-        $parts[] = $action->positionColumn;
-        return implode(' ', array_filter($parts));
-    }
-
-    /**
-     * @param AlterColumnAction $action
-     * @return string
-     */
-    public function formatModifyColumnAction(AlterColumnAction $action): string
-    {
-        $parts = [];
-        $parts[] = 'MODIFY COLUMN';
+        $parts[] = $action->type->value;
+        $parts[] = 'COLUMN';
         $parts[] = $this->formatColumnDefinition($action->definition);
         $parts[] = $action->positionType;
         $parts[] = $action->positionColumn;

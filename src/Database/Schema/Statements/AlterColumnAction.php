@@ -2,9 +2,11 @@
 
 namespace Kirameki\Database\Schema\Statements;
 
+use Kirameki\Database\Schema\Support\AlterType;
+
 class AlterColumnAction
 {
-    public string $type;
+    public AlterType $type;
 
     public ColumnDefinition $definition;
 
@@ -12,7 +14,7 @@ class AlterColumnAction
 
     public ?string $positionColumn;
 
-    public function __construct(string $type, ColumnDefinition $definition)
+    public function __construct(AlterType $type, ColumnDefinition $definition)
     {
         $this->type = $type;
         $this->definition = $definition;
@@ -21,11 +23,11 @@ class AlterColumnAction
 
     public function isAdd(): bool
     {
-        return $this->type === 'ADD';
+        return $this->type === AlterType::Add;
     }
 
     public function isModify(): bool
     {
-        return $this->type === 'MODIFY';
+        return $this->type === AlterType::Modify;
     }
 }

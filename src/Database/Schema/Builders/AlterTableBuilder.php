@@ -10,7 +10,11 @@ use Kirameki\Database\Schema\Statements\AlterTableStatement;
 use Kirameki\Database\Schema\Statements\ColumnDefinition;
 use Kirameki\Database\Schema\Statements\CreateIndexStatement;
 use Kirameki\Database\Schema\Statements\DropIndexStatement;
+use Kirameki\Database\Schema\Support\AlterType;
 
+/**
+ * @property AlterTableStatement $statement
+ */
 class AlterTableBuilder extends StatementBuilder
 {
     /**
@@ -29,7 +33,7 @@ class AlterTableBuilder extends StatementBuilder
      */
     public function addColumn(string $name): ColumnBuilder
     {
-        $action = new AlterColumnAction('ADD', new ColumnDefinition($name));
+        $action = new AlterColumnAction(AlterType::Add, new ColumnDefinition($name));
         $this->statement->addAction($action);
         return new AlterColumnBuilder($action);
     }
@@ -40,7 +44,7 @@ class AlterTableBuilder extends StatementBuilder
      */
     public function modifyColumn(string $name): AlterColumnBuilder
     {
-        $action = new AlterColumnAction('MODIFY', new ColumnDefinition($name));
+        $action = new AlterColumnAction(AlterType::Modify, new ColumnDefinition($name));
         $this->statement->addAction($action);
         return new AlterColumnBuilder($action);
     }
@@ -97,11 +101,7 @@ class AlterTableBuilder extends StatementBuilder
         $statements = [];
         foreach ($this->statement->actions as $action) {
             if ($action instanceof AlterColumnAction) {
-                if ($action->isAdd()) {
-                    $statements[] = $formatter->formatAddColumnAction($action);
-                } else {
-                    $statements[] = $formatter->formatModifyColumnAction($action);
-                }
+                $statements[] = $formatter->formatAlterColumnAction($action);
             }
             elseif ($action instanceof AlterDropColumnAction) {
                 $statements[] = $formatter->formatDropColumnAction($action);
