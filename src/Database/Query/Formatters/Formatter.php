@@ -367,7 +367,7 @@ abstract class Formatter
     protected function formatConditionSegment(ConditionDefinition $def, ?string $table): string
     {
         return match ($def->operator) {
-            Operator::Raw => $this->formatConditionForRaw($def, $table),
+            Operator::Raw => $this->formatConditionForRaw($def),
             Operator::Equals => $this->formatConditionForEqual($def, $table),
             Operator::LessThanOrEqualTo => $this->formatConditionForLessThanOrEqualTo($def, $table),
             Operator::LessThan => $this->formatConditionForLessThan($def, $table),
@@ -378,17 +378,16 @@ abstract class Formatter
             Operator::Exists => $this->formatConditionForExists($def, $table),
             Operator::Like => $this->formatConditionForLike($def, $table),
             Operator::Range => $this->formatConditionForRange($def, $table),
-            Operator::Nested => $this->formatConditionForNested($def, $table),
+            Operator::Nested => $this->formatConditionForNested($def),
             default => throw new RuntimeException('Unknown Operator: '.Str::valueOf($def->operator?->value)),
         };
     }
 
     /**
      * @param ConditionDefinition $def
-     * @param string|null $table
      * @return string
      */
-    protected function formatConditionForRaw(ConditionDefinition $def, ?string $table): string
+    protected function formatConditionForRaw(ConditionDefinition $def): string
     {
         if ($def->value instanceof Expr) {
             return $def->value->toSql($this);
@@ -556,10 +555,9 @@ abstract class Formatter
 
     /**
      * @param ConditionDefinition $def
-     * @param string|null $table
      * @return string
      */
-    protected function formatConditionForNested(ConditionDefinition $def, ?string $table): string
+    protected function formatConditionForNested(ConditionDefinition $def): string
     {
         if ($def->value instanceof SelectBuilder) {
             return $this->formatSubQuery($def->value);
