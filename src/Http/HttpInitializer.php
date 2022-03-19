@@ -3,13 +3,13 @@
 namespace Kirameki\Http;
 
 use Kirameki\Core\Application;
-use Kirameki\Core\InitializerInterface;
+use Kirameki\Core\Initializer;
 use Kirameki\Http\Codecs\Decoders\JsonDecoder;
 use Kirameki\Http\Codecs\Decoders\BlankDecoder;
 use Kirameki\Http\Codecs\Decoders\StreamDecoder;
 use Kirameki\Http\Routing\Router;
 
-class HttpInitializer implements InitializerInterface
+class HttpInitializer implements Initializer
 {
     /**
      * @param Application $app

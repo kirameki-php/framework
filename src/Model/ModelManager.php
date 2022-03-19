@@ -4,7 +4,7 @@ namespace Kirameki\Model;
 
 use Closure;
 use Kirameki\Database\DatabaseManager;
-use Kirameki\Model\Casts\CastInterface;
+use Kirameki\Model\Casts\Cast;
 use RuntimeException;
 
 class ModelManager
@@ -20,12 +20,12 @@ class ModelManager
     protected array $reflections;
 
     /**
-     * @var array<string, CastInterface>
+     * @var array<string, Cast>
      */
     protected array $casts = [];
 
     /**
-     * @var array<string, callable(string): CastInterface>
+     * @var array<string, callable(string): Cast>
      */
     protected array $deferredCasts = [];
 
@@ -57,9 +57,9 @@ class ModelManager
 
     /**
      * @param string $name
-     * @return CastInterface
+     * @return Cast
      */
-    public function getCast(string $name): CastInterface
+    public function getCast(string $name): Cast
     {
         if (isset($this->casts[$name])) {
             return $this->casts[$name];
@@ -79,7 +79,7 @@ class ModelManager
 
     /**
      * @param string $name
-     * @param Closure(string): CastInterface $deferred
+     * @param Closure(string): Cast $deferred
      * @return $this
      */
     public function setCast(string $name, Closure $deferred): static

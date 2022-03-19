@@ -2,7 +2,7 @@
 
 namespace Kirameki\Http\Codecs\Decoders;
 
-class StreamDecoder implements DecoderInterface
+class StreamDecoder implements Decoder
 {
     /**
      * @param string $content

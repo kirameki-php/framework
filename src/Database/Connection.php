@@ -2,7 +2,7 @@
 
 namespace Kirameki\Database;
 
-use Kirameki\Database\Adapters\AdapterInterface;
+use Kirameki\Database\Adapters\Adapter;
 use Kirameki\Database\Query\Builders\DeleteBuilder;
 use Kirameki\Database\Query\Builders\InsertBuilder;
 use Kirameki\Database\Query\Builders\SelectBuilder;
@@ -23,9 +23,9 @@ class Connection
     protected string $name;
 
     /**
-     * @var AdapterInterface
+     * @var Adapter
      */
-    protected AdapterInterface $adapter;
+    protected Adapter $adapter;
 
     /**
      * @var EventManager
@@ -34,10 +34,10 @@ class Connection
 
     /**
      * @param string $name
-     * @param AdapterInterface $adapter
+     * @param Adapter $adapter
      * @param EventManager $events
      */
-    public function __construct(string $name, AdapterInterface $adapter, EventManager $events)
+    public function __construct(string $name, Adapter $adapter, EventManager $events)
     {
         $this->name = $name;
         $this->adapter = $adapter;
@@ -53,9 +53,9 @@ class Connection
     }
 
     /**
-     * @return AdapterInterface
+     * @return Adapter
      */
-    public function getAdapter(): AdapterInterface
+    public function getAdapter(): Adapter
     {
         return $this->adapter;
     }

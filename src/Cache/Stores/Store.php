@@ -6,7 +6,7 @@ use Closure;
 use DateInterval;
 use DateTimeInterface;
 
-interface StoreInterface
+interface Store
 {
     /**
      * @param string $key

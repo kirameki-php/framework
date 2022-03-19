@@ -17,7 +17,7 @@ use function preg_match;
 /**
  * @mixin Connection
  */
-abstract class PdoAdapter implements AdapterInterface
+abstract class PdoAdapter implements Adapter
 {
     /**
      * @var PDO|null

@@ -4,7 +4,7 @@ namespace Kirameki\Database\Schema\Builders;
 
 use Kirameki\Database\Connection;
 
-class RenameTableBuilder implements BuilderInterface
+class RenameTableBuilder implements Builder
 {
     /**
      * @var Connection

@@ -3,10 +3,10 @@
 namespace Kirameki\Security;
 
 use Kirameki\Core\Application;
-use Kirameki\Core\InitializerInterface;
+use Kirameki\Core\Initializer;
 use Kirameki\Support\Arr;
 
-class SecurityInitializer implements InitializerInterface
+class SecurityInitializer implements Initializer
 {
     /**
      * @param Application $app

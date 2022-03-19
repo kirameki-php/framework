@@ -2,7 +2,6 @@
 
 namespace Kirameki\Database\Query\Expressions;
 
-use Kirameki\Database\Query\Expressions\Expr;
 use Kirameki\Database\Query\Formatters\Formatter;
 
 class Column extends Expr
@@ -15,16 +14,16 @@ class Column extends Expr
     /**
      * @var string|null
      */
-    public readonly ?string $alias;
+    public readonly ?string $as;
 
     /**
      * @param string $name
-     * @param string|null $alias
+     * @param string|null $as
      */
-    public function __construct(string $name, string $alias = null)
+    public function __construct(string $name, string $as = null)
     {
         $this->name = $name;
-        $this->alias = $alias;
+        $this->as = $as;
     }
 
     /**
@@ -34,8 +33,8 @@ class Column extends Expr
     public function toSql(Formatter $formatter): string
     {
         $name = $formatter->columnize($this->name);
-        if ($this->alias !== null) {
-            $name .= ' AS ' . $this->alias;
+        if ($this->as !== null) {
+            $name .= ' AS ' . $this->as;
         }
         return $name;
     }

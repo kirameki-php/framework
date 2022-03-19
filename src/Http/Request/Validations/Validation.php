@@ -2,7 +2,7 @@
 
 namespace Kirameki\Http\Request\Validations;
 
-interface ValidationInterface
+interface Validation
 {
     public function validate(string $name, array $inputs): void;
 }

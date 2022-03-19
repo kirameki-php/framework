@@ -3,11 +3,11 @@
 namespace Kirameki\Exception;
 
 use Kirameki\Core\Application;
-use Kirameki\Core\InitializerInterface;
+use Kirameki\Core\Initializer;
 use Kirameki\Exception\Handlers\LogHandler;
 use Kirameki\Exception\Handlers\VarDumpHandler;
 
-class ExceptionInitializer implements InitializerInterface
+class ExceptionInitializer implements Initializer
 {
     /**
      * @param Application $app

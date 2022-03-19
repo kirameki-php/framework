@@ -4,7 +4,7 @@ namespace Kirameki\Exception\Handlers;
 
 use Throwable;
 
-class LogHandler implements HandlerInterface
+class LogHandler implements Handler
 {
     /**
      * @param Throwable $exception

@@ -2,8 +2,8 @@
 
 namespace Kirameki\Http\Codecs;
 
-use Kirameki\Http\Codecs\Decoders\DecoderInterface;
-use Kirameki\Http\Codecs\Encoders\EncoderInterface;
+use Kirameki\Http\Codecs\Decoders\Decoder;
+use Kirameki\Http\Codecs\Encoders\Encoder;
 use Kirameki\Http\Exceptions\BadRequestException;
 use Kirameki\Http\Exceptions\UnsupportedMediaTypeException;
 use Kirameki\Support\Arr;
@@ -61,9 +61,9 @@ class Codecs
 
     /**
      * @param string $contentType
-     * @return DecoderInterface
+     * @return Decoder
      */
-    public function getDecoder(string $contentType): DecoderInterface
+    public function getDecoder(string $contentType): Decoder
     {
         $mediaTypes = $this->extractMediaTypesFromRequest($contentType);
         foreach ($mediaTypes as $mediaType) {
@@ -97,9 +97,9 @@ class Codecs
 
     /**
      * @param string $accept
-     * @return EncoderInterface
+     * @return Encoder
      */
-    public function getEncoder(string $accept): EncoderInterface
+    public function getEncoder(string $accept): Encoder
     {
         $mediaTypes = $this->extractMediaTypesFromRequest($accept);
         foreach ($mediaTypes as $mediaType) {

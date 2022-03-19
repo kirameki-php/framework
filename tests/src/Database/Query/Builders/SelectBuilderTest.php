@@ -26,7 +26,7 @@ class SelectBuilderTest extends QueryTestCase
     public function testFrom_WithAlias(): void
     {
         $sql = $this->selectBuilder()->table('User', 'u')->toSql();
-        static::assertEquals("SELECT * FROM `User` AS u", $sql);
+        static::assertEquals("SELECT `u`.* FROM `User` AS u", $sql);
     }
 
     public function testColumns(): void

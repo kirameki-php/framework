@@ -2,7 +2,7 @@
 
 namespace Kirameki\Model;
 
-interface AuthUserInterface
+interface Authenticatable
 {
     public function getAuthIdentifierName(): string;
 }

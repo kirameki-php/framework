@@ -3,7 +3,7 @@
 namespace Kirameki\Model;
 
 use Kirameki\Core\Application;
-use Kirameki\Core\InitializerInterface;
+use Kirameki\Core\Initializer;
 use Kirameki\Database\DatabaseManager;
 use Kirameki\Model\Casts\BoolCast;
 use Kirameki\Model\Casts\DateTimeCast;
@@ -13,7 +13,7 @@ use Kirameki\Model\Casts\IntCast;
 use Kirameki\Model\Casts\CollectionCast;
 use Kirameki\Model\Casts\StringCast;
 
-class ModelInitializer implements InitializerInterface
+class ModelInitializer implements Initializer
 {
     public function register(Application $app): void
     {

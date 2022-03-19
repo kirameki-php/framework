@@ -3,12 +3,12 @@
 namespace Kirameki\Database;
 
 use Kirameki\Core\Application;
-use Kirameki\Core\InitializerInterface;
+use Kirameki\Core\Initializer;
 use Kirameki\Database\Events\QueryExecuted;
 use Kirameki\Event\EventManager;
 use function sprintf;
 
-class DatabaseInitializer implements InitializerInterface
+class DatabaseInitializer implements Initializer
 {
     /**
      * @param Application $app

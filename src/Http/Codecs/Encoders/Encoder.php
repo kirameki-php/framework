@@ -2,7 +2,7 @@
 
 namespace Kirameki\Http\Codecs\Encoders;
 
-interface EncoderInterface
+interface Encoder
 {
     /**
      * @param array $content

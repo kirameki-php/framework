@@ -4,7 +4,7 @@ namespace Kirameki\Model\Casts;
 
 use Kirameki\Model\Model;
 
-class FloatCast implements CastInterface
+class FloatCast implements Cast
 {
     /**
      * @param Model $model

@@ -8,9 +8,9 @@ use function call_user_func_array;
 
 /**
  * @template TEntry
- * @template-implements EntryInterface<TEntry>
+ * @template-implements Entry<TEntry>
  */
-class ClosureEntry implements EntryInterface
+class ClosureEntry implements Entry
 {
     /**
      * @var class-string

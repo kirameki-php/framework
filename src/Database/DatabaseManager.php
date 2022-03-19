@@ -4,7 +4,7 @@ namespace Kirameki\Database;
 
 use Closure;
 use Kirameki\Core\Config;
-use Kirameki\Database\Adapters\AdapterInterface;
+use Kirameki\Database\Adapters\Adapter;
 use Kirameki\Database\Adapters\MySqlAdapter;
 use Kirameki\Database\Adapters\SqliteAdapter;
 use Kirameki\Event\EventManager;
@@ -77,7 +77,7 @@ class DatabaseManager
 
     /**
      * @param string $name
-     * @param callable(Config): AdapterInterface $deferred
+     * @param callable(Config): Adapter $deferred
      * @return $this
      */
     public function addAdapter(string $name, callable $deferred): static
@@ -122,7 +122,7 @@ class DatabaseManager
 
     /**
      * @param string $name
-     * @return callable(Config): AdapterInterface
+     * @return callable(Config): Adapter
      */
     protected function getAdapterResolver(string $name): callable
     {
@@ -134,7 +134,7 @@ class DatabaseManager
 
     /**
      * @param string $adapter
-     * @return Closure(Config): AdapterInterface
+     * @return Closure(Config): Adapter
      */
     protected function getDefaultAdapterResolver(string $adapter): Closure
     {

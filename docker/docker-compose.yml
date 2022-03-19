@@ -13,6 +13,8 @@ services:
       - redis
   mysql:
     image: mysql:8
+    tmpfs:
+      - /var/lib/mysql
     environment:
       LANG: "C.UTF-8"
       MYSQL_ALLOW_EMPTY_PASSWORD: "true"

@@ -5,7 +5,7 @@ namespace Kirameki\Container;
 /**
  * @template TEntry
  */
-interface EntryInterface
+interface Entry
 {
     /**
      * @return class-string<TEntry>

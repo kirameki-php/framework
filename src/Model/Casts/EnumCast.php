@@ -8,7 +8,7 @@ use Kirameki\Model\Model;
 /**
  * @template T of BackedEnum
  */
-class EnumCast implements CastInterface
+class EnumCast implements Cast
 {
     /**
      * @var class-string<T>

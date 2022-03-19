@@ -4,8 +4,8 @@ namespace Kirameki\Exception;
 
 use ErrorException;
 use Kirameki\Container\Container;
-use Kirameki\Container\EntryInterface;
-use Kirameki\Exception\Handlers\HandlerInterface;
+use Kirameki\Container\Entry;
+use Kirameki\Exception\Handlers\Handler;
 use Throwable;
 
 class ExceptionManager
@@ -51,8 +51,8 @@ class ExceptionManager
     {
         try {
             $this->handlers->entries()
-                ->map(fn(EntryInterface $entry) => $entry->getInstance())
-                ->each(fn(HandlerInterface $handler) => $handler->handle($exception));
+                ->map(fn(Entry $entry) => $entry->getInstance())
+                ->each(fn(Handler $handler) => $handler->handle($exception));
         }
         catch (Throwable $innerException) {
             $this->fallback($innerException);

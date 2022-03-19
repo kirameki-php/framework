@@ -6,7 +6,7 @@ use Kirameki\Model\Model;
 use Kirameki\Support\Time;
 use Stringable;
 
-class DateTimeCast implements CastInterface
+class DateTimeCast implements Cast
 {
     /**
      * @param Model $model

@@ -4,7 +4,7 @@ namespace Kirameki\Model\Casts;
 
 use Kirameki\Model\Model;
 
-class IntCast implements CastInterface
+class IntCast implements Cast
 {
     /**
      * @param Model $model

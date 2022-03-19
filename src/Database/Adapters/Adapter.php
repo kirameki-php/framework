@@ -8,7 +8,7 @@ use Kirameki\Database\Query\Formatters\Formatter as QueryFormatter;
 use Kirameki\Database\Query\Result;
 use Kirameki\Database\Schema\Formatters\Formatter as SchemaFormatter;
 
-interface AdapterInterface
+interface Adapter
 {
     /**
      * @return Config

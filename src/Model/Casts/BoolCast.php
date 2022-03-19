@@ -4,7 +4,7 @@ namespace Kirameki\Model\Casts;
 
 use Kirameki\Model\Model;
 
-class BoolCast implements CastInterface
+class BoolCast implements Cast
 {
     /**
      * @param Model $model

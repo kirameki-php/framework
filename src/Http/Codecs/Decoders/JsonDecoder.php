@@ -4,7 +4,7 @@ namespace Kirameki\Http\Codecs\Decoders;
 
 use function json_decode;
 
-class JsonDecoder implements DecoderInterface
+class JsonDecoder implements Decoder
 {
     /**
      * @param string $content

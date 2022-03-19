@@ -2,7 +2,7 @@
 
 namespace Kirameki\Core;
 
-interface InitializerInterface
+interface Initializer
 {
     /**
      * @param Application $app

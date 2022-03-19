@@ -34,13 +34,13 @@ abstract class StatementBuilder
     }
 
     /**
-     * @param string $table
+     * @param string $name
      * @param string|null $as
      * @return $this
      */
-    public function table(string $table, ?string $as = null): static
+    public function table(string $name, ?string $as = null): static
     {
-        $this->statement->table = $table;
+        $this->statement->table = $name;
         $this->statement->tableAlias = $as;
         return $this;
     }

@@ -2,7 +2,7 @@
 
 namespace Kirameki\Model;
 
-use Kirameki\Model\Casts\CastInterface;
+use Kirameki\Model\Casts\Cast;
 
 class Property
 {
@@ -12,9 +12,9 @@ class Property
     public string $name;
 
     /**
-     * @var CastInterface
+     * @var Cast
      */
-    public CastInterface $cast;
+    public Cast $cast;
 
     /**
      * @var mixed
@@ -23,10 +23,10 @@ class Property
 
     /**
      * @param string $name
-     * @param CastInterface $cast
+     * @param Cast $cast
      * @param mixed $default
      */
-    public function __construct(string $name, CastInterface $cast, mixed $default)
+    public function __construct(string $name, Cast $cast, mixed $default)
     {
         $this->name = $name;
         $this->cast = $cast;

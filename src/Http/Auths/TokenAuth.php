@@ -3,15 +3,18 @@
 namespace Kirameki\Http\Auths;
 
 use Kirameki\Http\Request;
-use Kirameki\Model\AuthUserInterface;
+use Kirameki\Model\Authenticatable;
 use Kirameki\Model\Model;
 use Kirameki\Model\ModelManager;
 use Kirameki\Model\QueryBuilder;
 use RuntimeException;
-use function get_class;
 use function preg_replace;
 
-class TokenAuth implements AuthInterface
+/**
+ * @template T as Model
+ * @template-implements Auth<T>
+ */
+class TokenAuth implements Auth
 {
     /**
      * @var Request
@@ -24,12 +27,12 @@ class TokenAuth implements AuthInterface
     protected ModelManager $modelManager;
 
     /**
-     * @var class-string
+     * @var class-string<T>
      */
     protected string $userClass;
 
     /**
-     * @var Model|null
+     * @var T|null
      */
     protected ?Model $user;
 
@@ -41,7 +44,7 @@ class TokenAuth implements AuthInterface
     /**
      * @param ModelManager $modelManager
      * @param Request $request
-     * @param class-string $userClass
+     * @param class-string<T> $userClass
      */
     public function __construct(Request $request, ModelManager $modelManager, string $userClass)
     {
@@ -53,15 +56,15 @@ class TokenAuth implements AuthInterface
     }
 
     /**
-     * @return Model|AuthUserInterface|null
+     * @inheritDoc
      */
-    public function validate(): Model|AuthUserInterface|null
+    public function validate(): Model|null
     {
         if (!$this->validated && $token = $this->extractBearerToken()) {
             $reflection = $this->modelManager->reflect($this->userClass);
             $user = $reflection->makeModel();
-            if (!($user instanceof AuthUserInterface)) {
-                throw new RuntimeException(get_class($user).' must inherit '.AuthUserInterface::class.' to be used for Authentication');
+            if (!($user instanceof Authenticatable)) {
+                throw new RuntimeException($user::class . ' must inherit ' . Authenticatable::class . ' to be used for Authentication');
             }
             $builder = new QueryBuilder($this->modelManager->getDatabaseManager(), $reflection);
             $this->user = $builder->where($user->getAuthIdentifierName(), $token)->first();
@@ -71,7 +74,7 @@ class TokenAuth implements AuthInterface
     }
 
     /**
-     * @return bool
+     * @inheritDoc
      */
     public function validated(): bool
     {
@@ -79,7 +82,7 @@ class TokenAuth implements AuthInterface
     }
 
     /**
-     * @return void
+     * @inheritDoc
      */
     public function invalidate(): void
     {

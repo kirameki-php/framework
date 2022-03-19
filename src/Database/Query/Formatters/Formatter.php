@@ -36,6 +36,7 @@ use function is_null;
 use function is_string;
 use function next;
 use function preg_replace_callback;
+use function str_contains;
 use function str_starts_with;
 
 abstract class Formatter
@@ -668,6 +669,10 @@ abstract class Formatter
             return $name->toSql($this);
         }
 
+        if (str_contains($name, '.')) {
+            [$name, $table] = explode('.', $name, 2);
+        }
+
         $name = $name !== '*' ? $this->quote($name) : $name;
         return $table !== null ? $this->quote($table) . '.' . $name : $name;
     }
@@ -678,8 +683,8 @@ abstract class Formatter
      */
     public function quote(string $str): string
     {
-        $char = '`';
-        return $char . str_replace($char, $char . $char, $str) . $char;
+        $char = $this->getIdentifierDelimiter();
+        return $char . $this->escape($str, $char) . $char;
     }
 
     /**
@@ -689,7 +694,7 @@ abstract class Formatter
     public function literalize(string $str): string
     {
         $char = '\'';
-        return $char . str_replace($char, $char . $char, $str) . $char;
+        return $char . $this->escape($str, $char) . $char;
     }
 
     /**
@@ -725,9 +730,9 @@ abstract class Formatter
     /**
      * @return string
      */
-    protected function getDateTimeFormat(): string
+    public function getIdentifierDelimiter(): string
     {
-        return DateTimeInterface::RFC3339_EXTENDED;
+        return '`';
     }
 
     /**
@@ -737,15 +742,6 @@ abstract class Formatter
     protected function getDefinedColumn(ConditionDefinition $def): string
     {
         return $def->column ?? throw new RuntimeException('Column name expected but null given');
-    }
-
-    /**
-     * @param array<scalar> $values
-     * @return string
-     */
-    protected function asCsv(array $values): string
-    {
-        return implode(', ', $values);
     }
 
     /**
@@ -783,5 +779,32 @@ abstract class Formatter
             }
             $def = $def->next;
         }
+    }
+
+    /**
+     * @param array<scalar> $values
+     * @return string
+     */
+    protected function asCsv(array $values): string
+    {
+        return implode(', ', $values);
+    }
+
+    /**
+     * @param string $str
+     * @param string $escaping
+     * @return string
+     */
+    protected function escape(string $str, string $escaping): string
+    {
+        return str_replace($escaping, $escaping . $escaping, $str);
+    }
+
+    /**
+     * @return string
+     */
+    protected function getDateTimeFormat(): string
+    {
+        return DateTimeInterface::RFC3339_EXTENDED;
     }
 }

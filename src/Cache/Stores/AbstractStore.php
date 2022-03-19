@@ -19,7 +19,7 @@ use Kirameki\Support\Arr;
 use function preg_replace;
 use function time;
 
-abstract class AbstractStore implements StoreInterface
+abstract class AbstractStore implements Store
 {
     /**
      * @var string

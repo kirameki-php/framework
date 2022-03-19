@@ -3,10 +3,10 @@
 namespace Kirameki\Logging;
 
 use Kirameki\Core\Application;
-use Kirameki\Core\InitializerInterface;
+use Kirameki\Core\Initializer;
 use Kirameki\Support\Arr;
 
-class LogInitializer implements InitializerInterface
+class LogInitializer implements Initializer
 {
     /**
      * @param Application $app

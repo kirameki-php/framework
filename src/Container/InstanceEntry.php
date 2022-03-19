@@ -4,9 +4,9 @@ namespace Kirameki\Container;
 
 /**
  * @template TEntry
- * @template-implements EntryInterface<TEntry>
+ * @template-implements Entry<TEntry>
  */
-class InstanceEntry implements EntryInterface
+class InstanceEntry implements Entry
 {
     /**
      * @var class-string<TEntry>

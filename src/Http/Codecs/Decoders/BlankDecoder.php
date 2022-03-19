@@ -2,7 +2,7 @@
 
 namespace Kirameki\Http\Codecs\Decoders;
 
-class BlankDecoder implements DecoderInterface
+class BlankDecoder implements Decoder
 {
     /**
      * @param string $content

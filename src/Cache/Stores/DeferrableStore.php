@@ -11,9 +11,9 @@ use RuntimeException;
 class DeferrableStore extends AbstractStore
 {
     /**
-     * @var StoreInterface
+     * @var Store
      */
-    protected StoreInterface $actual;
+    protected Store $actual;
 
     /**
      * @var DeferredPool
@@ -36,9 +36,9 @@ class DeferrableStore extends AbstractStore
     protected array $afterCommitCallbacks;
 
     /**
-     * @param StoreInterface $store
+     * @param Store $store
      */
-    public function __construct(StoreInterface $store)
+    public function __construct(Store $store)
     {
         $this->actual = $store;
         $this->memory = new DeferredPool;
@@ -46,9 +46,9 @@ class DeferrableStore extends AbstractStore
     }
 
     /**
-     * @return StoreInterface
+     * @return Store
      */
-    public function actual(): StoreInterface
+    public function actual(): Store
     {
         return $this->actual;
     }

@@ -3,7 +3,7 @@
 namespace Kirameki\Http\Request;
 
 use Kirameki\Http\Exceptions\ValidationException;
-use Kirameki\Http\Request\Validations\ValidationInterface;
+use Kirameki\Http\Request\Validations\Validation;
 use ArrayAccess;
 use Kirameki\Support\Arr;
 use Kirameki\Support\Str;
@@ -49,13 +49,13 @@ class FieldReflection
             return;
         }
 
-        $attributes = $this->property->getAttributes(ValidationInterface::class);
+        $attributes = $this->property->getAttributes(Validation::class);
 
         $validations = Arr::map($attributes, function(ReflectionAttribute $attribute) {
             return $attribute->newInstance();
         });
 
-        Arr::each($validations, function(ValidationInterface $validation) use ($inputs) {
+        Arr::each($validations, function(Validation $validation) use ($inputs) {
             $validation->validate($this->definition->name, $inputs);
         });
     }

@@ -3,9 +3,9 @@
 namespace Kirameki\Event;
 
 use Kirameki\Core\Application;
-use Kirameki\Core\InitializerInterface;
+use Kirameki\Core\Initializer;
 
-class EventInitializer implements InitializerInterface
+class EventInitializer implements Initializer
 {
     /**
      * @param Application $app

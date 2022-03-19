@@ -9,7 +9,7 @@ use Kirameki\Support\Str;
 use RuntimeException;
 use Traversable;
 
-class ArrayCast implements CastInterface
+class ArrayCast implements Cast
 {
     /**
      * @param Model $model

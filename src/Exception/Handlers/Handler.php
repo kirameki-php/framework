@@ -4,7 +4,7 @@ namespace Kirameki\Exception\Handlers;
 
 use Throwable;
 
-interface HandlerInterface
+interface Handler
 {
     /**
      * @param Throwable $exception

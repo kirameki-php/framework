@@ -2,7 +2,7 @@
 
 namespace Kirameki\Http\Codecs\Decoders;
 
-interface DecoderInterface
+interface Decoder
 {
     /**
      * @param string $content

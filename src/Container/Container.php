@@ -9,7 +9,7 @@ use function array_key_exists;
 class Container
 {
     /**
-     * @var array<class-string, EntryInterface<mixed>>
+     * @var array<class-string, Entry<mixed>>
      */
     protected array $entries = [];
 
@@ -71,15 +71,15 @@ class Container
     /**
      * @template TEntry
      * @param class-string<TEntry> $id
-     * @return EntryInterface<TEntry>
+     * @return Entry<TEntry>
      */
-    public function entry(string $id): EntryInterface
+    public function entry(string $id): Entry
     {
         return $this->entries[$id]; /** @phpstan-ignore-line */
     }
 
     /**
-     * @return Collection<class-string, EntryInterface<mixed>>
+     * @return Collection<class-string, Entry<mixed>>
      */
     public function entries(): Collection
     {

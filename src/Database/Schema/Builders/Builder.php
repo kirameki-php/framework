@@ -2,7 +2,7 @@
 
 namespace Kirameki\Database\Schema\Builders;
 
-interface BuilderInterface
+interface Builder
 {
     /**
      * @return string[]

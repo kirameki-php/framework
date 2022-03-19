@@ -4,7 +4,7 @@ namespace Kirameki\Http\Codecs\Encoders;
 
 use function json_encode;
 
-class JsonEncoder implements EncoderInterface
+class JsonEncoder implements Encoder
 {
     /**
      * @param array $content
