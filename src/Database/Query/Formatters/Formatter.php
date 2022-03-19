@@ -683,8 +683,8 @@ abstract class Formatter
      */
     public function quote(string $str): string
     {
-        $char = $this->getIdentifierDelimiter();
-        return $char . $this->escape($str, $char) . $char;
+        $delimiter = $this->getIdentifierDelimiter();
+        return $delimiter . $this->escape($str, $delimiter) . $delimiter;
     }
 
     /**
@@ -732,7 +732,7 @@ abstract class Formatter
      */
     public function getIdentifierDelimiter(): string
     {
-        return '`';
+        return '"';
     }
 
     /**
