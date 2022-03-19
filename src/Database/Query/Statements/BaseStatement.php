@@ -2,15 +2,12 @@
 
 namespace Kirameki\Database\Query\Statements;
 
+use Kirameki\Database\Query\Expressions\Table;
+
 abstract class BaseStatement
 {
     /**
-     * @var string
+     * @var Table|null
      */
-    public string $table;
-
-    /**
-     * @var string|null
-     */
-    public ?string $tableAlias = null;
+    public ?Table $table = null;
 }

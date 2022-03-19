@@ -77,6 +77,6 @@ class InsertBuilder extends StatementBuilder
      */
     public function getBindings(): array
     {
-        return $this->getQueryFormatter()->getBindingsForInsert($this->statement);
+        return $this->getQueryFormatter()->formatBindingsForInsert($this->statement);
     }
 }

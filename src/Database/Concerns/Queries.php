@@ -31,7 +31,7 @@ trait Queries
      * @param array<mixed>|null $bindings
      * @return Result
      */
-    public function query(string $statement, ?array $bindings = null): Result
+    public function query(string $statement, array $bindings = []): Result
     {
         $then = microtime(true);
         $result = $this->adapter->query($statement, $bindings);
@@ -45,7 +45,7 @@ trait Queries
      * @param array<mixed>|null $bindings
      * @return Generator<mixed>
      */
-    public function cursor(string $statement, ?array $bindings = []): Generator
+    public function cursor(string $statement, array $bindings = []): Generator
     {
         $then = microtime(true);
         $result = $this->adapter->cursor($statement, $bindings);

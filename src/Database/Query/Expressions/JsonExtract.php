@@ -4,6 +4,7 @@ namespace Kirameki\Database\Query\Expressions;
 
 use Kirameki\Database\Query\Expressions\Expr;
 use Kirameki\Database\Query\Formatters\Formatter;
+use Kirameki\Database\Query\Statements\BaseStatement;
 
 class JsonExtract extends Expr
 {
@@ -18,28 +19,21 @@ class JsonExtract extends Expr
     public readonly string $path;
 
     /**
-     * @var bool
-     */
-    public readonly bool $unwrap;
-
-    /**
      * @param string $column
      * @param string $path
-     * @param bool $unwrap
      */
-    public function __construct(string $column, string $path, bool $unwrap = false)
+    public function __construct(string $column, string $path)
     {
         $this->column = $column;
-        $this->path = $path;
-        $this->unwrap = $unwrap;
+        $this->path = str_starts_with($path, '$.') ? $path : '$.'.$path;;
     }
 
     /**
      * @param Formatter $formatter
      * @return string
      */
-    public function toSql(Formatter $formatter): string
+    public function toSql(Formatter $formatter, BaseStatement $statement): string
     {
-        return $formatter->formatJsonExtract($this->column, $this->path, $this->unwrap);
+        return $formatter->formatJsonExtract($this->column, $this->path, $statement);
     }
 }

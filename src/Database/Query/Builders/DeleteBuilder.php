@@ -43,6 +43,6 @@ class DeleteBuilder extends ConditionsBuilder
      */
     public function getBindings(): array
     {
-        return $this->getQueryFormatter()->getBindingsForDelete($this->statement);
+        return $this->getQueryFormatter()->formatBindingsForDelete($this->statement);
     }
 }

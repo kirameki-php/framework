@@ -3,8 +3,9 @@
 namespace Kirameki\Database\Query\Expressions;
 
 use Kirameki\Database\Query\Formatters\Formatter;
+use Kirameki\Database\Query\Statements\BaseStatement;
 
-class Column extends Expr
+class Table extends Expr
 {
     /**
      * @var string
@@ -20,7 +21,7 @@ class Column extends Expr
      * @param string $name
      * @param string|null $as
      */
-    public function __construct(string $name, string $as = null)
+    public function __construct(string $name, ?string $as = null)
     {
         $this->name = $name;
         $this->as = $as;
@@ -28,13 +29,14 @@ class Column extends Expr
 
     /**
      * @param Formatter $formatter
+     * @param BaseStatement $statement
      * @return string
      */
-    public function toSql(Formatter $formatter): string
+    public function toSql(Formatter $formatter, BaseStatement $statement): string
     {
-        $name = $formatter->columnize($this->name);
+        $name = $formatter->quote($this->name);
         if ($this->as !== null) {
-            $name .= ' AS ' . $this->as;
+            $name .= ' AS ' . $formatter->quote($this->as);
         }
         return $name;
     }

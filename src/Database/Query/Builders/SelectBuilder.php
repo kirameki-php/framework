@@ -3,6 +3,8 @@
 namespace Kirameki\Database\Query\Builders;
 
 use Kirameki\Database\Connection;
+use Kirameki\Database\Query\Expressions\Aggregate;
+use Kirameki\Database\Query\Expressions\Table;
 use Kirameki\Database\Query\Statements\ConditionDefinition;
 use Kirameki\Database\Query\Statements\SelectStatement;
 use Kirameki\Database\Query\Support\LockOption;
@@ -31,9 +33,18 @@ class SelectBuilder extends ConditionsBuilder
      * @param string|null $as
      * @return $this
      */
-    public function from(string $table, ?string $as = null): static
+    public function from(string $table, string $as = null): static
     {
         return $this->table($table, $as);
+    }
+
+    /**
+     * @param string|Table $table
+     * @return $this
+     */
+    public function innerJoin(string|Table $table)
+    {
+        return $this;
     }
 
     /**
@@ -236,7 +247,7 @@ class SelectBuilder extends ConditionsBuilder
      */
     public function getBindings(): array
     {
-        return $this->getQueryFormatter()->getBindingsForSelect($this->statement);
+        return $this->getQueryFormatter()->formatBindingsForSelect($this->statement);
     }
 
     /**
@@ -246,10 +257,10 @@ class SelectBuilder extends ConditionsBuilder
      */
     protected function aggregate(string $function, string $column): int
     {
-        $column = $this->getQueryFormatter()->columnize($column);
-        $select = new Raw("$function($column) AS aggregate");
+        $alias = 'aggregate';
+        $aggregate = new Aggregate($function, $column, $alias);
         /** @var array{ aggregate: int } $results */
-        $results = $this->copy()->columns($select)->execute()->first() ?? ['aggregate' => 0];
-        return $results['aggregate'];
+        $results = $this->copy()->columns($aggregate)->execute()->first() ?? [$alias => 0];
+        return $results[$alias];
     }
 }

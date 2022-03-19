@@ -52,6 +52,6 @@ class UpdateBuilder extends ConditionsBuilder
      */
     public function getBindings(): array
     {
-        return $this->getQueryFormatter()->getBindingsForUpdate($this->statement);
+        return $this->getQueryFormatter()->formatBindingsForUpdate($this->statement);
     }
 }

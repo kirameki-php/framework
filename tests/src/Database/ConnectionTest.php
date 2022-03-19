@@ -13,6 +13,23 @@ class ConnectionTest extends DatabaseTestCase
         });
     }
 
+    public function testTableExists2(): void
+    {
+        $this->createTable('User', function(CreateTableBuilder $schema) {
+            $schema->int('id')->primaryKey()->notNull();
+        });
+
+        $this->createTable('UserItem', function(CreateTableBuilder $schema) {
+            $schema->int('id')->primaryKey()->notNull();
+            $schema->int('userId')->notNull();
+        });
+
+        $this->mysqlConnection()->insertInto('User')->value(['id' => 1])->execute();
+        $this->mysqlConnection()->insertInto('UserItem')->value(['id' => 100, 'userId' => 1])->execute();
+
+        dump($this->mysqlConnection()->query('SELECT * FROM User INNER JOIN UserItem ON User.id = UserItem.userId;'));
+    }
+
     public function testTableExists(): void
     {
         $this->createDummyTable();

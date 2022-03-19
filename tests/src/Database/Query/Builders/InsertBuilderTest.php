@@ -2,6 +2,7 @@
 
 namespace Tests\Kirameki\Database\Query\Builders;
 
+use Kirameki\Database\Schema\Builders\CreateTableBuilder;
 use Kirameki\Support\Time;
 use Tests\Kirameki\Database\Query\QueryTestCase;
 

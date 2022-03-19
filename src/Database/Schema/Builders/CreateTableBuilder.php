@@ -10,6 +10,9 @@ use Kirameki\Database\Schema\Statements\PrimaryKeyConstraint;
 use Kirameki\Support\Arr;
 use RuntimeException;
 
+/**
+ * @property CreateTableStatement $statement
+ */
 class CreateTableBuilder extends StatementBuilder
 {
     /**
@@ -157,10 +160,10 @@ class CreateTableBuilder extends StatementBuilder
     }
 
     /**
-     * @param $columns
+     * @param array<string> $columns
      * @return void
      */
-    public function primaryKey($columns): void
+    public function primaryKey(array $columns): void
     {
         $this->statement->primaryKey ??= new PrimaryKeyConstraint();
         foreach (Arr::wrap($columns) as $column => $order) {
@@ -178,8 +181,7 @@ class CreateTableBuilder extends StatementBuilder
     {
         $statement = new CreateIndexStatement($this->statement->table);
         $this->statement->indexes[] = $statement;
-        $builder = new CreateIndexBuilder($this->connection, $statement);
-        return $builder->columns($columns);
+        return (new CreateIndexBuilder($this->connection, $statement))->columns($columns);
     }
 
     /**

@@ -3,21 +3,14 @@
 namespace Kirameki\Database\Query\Expressions;
 
 use Kirameki\Database\Query\Formatters\Formatter;
+use Kirameki\Database\Query\Statements\BaseStatement;
 
 abstract class Expr
 {
     /**
-     * @param string $value
-     * @return Raw
-     */
-    public static function raw(string $value): Raw
-    {
-        return new Raw($value);
-    }
-
-    /**
      * @param Formatter $formatter
+     * @param BaseStatement $statement
      * @return string
      */
-    abstract public function toSql(Formatter $formatter): string;
+    abstract public function toSql(Formatter $formatter, BaseStatement $statement): string;
 }

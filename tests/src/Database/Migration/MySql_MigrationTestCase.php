@@ -2,6 +2,7 @@
 
 namespace Tests\Kirameki\Database\Migration;
 
+use Kirameki\Core\Config;
 use Kirameki\Database\Adapters\MySqlAdapter;
 use Kirameki\Database\Connection;
 use Tests\Kirameki\Database\DatabaseTestCase;
@@ -28,7 +29,7 @@ class MySql_MigrationTestCase extends DatabaseTestCase
 
     protected function migrationConnection(): Connection
     {
-        $adapter = new MySqlAdapter(['host' => 'mysql', 'database' => 'migration_test']);
+        $adapter = new MySqlAdapter(new Config(['host' => 'mysql', 'database' => 'migration_test']));
         $connection = new Connection('migration_test', $adapter, event());
         db()->addConnection($connection);
         return $connection;

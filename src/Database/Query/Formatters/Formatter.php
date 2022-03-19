@@ -36,7 +36,6 @@ use function is_null;
 use function is_string;
 use function next;
 use function preg_replace_callback;
-use function str_contains;
 use function str_starts_with;
 
 abstract class Formatter
@@ -64,9 +63,9 @@ abstract class Formatter
      * @param SelectStatement $statement
      * @return array<mixed>
      */
-    public function getBindingsForSelect(SelectStatement $statement): array
+    public function formatBindingsForSelect(SelectStatement $statement): array
     {
-        return $this->getBindingsForConditions($statement);
+        return $this->parameterizeBindings($this->getBindingsForConditions($statement));
     }
 
     /**
@@ -77,7 +76,7 @@ abstract class Formatter
     {
         return implode(' ', array_filter([
             'INSERT INTO',
-            $this->quote($statement->table),
+            $this->formatTable($statement),
             $this->formatInsertColumnsPart($statement),
             'VALUES',
             $this->formatInsertValuesPart($statement),
@@ -89,7 +88,7 @@ abstract class Formatter
      * @param InsertStatement $statement
      * @return array<mixed>
      */
-    public function getBindingsForInsert(InsertStatement $statement): array
+    public function formatBindingsForInsert(InsertStatement $statement): array
     {
         $columns = $statement->columns();
         $bindings = [];
@@ -101,7 +100,8 @@ abstract class Formatter
                 $bindings[] = $data[$column] ?? null;
             }
         }
-        return $bindings;
+
+        return $this->parameterizeBindings($bindings);
     }
 
     /**
@@ -112,7 +112,7 @@ abstract class Formatter
     {
         return implode(' ', array_filter([
             'UPDATE',
-            $this->quote($statement->table),
+            $this->formatTable($statement),
             'SET',
             $this->formatUpdateAssignmentsPart($statement),
             $this->formatConditionsPart($statement),
@@ -128,7 +128,7 @@ abstract class Formatter
     {
         $columns = array_keys($statement->data);
         $marker = $this->getParameterMarker();
-        $assignments = array_map(fn($column) => $this->columnize($column) . ' = ' . $marker, $columns);
+        $assignments = array_map(fn($column) => $this->columnize($column, $statement) . ' = ' . $marker, $columns);
         return $this->asCsv($assignments);
     }
 
@@ -136,9 +136,10 @@ abstract class Formatter
      * @param UpdateStatement $statement
      * @return array<mixed>
      */
-    public function getBindingsForUpdate(UpdateStatement $statement): array
+    public function formatBindingsForUpdate(UpdateStatement $statement): array
     {
-        return array_merge($statement->data, $this->getBindingsForConditions($statement));
+        $bindings = array_merge($statement->data, $this->getBindingsForConditions($statement));
+        return $this->parameterizeBindings($bindings);
     }
 
     /**
@@ -149,7 +150,7 @@ abstract class Formatter
     {
         return implode(' ', array_filter([
             'DELETE FROM',
-            $this->quote($statement->table),
+            $this->formatTable($statement),
             $this->formatConditionsPart($statement),
             $this->formatReturningPart($statement),
         ]));
@@ -159,9 +160,9 @@ abstract class Formatter
      * @param DeleteStatement $statement
      * @return array<mixed>
      */
-    public function getBindingsForDelete(DeleteStatement $statement): array
+    public function formatBindingsForDelete(DeleteStatement $statement): array
     {
-        return $this->getBindingsForConditions($statement);
+        return $this->parameterizeBindings($this->getBindingsForConditions($statement));
     }
 
     /**
@@ -179,22 +180,13 @@ abstract class Formatter
                 $current = current($bindings);
                 next($bindings);
                 $remains--;
-
-                if (is_null($current)) {
-                    return 'NULL';
-                }
-
-                if (is_bool($current)) {
-                    return $current ? 'TRUE' : 'FALSE';
-                }
-
-                if (is_string($current)) {
-                    return $this->literalize($current);
-                }
-
-                return $this->parameterize($current);
+                return match (true) {
+                    is_null($current) => 'NULL',
+                    is_bool($current) => $current ? 'TRUE' : 'FALSE',
+                    is_string($current) => "'" . $this->escape($current, "'") . "'",
+                    default => $current,
+                };
             }
-
             return $matches[0];
         }, $statement);
     }
@@ -219,20 +211,10 @@ abstract class Formatter
      */
     protected function formatSelectColumnsPart(SelectStatement $statement): string
     {
-        $expressions = [];
-
         if (empty($statement->columns)) {
             $statement->columns[] = '*';
         }
-
-        foreach ($statement->columns as $name) {
-            if ($name instanceof Expr) {
-                $expressions[] = $name->toSql($this);
-                continue;
-            }
-
-            $expressions[] = $this->columnize($name, $statement->tableAlias);
-        }
+        $expressions = array_map(fn($column) => $this->columnize($column, $statement), $statement->columns);
         return $this->asCsv($expressions);
     }
 
@@ -268,14 +250,10 @@ abstract class Formatter
      */
     protected function formatFromPart(BaseStatement $statement): string
     {
-        if (!isset($statement->table)) {
+        if ($statement->table === null) {
             return '';
         }
-        $expr = $this->quote($statement->table);
-        if ($statement->tableAlias !== null) {
-            $expr .= ' AS ' . $statement->tableAlias;
-        }
-        return 'FROM ' . $expr;
+        return 'FROM ' . $this->formatTable($statement);
     }
 
     /**
@@ -284,7 +262,7 @@ abstract class Formatter
      */
     protected function formatInsertColumnsPart(InsertStatement $statement): string
     {
-        $columns = array_map(fn($column) => $this->columnize($column), $statement->columns());
+        $columns = array_map(fn($column) => $this->columnize($column, $statement), $statement->columns());
         return '(' . $this->asCsv($columns) . ')';
     }
 
@@ -309,10 +287,22 @@ abstract class Formatter
     }
 
     /**
+     * @param BaseStatement $statement
+     * @return string
+     */
+    protected function formatTable(BaseStatement $statement): string
+    {
+        if ($statement->table === null) {
+            throw new RuntimeException('Table expected to exist, null given.');
+        }
+        return $statement->table->toSql($this, $statement);
+    }
+
+    /**
      * @param ConditionsStatement $statement
      * @return string
      */
-    public function formatConditionsPart(ConditionsStatement $statement): string
+    protected function formatConditionsPart(ConditionsStatement $statement): string
     {
         return implode(' ', array_filter([
             $this->formatWherePart($statement),
@@ -332,26 +322,26 @@ abstract class Formatter
         }
         $clause = [];
         foreach ($statement->where as $condition) {
-            $clause[] = $this->formatCondition($condition, $statement->tableAlias);
+            $clause[] = $this->formatCondition($condition, $statement);
         }
         return 'WHERE ' . implode(' AND ', $clause);
     }
 
     /**
      * @param ConditionDefinition $def
-     * @param string|null $table
+     * @param ConditionsStatement $statement
      * @return string
      */
-    public function formatCondition(ConditionDefinition $def, ?string $table): string
+    protected function formatCondition(ConditionDefinition $def, ConditionsStatement $statement): string
     {
         $parts = [];
-        $parts[] = $this->formatConditionSegment($def, $table);
+        $parts[] = $this->formatConditionSegment($def, $statement);
 
         // Dig through all chained clauses if exists
         if ($def->next !== null) {
             $logic = $def->nextLogic;
             while ($def = $def->next) {
-                $parts[] = $logic . ' ' . $this->formatConditionSegment($def, $table);
+                $parts[] = $logic . ' ' . $this->formatConditionSegment($def, $statement);
                 $logic = $def->nextLogic;
             }
         }
@@ -361,23 +351,23 @@ abstract class Formatter
 
     /**
      * @param ConditionDefinition $def
-     * @param string|null $table
+     * @param ConditionsStatement $statement
      * @return string
      */
-    protected function formatConditionSegment(ConditionDefinition $def, ?string $table): string
+    protected function formatConditionSegment(ConditionDefinition $def, ConditionsStatement $statement): string
     {
         return match ($def->operator) {
-            Operator::Raw => $this->formatConditionForRaw($def),
-            Operator::Equals => $this->formatConditionForEqual($def, $table),
-            Operator::LessThanOrEqualTo => $this->formatConditionForLessThanOrEqualTo($def, $table),
-            Operator::LessThan => $this->formatConditionForLessThan($def, $table),
-            Operator::GreaterThanOrEqualTo => $this->formatConditionForGreaterThanOrEqualTo($def, $table),
-            Operator::GreaterThan => $this->formatConditionForGreaterThan($def, $table),
-            Operator::In => $this->formatConditionForIn($def, $table),
-            Operator::Between => $this->formatConditionForBetween($def, $table),
-            Operator::Exists => $this->formatConditionForExists($def, $table),
-            Operator::Like => $this->formatConditionForLike($def, $table),
-            Operator::Range => $this->formatConditionForRange($def, $table),
+            Operator::Raw => $this->formatConditionForRaw($def, $statement),
+            Operator::Equals => $this->formatConditionForEqual($def, $statement),
+            Operator::LessThanOrEqualTo => $this->formatConditionForLessThanOrEqualTo($def, $statement),
+            Operator::LessThan => $this->formatConditionForLessThan($def, $statement),
+            Operator::GreaterThanOrEqualTo => $this->formatConditionForGreaterThanOrEqualTo($def, $statement),
+            Operator::GreaterThan => $this->formatConditionForGreaterThan($def, $statement),
+            Operator::In => $this->formatConditionForIn($def, $statement),
+            Operator::Between => $this->formatConditionForBetween($def, $statement),
+            Operator::Exists => $this->formatConditionForExists($def, $statement),
+            Operator::Like => $this->formatConditionForLike($def, $statement),
+            Operator::Range => $this->formatConditionForRange($def, $statement),
             Operator::Nested => $this->formatConditionForNested($def),
             default => throw new RuntimeException('Unknown Operator: '.Str::valueOf($def->operator?->value)),
         };
@@ -385,12 +375,13 @@ abstract class Formatter
 
     /**
      * @param ConditionDefinition $def
+     * @param ConditionsStatement $statement
      * @return string
      */
-    protected function formatConditionForRaw(ConditionDefinition $def): string
+    protected function formatConditionForRaw(ConditionDefinition $def, ConditionsStatement $statement): string
     {
         if ($def->value instanceof Expr) {
-            return $def->value->toSql($this);
+            return $def->value->toSql($this, $statement);
         }
 
         throw new RuntimeException('Unknown condition');
@@ -398,12 +389,12 @@ abstract class Formatter
 
     /**
      * @param ConditionDefinition $def
-     * @param string|null $table
+     * @param ConditionsStatement $statement
      * @return string
      */
-    protected function formatConditionForEqual(ConditionDefinition $def, ?string $table): string
+    protected function formatConditionForEqual(ConditionDefinition $def, ConditionsStatement $statement): string
     {
-        $column = $this->columnize($this->getDefinedColumn($def), $table);
+        $column = $this->columnize($this->getDefinedColumn($def), $statement);
         return $def->value !== null
             ? $column . ' ' . ($def->negated ? '!=': '=') . ' ' . $this->getParameterMarker()
             : $column . ' ' . ($def->negated ? 'IS NOT NULL' : 'IS NULL');
@@ -411,60 +402,60 @@ abstract class Formatter
 
     /**
      * @param ConditionDefinition $def
-     * @param string|null $table
+     * @param ConditionsStatement $statement
      * @return string
      */
-    protected function formatConditionForLessThanOrEqualTo(ConditionDefinition $def, ?string $table): string
+    protected function formatConditionForLessThanOrEqualTo(ConditionDefinition $def, ConditionsStatement $statement): string
     {
-        $column = $this->columnize($this->getDefinedColumn($def), $table);
+        $column = $this->columnize($this->getDefinedColumn($def), $statement);
         $operator = $def->negated ? '>' : '<=';
         return $column . ' ' . $operator . ' ' . $this->getParameterMarker();
     }
 
     /**
      * @param ConditionDefinition $def
-     * @param string|null $table
+     * @param ConditionsStatement $statement
      * @return string
      */
-    protected function formatConditionForLessThan(ConditionDefinition $def, ?string $table): string
+    protected function formatConditionForLessThan(ConditionDefinition $def, ConditionsStatement $statement): string
     {
-        $column = $this->columnize($this->getDefinedColumn($def), $table);
+        $column = $this->columnize($this->getDefinedColumn($def), $statement);
         $operator = $def->negated ? '>=' : '<';
         return $column . ' ' . $operator.' ' . $this->getParameterMarker();
     }
 
     /**
      * @param ConditionDefinition $def
-     * @param string|null $table
+     * @param ConditionsStatement $statement
      * @return string
      */
-    protected function formatConditionForGreaterThanOrEqualTo(ConditionDefinition $def, ?string $table): string
+    protected function formatConditionForGreaterThanOrEqualTo(ConditionDefinition $def, ConditionsStatement $statement): string
     {
-        $column = $this->columnize($this->getDefinedColumn($def), $table);
+        $column = $this->columnize($this->getDefinedColumn($def), $statement);
         $operator = $def->negated ? '<' : '>=';
         return $column . ' ' . $operator . ' ' . $this->getParameterMarker();
     }
 
     /**
      * @param ConditionDefinition $def
-     * @param string|null $table
+     * @param ConditionsStatement $statement
      * @return string
      */
-    protected function formatConditionForGreaterThan(ConditionDefinition $def, ?string $table): string
+    protected function formatConditionForGreaterThan(ConditionDefinition $def, ConditionsStatement $statement): string
     {
-        $column = $this->columnize($this->getDefinedColumn($def), $table);
+        $column = $this->columnize($this->getDefinedColumn($def), $statement);
         $operator = $def->negated ? '<=' : '>';
         return $column . ' ' . $operator . ' ' . $this->getParameterMarker();
     }
 
     /**
      * @param ConditionDefinition $def
-     * @param string|null $table
+     * @param ConditionsStatement $statement
      * @return string
      */
-    protected function formatConditionForIn(ConditionDefinition $def, ?string $table): string
+    protected function formatConditionForIn(ConditionDefinition $def, ConditionsStatement $statement): string
     {
-        $column = $this->columnize($this->getDefinedColumn($def), $table);
+        $column = $this->columnize($this->getDefinedColumn($def), $statement);
         $operator = $def->negated ? 'NOT IN' : 'IN';
         $value = $def->value;
 
@@ -485,24 +476,24 @@ abstract class Formatter
 
     /**
      * @param ConditionDefinition $def
-     * @param string|null $table
+     * @param ConditionsStatement $statement
      * @return string
      */
-    protected function formatConditionForBetween(ConditionDefinition $def, ?string $table): string
+    protected function formatConditionForBetween(ConditionDefinition $def, ConditionsStatement $statement): string
     {
-        $column = $this->columnize($this->getDefinedColumn($def), $table);
+        $column = $this->columnize($this->getDefinedColumn($def), $statement);
         $marker = $this->getParameterMarker();
         return $column . ' ' . ($def->negated ? 'NOT ' : '') . 'BETWEEN ' . $marker . ' AND ' . $marker;
     }
 
     /**
      * @param ConditionDefinition $def
-     * @param string|null $table
+     * @param ConditionsStatement $statement
      * @return string
      */
-    protected function formatConditionForExists(ConditionDefinition $def, ?string $table): string
+    protected function formatConditionForExists(ConditionDefinition $def, ConditionsStatement $statement): string
     {
-        $column = $this->columnize($this->getDefinedColumn($def), $table);
+        $column = $this->columnize($this->getDefinedColumn($def), $statement);
         $operator = $def->negated ? 'NOT EXISTS' : 'EXISTS';
         $value = $def->value;
 
@@ -515,24 +506,24 @@ abstract class Formatter
 
     /**
      * @param ConditionDefinition $def
-     * @param string|null $table
+     * @param ConditionsStatement $statement
      * @return string
      */
-    protected function formatConditionForLike(ConditionDefinition $def, ?string $table): string
+    protected function formatConditionForLike(ConditionDefinition $def, ConditionsStatement $statement): string
     {
-        $column = $this->columnize($this->getDefinedColumn($def), $table);
+        $column = $this->columnize($this->getDefinedColumn($def), $statement);
         $operator = $def->negated ? 'NOT LIKE' : 'LIKE';
         return $column . ' ' . $operator . ' ' . $this->getParameterMarker();
     }
 
     /**
      * @param ConditionDefinition $def
-     * @param string|null $table
+     * @param ConditionsStatement $statement
      * @return string
      */
-    protected function formatConditionForRange(ConditionDefinition $def, ?string $table): string
+    protected function formatConditionForRange(ConditionDefinition $def, ConditionsStatement $statement): string
     {
-        $column = $this->columnize($this->getDefinedColumn($def), $table);
+        $column = $this->columnize($this->getDefinedColumn($def), $statement);
         $negated = $def->negated;
         $value = $def->value;
         $marker = $this->getParameterMarker();
@@ -586,7 +577,7 @@ abstract class Formatter
         }
         $clause = [];
         foreach ($statement->groupBy as $column) {
-            $clause[] = $this->columnize($column, $statement->tableAlias);
+            $clause[] = $this->columnize($column, $statement);
         }
         return 'GROUP BY ' . $this->asCsv($clause);
     }
@@ -602,7 +593,7 @@ abstract class Formatter
         }
         $clause = [];
         foreach ($statement->orderBy as $column => $sort) {
-            $clause[] = $this->columnize($column, $statement->tableAlias) . ' ' . $sort;
+            $clause[] = $this->columnize($column, $statement) . ' ' . $sort;
         }
         return 'ORDER BY ' . $this->asCsv($clause);
     }
@@ -639,40 +630,57 @@ abstract class Formatter
             return '';
         }
 
-        $columns = array_map(fn($column) => $this->columnize($column), $statement->returningColumns);
+        $columns = array_map(fn($column) => $this->columnize($column, $statement), $statement->returningColumns);
         return 'RETURNING ' . $this->asCsv($columns);
     }
 
     /**
      * @param string $column
      * @param string $path
-     * @param bool $unwrap
+     * @param BaseStatement $statement
      * @return string
      */
-    public function formatJsonExtract(string $column, string $path, bool $unwrap): string
+    public function formatJsonExtract(string $column, string $path, BaseStatement $statement): string
     {
-        $directive = $unwrap ? '->>' : '->';
-        $path = str_starts_with($path, '$.') ? $path : '$.'.$path;
-        return $this->columnize($column) . $directive . '"' . $path . '"';
+        return $this->columnize($column, $statement) . '->' . '"' . $path . '"';
     }
 
     /**
      * @param string|Expr $name
-     * @param string|null $table
+     * @param BaseStatement $statement
      * @return string
      */
-    public function columnize(string|Expr $name, ?string $table = null): string
+    public function columnize(string|Expr $name, BaseStatement $statement): string
     {
         if ($name instanceof Expr) {
-            return $name->toSql($this);
+            return $name->toSql($this, $statement);
         }
+
+        $table = null;
 
         if (str_contains($name, '.')) {
-            [$name, $table] = explode('.', $name, 2);
+            $delim = preg_quote($this->getIdentifierDelimiter(), null);
+            $pattern = '/^'.$delim.'?(?<table>[^`]+)'.$delim.'?\.' . $delim . '?(?<column>[^`]+)' . $delim . '$/';
+            $match = null;
+            if(preg_match($pattern, $name, $match)) {
+                $table = (string) $match['table'];
+                $name = (string) $match['column'];
+            }
         }
 
-        $name = $name !== '*' ? $this->quote($name) : $name;
-        return $table !== null ? $this->quote($table) . '.' . $name : $name;
+        if ($name !== '*') {
+            $name = $this->quote($name);
+        }
+
+        if ($table === null) {
+            $table = $statement->table?->as;
+        }
+
+        if ($table !== null) {
+            $name = $this->quote($table) . '.' . $name;
+        }
+
+        return $name;
     }
 
     /**
@@ -686,38 +694,6 @@ abstract class Formatter
     }
 
     /**
-     * @param string $str
-     * @return string
-     */
-    public function literalize(string $str): string
-    {
-        $char = '\'';
-        return $char . $this->escape($str, $char) . $char;
-    }
-
-    /**
-     * @param mixed $value
-     * @return mixed
-     */
-    public function parameterize(mixed $value): mixed
-    {
-        if (is_iterable($value)) {
-            /** @var iterable<array-key, mixed> $value */
-            return Json::encode(Arr::from($value));
-        }
-
-        if ($value instanceof DateTimeInterface) {
-            return $this->literalize($value->format($this->getDateTimeFormat()));
-        }
-
-        if ($value instanceof BackedEnum) {
-            return $value->value;
-        }
-
-        return $value;
-    }
-
-    /**
      * @return string
      */
     public function getParameterMarker(): string
@@ -728,7 +704,7 @@ abstract class Formatter
     /**
      * @return string
      */
-    public function getIdentifierDelimiter(): string
+    protected function getIdentifierDelimiter(): string
     {
         return '"';
     }
@@ -777,6 +753,41 @@ abstract class Formatter
             }
             $def = $def->next;
         }
+    }
+
+    /**
+     * @param array<mixed> $bindings
+     * @return array<mixed>
+     */
+    protected function parameterizeBindings(array $bindings): array
+    {
+        $parameters = [];
+        foreach($bindings as $name => $binding) {
+            $parameters[$name] = $this->parameterize($binding);
+        }
+        return $parameters;
+    }
+
+    /**
+     * @param mixed $value
+     * @return mixed
+     */
+    protected function parameterize(mixed $value): mixed
+    {
+        if (is_iterable($value)) {
+            /** @var iterable<array-key, mixed> $value */
+            return Json::encode(Arr::from($value));
+        }
+
+        if ($value instanceof DateTimeInterface) {
+            return $value->format($this->getDateTimeFormat());
+        }
+
+        if ($value instanceof BackedEnum) {
+            return $value->value;
+        }
+
+        return $value;
     }
 
     /**

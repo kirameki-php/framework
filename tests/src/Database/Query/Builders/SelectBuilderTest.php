@@ -3,6 +3,7 @@
 namespace Tests\Kirameki\Database\Query\Builders;
 
 use Kirameki\Database\Query\Expressions\Expr;
+use Kirameki\Database\Query\Expressions\Raw;
 use Kirameki\Database\Query\Support\Range;
 use Kirameki\Database\Query\Builders\ConditionBuilder;
 use Tests\Kirameki\Database\Query\QueryTestCase;
@@ -13,7 +14,7 @@ class SelectBuilderTest extends QueryTestCase
 
     public function testPlain(): void
     {
-        $sql = $this->selectBuilder()->columns(Expr::raw('1'))->toSql();
+        $sql = $this->selectBuilder()->columns(new Raw('1'))->toSql();
         static::assertEquals("SELECT 1", $sql);
     }
 
@@ -26,7 +27,7 @@ class SelectBuilderTest extends QueryTestCase
     public function testFrom_WithAlias(): void
     {
         $sql = $this->selectBuilder()->table('User', 'u')->toSql();
-        static::assertEquals("SELECT `u`.* FROM `User` AS u", $sql);
+        static::assertEquals("SELECT `u`.* FROM `User` AS `u`", $sql);
     }
 
     public function testColumns(): void

@@ -32,17 +32,17 @@ interface Adapter
 
     /**
      * @param string $statement
-     * @param array<mixed>|null $bindings
+     * @param array<mixed> $bindings
      * @return Result
      */
-    public function query(string $statement, ?array $bindings = null): Result;
+    public function query(string $statement, array $bindings = []): Result;
 
     /**
      * @param string $statement
      * @param array<mixed> $bindings
      * @return Generator<mixed>
      */
-    public function cursor(string $statement, array $bindings): Generator;
+    public function cursor(string $statement, array $bindings = []): Generator;
 
     /**
      * @return void

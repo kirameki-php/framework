@@ -7,6 +7,7 @@ use Kirameki\Database\Query\Builders\DeleteBuilder;
 use Kirameki\Database\Query\Builders\InsertBuilder;
 use Kirameki\Database\Query\Builders\SelectBuilder;
 use Kirameki\Database\Query\Builders\UpdateBuilder;
+use Kirameki\Database\Query\Expressions\Expr;
 use Kirameki\Event\EventManager;
 use Kirameki\Support\Concerns\Tappable;
 
@@ -61,10 +62,10 @@ class Connection
     }
 
     /**
-     * @param mixed ...$columns
+     * @param string|Expr ...$columns
      * @return SelectBuilder
      */
-    public function select(...$columns): SelectBuilder
+    public function select(string|Expr ...$columns): SelectBuilder
     {
         return (new SelectBuilder($this))->columns(...$columns);
     }

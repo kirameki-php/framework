@@ -63,10 +63,10 @@ abstract class PdoAdapter implements Adapter
 
     /**
      * @param string $statement
-     * @param array<mixed>|null $bindings
+     * @param array<mixed> $bindings
      * @return Result
      */
-    public function query(string $statement, ?array $bindings = null): Result
+    public function query(string $statement, array $bindings = []): Result
     {
         $prepared = $this->execQuery($statement, $bindings);
         $result = $prepared->fetchAll(PDO::FETCH_ASSOC);
@@ -78,7 +78,7 @@ abstract class PdoAdapter implements Adapter
      * @param array<mixed> $bindings
      * @return Generator<mixed>
      */
-    public function cursor(string $statement, array $bindings): Generator
+    public function cursor(string $statement, array $bindings = []): Generator
     {
         $prepared = $this->execQuery($statement, $bindings);
         while (true) {
@@ -179,27 +179,13 @@ abstract class PdoAdapter implements Adapter
 
     /**
      * @param string $statement
-     * @param array<mixed>|null $bindings
+     * @param array<mixed> $bindings
      * @return PDOStatement
      */
-    protected function execQuery(string $statement, ?array $bindings): PDOStatement
+    protected function execQuery(string $statement, array $bindings): PDOStatement
     {
         $prepared = $this->getPdo()->prepare($statement);
-        $prepared->execute($this->prepareBindings($bindings ?? []));
-        return $prepared;
-    }
-
-    /**
-     * @param array<mixed> $bindings
-     * @return array<mixed>
-     */
-    protected function prepareBindings(array $bindings): array
-    {
-        $formatter = $this->getQueryFormatter();
-        $prepared = [];
-        foreach($bindings as $name => $binding) {
-            $prepared[$name] = $formatter->parameterize($binding);
-        }
+        $prepared->execute($bindings);
         return $prepared;
     }
 
