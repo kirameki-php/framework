@@ -11,7 +11,6 @@ use Kirameki\Database\Query\Statements\SelectStatement;
 use Kirameki\Database\Query\Support\LockOption;
 use Kirameki\Database\Query\Support\LockType;
 use Kirameki\Database\Query\Expressions\Expr;
-use Kirameki\Database\Query\Expressions\Raw;
 use Kirameki\Support\Collection;
 use function is_array;
 

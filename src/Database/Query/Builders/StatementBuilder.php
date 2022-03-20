@@ -3,7 +3,6 @@
 namespace Kirameki\Database\Query\Builders;
 
 use Kirameki\Database\Connection;
-use Kirameki\Database\Query\Expressions\Table;
 use Kirameki\Database\Query\Formatters\Formatter;
 use Kirameki\Database\Query\Result;
 use Kirameki\Database\Query\Statements\BaseStatement;

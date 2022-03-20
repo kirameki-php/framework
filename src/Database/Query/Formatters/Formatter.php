@@ -6,7 +6,6 @@ use BackedEnum;
 use DateTimeInterface;
 use Kirameki\Database\Query\Builders\SelectBuilder;
 use Kirameki\Database\Query\Expressions\Column;
-use Kirameki\Database\Query\Expressions\Table;
 use Kirameki\Database\Query\Statements\ConditionDefinition;
 use Kirameki\Database\Query\Support\LockOption;
 use Kirameki\Database\Query\Support\LockType;
