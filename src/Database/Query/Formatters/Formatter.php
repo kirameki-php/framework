@@ -5,6 +5,8 @@ namespace Kirameki\Database\Query\Formatters;
 use BackedEnum;
 use DateTimeInterface;
 use Kirameki\Database\Query\Builders\SelectBuilder;
+use Kirameki\Database\Query\Expressions\Column;
+use Kirameki\Database\Query\Expressions\Table;
 use Kirameki\Database\Query\Statements\ConditionDefinition;
 use Kirameki\Database\Query\Support\LockOption;
 use Kirameki\Database\Query\Support\LockType;
@@ -77,7 +79,7 @@ abstract class Formatter
     {
         return implode(' ', array_filter([
             'INSERT INTO',
-            $this->formatTable($statement),
+            $this->quote($statement->table),
             $this->formatInsertColumnsPart($statement),
             'VALUES',
             $this->formatInsertValuesPart($statement),
@@ -113,7 +115,7 @@ abstract class Formatter
     {
         return implode(' ', array_filter([
             'UPDATE',
-            $this->formatTable($statement),
+            $this->quote($statement->table),
             'SET',
             $this->formatUpdateAssignmentsPart($statement),
             $this->formatConditionsPart($statement),
@@ -151,7 +153,7 @@ abstract class Formatter
     {
         return implode(' ', array_filter([
             'DELETE FROM',
-            $this->formatTable($statement),
+            $this->quote($statement->table),
             $this->formatConditionsPart($statement),
             $this->formatReturningPart($statement),
         ]));
@@ -213,9 +215,9 @@ abstract class Formatter
     protected function formatSelectColumnsPart(SelectStatement $statement): string
     {
         if (empty($statement->columns)) {
-            $statement->columns[] = '*';
+            $statement->columns[] = new Column(null, '*');
         }
-        $expressions = array_map(fn($column) => $this->columnize($column, $statement), $statement->columns);
+        $expressions = array_map(fn(Expr $column) => $column->toSql($this, $statement), $statement->columns);
         return $this->asCsv($expressions);
     }
 
@@ -246,15 +248,13 @@ abstract class Formatter
     }
 
     /**
-     * @param BaseStatement $statement
+     * @param SelectStatement $statement
      * @return string
      */
-    protected function formatFromPart(BaseStatement $statement): string
+    protected function formatFromPart(SelectStatement $statement): string
     {
-        if ($statement->table === null) {
-            return '';
-        }
-        return 'FROM ' . $this->formatTable($statement);
+        $tables = array_map(fn(Expr $table) => $table->toSql($this, $statement), $statement->tables);
+        return !empty($tables) ? 'FROM ' . $this->asCsv($tables) : '';
     }
 
     /**
@@ -285,18 +285,6 @@ abstract class Formatter
             $placeholders[] = '(' . $this->asCsv($binders) . ')';
         }
         return $this->asCsv($placeholders);
-    }
-
-    /**
-     * @param BaseStatement $statement
-     * @return string
-     */
-    protected function formatTable(BaseStatement $statement): string
-    {
-        if ($statement->table === null) {
-            throw new RuntimeException('Table expected to exist, null given.');
-        }
-        return $statement->table->toSql($this, $statement);
     }
 
     /**
@@ -675,13 +663,6 @@ abstract class Formatter
             $name = $this->quote($name);
         }
 
-        if ($table === null) {
-            $table = $statement->table?->as;
-            if ($table === null && $statement instanceof SelectStatement && $statement->explicitColumn) {
-                $table = $statement->table?->name;
-            }
-        }
-
         if ($table !== null) {
             $name = $this->quote($table) . '.' . $name;
         }
@@ -710,7 +691,7 @@ abstract class Formatter
     /**
      * @return string
      */
-    protected function getIdentifierDelimiter(): string
+    public function getIdentifierDelimiter(): string
     {
         return '"';
     }

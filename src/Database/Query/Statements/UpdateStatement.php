@@ -5,6 +5,11 @@ namespace Kirameki\Database\Query\Statements;
 class UpdateStatement extends ConditionsStatement
 {
     /**
+     * @var string
+     */
+    public string $table;
+
+    /**
      * @var array<string, mixed>
      */
     public array $data;

@@ -20,58 +20,64 @@ class SelectBuilderTest extends QueryTestCase
 
     public function testFrom(): void
     {
-        $sql = $this->selectBuilder()->table('User')->toSql();
+        $sql = $this->selectBuilder()->from('User')->toSql();
         static::assertEquals("SELECT * FROM `User`", $sql);
     }
 
     public function testFrom_WithAlias(): void
     {
-        $sql = $this->selectBuilder()->table('User', 'u')->toSql();
-        static::assertEquals("SELECT `u`.* FROM `User` AS `u`", $sql);
+        $sql = $this->selectBuilder()->from('User AS u')->toSql();
+        static::assertEquals("SELECT * FROM `User` AS `u`", $sql);
     }
 
     public function testColumns(): void
     {
-        $sql = $this->selectBuilder()->table('User')->columns('id', 'name')->toSql();
+        $sql = $this->selectBuilder()->from('User')->columns('id', 'name')->toSql();
         static::assertEquals("SELECT `id`, `name` FROM `User`", $sql);
+    }
+
+    public function testColumnsWithAlias(): void
+    {
+        $sql = $this->selectBuilder()->from('User as u')->columns('u.*', 'u.name')->toSql();
+        static::assertEquals("SELECT `u`.*, `u`.`name` FROM `User` AS `u`", $sql);
     }
 
     public function testDistinct(): void
     {
-        $sql = $this->selectBuilder()->table('User')->columns('id')->distinct()->toSql();
+        $sql = $this->selectBuilder()->from('User')->columns('id')->distinct()->toSql();
         static::assertEquals("SELECT DISTINCT `id` FROM `User`", $sql);
     }
 
     public function testWhere_WithTwoArgs(): void
     {
-        $sql = $this->selectBuilder()->table('User')->where('id', fn(ConditionBuilder $w) => $w->equals(1))->toSql();
+        $sql = $this->selectBuilder()->from('User')->where('id', fn(ConditionBuilder $w) => $w->equals(1))->toSql();
         static::assertEquals("SELECT * FROM `User` WHERE `id` = 1", $sql);
 
-        $sql = $this->selectBuilder()->table('User')->where('id', [3, 4])->toSql();
+        $sql = $this->selectBuilder()->from('User')->where('id', [3, 4])->toSql();
         static::assertEquals("SELECT * FROM `User` WHERE `id` IN (3, 4)", $sql);
 
-        $sql = $this->selectBuilder()->table('User')->where('id', Range::closed(1, 2))->toSql();
+        $sql = $this->selectBuilder()->from('User')->where('id', Range::closed(1, 2))->toSql();
         static::assertEquals("SELECT * FROM `User` WHERE `id` >= 1 AND `id` <= 2", $sql);
 
-        $sql = $this->selectBuilder()->table('User')->where('id', 1)->toSql();
+        $sql = $this->selectBuilder()->from('User')->where('id', 1)->toSql();
         static::assertEquals("SELECT * FROM `User` WHERE `id` = 1", $sql);
     }
 
     public function testWhere_WithThreeArgs(): void
     {
-        $sql = $this->selectBuilder()->table('User')->where('id', '=', 1)->toSql();
+        $sql = $this->selectBuilder()->from('User')->where('id', '=', 1)->toSql();
         static::assertEquals("SELECT * FROM `User` WHERE `id` = 1", $sql);
     }
 
     public function testWhere_Multiples(): void
     {
-        $sql = $this->selectBuilder()->table('User')->where('id', 1)->where('status', 0)->toSql();
+        $sql = $this->selectBuilder()->from('User')->where('id', 1)->where('status', 0)->toSql();
         static::assertEquals("SELECT * FROM `User` WHERE `id` = 1 AND `status` = 0", $sql);
     }
 
     public function testWhere_Combined(): void
     {
-        $sql = $this->selectBuilder()->table('User')
+        $sql = $this->selectBuilder()->from('User')
             ->where('id', fn(ConditionBuilder $w) => $w->lessThan(1)->or()->equals(3))
             ->whereNot('id', -1)
             ->toSql();
@@ -80,50 +86,50 @@ class SelectBuilderTest extends QueryTestCase
 
     public function testOrderBy(): void
     {
-        $sql = $this->selectBuilder()->table('User')->where('id', 1)->orderBy('id')->toSql();
+        $sql = $this->selectBuilder()->from('User')->where('id', 1)->orderBy('id')->toSql();
         static::assertEquals("SELECT * FROM `User` WHERE `id` = 1 ORDER BY `id` ASC", $sql);
     }
 
     public function testOrderByDesc(): void
     {
-        $sql = $this->selectBuilder()->table('User')->where('id', 1)->orderByDesc('id')->toSql();
+        $sql = $this->selectBuilder()->from('User')->where('id', 1)->orderByDesc('id')->toSql();
         static::assertEquals("SELECT * FROM `User` WHERE `id` = 1 ORDER BY `id` DESC", $sql);
     }
 
     public function testGroupBy(): void
     {
-        $sql = $this->selectBuilder()->table('User')->groupBy('status')->toSql();
+        $sql = $this->selectBuilder()->from('User')->groupBy('status')->toSql();
         static::assertEquals("SELECT * FROM `User` GROUP BY `status`", $sql);
     }
 
     public function testReorder(): void
     {
-        $sql = $this->selectBuilder()->table('User')->where('id', 1)->orderByDesc('id')->reorder()->toSql();
+        $sql = $this->selectBuilder()->from('User')->where('id', 1)->orderByDesc('id')->reorder()->toSql();
         static::assertEquals("SELECT * FROM `User` WHERE `id` = 1", $sql);
     }
 
     public function testWhereLimit(): void
     {
-        $sql = $this->selectBuilder()->table('User')->where('id', 1)->limit(1)->toSql();
+        $sql = $this->selectBuilder()->from('User')->where('id', 1)->limit(1)->toSql();
         static::assertEquals("SELECT * FROM `User` WHERE `id` = 1 LIMIT 1", $sql);
     }
 
     public function testWhereOffset(): void
     {
-        $sql = $this->selectBuilder()->table('User')->where('id', 1)->limit(1)->offset(10)->toSql();
+        $sql = $this->selectBuilder()->from('User')->where('id', 1)->limit(1)->offset(10)->toSql();
         static::assertEquals("SELECT * FROM `User` WHERE `id` = 1 LIMIT 1 OFFSET 10", $sql);
     }
 
     public function testCombination(): void
     {
-        $sql = $this->selectBuilder()->table('User')->where('id', 1)->groupBy('status')->having('status', 1)->limit(2)->orderBy('id')->toSql();
+        $sql = $this->selectBuilder()->from('User')->where('id', 1)->groupBy('status')->having('status', 1)->limit(2)->orderBy('id')->toSql();
         static::assertEquals("SELECT * FROM `User` WHERE `id` = 1 GROUP BY `status` ORDER BY `id` ASC LIMIT 2", $sql);
     }
 
     public function testClone(): void
     {
         $where = ConditionBuilder::for('id')->eq(1)->or('id')->eq(2);
-        $base = $this->selectBuilder()->table('User')->where($where);
+        $base = $this->selectBuilder()->from('User')->where($where);
         $copy = clone $base;
         $where->or()->in([3,4]); // change $base but should not be reflected on copy
         static::assertEquals("SELECT * FROM `User` WHERE (`id` = 1 OR `id` = 2 OR `id` IN (3, 4))", $base->toSql());

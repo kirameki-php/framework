@@ -4,6 +4,7 @@ namespace Kirameki\Database\Query\Builders;
 
 use Kirameki\Database\Connection;
 use Kirameki\Database\Query\Expressions\Aggregate;
+use Kirameki\Database\Query\Expressions\Column;
 use Kirameki\Database\Query\Expressions\Table;
 use Kirameki\Database\Query\Statements\ConditionDefinition;
 use Kirameki\Database\Query\Statements\SelectStatement;
@@ -29,21 +30,29 @@ class SelectBuilder extends ConditionsBuilder
     }
 
     /**
-     * @param string $table
-     * @param string|null $as
+     * @param string|Expr ...$tables
      * @return $this
      */
-    public function from(string $table, string $as = null): static
+    public function from(string|Expr ...$tables): static
     {
-        return $this->table($table, $as);
+        $this->statement->tables = [];
+        foreach ($tables as $table) {
+            if (is_string($table)) {
+                $table = Table::parse($table, $this->getQueryFormatter());
+            }
+            $this->statement->tables[]= $table;
+        }
+        return $this;
     }
 
     /**
      * @param string|Table $table
+     * @param mixed ...$args
      * @return $this
      */
-    public function innerJoin(string|Table $table)
+    public function innerJoin(string|Table $table, mixed ...$args): static
     {
+        $this->statement->explicitColumn = true;
         return $this;
     }
 
@@ -51,9 +60,12 @@ class SelectBuilder extends ConditionsBuilder
      * @param string|Expr ...$columns
      * @return $this
      */
-    public function columns(...$columns): static
+    public function columns(string|Expr ...$columns): static
     {
-        $this->statement->columns = $columns;
+        $this->statement->columns = [];
+        foreach ($columns as $column) {
+            $this->addToSelect($column);
+        }
         return $this;
     }
 
@@ -213,12 +225,16 @@ class SelectBuilder extends ConditionsBuilder
     }
 
     /**
-     * @param string|Expr $select
+     * @param string|Expr $column
      * @return $this
      */
-    protected function addToSelect(string|Expr $select): static
+    protected function addToSelect(string|Expr $column): static
     {
-        $this->statement->columns[] = $select;
+        if (is_string($column)) {
+            $column = Column::parse($column, $this->getQueryFormatter());
+        }
+        $this->statement->columns[]= $column;
+
         return $this;
     }
 

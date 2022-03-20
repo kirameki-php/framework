@@ -19,6 +19,28 @@ class Table extends Expr
 
     /**
      * @param string $name
+     * @param Formatter $formatter
+     * @return static
+     */
+    public static function parse(string $name, Formatter $formatter): static
+    {
+        $as = null;
+        if (preg_match('/ as /i', $name)) {
+            $delim = preg_quote($formatter->getIdentifierDelimiter(), null);
+            $tablePatternPart = $delim . '?(?<table>[^ ' . $delim . ']+)' . $delim . '?';
+            $asPatternPart = '( (AS|as) ' . $delim . '?(?<as>[^' . $delim . ']+)' . $delim . '?)?';
+            $pattern = '/^' . $tablePatternPart . $asPatternPart . '$/';
+            $match = null;
+            if (preg_match($pattern, $name, $match)) {
+                $name = (string)$match['table'];
+                $as = !empty($match['as']) ? (string)$match['as'] : null;
+            }
+        }
+        return new static($name, $as);
+    }
+
+    /**
+     * @param string $name
      * @param string|null $as
      */
     public function __construct(string $name, ?string $as = null)

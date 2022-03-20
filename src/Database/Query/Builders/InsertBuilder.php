@@ -3,6 +3,7 @@
 namespace Kirameki\Database\Query\Builders;
 
 use Kirameki\Database\Connection;
+use Kirameki\Database\Query\Expressions\Table;
 use Kirameki\Database\Query\Result;
 use Kirameki\Database\Query\Statements\InsertStatement;
 use RuntimeException;
@@ -20,6 +21,16 @@ class InsertBuilder extends StatementBuilder
     {
         $this->connection = $connection;
         $this->statement = new InsertStatement();
+    }
+
+    /**
+     * @param string $name
+     * @return $this
+     */
+    public function table(string $name): static
+    {
+        $this->statement->table = $name;
+        return $this;
     }
 
     /**

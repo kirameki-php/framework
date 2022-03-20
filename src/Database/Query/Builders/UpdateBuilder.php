@@ -20,6 +20,16 @@ class UpdateBuilder extends ConditionsBuilder
     }
 
     /**
+     * @param string $name
+     * @return $this
+     */
+    public function table(string $name): static
+    {
+        $this->statement->table = $name;
+        return $this;
+    }
+
+    /**
      * @param array<string, mixed> $assignments
      * @return $this
      */

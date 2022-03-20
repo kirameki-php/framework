@@ -9,7 +9,12 @@ use Kirameki\Database\Query\Expressions\Expr;
 class SelectStatement extends ConditionsStatement
 {
     /**
-     * @var array<string|Expr>|null
+     * @var array<Expr>
+     */
+    public array $tables = [];
+
+    /**
+     * @var array<Expr>|null
      */
     public ?array $columns = null;
 

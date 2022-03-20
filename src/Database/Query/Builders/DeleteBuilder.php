@@ -3,6 +3,7 @@
 namespace Kirameki\Database\Query\Builders;
 
 use Kirameki\Database\Connection;
+use Kirameki\Database\Query\Expressions\Table;
 use Kirameki\Database\Query\Result;
 use Kirameki\Database\Query\Statements\DeleteStatement;
 
@@ -18,6 +19,16 @@ class DeleteBuilder extends ConditionsBuilder
     {
         $this->connection = $connection;
         $this->statement = new DeleteStatement();
+    }
+
+    /**
+     * @param string $name
+     * @return $this
+     */
+    public function table(string $name): static
+    {
+        $this->statement->table = $name;
+        return $this;
     }
 
     /**

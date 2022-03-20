@@ -5,6 +5,11 @@ namespace Kirameki\Database\Query\Statements;
 class InsertStatement extends BaseStatement
 {
     /**
+     * @var string
+     */
+    public string $table;
+
+    /**
      * @var array<int, array<string, mixed>>
      */
     public array $dataset;

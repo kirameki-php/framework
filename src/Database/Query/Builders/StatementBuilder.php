@@ -35,17 +35,6 @@ abstract class StatementBuilder
     }
 
     /**
-     * @param string $name
-     * @param string|null $as
-     * @return $this
-     */
-    public function table(string $name, ?string $as = null): static
-    {
-        $this->statement->table = new Table($name, $as);
-        return $this;
-    }
-
-    /**
      * @return Connection
      */
     public function getConnection(): Connection
