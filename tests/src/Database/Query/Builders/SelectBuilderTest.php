@@ -36,7 +36,7 @@ class SelectBuilderTest extends QueryTestCase
         static::assertEquals("SELECT `id`, `name` FROM `User`", $sql);
     }
 
-    public function testColumnsWithAlias(): void
+    public function testColumns_WithAlias(): void
     {
         $sql = $this->selectBuilder()->from('User as u')->columns('u.*', 'u.name')->toSql();
         static::assertEquals("SELECT `u`.*, `u`.`name` FROM `User` AS `u`", $sql);

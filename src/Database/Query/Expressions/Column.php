@@ -31,7 +31,7 @@ class Column extends Expr
     {
         $table = null;
         $as = null;
-        if (preg_match('/(\.| as )/i', $name)) {
+        if (preg_match('/(\.| as | AS )/', $name)) {
             $delim = preg_quote($formatter->getIdentifierDelimiter(), null);
             $tablePatternPart = '(' . $delim . '?(?<table>[^\.'. $delim . ']+)' . $delim . '?\.)?';
             $columnPatternPart = $delim . '?(?<column>[^ ' . $delim . ']+)' . $delim . '?';
@@ -41,7 +41,7 @@ class Column extends Expr
             if (preg_match($pattern, $name, $match)) {
                 $table = !empty($match['table']) ? (string)$match['table'] : null;
                 $name = $match['column'];
-                $as = !empty($match['as']) ? (string)$match['as'] : null;
+                $as = $match['as'] ?? null;
             }
         }
         return new static($table, $name, $as);

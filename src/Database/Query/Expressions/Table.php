@@ -25,7 +25,7 @@ class Table extends Expr
     public static function parse(string $name, Formatter $formatter): static
     {
         $as = null;
-        if (preg_match('/ as /i', $name)) {
+        if (preg_match('/( as | AS )/', $name)) {
             $delim = preg_quote($formatter->getIdentifierDelimiter(), null);
             $tablePatternPart = $delim . '?(?<table>[^ ' . $delim . ']+)' . $delim . '?';
             $asPatternPart = '( (AS|as) ' . $delim . '?(?<as>[^' . $delim . ']+)' . $delim . '?)?';
@@ -33,7 +33,7 @@ class Table extends Expr
             $match = null;
             if (preg_match($pattern, $name, $match)) {
                 $name = (string)$match['table'];
-                $as = !empty($match['as']) ? (string)$match['as'] : null;
+                $as = $match['as'] ?? null;
             }
         }
         return new static($name, $as);
