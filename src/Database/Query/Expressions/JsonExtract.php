@@ -34,6 +34,6 @@ class JsonExtract extends Expr
      */
     public function toSql(Formatter $formatter, BaseStatement $statement): string
     {
-        return $formatter->formatJsonExtract($this->column, $this->path, $statement);
+        return $formatter->formatJsonExtract($this->column, $this->path);
     }
 }

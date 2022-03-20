@@ -4,7 +4,6 @@ namespace Kirameki\Database\Query\Builders;
 
 use Kirameki\Database\Connection;
 use Kirameki\Database\Query\Expressions\Aggregate;
-use Kirameki\Database\Query\Expressions\Column;
 use Kirameki\Database\Query\Expressions\Table;
 use Kirameki\Database\Query\Statements\ConditionDefinition;
 use Kirameki\Database\Query\Statements\SelectStatement;
@@ -34,13 +33,7 @@ class SelectBuilder extends ConditionsBuilder
      */
     public function from(string|Expr ...$tables): static
     {
-        $this->statement->tables = [];
-        foreach ($tables as $table) {
-            if (is_string($table)) {
-                $table = Table::parse($table, $this->getQueryFormatter());
-            }
-            $this->statement->tables[]= $table;
-        }
+        $this->statement->tables = $tables;
         return $this;
     }
 
@@ -51,7 +44,6 @@ class SelectBuilder extends ConditionsBuilder
      */
     public function innerJoin(string|Table $table, mixed ...$args): static
     {
-        $this->statement->explicitColumn = true;
         return $this;
     }
 
@@ -61,10 +53,7 @@ class SelectBuilder extends ConditionsBuilder
      */
     public function columns(string|Expr ...$columns): static
     {
-        $this->statement->columns = [];
-        foreach ($columns as $column) {
-            $this->addToSelect($column);
-        }
+        $this->statement->columns = $columns;
         return $this;
     }
 
@@ -229,11 +218,7 @@ class SelectBuilder extends ConditionsBuilder
      */
     protected function addToSelect(string|Expr $column): static
     {
-        if (is_string($column)) {
-            $column = Column::parse($column, $this->getQueryFormatter());
-        }
         $this->statement->columns[]= $column;
-
         return $this;
     }
 

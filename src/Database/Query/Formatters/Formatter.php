@@ -5,14 +5,12 @@ namespace Kirameki\Database\Query\Formatters;
 use BackedEnum;
 use DateTimeInterface;
 use Kirameki\Database\Query\Builders\SelectBuilder;
-use Kirameki\Database\Query\Expressions\Column;
 use Kirameki\Database\Query\Statements\ConditionDefinition;
 use Kirameki\Database\Query\Support\LockOption;
 use Kirameki\Database\Query\Support\LockType;
 use Kirameki\Database\Query\Support\Operator;
 use Kirameki\Database\Query\Support\Range;
 use Kirameki\Database\Query\Expressions\Expr;
-use Kirameki\Database\Query\Statements\BaseStatement;
 use Kirameki\Database\Query\Statements\ConditionsStatement;
 use Kirameki\Database\Query\Statements\DeleteStatement;
 use Kirameki\Database\Query\Statements\InsertStatement;
@@ -38,7 +36,6 @@ use function is_string;
 use function next;
 use function preg_match;
 use function preg_replace_callback;
-use function str_contains;
 
 abstract class Formatter
 {
@@ -130,7 +127,7 @@ abstract class Formatter
     {
         $columns = array_keys($statement->data);
         $marker = $this->getParameterMarker();
-        $assignments = array_map(fn($column) => $this->columnize($column, $statement) . ' = ' . $marker, $columns);
+        $assignments = array_map(fn($column) => $this->quote($column) . ' = ' . $marker, $columns);
         return $this->asCsv($assignments);
     }
 
@@ -213,10 +210,13 @@ abstract class Formatter
      */
     protected function formatSelectColumnsPart(SelectStatement $statement): string
     {
-        if (empty($statement->columns)) {
-            $statement->columns[] = new Column(null, '*');
+        $columns = $statement->columns ?: ['*'];
+        $expressions = [];
+        foreach ($columns as $column) {
+            $expressions[]= ($column instanceof Expr)
+                ? $column->toSql($this, $statement)
+                : $this->columnize($column, true);
         }
-        $expressions = array_map(fn(Expr $column) => $column->toSql($this, $statement), $statement->columns);
         return $this->asCsv($expressions);
     }
 
@@ -252,8 +252,13 @@ abstract class Formatter
      */
     protected function formatFromPart(SelectStatement $statement): string
     {
-        $tables = array_map(fn(Expr $table) => $table->toSql($this, $statement), $statement->tables);
-        return !empty($tables) ? 'FROM ' . $this->asCsv($tables) : '';
+        $expressions = [];
+        foreach ($statement->tables as $table) {
+            $expressions[]= ($table instanceof Expr)
+                ? $table->toSql($this, $statement)
+                : $this->tableize($table);
+        }
+        return !empty($expressions) ? 'FROM ' . $this->asCsv($expressions) : '';
     }
 
     /**
@@ -262,7 +267,7 @@ abstract class Formatter
      */
     protected function formatInsertColumnsPart(InsertStatement $statement): string
     {
-        $columns = array_map(fn($column) => $this->columnize($column, $statement), $statement->columns());
+        $columns = array_map(fn($column) => $this->quote($column), $statement->columns());
         return '(' . $this->asCsv($columns) . ')';
     }
 
@@ -346,16 +351,16 @@ abstract class Formatter
     {
         return match ($def->operator) {
             Operator::Raw => $this->formatConditionForRaw($def, $statement),
-            Operator::Equals => $this->formatConditionForEqual($def, $statement),
-            Operator::LessThanOrEqualTo => $this->formatConditionForLessThanOrEqualTo($def, $statement),
-            Operator::LessThan => $this->formatConditionForLessThan($def, $statement),
-            Operator::GreaterThanOrEqualTo => $this->formatConditionForGreaterThanOrEqualTo($def, $statement),
-            Operator::GreaterThan => $this->formatConditionForGreaterThan($def, $statement),
-            Operator::In => $this->formatConditionForIn($def, $statement),
-            Operator::Between => $this->formatConditionForBetween($def, $statement),
-            Operator::Exists => $this->formatConditionForExists($def, $statement),
-            Operator::Like => $this->formatConditionForLike($def, $statement),
-            Operator::Range => $this->formatConditionForRange($def, $statement),
+            Operator::Equals => $this->formatConditionForEqual($def),
+            Operator::LessThanOrEqualTo => $this->formatConditionForLessThanOrEqualTo($def),
+            Operator::LessThan => $this->formatConditionForLessThan($def),
+            Operator::GreaterThanOrEqualTo => $this->formatConditionForGreaterThanOrEqualTo($def),
+            Operator::GreaterThan => $this->formatConditionForGreaterThan($def),
+            Operator::In => $this->formatConditionForIn($def),
+            Operator::Between => $this->formatConditionForBetween($def),
+            Operator::Exists => $this->formatConditionForExists($def),
+            Operator::Like => $this->formatConditionForLike($def),
+            Operator::Range => $this->formatConditionForRange($def),
             Operator::Nested => $this->formatConditionForNested($def),
             default => throw new RuntimeException('Unknown Operator: '.Str::valueOf($def->operator?->value)),
         };
@@ -377,12 +382,11 @@ abstract class Formatter
 
     /**
      * @param ConditionDefinition $def
-     * @param ConditionsStatement $statement
      * @return string
      */
-    protected function formatConditionForEqual(ConditionDefinition $def, ConditionsStatement $statement): string
+    protected function formatConditionForEqual(ConditionDefinition $def): string
     {
-        $column = $this->columnize($this->getDefinedColumn($def), $statement);
+        $column = $this->columnize($this->getDefinedColumn($def));
         return $def->value !== null
             ? $column . ' ' . ($def->negated ? '!=': '=') . ' ' . $this->getParameterMarker()
             : $column . ' ' . ($def->negated ? 'IS NOT NULL' : 'IS NULL');
@@ -390,60 +394,55 @@ abstract class Formatter
 
     /**
      * @param ConditionDefinition $def
-     * @param ConditionsStatement $statement
      * @return string
      */
-    protected function formatConditionForLessThanOrEqualTo(ConditionDefinition $def, ConditionsStatement $statement): string
+    protected function formatConditionForLessThanOrEqualTo(ConditionDefinition $def): string
     {
-        $column = $this->columnize($this->getDefinedColumn($def), $statement);
+        $column = $this->columnize($this->getDefinedColumn($def));
         $operator = $def->negated ? '>' : '<=';
         return $column . ' ' . $operator . ' ' . $this->getParameterMarker();
     }
 
     /**
      * @param ConditionDefinition $def
-     * @param ConditionsStatement $statement
      * @return string
      */
-    protected function formatConditionForLessThan(ConditionDefinition $def, ConditionsStatement $statement): string
+    protected function formatConditionForLessThan(ConditionDefinition $def): string
     {
-        $column = $this->columnize($this->getDefinedColumn($def), $statement);
+        $column = $this->columnize($this->getDefinedColumn($def));
         $operator = $def->negated ? '>=' : '<';
         return $column . ' ' . $operator.' ' . $this->getParameterMarker();
     }
 
     /**
      * @param ConditionDefinition $def
-     * @param ConditionsStatement $statement
      * @return string
      */
-    protected function formatConditionForGreaterThanOrEqualTo(ConditionDefinition $def, ConditionsStatement $statement): string
+    protected function formatConditionForGreaterThanOrEqualTo(ConditionDefinition $def): string
     {
-        $column = $this->columnize($this->getDefinedColumn($def), $statement);
+        $column = $this->columnize($this->getDefinedColumn($def));
         $operator = $def->negated ? '<' : '>=';
         return $column . ' ' . $operator . ' ' . $this->getParameterMarker();
     }
 
     /**
      * @param ConditionDefinition $def
-     * @param ConditionsStatement $statement
      * @return string
      */
-    protected function formatConditionForGreaterThan(ConditionDefinition $def, ConditionsStatement $statement): string
+    protected function formatConditionForGreaterThan(ConditionDefinition $def): string
     {
-        $column = $this->columnize($this->getDefinedColumn($def), $statement);
+        $column = $this->columnize($this->getDefinedColumn($def));
         $operator = $def->negated ? '<=' : '>';
         return $column . ' ' . $operator . ' ' . $this->getParameterMarker();
     }
 
     /**
      * @param ConditionDefinition $def
-     * @param ConditionsStatement $statement
      * @return string
      */
-    protected function formatConditionForIn(ConditionDefinition $def, ConditionsStatement $statement): string
+    protected function formatConditionForIn(ConditionDefinition $def): string
     {
-        $column = $this->columnize($this->getDefinedColumn($def), $statement);
+        $column = $this->columnize($this->getDefinedColumn($def));
         $operator = $def->negated ? 'NOT IN' : 'IN';
         $value = $def->value;
 
@@ -464,24 +463,22 @@ abstract class Formatter
 
     /**
      * @param ConditionDefinition $def
-     * @param ConditionsStatement $statement
      * @return string
      */
-    protected function formatConditionForBetween(ConditionDefinition $def, ConditionsStatement $statement): string
+    protected function formatConditionForBetween(ConditionDefinition $def): string
     {
-        $column = $this->columnize($this->getDefinedColumn($def), $statement);
+        $column = $this->columnize($this->getDefinedColumn($def));
         $marker = $this->getParameterMarker();
         return $column . ' ' . ($def->negated ? 'NOT ' : '') . 'BETWEEN ' . $marker . ' AND ' . $marker;
     }
 
     /**
      * @param ConditionDefinition $def
-     * @param ConditionsStatement $statement
      * @return string
      */
-    protected function formatConditionForExists(ConditionDefinition $def, ConditionsStatement $statement): string
+    protected function formatConditionForExists(ConditionDefinition $def): string
     {
-        $column = $this->columnize($this->getDefinedColumn($def), $statement);
+        $column = $this->columnize($this->getDefinedColumn($def));
         $operator = $def->negated ? 'NOT EXISTS' : 'EXISTS';
         $value = $def->value;
 
@@ -494,24 +491,22 @@ abstract class Formatter
 
     /**
      * @param ConditionDefinition $def
-     * @param ConditionsStatement $statement
      * @return string
      */
-    protected function formatConditionForLike(ConditionDefinition $def, ConditionsStatement $statement): string
+    protected function formatConditionForLike(ConditionDefinition $def): string
     {
-        $column = $this->columnize($this->getDefinedColumn($def), $statement);
+        $column = $this->columnize($this->getDefinedColumn($def));
         $operator = $def->negated ? 'NOT LIKE' : 'LIKE';
         return $column . ' ' . $operator . ' ' . $this->getParameterMarker();
     }
 
     /**
      * @param ConditionDefinition $def
-     * @param ConditionsStatement $statement
      * @return string
      */
-    protected function formatConditionForRange(ConditionDefinition $def, ConditionsStatement $statement): string
+    protected function formatConditionForRange(ConditionDefinition $def): string
     {
-        $column = $this->columnize($this->getDefinedColumn($def), $statement);
+        $column = $this->columnize($this->getDefinedColumn($def));
         $negated = $def->negated;
         $value = $def->value;
         $marker = $this->getParameterMarker();
@@ -565,7 +560,7 @@ abstract class Formatter
         }
         $clause = [];
         foreach ($statement->groupBy as $column) {
-            $clause[] = $this->columnize($column, $statement);
+            $clause[] = $this->columnize($column);
         }
         return 'GROUP BY ' . $this->asCsv($clause);
     }
@@ -581,7 +576,7 @@ abstract class Formatter
         }
         $clause = [];
         foreach ($statement->orderBy as $column => $sort) {
-            $clause[] = $this->columnize($column, $statement) . ' ' . $sort;
+            $clause[] = $this->columnize($column) . ' ' . $sort;
         }
         return 'ORDER BY ' . $this->asCsv($clause);
     }
@@ -618,43 +613,68 @@ abstract class Formatter
             return '';
         }
 
-        $columns = array_map(fn($column) => $this->columnize($column, $statement), $statement->returningColumns);
+        $columns = array_map(fn($column) => $this->quote($column), $statement->returningColumns);
         return 'RETURNING ' . $this->asCsv($columns);
     }
 
     /**
      * @param string $column
      * @param string $path
-     * @param BaseStatement $statement
      * @return string
      */
-    public function formatJsonExtract(string $column, string $path, BaseStatement $statement): string
+    public function formatJsonExtract(string $column, string $path): string
     {
-        return $this->columnize($column, $statement) . '->' . '"' . $path . '"';
+        return $this->columnize($column) . '->' . '"' . $path . '"';
     }
 
     /**
-     * @param string|Expr $name
-     * @param BaseStatement $statement
+     * @param string $name
      * @return string
      */
-    public function columnize(string|Expr $name, BaseStatement $statement): string
+    public function tableize(string $name): string
     {
-        if ($name instanceof Expr) {
-            return $name->toSql($this, $statement);
-        }
-
-        $table = null;
-
-        if (str_contains($name, '.')) {
+        $as = null;
+        if (preg_match('/( as | AS )/', $name)) {
             $delim = preg_quote($this->getIdentifierDelimiter(), null);
-            $tablePatternPart = $delim.'?(?<table>[^`]+)'.$delim . '?';
-            $columnPatternPart = $delim . '?(?<column>[^`]+)' . $delim . '?';
-            $pattern = '/^' . $tablePatternPart . '\.' . $columnPatternPart . '$/';
+            $tablePatternPart = $delim . '?(?<table>[^ ' . $delim . ']+)' . $delim . '?';
+            $asPatternPart = '( (AS|as) ' . $delim . '?(?<as>[^' . $delim . ']+)' . $delim . '?)?';
+            $pattern = '/^' . $tablePatternPart . $asPatternPart . '$/';
             $match = null;
-            if(preg_match($pattern, $name, $match)) {
-                $table = (string) $match['table'];
-                $name = (string) $match['column'];
+            if (preg_match($pattern, $name, $match)) {
+                $name = (string)$match['table'];
+                $as = $match['as'] ?? null;
+            }
+        }
+        $name = $this->quote($name);
+        if ($as !== null) {
+            $name .= ' AS ' . $this->quote($as);
+        }
+        return $name;
+    }
+
+    /**
+     * @param string $name
+     * @param bool $withAlias
+     * @return string
+     */
+    public function columnize(string $name, bool $withAlias = false): string
+    {
+        $table = null;
+        $as = null;
+        if (preg_match('/(\.| as | AS )/', $name)) {
+            $delim = preg_quote($this->getIdentifierDelimiter(), null);
+            $patterns = [];
+            $patterns[] = '(' . $delim . '?(?<table>[^\.'. $delim . ']+)' . $delim . '?\.)?';
+            $patterns[] = $delim . '?(?<column>[^ ' . $delim . ']+)' . $delim . '?';
+            if ($withAlias) {
+                $patterns[] = '( (AS|as) ' . $delim . '?(?<as>[^'.$delim.']+)' . $delim . '?)?';
+            }
+            $pattern = '/^' . implode('', $patterns) . '$/';
+            $match = null;
+            if (preg_match($pattern, $name, $match)) {
+                $table = !empty($match['table']) ? (string)$match['table'] : null;
+                $name = $match['column'];
+                $as = $match['as'] ?? null;
             }
         }
 
@@ -664,6 +684,10 @@ abstract class Formatter
 
         if ($table !== null) {
             $name = $this->quote($table) . '.' . $name;
+        }
+
+        if ($as !== null) {
+            $name.= ' AS ' . $this->quote($as);
         }
 
         return $name;

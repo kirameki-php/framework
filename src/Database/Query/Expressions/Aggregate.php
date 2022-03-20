@@ -42,7 +42,7 @@ class Aggregate extends Expr
     public function toSql(Formatter $formatter, BaseStatement $statement): string
     {
         $expr = $this->function;
-        $expr.= $formatter->columnize($this->column, $statement);
+        $expr.= $formatter->quote($this->column);
         if ($this->as !== null) {
             $expr.= ' AS ' . $formatter->quote($this->as);
         }
