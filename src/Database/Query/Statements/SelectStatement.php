@@ -42,4 +42,9 @@ class SelectStatement extends ConditionsStatement
      * @var LockOption|null
      */
     public LockOption|null $lockOption = null;
+
+    /**
+     * @var bool
+     */
+    public bool $explicitColumn = false;
 }

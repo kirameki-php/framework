@@ -13,6 +13,9 @@ class ConnectionTest extends DatabaseTestCase
         });
     }
 
+    /**
+     * TODO delete me
+     */
     public function testTableExists2(): void
     {
         $this->createTable('User', function(CreateTableBuilder $schema) {

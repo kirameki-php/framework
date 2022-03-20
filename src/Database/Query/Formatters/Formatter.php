@@ -35,8 +35,9 @@ use function is_iterable;
 use function is_null;
 use function is_string;
 use function next;
+use function preg_match;
 use function preg_replace_callback;
-use function str_starts_with;
+use function str_contains;
 
 abstract class Formatter
 {
@@ -660,7 +661,9 @@ abstract class Formatter
 
         if (str_contains($name, '.')) {
             $delim = preg_quote($this->getIdentifierDelimiter(), null);
-            $pattern = '/^'.$delim.'?(?<table>[^`]+)'.$delim.'?\.' . $delim . '?(?<column>[^`]+)' . $delim . '$/';
+            $tablePatternPart = $delim.'?(?<table>[^`]+)'.$delim . '?';
+            $columnPatternPart = $delim . '?(?<column>[^`]+)' . $delim . '?';
+            $pattern = '/^' . $tablePatternPart . '\.' . $columnPatternPart . '$/';
             $match = null;
             if(preg_match($pattern, $name, $match)) {
                 $table = (string) $match['table'];
@@ -674,6 +677,9 @@ abstract class Formatter
 
         if ($table === null) {
             $table = $statement->table?->as;
+            if ($table === null && $statement instanceof SelectStatement && $statement->explicitColumn) {
+                $table = $statement->table?->name;
+            }
         }
 
         if ($table !== null) {

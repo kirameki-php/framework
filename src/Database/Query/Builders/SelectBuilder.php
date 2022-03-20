@@ -155,7 +155,7 @@ class SelectBuilder extends ConditionsBuilder
         }
 
         /** @var array<array<string|int>> $results */
-        $results = $this->copy()->addToSelect(new Raw('count(*) AS total'))->execute();
+        $results = $this->copy()->addToSelect(new Aggregate('count', '*', 'total'))->execute();
 
         // when GROUP BY is defined, return in [columnValue => count] format
         if (is_array($statement->groupBy)) {

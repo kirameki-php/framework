@@ -35,14 +35,6 @@ class Aggregate extends Expr
     }
 
     /**
-     * @return bool
-     */
-    public function aliased(): bool
-    {
-        return $this->as !== null;
-    }
-
-    /**
      * @param Formatter $formatter
      * @param BaseStatement $statement
      * @return string
