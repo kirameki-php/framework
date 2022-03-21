@@ -412,10 +412,10 @@ class ConditionBuilder
 
     /**
      * @param Operator $operator
-     * @param Expr|SelectBuilder|iterable<mixed>|null $value
+     * @param Expr|SelectBuilder|array<mixed>|null $value
      * @return $this
      */
-    protected function define(Operator $operator, Expr|SelectBuilder|iterable|null $value): static
+    protected function define(Operator $operator, Expr|SelectBuilder|array|null $value): static
     {
         $this->current->operator = $operator;
         $this->current->value = $value;
