@@ -28,7 +28,7 @@ trait Queries
 
     /**
      * @param string $statement
-     * @param array<mixed>|null $bindings
+     * @param array<mixed> $bindings
      * @return Result
      */
     public function query(string $statement, array $bindings = []): Result
@@ -42,7 +42,7 @@ trait Queries
 
     /**
      * @param string $statement
-     * @param array<mixed>|null $bindings
+     * @param array<mixed> $bindings
      * @return Generator<mixed>
      */
     public function cursor(string $statement, array $bindings = []): Generator

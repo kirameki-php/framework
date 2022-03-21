@@ -92,7 +92,8 @@ trait Persistence
         $this->processing(function(Connection $conn) {
             $count = $conn->delete($this->getTable())
                 ->where($this->getPrimaryKeyName(), $this->getPrimaryKey())
-                ->execute();
+                ->execute()
+                ->getAffectedRowCount();
 
             $this->_deleted = $count > 0;
         });

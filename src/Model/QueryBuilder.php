@@ -5,7 +5,7 @@ namespace Kirameki\Model;
 use Kirameki\Database\DatabaseManager;
 use Kirameki\Database\Query\Builders\ConditionBuilder;
 use Kirameki\Database\Query\Builders\SelectBuilder;
-use Kirameki\Model\Paginators\BasicPaginator;
+use Kirameki\Database\Query\Support\SortOrder;
 use Kirameki\Model\Paginators\CursorPaginator;
 use Kirameki\Model\Paginators\OffsetPaginator;
 use Kirameki\Support\Arr;
@@ -93,7 +93,7 @@ class QueryBuilder extends SelectBuilder
 
         if ($cursor !== null) {
             $column = array_key_first($orderBy);
-            $operator = strtolower($orderBy[$column]) === 'asc' ? '<' : '>';
+            $operator = $orderBy[$column] === SortOrder::Ascending ? '<' : '>';
             $this->where($column, $operator, $cursor);
         }
 
@@ -105,14 +105,14 @@ class QueryBuilder extends SelectBuilder
     }
 
     /**
-     * @param string|ConditionBuilder $column
-     * @param mixed|null $operator
-     * @param mixed|null $value
+     * @param mixed ...$args
      * @return $this
      */
-    public function where(ConditionBuilder|string $column, mixed $operator = null, mixed $value = null): static
+    public function where(mixed ...$args): static
     {
-        $num = func_num_args();
+        $num = count($args);
+
+        [$column, $operator, $value] = $args;
 
         if (is_string($column)) {
             if ($num === 2 && $operator instanceof Model) {
@@ -130,6 +130,6 @@ class QueryBuilder extends SelectBuilder
             }
         }
 
-        return parent::where($column, $operator, $value);
+        return parent::where(...$args);
     }
 }

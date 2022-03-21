@@ -513,15 +513,7 @@ class Arr
             return $iterable->toArray();
         }
 
-        if ($iterable instanceof Traversable) {
-            return iterator_to_array($iterable);
-        }
-
-        $array = [];
-        foreach ($iterable as $key => $value) {
-            $array[$key] = $value;
-        }
-        return $array;
+        return iterator_to_array($iterable);
     }
 
     /**
@@ -875,7 +867,7 @@ class Arr
             if (is_int($key)) {
                 $merged[] = $val;
             } else if ($depth > 1 && array_key_exists($key, $merged) && is_iterable($merged[$key]) && is_iterable($val)) {
-                $merged[$key] = static::mergeRecursive($merged[$key], $val, $depth - 1); /* @phpstan-ignore-line */
+                $merged[$key] = static::mergeRecursive($merged[$key], $val, $depth - 1);
             } else {
                 $merged[$key] = $val;
             }
@@ -1004,7 +996,7 @@ class Arr
 
     /**
      * @template TKey of array-key
-     * @param iterable<TKey, mixed> $iterable
+     * @param iterable<array-key, mixed> $iterable
      * @param TKey $key
      * @return array<int, mixed>
      */
@@ -1402,7 +1394,7 @@ class Arr
      * @template TKey of array-key
      * @template TValue
      * @param iterable<TKey, TValue> $iterable
-     * @return array<array-key, int<0, max>>
+     * @return array<array-key, int>
      */
     public static function tally(iterable $iterable): array
     {
@@ -1459,7 +1451,7 @@ class Arr
             } else if (!array_key_exists($key, $union)) {
                 $union[$key] = $val;
             } else if ($depth > 1 && is_iterable($union[$key]) && is_iterable($val)) {
-                $union[$key] = static::unionRecursive($union[$key], $val, $depth - 1); /** @phpstan-ignore-line */
+                $union[$key] = static::unionRecursive($union[$key], $val, $depth - 1);
             }
         }
         return $union; /** @phpstan-ignore-line */
@@ -1533,7 +1525,7 @@ class Arr
     public static function wrap(mixed $value): array
     {
         if (is_iterable($value)) {
-            $value = static::from($value); /** @phpstan-ignore-line */
+            $value = static::from($value);
         }
         if (is_array($value)) {
             return $value;

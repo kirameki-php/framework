@@ -42,6 +42,15 @@ abstract class Model implements ArrayAccess, JsonSerializable
     }
 
     /**
+     * @param ReflectionBuilder<static> $builder
+     * @return void
+     */
+    public static function define(ReflectionBuilder $builder): void
+    {
+        // Override me
+    }
+
+    /**
      * @return QueryBuilder<static>
      */
     public static function query(): QueryBuilder

@@ -44,7 +44,6 @@ trait Transactions
                 $this->runInSavepoint($callback);
             }
             // Already in transaction so just execute callback
-            $this->txStack[] = null;
             return $callback($this->txStack[-1]);
         }
 

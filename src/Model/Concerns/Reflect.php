@@ -36,11 +36,9 @@ trait Reflect
             $modelClass = static::class;
             $reflection = new Reflection($modelClass);
 
-            if (method_exists($modelClass, 'define')) {
-                $builder = new ReflectionBuilder(static::getManager(), $reflection);
-                call_user_func($modelClass.'::define', $builder);
-                $builder->applyDefaultsIfOmitted();
-            }
+            $builder = new ReflectionBuilder(static::getManager(), $reflection);
+            $modelClass::define($builder);
+            $builder->applyDefaultsIfOmitted();
 
             static::$reflection = $reflection;
         }

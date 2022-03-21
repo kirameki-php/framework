@@ -27,9 +27,9 @@ trait Relations
 
     /**
      * @param string $name
-     * @return Model|RelationCollection<static, Model>
+     * @return Model|RelationCollection<static, Model>|null
      */
-    public function getRelation(string $name): mixed
+    public function getRelation(string $name): Model|RelationCollection|null
     {
         if (!isset($this->relations)) {
             return null;

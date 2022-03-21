@@ -67,7 +67,7 @@ abstract class StatementBuilder
     /**
      * @return Result
      */
-    protected function execute(): Result
+    public function execute(): Result
     {
         return $this->connection->query($this->prepare(), $this->getBindings());
     }

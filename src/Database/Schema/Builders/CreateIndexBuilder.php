@@ -7,6 +7,9 @@ use Kirameki\Database\Schema\Statements\CreateIndexStatement;
 use Kirameki\Support\Arr;
 use RuntimeException;
 
+/**
+ * @property CreateIndexStatement $statement
+ */
 class CreateIndexBuilder extends StatementBuilder
 {
     /**

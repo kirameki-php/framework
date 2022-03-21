@@ -5,11 +5,9 @@ namespace Kirameki\Database\Query\Builders;
 use Closure;
 use Kirameki\Database\Query\Statements\ConditionDefinition;
 use Kirameki\Database\Query\Statements\ConditionsStatement;
-use Kirameki\Database\Query\Support\Range;
 use Kirameki\Database\Query\Support\SortOrder;
 use RuntimeException;
 use Webmozart\Assert\Assert;
-use function is_string;
 
 /**
  * @property ConditionsStatement $statement
@@ -51,6 +49,17 @@ abstract class ConditionsBuilder extends StatementBuilder
     public function whereRaw(string $raw): static
     {
         return $this->addWhereCondition(ConditionBuilder::raw($raw)->getDefinition());
+    }
+
+    /**
+     * @param string $column
+     * @param iterable<mixed>|Closure|SelectBuilder $values
+     * @return $this
+     */
+    public function whereIn(string $column, iterable|Closure|SelectBuilder $values): static
+    {
+        $this->lastCondition = $this->buildCondition($column, 'IN' , $values);
+        return $this->addWhereCondition($this->lastCondition->getDefinition());
     }
 
     /**

@@ -2,6 +2,7 @@
 
 namespace Kirameki\Support;
 
+use Closure;
 use Countable;
 use Generator;
 use IteratorAggregate;
@@ -396,10 +397,10 @@ class Enumerable implements Countable, IteratorAggregate, JsonSerializable
     }
 
     /**
-     * @param string|callable(TValue, TKey): array-key $key
+     * @param string|Closure(TValue, TKey): array-key $key
      * @return Collection<array-key, static>
      */
-    public function groupBy(string|callable $key): Collection
+    public function groupBy(string|Closure $key): Collection
     {
         return $this->newCollection(Arr::groupBy($this->items, $key))->map(fn($array) => $this->newInstance($array));
     }
@@ -466,11 +467,11 @@ class Enumerable implements Countable, IteratorAggregate, JsonSerializable
     }
 
     /**
-     * @param string|callable(TValue, mixed): array-key $key
+     * @param string|Closure(TValue, mixed): array-key $key
      * @param bool $overwrite
      * @return static<array-key, TValue>
      */
-    public function keyBy(string|callable $key, bool $overwrite = false): static /** @phpstan-ignore-line */
+    public function keyBy(string|Closure $key, bool $overwrite = false): static /** @phpstan-ignore-line */
     {
         return $this->newInstance(Arr::keyBy($this->items, $key, $overwrite));
     }
@@ -836,7 +837,7 @@ class Enumerable implements Countable, IteratorAggregate, JsonSerializable
      */
     public function sum(): float|int
     {
-        return Arr::sum($this->items); /** @phpstan-ignore-line */
+        return Arr::sum($this->items);
     }
 
     /**
@@ -867,7 +868,7 @@ class Enumerable implements Countable, IteratorAggregate, JsonSerializable
     }
 
     /**
-     * @return Collection<array-key, int<0, max>>
+     * @return Collection<array-key, int>
      */
     public function tally(): Collection
     {
@@ -978,7 +979,7 @@ class Enumerable implements Countable, IteratorAggregate, JsonSerializable
         }
 
         return Arr::map($items, function($item) use ($depth) {
-            return (is_iterable($item) && $depth > 1) ? $this->asArrayRecursive($item, $depth - 1) : $item; /** @phpstan-ignore-line */
+            return (is_iterable($item) && $depth > 1) ? $this->asArrayRecursive($item, $depth - 1) : $item;
         });
     }
 

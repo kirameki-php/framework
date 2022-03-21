@@ -42,7 +42,7 @@ trait Properties
     protected array $_previousProperties = [];
 
     /**
-     * @return <int, string>
+     * @return array<int, string>
      */
     public function getPropertyNames(): array
     {
@@ -54,6 +54,7 @@ trait Properties
      */
     public function getProperties(): array
     {
+        /** @var array<string, mixed> $properties */
         $properties = [];
         foreach ($this->getPropertyNames() as $name) {
             $properties[$name] = $this->getProperty($name);

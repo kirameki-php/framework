@@ -11,7 +11,10 @@ use Kirameki\Database\Query\Expressions\Raw;
 use Kirameki\Support\Concerns\Tappable;
 use RuntimeException;
 use Traversable;
+use function count;
 use function is_iterable;
+use function is_string;
+use function strtoupper;
 
 class ConditionBuilder
 {
@@ -40,26 +43,34 @@ class ConditionBuilder
     {
         $num = count($args);
 
-        if (($num === 1) && $args[0] instanceof static) {
-            return $args[0];
+        if (($num === 1)) {
+            $condition = $args[0];
+            if ($condition instanceof static) {
+                return $condition;
+            }
         }
 
-        if ($num === 2 && is_string($args[0])) {
-            $value = $args[1];
+        if ($num === 2) {
+            [$column, $value] = $args;
 
-            if ($value instanceof Range) {
-                return self::for($args[0])->inRange($value);
+            if (is_string($column)) {
+                if ($value instanceof Range) {
+                    return self::for($column)->inRange($value);
+                }
+
+                if (is_iterable($value)) {
+                    return self::for($column)->in($value);
+                }
+
+                return self::for($column)->equals($value);
             }
-
-            if (is_iterable($value)) {
-                return self::for($args[0])->in($value);
-            }
-
-            return self::for($args[0])->equals($value);
         }
 
-        if ($num === 3 && is_string($args[0]) && is_string($args[1])) {
-            return self::for($args[0])->match($args[1], $args[2]);
+        if ($num === 3) {
+            [$column, $operator, $value] = $args;
+            if (is_string($column) && is_string($operator)) {
+                return self::for($column)->match($operator, $value);
+            }
         }
 
         throw new RuntimeException('Invalid number of arguments. expected: 1~3. '.$num.' given.');
