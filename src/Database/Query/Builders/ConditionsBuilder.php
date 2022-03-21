@@ -132,49 +132,7 @@ abstract class ConditionsBuilder extends StatementBuilder
      */
     protected function buildCondition(mixed ...$args): ConditionBuilder
     {
-        $num = func_num_args();
-
-        if ($num === 1) {
-            $condition = $args[0];
-            if ($condition instanceof Closure) {
-                $query = new SelectBuilder($this->getConnection());
-                return ConditionBuilder::nest($condition($query) ?? $query);
-            }
-            if ($condition instanceof SelectBuilder) {
-                return ConditionBuilder::nest($condition);
-            }
-            if ($condition instanceof ConditionBuilder) {
-                return $condition;
-            }
-        }
-
-        if ($num === 2 && is_string($args[0])) {
-            $column = $args[0];
-            $value = $args[1];
-
-            if ($value instanceof Closure) {
-                return ConditionBuilder::for($column)->tap($value);
-            }
-
-            if ($value instanceof Range) {
-                return ConditionBuilder::for($column)->inRange($value);
-            }
-
-            if (is_iterable($value)) {
-                return ConditionBuilder::for($column)->in($value);
-            }
-
-            return ConditionBuilder::for($column)->equals($value);
-        }
-
-        if ($num === 3 && is_string($args[0]) && is_string($args[1])) {
-            $column = $args[0];
-            $operator = $args[1];
-            $value = $args[2];
-            return ConditionBuilder::for($column)->match($operator, $value);
-        }
-
-        throw new RuntimeException('Invalid number of arguments. expected: 1~3. '.$num.' given.');
+        return ConditionBuilder::fromArgs(...$args);
     }
 
     /**

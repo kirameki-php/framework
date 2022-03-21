@@ -50,7 +50,7 @@ class SelectBuilderTest extends QueryTestCase
 
     public function testWhere_WithTwoArgs(): void
     {
-        $sql = $this->selectBuilder()->from('User')->where('id', fn(ConditionBuilder $w) => $w->equals(1))->toSql();
+        $sql = $this->selectBuilder()->from('User')->where('id', fn() => 1)->toSql();
         static::assertEquals("SELECT * FROM `User` WHERE `id` = 1", $sql);
 
         $sql = $this->selectBuilder()->from('User')->where('id', [3, 4])->toSql();
@@ -78,7 +78,7 @@ class SelectBuilderTest extends QueryTestCase
     public function testWhere_Combined(): void
     {
         $sql = $this->selectBuilder()->from('User')
-            ->where('id', fn(ConditionBuilder $w) => $w->lessThan(1)->or()->equals(3))
+            ->where(ConditionBuilder::for('id')->lessThan(1)->or()->equals(3))
             ->whereNot('id', -1)
             ->toSql();
         static::assertEquals("SELECT * FROM `User` WHERE (`id` < 1 OR `id` = 3) AND `id` != -1", $sql);

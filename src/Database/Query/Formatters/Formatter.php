@@ -267,8 +267,7 @@ abstract class Formatter
      */
     protected function formatInsertColumnsPart(InsertStatement $statement): string
     {
-        $columns = array_map(fn($column) => $this->quote($column), $statement->columns());
-        return '(' . $this->asCsv($columns) . ')';
+        return $this->asEnclosedCsv(array_map(fn($column) => $this->quote($column), $statement->columns()));
     }
 
     /**
@@ -286,7 +285,7 @@ abstract class Formatter
             for ($j = 0; $j < $columnCount; $j++) {
                 $binders[] = $marker;
             }
-            $placeholders[] = '(' . $this->asCsv($binders) . ')';
+            $placeholders[] = $this->asEnclosedCsv($binders);
         }
         return $this->asCsv($placeholders);
     }
@@ -361,7 +360,6 @@ abstract class Formatter
             Operator::Exists => $this->formatConditionForExists($def),
             Operator::Like => $this->formatConditionForLike($def),
             Operator::Range => $this->formatConditionForRange($def),
-            Operator::Nested => $this->formatConditionForNested($def),
             default => throw new RuntimeException('Unknown Operator: '.Str::valueOf($def->operator?->value)),
         };
     }
@@ -387,9 +385,16 @@ abstract class Formatter
     protected function formatConditionForEqual(ConditionDefinition $def): string
     {
         $column = $this->columnize($this->getDefinedColumn($def));
-        return $def->value !== null
-            ? $column . ' ' . ($def->negated ? '!=': '=') . ' ' . $this->getParameterMarker()
-            : $column . ' ' . ($def->negated ? 'IS NOT NULL' : 'IS NULL');
+        $operator = $def->negated ? '!=': '=';
+        $value = $def->value;
+
+        if ($value === null) {
+            return $column . ' ' . ($def->negated ? 'IS NOT NULL' : 'IS NULL');
+        }
+
+        return ($value instanceof SelectBuilder)
+            ? $column . ' ' . $operator . ' ' . $this->formatSubQuery($value)
+            : $column . ' ' . $operator . ' ' . $this->getParameterMarker();
     }
 
     /**
@@ -400,7 +405,11 @@ abstract class Formatter
     {
         $column = $this->columnize($this->getDefinedColumn($def));
         $operator = $def->negated ? '>' : '<=';
-        return $column . ' ' . $operator . ' ' . $this->getParameterMarker();
+        $value = $def->value;
+
+        return ($value instanceof SelectBuilder)
+            ? $column . ' ' . $operator . ' ' . $this->formatSubQuery($value)
+            : $column . ' ' . $operator . ' ' . $this->getParameterMarker();
     }
 
     /**
@@ -411,7 +420,11 @@ abstract class Formatter
     {
         $column = $this->columnize($this->getDefinedColumn($def));
         $operator = $def->negated ? '>=' : '<';
-        return $column . ' ' . $operator.' ' . $this->getParameterMarker();
+        $value = $def->value;
+
+        return ($value instanceof SelectBuilder)
+            ? $column . ' ' . $operator . ' ' . $this->formatSubQuery($value)
+            : $column . ' ' . $operator . ' ' . $this->getParameterMarker();
     }
 
     /**
@@ -422,7 +435,11 @@ abstract class Formatter
     {
         $column = $this->columnize($this->getDefinedColumn($def));
         $operator = $def->negated ? '<' : '>=';
-        return $column . ' ' . $operator . ' ' . $this->getParameterMarker();
+        $value = $def->value;
+
+        return ($value instanceof SelectBuilder)
+            ? $column . ' ' . $operator . ' ' . $this->formatSubQuery($value)
+            : $column . ' ' . $operator . ' ' . $this->getParameterMarker();
     }
 
     /**
@@ -433,7 +450,11 @@ abstract class Formatter
     {
         $column = $this->columnize($this->getDefinedColumn($def));
         $operator = $def->negated ? '<=' : '>';
-        return $column . ' ' . $operator . ' ' . $this->getParameterMarker();
+        $value = $def->value;
+
+        return ($value instanceof SelectBuilder)
+            ? $column . ' ' . $operator . ' ' . $this->formatSubQuery($value)
+            : $column . ' ' . $operator . ' ' . $this->getParameterMarker();
     }
 
     /**
@@ -445,11 +466,12 @@ abstract class Formatter
         $column = $this->columnize($this->getDefinedColumn($def));
         $operator = $def->negated ? 'NOT IN' : 'IN';
         $value = $def->value;
+        $marker = $this->getParameterMarker();
 
         if (is_array($value)) {
-            if (!empty($value)) {
-                $boundNames = array_map(fn() => $this->getParameterMarker(), $value);
-                return $column . ' ' . $operator . ' (' . $this->asCsv($boundNames) . ')';
+            $size = count($value);
+            if ($size > 0) {
+                return $column . ' ' . $operator .' ' .  $this->asEnclosedCsv(array_fill(0, $size, $marker));
             }
             return '1 = 0';
         }
@@ -468,8 +490,9 @@ abstract class Formatter
     protected function formatConditionForBetween(ConditionDefinition $def): string
     {
         $column = $this->columnize($this->getDefinedColumn($def));
+        $operator = $def->negated ? 'NOT BETWEEN' : 'BETWEEN';
         $marker = $this->getParameterMarker();
-        return $column . ' ' . ($def->negated ? 'NOT ' : '') . 'BETWEEN ' . $marker . ' AND ' . $marker;
+        return $column . ' ' . $operator . ' ' . $marker . ' AND ' . $marker;
     }
 
     /**
@@ -522,19 +545,6 @@ abstract class Formatter
             $expr.= $negated ? ' OR ' : ' AND ';
             $expr.= $column . ' ' . $upperOperator . ' ' . $marker;
             return $expr;
-        }
-
-        throw new RuntimeException('Unknown condition');
-    }
-
-    /**
-     * @param ConditionDefinition $def
-     * @return string
-     */
-    protected function formatConditionForNested(ConditionDefinition $def): string
-    {
-        if ($def->value instanceof SelectBuilder) {
-            return $this->formatSubQuery($def->value);
         }
 
         throw new RuntimeException('Unknown condition');
@@ -798,6 +808,15 @@ abstract class Formatter
         }
 
         return $value;
+    }
+
+    /**
+     * @param array<scalar> $values
+     * @return string
+     */
+    protected function asEnclosedCsv(array $values): string
+    {
+        return '(' . $this->asCsv($values) . ')';
     }
 
     /**

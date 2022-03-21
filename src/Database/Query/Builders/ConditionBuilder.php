@@ -2,6 +2,7 @@
 
 namespace Kirameki\Database\Query\Builders;
 
+use Closure;
 use Kirameki\Database\Query\Statements\ConditionDefinition;
 use Kirameki\Database\Query\Support\Operator;
 use Kirameki\Database\Query\Support\Range;
@@ -32,6 +33,39 @@ class ConditionBuilder
     protected bool $defined;
 
     /**
+     * @param mixed ...$args
+     * @return static
+     */
+    public static function fromArgs(mixed ...$args): static
+    {
+        $num = count($args);
+
+        if (($num === 1) && $args[0] instanceof static) {
+            return $args[0];
+        }
+
+        if ($num === 2 && is_string($args[0])) {
+            $value = $args[1];
+
+            if ($value instanceof Range) {
+                return self::for($args[0])->inRange($value);
+            }
+
+            if (is_iterable($value)) {
+                return self::for($args[0])->in($value);
+            }
+
+            return self::for($args[0])->equals($value);
+        }
+
+        if ($num === 3 && is_string($args[0]) && is_string($args[1])) {
+            return self::for($args[0])->match($args[1], $args[2]);
+        }
+
+        throw new RuntimeException('Invalid number of arguments. expected: 1~3. '.$num.' given.');
+    }
+
+    /**
      * @param string $column
      * @return static
      */
@@ -47,15 +81,6 @@ class ConditionBuilder
     public static function raw(string $raw): static
     {
         return (new static())->expr(new Raw($raw));
-    }
-
-    /**
-     * @param SelectBuilder $builder
-     * @return static
-     */
-    public static function nest(SelectBuilder $builder): static
-    {
-        return (new static())->nested($builder);
     }
 
     /**
@@ -180,11 +205,17 @@ class ConditionBuilder
      */
     public function equals(mixed $value): static
     {
+        $value = $this->toValue($value);
+
         if (is_iterable($value)) {
             throw new RuntimeException('Iterable should use in(iterable $iterable) method instead');
         }
+
         // value will not be set for binding if null since it will be converted to IS [NOT] NULL
-        $value = $value !== null ? [$value] : null;
+        if ($value !== null) {
+            $value =  [$value];
+        }
+
         return $this->define(Operator::Equals, $value);
     }
 
@@ -203,7 +234,7 @@ class ConditionBuilder
      */
     public function greaterThanOrEqualTo(mixed $value): static
     {
-        return $this->define(Operator::GreaterThanOrEqualTo, [$value]);
+        return $this->define(Operator::GreaterThanOrEqualTo, [$this->toValue($value)]);
     }
 
     /**
@@ -212,7 +243,7 @@ class ConditionBuilder
      */
     public function greaterThan(mixed $value): static
     {
-        return $this->define(Operator::GreaterThan, [$value]);
+        return $this->define(Operator::GreaterThan, [$this->toValue($value)]);
     }
 
     /**
@@ -221,7 +252,7 @@ class ConditionBuilder
      */
     public function lessThanOrEqualTo(mixed $value): static
     {
-        return $this->define(Operator::LessThanOrEqualTo, [$value]);
+        return $this->define(Operator::LessThanOrEqualTo, [$this->toValue($value)]);
     }
 
     /**
@@ -230,7 +261,7 @@ class ConditionBuilder
      */
     public function lessThan(mixed $value): static
     {
-        return $this->define(Operator::LessThan, [$value]);
+        return $this->define(Operator::LessThan, [$this->toValue($value)]);
     }
 
     /**
@@ -255,7 +286,7 @@ class ConditionBuilder
      */
     public function like(string $value): static
     {
-        return $this->define(Operator::Like, [$value]);
+        return $this->define(Operator::Like, [$this->toValue($value)]);
     }
 
     /**
@@ -273,6 +304,8 @@ class ConditionBuilder
      */
     public function in(iterable|SelectBuilder $values): static
     {
+        $values = $this->toValue($values);
+
         if (is_iterable($values)) {
             $values = ($values instanceof Traversable) ? iterator_to_array($values) : (array) $values;
             $values = array_filter($values, static fn($s) => $s !== null);
@@ -329,12 +362,12 @@ class ConditionBuilder
     }
 
     /**
-     * @param Raw $raw
+     * @param Expr $expr
      * @return $this
      */
-    public function expr(Raw $raw): static
+    public function expr(Expr $expr): static
     {
-        return $this->define(Operator::Raw, $raw);
+        return $this->define(Operator::Raw, $expr);
     }
 
     /**
@@ -344,15 +377,6 @@ class ConditionBuilder
     public function exists(SelectBuilder $builder): static
     {
         return $this->define(Operator::Exists, $builder);
-    }
-
-    /**
-     * @param SelectBuilder $builder
-     * @return $this
-     */
-    public function nested(SelectBuilder $builder): static
-    {
-        return $this->define(Operator::Nested, $builder);
     }
 
     /**
@@ -376,7 +400,7 @@ class ConditionBuilder
      */
     public function match(string $operator, mixed $value): static
     {
-        return match (strtoupper(trim($operator))) {
+        return match (strtoupper($operator)) {
             '=' => $this->equals($value),
             '!=', '<>' => $this->notEquals($value),
             '>' => $this->greaterThan($value),
@@ -412,10 +436,10 @@ class ConditionBuilder
 
     /**
      * @param Operator $operator
-     * @param Expr|SelectBuilder|array<mixed>|null $value
+     * @param Expr|Range|SelectBuilder|array<mixed>|null $value
      * @return $this
      */
-    protected function define(Operator $operator, Expr|SelectBuilder|array|null $value): static
+    protected function define(Operator $operator, Expr|Range|SelectBuilder|array|null $value): static
     {
         $this->current->operator = $operator;
         $this->current->value = $value;
@@ -424,5 +448,14 @@ class ConditionBuilder
         }
         $this->defined = true;
         return $this;
+    }
+
+    /**
+     * @param mixed $var
+     * @return mixed
+     */
+    protected function toValue(mixed $var): mixed
+    {
+        return ($var instanceof Closure) ? $var() : $var;
     }
 }

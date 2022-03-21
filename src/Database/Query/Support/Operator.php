@@ -15,5 +15,4 @@ enum Operator: string
     case Like = 'LIKE';
     case Raw = '_RAW_';
     case Range = '_RANGE_';
-    case Nested = '_NESTED_';
 }

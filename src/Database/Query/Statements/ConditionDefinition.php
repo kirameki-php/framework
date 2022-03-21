@@ -5,6 +5,7 @@ namespace Kirameki\Database\Query\Statements;
 use Kirameki\Database\Query\Builders\SelectBuilder;
 use Kirameki\Database\Query\Support\Operator;
 use Kirameki\Database\Query\Expressions\Expr;
+use Kirameki\Database\Query\Support\Range;
 use Kirameki\Support\Concerns\Tappable;
 
 class ConditionDefinition
@@ -27,9 +28,9 @@ class ConditionDefinition
     public bool $negated;
 
     /**
-     * @var Expr|SelectBuilder|array<mixed>|null
+     * @var Expr|Range|SelectBuilder|array<mixed>|null
      */
-    public Expr|SelectBuilder|array|null $value;
+    public Expr|Range|SelectBuilder|array|null $value;
 
     /**
      * @var string|null
