@@ -3,11 +3,11 @@
 namespace Tests\Kirameki\Model;
 
 use Kirameki\Model\Model;
-use Kirameki\Model\Reflection;
+use Kirameki\Model\ReflectionBuilder;
 
 class SampleUser extends Model
 {
-    public function define(Reflection $reflection): void
+    public static function define(ReflectionBuilder $builder): void
     {
         // inject using setTestReflection($reflection)
     }

@@ -151,8 +151,6 @@ class ConditionBuilder
     }
 
     /**
-     * @param mixed $value
-     * @return $this
      * @see equals()
      */
     public function eq(mixed $value): static
@@ -161,8 +159,6 @@ class ConditionBuilder
     }
 
     /**
-     * @param mixed $value
-     * @return $this
      * @see notEquals()
      */
     public function ne(mixed $value): static
@@ -171,8 +167,6 @@ class ConditionBuilder
     }
 
     /**
-     * @param mixed $value
-     * @return $this
      * @see lessThan()
      */
     public function lt(mixed $value): static
@@ -181,9 +175,7 @@ class ConditionBuilder
     }
 
     /**
-     * @param mixed $value
-     * @return $this
-     *@see lessThanOrEqualTo()
+     * @see lessThanOrEqualTo()
      */
     public function lte(mixed $value): static
     {
@@ -191,9 +183,7 @@ class ConditionBuilder
     }
 
     /**
-     * @param mixed $value
-     * @return $this
-     *@see greaterThan()
+     * @see greaterThan()
      */
     public function gt(mixed $value): static
     {
@@ -201,9 +191,7 @@ class ConditionBuilder
     }
 
     /**
-     * @param mixed $value
-     * @return $this
-     *@see greaterThanOrEqualTo()
+     * @see greaterThanOrEqualTo()
      */
     public function gte(mixed $value): static
     {
