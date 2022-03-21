@@ -6,11 +6,10 @@ use Closure;
 use Kirameki\Database\Query\Statements\ConditionDefinition;
 use Kirameki\Database\Query\Statements\ConditionsStatement;
 use Kirameki\Database\Query\Support\Range;
+use Kirameki\Database\Query\Support\SortOrder;
 use RuntimeException;
 use Webmozart\Assert\Assert;
-use function in_array;
 use function is_string;
-use function strtoupper;
 
 /**
  * @property ConditionsStatement $statement
@@ -80,25 +79,13 @@ abstract class ConditionsBuilder extends StatementBuilder
 
     /**
      * @param string $column
-     * @param string $sort
+     * @param SortOrder $sort
      * @return $this
      */
-    public function orderBy(string $column, string $sort = 'ASC'): static
+    public function orderBy(string $column, SortOrder $sort = SortOrder::Ascending): static
     {
-        $sort = strtoupper($sort);
-        if (! in_array($sort, ['ASC', 'DESC'])) {
-            throw new RuntimeException('Invalid sorting: '.$sort. ' Only ASC or DESC is allowed.');
-        }
-
-        if ($this->statement instanceof ConditionsStatement) {
-            $this->statement->orderBy ??= [];
-            $this->statement->orderBy[$column] = $sort;
-        } else {
-            $table = $this->statement->table;
-            $class = $this->statement::class;
-            throw new RuntimeException("Invalid statement orderBy applied to $class for $table->$column.");
-        }
-
+        $this->statement->orderBy ??= [];
+        $this->statement->orderBy[$column] = $sort;
         return $this;
     }
 
@@ -117,7 +104,7 @@ abstract class ConditionsBuilder extends StatementBuilder
      */
     public function orderByDesc(string $column): static
     {
-        return $this->orderBy($column, 'DESC');
+        return $this->orderBy($column, SortOrder::Descending);
     }
 
     /**
@@ -150,7 +137,7 @@ abstract class ConditionsBuilder extends StatementBuilder
         if ($num === 1) {
             $condition = $args[0];
             if ($condition instanceof Closure) {
-                $query = new SelectBuilder($this->connection);
+                $query = new SelectBuilder($this->getConnection());
                 return ConditionBuilder::nest($condition($query) ?? $query);
             }
             if ($condition instanceof SelectBuilder) {

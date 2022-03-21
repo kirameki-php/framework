@@ -576,7 +576,7 @@ abstract class Formatter
         }
         $clause = [];
         foreach ($statement->orderBy as $column => $sort) {
-            $clause[] = $this->columnize($column) . ' ' . $sort;
+            $clause[] = $this->columnize($column) . ' ' . $sort->value;
         }
         return 'ORDER BY ' . $this->asCsv($clause);
     }
