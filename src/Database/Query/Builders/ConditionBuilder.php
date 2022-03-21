@@ -304,14 +304,15 @@ class ConditionBuilder
      */
     public function in(iterable|SelectBuilder $values): static
     {
-        $values = $this->toValue($values);
+        $_values = $this->toValue($values);
 
-        if (is_iterable($values)) {
-            $values = ($values instanceof Traversable) ? iterator_to_array($values) : (array) $values;
-            $values = array_filter($values, static fn($s) => $s !== null);
-            $values = array_unique($values);
+        if (is_iterable($_values)) {
+            $_values = ($_values instanceof Traversable) ? iterator_to_array($_values) : (array) $_values;
+            $_values = array_filter($_values, static fn($s) => $s !== null);
+            $_values = array_unique($_values);
         }
-        return $this->define(Operator::In, $values);
+
+        return $this->define(Operator::In, $_values);
     }
 
     /**
@@ -452,7 +453,7 @@ class ConditionBuilder
 
     /**
      * @param mixed $var
-     * @return mixed
+     * @return Expr|Range|SelectBuilder|array<mixed>|null
      */
     protected function toValue(mixed $var): mixed
     {
