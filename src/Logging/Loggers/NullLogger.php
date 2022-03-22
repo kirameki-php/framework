@@ -12,7 +12,7 @@ class NullLogger implements LoggerInterface
     /**
      * @param int $level
      * @param string $message
-     * @param array $context
+     * @param array<mixed> $context
      */
     public function log($level, $message, array $context = array()): void
     {

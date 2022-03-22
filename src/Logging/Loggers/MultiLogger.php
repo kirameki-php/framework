@@ -10,12 +10,12 @@ class MultiLogger implements LoggerInterface
     use HandlesLevels;
 
     /**
-     * @var LoggerInterface[]
+     * @var array<LoggerInterface>
      */
     protected array $loggers;
 
     /**
-     * @param array $loggers
+     * @param array<LoggerInterface> $loggers
      */
     public function __construct(array $loggers)
     {
@@ -25,7 +25,7 @@ class MultiLogger implements LoggerInterface
     /**
      * @param int $level
      * @param string $message
-     * @param array $context
+     * @param array<mixed> $context
      */
     public function log($level, $message, array $context = []): void
     {

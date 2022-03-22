@@ -30,14 +30,14 @@ class ColoredLineFormatter extends LineFormatter
     public function format(array $record) : string
     {
         $colorString = match ($record['level']) {
-            Logger::DEBUG => $this->ansi->color(SGR::COLOR_FG_WHITE)->get(),
-            Logger::INFO => $this->ansi->color(SGR::COLOR_FG_GREEN)->get(),
-            Logger::NOTICE => $this->ansi->color(SGR::COLOR_FG_CYAN)->get(),
-            Logger::WARNING => $this->ansi->color(SGR::COLOR_FG_YELLOW)->get(),
-            Logger::ERROR => $this->ansi->color(SGR::COLOR_FG_RED)->get(),
-            Logger::CRITICAL => $this->ansi->color(SGR::COLOR_FG_RED)->underline()->get(),
+            Logger::DEBUG => $this->ansi->color([SGR::COLOR_FG_WHITE])->get(),
+            Logger::INFO => $this->ansi->color([SGR::COLOR_FG_GREEN])->get(),
+            Logger::NOTICE => $this->ansi->color([SGR::COLOR_FG_CYAN])->get(),
+            Logger::WARNING => $this->ansi->color([SGR::COLOR_FG_YELLOW])->get(),
+            Logger::ERROR => $this->ansi->color([SGR::COLOR_FG_RED])->get(),
+            Logger::CRITICAL => $this->ansi->color([SGR::COLOR_FG_RED])->underline()->get(),
             Logger::ALERT => $this->ansi->color([SGR::COLOR_FG_WHITE, SGR::COLOR_BG_RED_BRIGHT])->get(),
-            Logger::EMERGENCY => $this->ansi->color(SGR::COLOR_BG_RED_BRIGHT)->blink()->color(SGR::COLOR_FG_WHITE)->get(),
+            Logger::EMERGENCY => $this->ansi->color([SGR::COLOR_BG_RED_BRIGHT, SGR::COLOR_FG_WHITE])->blink()->get(),
             default => '',
         };
 

@@ -16,7 +16,7 @@ class FileLogger extends Logger
     protected string $path;
 
     /**
-     * @param array $options
+     * @param array<string, mixed> $options
      */
     public function __construct(array $options = [])
     {
@@ -28,7 +28,7 @@ class FileLogger extends Logger
     }
 
     /**
-     * @param array $options
+     * @param array<string, mixed> $options
      * @return HandlerInterface[]
      */
     protected function createHandlers(array $options): array
@@ -39,7 +39,7 @@ class FileLogger extends Logger
     }
 
     /**
-     * @param array $options
+     * @param array<string, mixed> $options
      * @return HandlerInterface
      */
     protected function createStreamHandler(array $options): HandlerInterface

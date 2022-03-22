@@ -5,7 +5,7 @@ namespace Kirameki\Logging\Loggers;
 class StdoutLogger extends FileLogger
 {
     /**
-     * @param array $options
+     * @param array<string, mixed> $options
      */
     public function __construct(array $options = [])
     {
