@@ -619,11 +619,11 @@ abstract class Formatter
      */
     protected function formatReturningPart(InsertStatement|UpdateStatement|DeleteStatement $statement): string
     {
-        if ($statement->returningColumns === null) {
+        if ($statement->returning === null) {
             return '';
         }
 
-        $columns = array_map(fn($column) => $this->quote($column), $statement->returningColumns);
+        $columns = array_map(fn($column) => $this->quote($column), $statement->returning);
         return 'RETURNING ' . $this->asCsv($columns);
     }
 

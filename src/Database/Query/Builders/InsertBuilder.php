@@ -59,7 +59,7 @@ class InsertBuilder extends StatementBuilder
      */
     public function returning(string ...$columns): static
     {
-        $this->statement->returningColumns = $columns;
+        $this->statement->returning = $columns;
         return $this;
     }
 

@@ -12,5 +12,5 @@ class DeleteStatement extends ConditionsStatement
     /**
      * @var array<string>|null
      */
-    public ?array $returningColumns = null;
+    public ?array $returning = null;
 }
