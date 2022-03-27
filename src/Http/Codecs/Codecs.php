@@ -8,7 +8,6 @@ use Kirameki\Http\Exceptions\BadRequestException;
 use Kirameki\Http\Exceptions\UnsupportedMediaTypeException;
 use Kirameki\Support\Arr;
 use function array_shift;
-use function call_user_func;
 use function explode;
 use function implode;
 use function krsort;
@@ -68,7 +67,7 @@ class Codecs
         $mediaTypes = $this->extractMediaTypesFromRequest($contentType);
         foreach ($mediaTypes as $mediaType) {
             if (array_key_exists($mediaType, $this->decoderResolvers)) {
-                return $this->decoders[$mediaType] ??= call_user_func($this->decoderResolvers[$mediaType]);
+                return $this->decoders[$mediaType] ??= ($this->decoderResolvers[$mediaType])();
             }
         }
         throw new BadRequestException('Media types ['.implode($mediaTypes).'] are not supported.');
@@ -104,7 +103,7 @@ class Codecs
         $mediaTypes = $this->extractMediaTypesFromRequest($accept);
         foreach ($mediaTypes as $mediaType) {
             if (array_key_exists($mediaType, $this->encoderResolvers)) {
-                return $this->encoders[$mediaType] ??= call_user_func($this->encoderResolvers[$mediaType]);
+                return $this->encoders[$mediaType] ??= ($this->encoderResolvers[$mediaType])();
             }
         }
         throw new UnsupportedMediaTypeException($mediaTypes);

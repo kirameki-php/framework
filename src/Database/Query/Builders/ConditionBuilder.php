@@ -14,6 +14,7 @@ use Traversable;
 use function count;
 use function is_iterable;
 use function is_string;
+use function iterator_to_array;
 use function strtoupper;
 
 class ConditionBuilder

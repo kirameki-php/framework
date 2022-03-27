@@ -7,6 +7,7 @@ use Kirameki\Database\Query\Result;
 use Kirameki\Database\Query\Statements\InsertStatement;
 use RuntimeException;
 use Traversable;
+use function iterator_to_array;
 
 /**
  * @property InsertStatement $statement

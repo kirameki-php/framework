@@ -3,7 +3,6 @@
 namespace Kirameki\Event;
 
 use Closure;
-use function call_user_func;
 
 class Listener
 {
@@ -43,7 +42,7 @@ class Listener
             if ($this->once) {
                 $this->stopListening();
             }
-            call_user_func($this->callback, $event, $this);
+            ($this->callback)($event, $this);
         }
     }
 

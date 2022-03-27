@@ -4,7 +4,6 @@ namespace Kirameki\Container;
 
 use Closure;
 use Webmozart\Assert\Assert;
-use function call_user_func_array;
 
 /**
  * @template TEntry
@@ -72,12 +71,12 @@ class ClosureEntry implements Entry
     public function getInstance(): mixed
     {
         if (!$this->cacheable) {
-            return call_user_func_array($this->resolver, $this->arguments); /** @phpstan-ignore-line */
+            return ($this->resolver)(...$this->arguments);
         }
 
         if (!$this->resolved) {
             $this->resolved = true;
-            $this->instance = call_user_func_array($this->resolver, $this->arguments); /** @phpstan-ignore-line */
+            $this->instance = ($this->resolver)(...$this->arguments);
         }
 
         return $this->instance ?? Assert::notNull($this->instance);

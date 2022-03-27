@@ -2,7 +2,6 @@
 
 namespace Kirameki\Database\Query\Expressions;
 
-use Kirameki\Database\Query\Expressions\Expr;
 use Kirameki\Database\Query\Formatters\Formatter;
 use Kirameki\Database\Query\Statements\BaseStatement;
 

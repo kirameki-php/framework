@@ -19,6 +19,11 @@ class SelectStatement extends ConditionsStatement
     public ?array $columns = null;
 
     /**
+     * @var array<JoinDefinition>|null
+     */
+    public ?array $joins = null;
+
+    /**
      * @var array<string>|null
      */
     public ?array $groupBy = null;

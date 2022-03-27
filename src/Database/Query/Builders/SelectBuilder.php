@@ -2,11 +2,12 @@
 
 namespace Kirameki\Database\Query\Builders;
 
+use Closure;
 use Kirameki\Database\Connection;
 use Kirameki\Database\Query\Expressions\Aggregate;
-use Kirameki\Database\Query\Expressions\Table;
 use Kirameki\Database\Query\Statements\ConditionDefinition;
 use Kirameki\Database\Query\Statements\SelectStatement;
+use Kirameki\Database\Query\Support\JoinType;
 use Kirameki\Database\Query\Support\LockOption;
 use Kirameki\Database\Query\Support\LockType;
 use Kirameki\Database\Query\Expressions\Expr;
@@ -27,6 +28,8 @@ class SelectBuilder extends ConditionsBuilder
         $this->statement = new SelectStatement();
     }
 
+    #region selecting --------------------------------------------------------------------------------------------------
+
     /**
      * @param string|Expr ...$tables
      * @return $this
@@ -34,16 +37,6 @@ class SelectBuilder extends ConditionsBuilder
     public function from(string|Expr ...$tables): static
     {
         $this->statement->tables = $tables;
-        return $this;
-    }
-
-    /**
-     * @param string|Table $table
-     * @param mixed ...$args
-     * @return $this
-     */
-    public function innerJoin(string|Table $table, mixed ...$args): static
-    {
         return $this;
     }
 
@@ -67,6 +60,20 @@ class SelectBuilder extends ConditionsBuilder
     }
 
     /**
+     * @param string|Expr $column
+     * @return $this
+     */
+    protected function addToSelect(string|Expr $column): static
+    {
+        $this->statement->columns[]= $column;
+        return $this;
+    }
+
+    #endregion selecting -----------------------------------------------------------------------------------------------
+
+    #region locking ----------------------------------------------------------------------------------------------------
+
+    /**
      * @return $this
      */
     public function forShare(): static
@@ -85,6 +92,130 @@ class SelectBuilder extends ConditionsBuilder
         $this->statement->lockOption = $option;
         return $this;
     }
+
+    #endregion locking -------------------------------------------------------------------------------------------------
+
+    #region join ------------------------------------------------------------------------------------------------------
+
+    /**
+     * @param string $table
+     * @param Closure(JoinBuilder): JoinBuilder $callback
+     * @return $this
+     */
+    public function join(string $table, Closure $callback): static
+    {
+        return $this->addJoinToStatement($callback(new JoinBuilder(JoinType::Inner, $table)));
+    }
+
+    /**
+     * @param string $table
+     * @param string $column1
+     * @param string $column2
+     * @return $this
+     */
+    public function joinOn(string $table, string $column1, string $column2): static
+    {
+        return $this->addJoinToStatement((new JoinBuilder(JoinType::Inner, $table))->on($column1, $column2));
+    }
+
+    /**
+     * @param string $table
+     * @param Closure(JoinBuilder): JoinBuilder $callback
+     * @return $this
+     */
+    public function crossJoin(string $table, Closure $callback): static
+    {
+        return $this->addJoinToStatement($callback(new JoinBuilder(JoinType::Cross, $table)));
+    }
+
+    /**
+     * @param string $table
+     * @param string $column1
+     * @param string $column2
+     * @return $this
+     */
+    public function crossJoinOn(string $table, string $column1, string $column2): static
+    {
+        return $this->addJoinToStatement((new JoinBuilder(JoinType::Cross, $table))->on($column1, $column2));
+    }
+
+    /**
+     * @param string $table
+     * @param Closure(JoinBuilder): JoinBuilder $callback
+     * @return $this
+     */
+    public function leftJoin(string $table, Closure $callback): static
+    {
+        return $this->addJoinToStatement($callback(new JoinBuilder(JoinType::Left, $table)));
+    }
+
+    /**
+     * @param string $table
+     * @param string $column1
+     * @param string $column2
+     * @return $this
+     */
+    public function leftJoinOn(string $table, string $column1, string $column2): static
+    {
+        return $this->addJoinToStatement((new JoinBuilder(JoinType::Left, $table))->on($column1, $column2));
+    }
+
+    /**
+     * @param string $table
+     * @param Closure(JoinBuilder): JoinBuilder $callback
+     * @return $this
+     */
+    public function rightJoin(string $table, Closure $callback): static
+    {
+        return $this->addJoinToStatement($callback(new JoinBuilder(JoinType::Right, $table)));
+    }
+
+    /**
+     * @param string $table
+     * @param string $column1
+     * @param string $column2
+     * @return $this
+     */
+    public function rightJoinOn(string $table, string $column1, string $column2): static
+    {
+        return $this->addJoinToStatement((new JoinBuilder(JoinType::Right, $table))->on($column1, $column2));
+    }
+
+    /**
+     * @param string $table
+     * @param Closure(JoinBuilder): JoinBuilder $callback
+     * @return $this
+     */
+    public function fullJoin(string $table, Closure $callback): static
+    {
+        return $this->addJoinToStatement($callback(new JoinBuilder(JoinType::Full, $table)));
+    }
+
+    /**
+     * @param string $table
+     * @param string $column1
+     * @param string $column2
+     * @return $this
+     */
+    public function fullJoinOn(string $table, string $column1, string $column2): static
+    {
+        return $this->addJoinToStatement((new JoinBuilder(JoinType::Full, $table))->on($column1, $column2));
+    }
+
+    /**
+     * @param JoinBuilder $builder
+     * @return $this
+     */
+    protected function addJoinToStatement(JoinBuilder $builder): static
+    {
+        $this->statement->joins ??= [];
+        $this->statement->joins[] = $builder->getDefinition();
+        return $this;
+    }
+
+    #endregion join ---------------------------------------------------------------------------------------------------
+
+    #region grouping ---------------------------------------------------------------------------------------------------
 
     /**
      * @param string ...$columns
@@ -109,6 +240,22 @@ class SelectBuilder extends ConditionsBuilder
     }
 
     /**
+     * @param ConditionDefinition $condition
+     * @return $this
+     */
+    protected function addHavingCondition(ConditionDefinition $condition): static
+    {
+        $statement = $this->statement;
+        $statement->having ??= [];
+        $statement->having[] = $condition;
+        return $this;
+    }
+
+    #endregion grouping ------------------------------------------------------------------------------------------------
+
+    #region limiting ---------------------------------------------------------------------------------------------------
+
+    /**
      * @param int $skipRows
      * @return $this
      */
@@ -116,6 +263,26 @@ class SelectBuilder extends ConditionsBuilder
     {
         $this->statement->offset = $skipRows;
         return $this;
+    }
+
+    #endregion limiting ------------------------------------------------------------------------------------------------
+
+    #region execution --------------------------------------------------------------------------------------------------
+
+    /**
+     * @return string
+     */
+    public function prepare(): string
+    {
+        return $this->getQueryFormatter()->formatSelectStatement($this->statement);
+    }
+
+    /**
+     * @return array<mixed>
+     */
+    public function getBindings(): array
+    {
+        return $this->getQueryFormatter()->formatBindingsForSelect($this->statement);
     }
 
     /**
@@ -213,44 +380,6 @@ class SelectBuilder extends ConditionsBuilder
     }
 
     /**
-     * @param string|Expr $column
-     * @return $this
-     */
-    protected function addToSelect(string|Expr $column): static
-    {
-        $this->statement->columns[]= $column;
-        return $this;
-    }
-
-    /**
-     * @param ConditionDefinition $condition
-     * @return $this
-     */
-    protected function addHavingCondition(ConditionDefinition $condition): static
-    {
-        $statement = $this->statement;
-        $statement->having ??= [];
-        $statement->having[] = $condition;
-        return $this;
-    }
-
-    /**
-     * @return string
-     */
-    public function prepare(): string
-    {
-        return $this->getQueryFormatter()->formatSelectStatement($this->statement);
-    }
-
-    /**
-     * @return array<mixed>
-     */
-    public function getBindings(): array
-    {
-        return $this->getQueryFormatter()->formatBindingsForSelect($this->statement);
-    }
-
-    /**
      * @param string $function
      * @param string $column
      * @return int
@@ -263,4 +392,6 @@ class SelectBuilder extends ConditionsBuilder
         $results = $this->copy()->columns($aggregate)->execute()->first() ?? [$alias => 0];
         return $results[$alias];
     }
+
+    #endregion execution -----------------------------------------------------------------------------------------------
 }

@@ -3,11 +3,13 @@
 namespace Kirameki\Model\Casts;
 
 use Kirameki\Model\Model;
-use Kirameki\Support\Collection;
 use Kirameki\Support\Json;
 use Kirameki\Support\Str;
 use RuntimeException;
 use Traversable;
+use function is_array;
+use function is_string;
+use function iterator_to_array;
 
 class ArrayCast implements Cast
 {

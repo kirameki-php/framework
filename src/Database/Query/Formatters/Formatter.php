@@ -6,6 +6,7 @@ use BackedEnum;
 use DateTimeInterface;
 use Kirameki\Database\Query\Builders\SelectBuilder;
 use Kirameki\Database\Query\Statements\ConditionDefinition;
+use Kirameki\Database\Query\Statements\JoinDefinition;
 use Kirameki\Database\Query\Support\LockOption;
 use Kirameki\Database\Query\Support\LockType;
 use Kirameki\Database\Query\Support\Operator;
@@ -35,6 +36,7 @@ use function is_null;
 use function is_string;
 use function next;
 use function preg_match;
+use function preg_quote;
 use function preg_replace_callback;
 
 abstract class Formatter
@@ -50,6 +52,7 @@ abstract class Formatter
         return implode(' ', array_filter([
             $this->formatSelectPart($statement),
             $this->formatFromPart($statement),
+            $this->formatJoinPart($statement),
             $this->formatWherePart($statement),
             $this->formatGroupByPart($statement),
             $this->formatOrderByPart($statement),
@@ -259,6 +262,28 @@ abstract class Formatter
                 : $this->tableize($table);
         }
         return !empty($expressions) ? 'FROM ' . $this->asCsv($expressions) : '';
+    }
+
+    /**
+     * @param SelectStatement $statement
+     * @return string
+     */
+    protected function formatJoinPart(SelectStatement $statement): string
+    {
+        $joins = $statement->joins;
+
+        if ($joins === null) {
+            return '';
+        }
+
+        return implode(' ', array_map(function (JoinDefinition $def) use ($statement) {
+            return implode(' ', [
+                $def->type->value,
+                $this->tableize($def->table),
+                $this->formatCondition($def->on, $statement),
+                $this->asCsv($def->using),
+            ]);
+        }, $joins));
     }
 
     /**

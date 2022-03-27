@@ -68,6 +68,7 @@ abstract class ConditionsBuilder extends StatementBuilder
      */
     public function and(mixed ...$args): static
     {
+        Assert::countBetween($args, 1, 3);
         if ($this->lastCondition?->and()->apply($this->buildCondition(...$args)) !== null) {
             return $this;
         }
@@ -80,6 +81,7 @@ abstract class ConditionsBuilder extends StatementBuilder
      */
     public function or(mixed ...$args): static
     {
+        Assert::countBetween($args, 1, 3);
         if ($this->lastCondition?->or()->apply($this->buildCondition(...$args)) !== null) {
             return $this;
         }
