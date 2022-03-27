@@ -2,10 +2,8 @@
 
 namespace Kirameki\Database\Query\Builders;
 
-use Closure;
 use Kirameki\Database\Query\Statements\JoinDefinition;
 use Kirameki\Database\Query\Support\JoinType;
-use RuntimeException;
 use Webmozart\Assert\Assert;
 
 class JoinBuilder
@@ -60,16 +58,6 @@ class JoinBuilder
     {
         Assert::countBetween($args, 1, 3);
         $this->condition->or()->apply($this->buildCondition(...$args));
-        return $this;
-    }
-
-    /**
-     * @param string ...$columns
-     * @return $this
-     */
-    public function using(string ...$columns): static
-    {
-        $this->definition->using = $columns;
         return $this;
     }
 

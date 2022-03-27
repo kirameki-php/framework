@@ -22,11 +22,6 @@ class JoinDefinition
     public ConditionDefinition $on;
 
     /**
-     * @var array<string>
-     */
-    public array $using;
-
-    /**
      * @param JoinType $type
      * @param string $table
      */

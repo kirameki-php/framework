@@ -277,12 +277,10 @@ abstract class Formatter
         }
 
         return implode(' ', array_map(function (JoinDefinition $def) use ($statement) {
-            return implode(' ', [
-                $def->type->value,
-                $this->tableize($def->table),
-                $this->formatCondition($def->on, $statement),
-                $this->asCsv($def->using),
-            ]);
+            $expr = $def->type->value . ' ';
+            $expr.= $this->tableize($def->table) . ' ';
+            $expr.= 'ON ' . $this->formatCondition($def->on, $statement);
+            return $expr;
         }, $joins));
     }
 
