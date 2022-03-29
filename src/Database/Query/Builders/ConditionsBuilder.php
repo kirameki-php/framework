@@ -53,13 +53,11 @@ abstract class ConditionsBuilder extends StatementBuilder
 
         Assert::countBetween($args, 2, 3);
 
-        $formatter = $this->getQueryFormatter();
-
         if ($num === 2) {
-            return $this->where(Column::parse($args[0], $formatter), Column::parse($args[1], $formatter));
+            return $this->where(new Column($args[0]), new Column($args[1]));
         }
         if ($num === 3) {
-            return $this->where(Column::parse($args[0], $formatter), $args[1], Column::parse($args[2], $formatter));
+            return $this->where(new Column($args[0]), $args[1], new Column($args[2]));
         }
     }
 

@@ -4,17 +4,12 @@ namespace Kirameki\Database\Query\Expressions;
 
 use Kirameki\Database\Query\Formatters\Formatter;
 
-class Aggregate extends Expr
+class Aggregate extends Column
 {
     /**
      * @var string
      */
     public readonly string $function;
-
-    /**
-     * @var string
-     */
-    public readonly string $column;
 
     /**
      * @var string|null
@@ -26,11 +21,11 @@ class Aggregate extends Expr
      * @param string $column
      * @param string|null $as
      */
-    public function __construct(string $function, string $column, string $as = null)
+    public function __construct(string $function, string $column, ?string $as = null)
     {
         $this->function = $function;
-        $this->column = $column;
         $this->as = $as;
+        parent::__construct($column);
     }
 
     /**
@@ -40,7 +35,9 @@ class Aggregate extends Expr
     public function prepare(Formatter $formatter): string
     {
         $expr = $this->function;
-        $expr.= $formatter->quote($this->column);
+        $expr.= '(';
+        $expr.= parent::prepare($formatter);
+        $expr.= ')';
         if ($this->as !== null) {
             $expr.= ' AS ' . $formatter->quote($this->as);
         }

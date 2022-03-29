@@ -214,14 +214,17 @@ abstract class Formatter
      */
     protected function formatSelectColumnsPart(SelectStatement $statement): string
     {
-        $columns = $statement->columns ?: ['*'];
-        $expressions = [];
-        foreach ($columns as $column) {
-            $expressions[]= ($column instanceof Expr)
-                ? $column->prepare($this)
-                : $this->columnize($column, true);
+        $columns = $statement->columns;
+
+        if ($columns === null || count($columns) === 0) {
+            return '*';
         }
-        return $this->asCsv($expressions);
+
+        return $this->asCsv(array_map(function (string|Expr $column) {
+            return ($column instanceof Expr)
+                ? $column->prepare($this)
+                : $this->columnize($column);
+        }, $columns));
     }
 
     /**

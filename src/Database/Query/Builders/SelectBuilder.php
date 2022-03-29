@@ -5,6 +5,7 @@ namespace Kirameki\Database\Query\Builders;
 use Closure;
 use Kirameki\Database\Connection;
 use Kirameki\Database\Query\Expressions\Aggregate;
+use Kirameki\Database\Query\Expressions\Column;
 use Kirameki\Database\Query\Statements\ConditionDefinition;
 use Kirameki\Database\Query\Statements\SelectStatement;
 use Kirameki\Database\Query\Support\JoinType;
