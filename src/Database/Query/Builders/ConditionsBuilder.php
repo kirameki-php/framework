@@ -8,7 +8,6 @@ use Kirameki\Database\Query\Statements\ConditionDefinition;
 use Kirameki\Database\Query\Statements\ConditionsStatement;
 use Kirameki\Database\Query\Support\SortOrder;
 use LogicException;
-use RuntimeException;
 use Webmozart\Assert\Assert;
 
 /**
@@ -91,7 +90,7 @@ abstract class ConditionsBuilder extends StatementBuilder
         if ($this->lastCondition?->and()->apply($this->buildCondition(...$args)) !== null) {
             return $this;
         }
-        throw new RuntimeException('and called without a previous condition. Define a where before declaring and');
+        throw new LogicException('and called without a previous condition. Define a where before declaring and');
     }
 
     /**
@@ -104,7 +103,7 @@ abstract class ConditionsBuilder extends StatementBuilder
         if ($this->lastCondition?->or()->apply($this->buildCondition(...$args)) !== null) {
             return $this;
         }
-        throw new RuntimeException('or called without a previous condition. Define a where before declaring or');
+        throw new LogicException('or called without a previous condition. Define a where before declaring or');
     }
 
     /**
