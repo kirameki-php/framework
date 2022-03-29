@@ -29,10 +29,9 @@ class Table extends Expr
 
     /**
      * @param Formatter $formatter
-     * @param BaseStatement $statement
      * @return string
      */
-    public function toSql(Formatter $formatter, BaseStatement $statement): string
+    public function toSql(Formatter $formatter): string
     {
         $name = $formatter->quote($this->name);
         if ($this->as !== null) {

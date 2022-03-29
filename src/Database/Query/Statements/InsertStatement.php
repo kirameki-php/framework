@@ -2,6 +2,8 @@
 
 namespace Kirameki\Database\Query\Statements;
 
+use function array_keys;
+
 class InsertStatement extends BaseStatement
 {
     /**

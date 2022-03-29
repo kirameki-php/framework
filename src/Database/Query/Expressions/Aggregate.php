@@ -36,10 +36,9 @@ class Aggregate extends Expr
 
     /**
      * @param Formatter $formatter
-     * @param BaseStatement $statement
      * @return string
      */
-    public function toSql(Formatter $formatter, BaseStatement $statement): string
+    public function toSql(Formatter $formatter): string
     {
         $expr = $this->function;
         $expr.= $formatter->quote($this->column);

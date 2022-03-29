@@ -25,7 +25,7 @@ class Raw extends Expr
      * @param Formatter $formatter
      * @return string
      */
-    public function toSql(Formatter $formatter, BaseStatement $statement): string
+    public function toSql(Formatter $formatter): string
     {
         return $this->value;
     }

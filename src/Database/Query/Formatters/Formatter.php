@@ -217,7 +217,7 @@ abstract class Formatter
         $expressions = [];
         foreach ($columns as $column) {
             $expressions[]= ($column instanceof Expr)
-                ? $column->toSql($this, $statement)
+                ? $column->toSql($this)
                 : $this->columnize($column, true);
         }
         return $this->asCsv($expressions);
@@ -258,7 +258,7 @@ abstract class Formatter
         $expressions = [];
         foreach ($statement->tables as $table) {
             $expressions[]= ($table instanceof Expr)
-                ? $table->toSql($this, $statement)
+                ? $table->toSql($this)
                 : $this->tableize($table);
         }
         return !empty($expressions) ? 'FROM ' . $this->asCsv($expressions) : '';
@@ -372,7 +372,7 @@ abstract class Formatter
     protected function formatConditionSegment(ConditionDefinition $def, ConditionsStatement $statement): string
     {
         return match ($def->operator) {
-            Operator::Raw => $this->formatConditionForRaw($def, $statement),
+            Operator::Raw => $this->formatConditionForRaw($def),
             Operator::Equals => $this->formatConditionForEqual($def),
             Operator::LessThanOrEqualTo => $this->formatConditionForLessThanOrEqualTo($def),
             Operator::LessThan => $this->formatConditionForLessThan($def),
@@ -389,13 +389,12 @@ abstract class Formatter
 
     /**
      * @param ConditionDefinition $def
-     * @param ConditionsStatement $statement
      * @return string
      */
-    protected function formatConditionForRaw(ConditionDefinition $def, ConditionsStatement $statement): string
+    protected function formatConditionForRaw(ConditionDefinition $def): string
     {
         if ($def->value instanceof Expr) {
-            return $def->value->toSql($this, $statement);
+            return $def->value->toSql($this);
         }
 
         throw new RuntimeException('Unknown condition');
@@ -407,7 +406,7 @@ abstract class Formatter
      */
     protected function formatConditionForEqual(ConditionDefinition $def): string
     {
-        $column = $this->columnize($this->getDefinedColumn($def));
+        $column = $this->getDefinedColumn($def);
         $operator = $def->negated ? '!=': '=';
         $value = $def->value;
 
@@ -415,9 +414,7 @@ abstract class Formatter
             return $column . ' ' . ($def->negated ? 'IS NOT NULL' : 'IS NULL');
         }
 
-        return ($value instanceof SelectBuilder)
-            ? $column . ' ' . $operator . ' ' . $this->formatSubQuery($value)
-            : $column . ' ' . $operator . ' ' . $this->getParameterMarker();
+        return $this->formatConditionForOperator($column, $operator, $value);
     }
 
     /**
@@ -426,13 +423,10 @@ abstract class Formatter
      */
     protected function formatConditionForLessThanOrEqualTo(ConditionDefinition $def): string
     {
-        $column = $this->columnize($this->getDefinedColumn($def));
+        $column = $this->getDefinedColumn($def);
         $operator = $def->negated ? '>' : '<=';
         $value = $def->value;
-
-        return ($value instanceof SelectBuilder)
-            ? $column . ' ' . $operator . ' ' . $this->formatSubQuery($value)
-            : $column . ' ' . $operator . ' ' . $this->getParameterMarker();
+        return $this->formatConditionForOperator($column, $operator, $value);
     }
 
     /**
@@ -441,13 +435,10 @@ abstract class Formatter
      */
     protected function formatConditionForLessThan(ConditionDefinition $def): string
     {
-        $column = $this->columnize($this->getDefinedColumn($def));
+        $column = $this->getDefinedColumn($def);
         $operator = $def->negated ? '>=' : '<';
         $value = $def->value;
-
-        return ($value instanceof SelectBuilder)
-            ? $column . ' ' . $operator . ' ' . $this->formatSubQuery($value)
-            : $column . ' ' . $operator . ' ' . $this->getParameterMarker();
+        return $this->formatConditionForOperator($column, $operator, $value);
     }
 
     /**
@@ -456,13 +447,10 @@ abstract class Formatter
      */
     protected function formatConditionForGreaterThanOrEqualTo(ConditionDefinition $def): string
     {
-        $column = $this->columnize($this->getDefinedColumn($def));
+        $column = $this->getDefinedColumn($def);
         $operator = $def->negated ? '<' : '>=';
         $value = $def->value;
-
-        return ($value instanceof SelectBuilder)
-            ? $column . ' ' . $operator . ' ' . $this->formatSubQuery($value)
-            : $column . ' ' . $operator . ' ' . $this->getParameterMarker();
+        return $this->formatConditionForOperator($column, $operator, $value);
     }
 
     /**
@@ -471,13 +459,25 @@ abstract class Formatter
      */
     protected function formatConditionForGreaterThan(ConditionDefinition $def): string
     {
-        $column = $this->columnize($this->getDefinedColumn($def));
+        $column = $this->getDefinedColumn($def);
         $operator = $def->negated ? '<=' : '>';
         $value = $def->value;
+        return $this->formatConditionForOperator($column, $operator, $value);
+    }
 
-        return ($value instanceof SelectBuilder)
-            ? $column . ' ' . $operator . ' ' . $this->formatSubQuery($value)
-            : $column . ' ' . $operator . ' ' . $this->getParameterMarker();
+    /**
+     * @param string $column
+     * @param string $operator
+     * @param mixed $value
+     * @return string
+     */
+    protected function formatConditionForOperator(string $column, string $operator, mixed $value): string
+    {
+        if ($value instanceof SelectBuilder) {
+            return $column . ' ' . $operator . ' ' . $this->formatSubQuery($value);
+        }
+
+        return $column . ' ' . $operator . ' ' . $this->getParameterMarker();
     }
 
     /**
@@ -486,7 +486,7 @@ abstract class Formatter
      */
     protected function formatConditionForIn(ConditionDefinition $def): string
     {
-        $column = $this->columnize($this->getDefinedColumn($def));
+        $column = $this->getDefinedColumn($def);
         $operator = $def->negated ? 'NOT IN' : 'IN';
         $value = $def->value;
         $marker = $this->getParameterMarker();
@@ -512,7 +512,7 @@ abstract class Formatter
      */
     protected function formatConditionForBetween(ConditionDefinition $def): string
     {
-        $column = $this->columnize($this->getDefinedColumn($def));
+        $column = $this->getDefinedColumn($def);
         $operator = $def->negated ? 'NOT BETWEEN' : 'BETWEEN';
         $marker = $this->getParameterMarker();
         return $column . ' ' . $operator . ' ' . $marker . ' AND ' . $marker;
@@ -524,7 +524,7 @@ abstract class Formatter
      */
     protected function formatConditionForExists(ConditionDefinition $def): string
     {
-        $column = $this->columnize($this->getDefinedColumn($def));
+        $column = $this->getDefinedColumn($def);
         $operator = $def->negated ? 'NOT EXISTS' : 'EXISTS';
         $value = $def->value;
 
@@ -541,7 +541,7 @@ abstract class Formatter
      */
     protected function formatConditionForLike(ConditionDefinition $def): string
     {
-        $column = $this->columnize($this->getDefinedColumn($def));
+        $column = $this->getDefinedColumn($def);
         $operator = $def->negated ? 'NOT LIKE' : 'LIKE';
         return $column . ' ' . $operator . ' ' . $this->getParameterMarker();
     }
@@ -552,7 +552,7 @@ abstract class Formatter
      */
     protected function formatConditionForRange(ConditionDefinition $def): string
     {
-        $column = $this->columnize($this->getDefinedColumn($def));
+        $column = $this->getDefinedColumn($def);
         $negated = $def->negated;
         $value = $def->value;
         $marker = $this->getParameterMarker();
@@ -758,7 +758,13 @@ abstract class Formatter
      */
     protected function getDefinedColumn(ConditionDefinition $def): string
     {
-        return $def->column ?? throw new RuntimeException('Column name expected but null given');
+        $column = $def->column;
+
+        if (is_string($column)) {
+            return $this->columnize($column);
+        }
+
+        throw new RuntimeException('Column name expected but null given');
     }
 
     /**

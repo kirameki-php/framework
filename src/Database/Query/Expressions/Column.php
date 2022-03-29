@@ -36,10 +36,9 @@ class Column extends Expr
 
     /**
      * @param Formatter $formatter
-     * @param BaseStatement $statement
      * @return string
      */
-    public function toSql(Formatter $formatter, BaseStatement $statement): string
+    public function toSql(Formatter $formatter): string
     {
         $table = $this->table;
         $expr = '';

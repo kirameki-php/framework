@@ -9,8 +9,7 @@ abstract class Expr
 {
     /**
      * @param Formatter $formatter
-     * @param BaseStatement $statement
      * @return string
      */
-    abstract public function toSql(Formatter $formatter, BaseStatement $statement): string;
+    abstract public function toSql(Formatter $formatter): string;
 }
