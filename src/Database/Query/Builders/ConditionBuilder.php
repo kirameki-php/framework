@@ -55,7 +55,7 @@ class ConditionBuilder
         if ($num === 2) {
             [$column, $value] = $args;
 
-            if (is_string($column) || $column instanceof Column) {
+            if (is_string($column) || $column instanceof Expr) {
                 if ($value instanceof Range) {
                     return self::for($column)->inRange($value);
                 }
@@ -79,10 +79,10 @@ class ConditionBuilder
     }
 
     /**
-     * @param string|Column $column
+     * @param string|Expr $column
      * @return static
      */
-    public static function for(string|Column $column): static
+    public static function for(string|Expr $column): static
     {
         return new static($column);
     }

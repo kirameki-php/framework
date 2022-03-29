@@ -7,6 +7,7 @@ use Kirameki\Database\Query\Expressions\Column;
 use Kirameki\Database\Query\Statements\ConditionDefinition;
 use Kirameki\Database\Query\Statements\ConditionsStatement;
 use Kirameki\Database\Query\Support\SortOrder;
+use LogicException;
 use RuntimeException;
 use Webmozart\Assert\Assert;
 
@@ -49,16 +50,13 @@ abstract class ConditionsBuilder extends StatementBuilder
      */
     public function whereColumn(string ...$args): static
     {
-        $num = count($args);
-
         Assert::countBetween($args, 2, 3);
 
-        if ($num === 2) {
-            return $this->where(new Column($args[0]), new Column($args[1]));
-        }
-        if ($num === 3) {
-            return $this->where(new Column($args[0]), $args[1], new Column($args[2]));
-        }
+        $num = count($args);
+
+        return $num === 3
+            ? $this->where($args[0], $args[1], new Column($args[2]))
+            : $this->where($args[0], new Column($args[1]));
     }
 
     /**
