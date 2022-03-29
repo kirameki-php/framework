@@ -5,8 +5,9 @@ namespace Kirameki\Database\Query\Builders;
 use Kirameki\Database\Connection;
 use Kirameki\Database\Query\Result;
 use Kirameki\Database\Query\Statements\InsertStatement;
-use RuntimeException;
+use LogicException;
 use Traversable;
+use function count;
 use function iterator_to_array;
 
 /**
@@ -69,8 +70,8 @@ class InsertBuilder extends StatementBuilder
      */
     public function execute(): Result
     {
-        if (empty($this->statement->dataset)) {
-            throw new RuntimeException('Values must be set in order to execute an insert query');
+        if (count($this->statement->dataset) === 0) {
+            throw new LogicException('Values must be set in order to execute an insert query');
         }
         return parent::execute();
     }

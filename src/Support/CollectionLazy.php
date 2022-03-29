@@ -5,6 +5,7 @@ namespace Kirameki\Support;
 use Closure;
 use Iterator;
 use IteratorAggregate;
+use function iterator_to_array;
 
 /**
  * @template TKey of array-key
@@ -64,13 +65,11 @@ class CollectionLazy implements IteratorAggregate
     }
 
     /**
-     * @param callable(TValue, TKey): bool | null $callback
+     * @param callable(TValue, TKey): bool $callback
      * @return $this
      */
-    public function filter(?callable $callback = null): static
+    public function filter(callable $callback): static
     {
-        $callback ??= static fn ($item, $key) => !empty($item);
-
         return $this->newInstance(function () use ($callback) {
             foreach ($this as $key => $item) {
                 if($callback($item, $key)) {

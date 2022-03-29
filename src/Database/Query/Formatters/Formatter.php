@@ -265,7 +265,10 @@ abstract class Formatter
                 ? $table->prepare($this)
                 : $this->tableize($table);
         }
-        return !empty($expressions) ? 'FROM ' . $this->asCsv($expressions) : '';
+
+        return (count($expressions) > 0)
+            ? 'FROM ' . $this->asCsv($expressions)
+            : '';
     }
 
     /**
