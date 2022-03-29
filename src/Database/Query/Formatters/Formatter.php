@@ -790,15 +790,19 @@ abstract class Formatter
     protected function addBindingsForCondition(array &$bindings, ConditionDefinition $def): void
     {
         while ($def !== null) {
-            if (is_iterable($def->value)) {
-                foreach ($def->value as $binding) {
+            $value = $def->value;
+            if (is_iterable($value)) {
+                foreach ($value as $binding) {
                     $bindings[] = $binding;
                 }
             }
-            elseif ($def->value instanceof SelectBuilder) {
-                foreach ($def->value->getBindings() as $binding) {
+            elseif ($value instanceof SelectBuilder) {
+                foreach ($value->getBindings() as $binding) {
                     $bindings[] = $binding;
                 }
+            }
+            else {
+                $bindings[] = $value;
             }
             $def = $def->next;
         }

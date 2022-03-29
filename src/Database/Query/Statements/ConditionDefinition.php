@@ -28,9 +28,9 @@ class ConditionDefinition
     public bool $negated;
 
     /**
-     * @var Expr|Range|SelectBuilder|array<mixed>|null
+     * @var mixed
      */
-    public Expr|Range|SelectBuilder|array|null $value;
+    public mixed $value;
 
     /**
      * @var string|null

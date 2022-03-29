@@ -211,11 +211,6 @@ class ConditionBuilder
             throw new RuntimeException('Iterable should use in(iterable $iterable) method instead');
         }
 
-        // value will not be set for binding if null since it will be converted to IS [NOT] NULL
-        if ($value !== null) {
-            $value =  [$value];
-        }
-
         return $this->define(Operator::Equals, $value);
     }
 
@@ -234,7 +229,7 @@ class ConditionBuilder
      */
     public function greaterThanOrEqualTo(mixed $value): static
     {
-        return $this->define(Operator::GreaterThanOrEqualTo, [$this->toValue($value)]);
+        return $this->define(Operator::GreaterThanOrEqualTo, $this->toValue($value));
     }
 
     /**
@@ -243,7 +238,7 @@ class ConditionBuilder
      */
     public function greaterThan(mixed $value): static
     {
-        return $this->define(Operator::GreaterThan, [$this->toValue($value)]);
+        return $this->define(Operator::GreaterThan, $this->toValue($value));
     }
 
     /**
@@ -252,7 +247,7 @@ class ConditionBuilder
      */
     public function lessThanOrEqualTo(mixed $value): static
     {
-        return $this->define(Operator::LessThanOrEqualTo, [$this->toValue($value)]);
+        return $this->define(Operator::LessThanOrEqualTo, $this->toValue($value));
     }
 
     /**
@@ -261,7 +256,7 @@ class ConditionBuilder
      */
     public function lessThan(mixed $value): static
     {
-        return $this->define(Operator::LessThan, [$this->toValue($value)]);
+        return $this->define(Operator::LessThan, $this->toValue($value));
     }
 
     /**
@@ -286,7 +281,7 @@ class ConditionBuilder
      */
     public function like(string $value): static
     {
-        return $this->define(Operator::Like, [$this->toValue($value)]);
+        return $this->define(Operator::Like, $this->toValue($value));
     }
 
     /**
@@ -437,10 +432,10 @@ class ConditionBuilder
 
     /**
      * @param Operator $operator
-     * @param Expr|Range|SelectBuilder|array<mixed>|null $value
+     * @param mixed $value
      * @return $this
      */
-    protected function define(Operator $operator, Expr|Range|SelectBuilder|array|null $value): static
+    protected function define(Operator $operator, mixed $value): static
     {
         $this->current->operator = $operator;
         $this->current->value = $value;
@@ -453,7 +448,7 @@ class ConditionBuilder
 
     /**
      * @param mixed $var
-     * @return Expr|Range|SelectBuilder|array<mixed>|null
+     * @return mixed
      */
     protected function toValue(mixed $var): mixed
     {
