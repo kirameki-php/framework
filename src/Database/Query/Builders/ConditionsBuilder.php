@@ -54,6 +54,8 @@ abstract class ConditionsBuilder extends StatementBuilder
 
         $num = count($args);
 
+        // the last column will be converted to Column class since there is no way to distinguish between
+        // a column identifier and a string literal after this point.
         return $num === 3
             ? $this->where($args[0], $args[1], new Column($args[2]))
             : $this->where($args[0], new Column($args[1]));
@@ -70,7 +72,7 @@ abstract class ConditionsBuilder extends StatementBuilder
 
     /**
      * @param string $column
-     * @param iterable<mixed>|Closure|SelectBuilder $values
+     * @param iterable<mixed>|Closure(SelectBuilder): SelectBuilder|SelectBuilder $values
      * @return $this
      */
     public function whereIn(string $column, iterable|Closure|SelectBuilder $values): static
