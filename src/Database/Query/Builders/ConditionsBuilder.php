@@ -3,6 +3,7 @@
 namespace Kirameki\Database\Query\Builders;
 
 use Closure;
+use Kirameki\Database\Query\Expressions\Column;
 use Kirameki\Database\Query\Statements\ConditionDefinition;
 use Kirameki\Database\Query\Statements\ConditionsStatement;
 use Kirameki\Database\Query\Support\SortOrder;
@@ -40,6 +41,26 @@ abstract class ConditionsBuilder extends StatementBuilder
         Assert::countBetween($args, 1, 2);
         $this->lastCondition = $this->buildCondition(...$args)->negate();
         return $this->addWhereCondition($this->lastCondition->getDefinition());
+    }
+
+    /**
+     * @param string ...$args
+     * @return $this
+     */
+    public function whereColumn(string ...$args): static
+    {
+        $num = count($args);
+
+        Assert::countBetween($args, 2, 3);
+
+        $formatter = $this->getQueryFormatter();
+
+        if ($num === 2) {
+            return $this->where(Column::parse($args[0], $formatter), Column::parse($args[1], $formatter));
+        }
+        if ($num === 3) {
+            return $this->where(Column::parse($args[0], $formatter), $args[1], Column::parse($args[2], $formatter));
+        }
     }
 
     /**

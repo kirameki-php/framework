@@ -3,7 +3,6 @@
 namespace Kirameki\Database\Query\Expressions;
 
 use Kirameki\Database\Query\Formatters\Formatter;
-use Kirameki\Database\Query\Statements\BaseStatement;
 
 abstract class Expr
 {
@@ -11,5 +10,13 @@ abstract class Expr
      * @param Formatter $formatter
      * @return string
      */
-    abstract public function toSql(Formatter $formatter): string;
+    abstract public function prepare(Formatter $formatter): string;
+
+    /**
+     * @return array<int, mixed>
+     */
+    public function getBindings(): array
+    {
+        return [];
+    }
 }

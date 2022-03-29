@@ -2,9 +2,7 @@
 
 namespace Kirameki\Database\Query\Expressions;
 
-use Kirameki\Database\Query\Expressions\Expr;
 use Kirameki\Database\Query\Formatters\Formatter;
-use Kirameki\Database\Query\Statements\BaseStatement;
 
 class Raw extends Expr
 {
@@ -25,7 +23,7 @@ class Raw extends Expr
      * @param Formatter $formatter
      * @return string
      */
-    public function toSql(Formatter $formatter): string
+    public function prepare(Formatter $formatter): string
     {
         return $this->value;
     }

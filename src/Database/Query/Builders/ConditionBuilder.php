@@ -3,6 +3,7 @@
 namespace Kirameki\Database\Query\Builders;
 
 use Closure;
+use Kirameki\Database\Query\Expressions\Column;
 use Kirameki\Database\Query\Statements\ConditionDefinition;
 use Kirameki\Database\Query\Support\Operator;
 use Kirameki\Database\Query\Support\Range;
@@ -54,7 +55,7 @@ class ConditionBuilder
         if ($num === 2) {
             [$column, $value] = $args;
 
-            if (is_string($column)) {
+            if (is_string($column) || $column instanceof Column) {
                 if ($value instanceof Range) {
                     return self::for($column)->inRange($value);
                 }
@@ -78,10 +79,10 @@ class ConditionBuilder
     }
 
     /**
-     * @param string $column
+     * @param string|Column $column
      * @return static
      */
-    public static function for(string $column): static
+    public static function for(string|Column $column): static
     {
         return new static($column);
     }
@@ -96,9 +97,9 @@ class ConditionBuilder
     }
 
     /**
-     * @param string|null $column
+     * @param string|Column|null $column
      */
-    protected function __construct(?string $column = null)
+    protected function __construct(string|Column|null $column = null)
     {
         $this->root = $this->current = new ConditionDefinition($column);
         $this->defined = false;

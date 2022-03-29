@@ -2,6 +2,7 @@
 
 namespace Kirameki\Database\Query\Statements;
 
+use Kirameki\Database\Query\Expressions\Column;
 use Kirameki\Database\Query\Support\Operator;
 use Kirameki\Support\Concerns\Tappable;
 
@@ -10,9 +11,9 @@ class ConditionDefinition
     use Tappable;
 
     /**
-     * @var string|null
+     * @var string|Column|null
      */
-    public ?string $column;
+    public string|Column|null $column;
 
     /**
      * @var Operator|null
@@ -40,9 +41,9 @@ class ConditionDefinition
     public ?self $next;
 
     /**
-     * @param string|null $column
+     * @param string|Column|null $column
      */
-    public function __construct(string $column = null)
+    public function __construct(string|Column $column = null)
     {
         $this->column = $column;
         $this->negated = false;

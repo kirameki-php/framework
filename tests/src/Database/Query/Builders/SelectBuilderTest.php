@@ -84,6 +84,12 @@ class SelectBuilderTest extends QueryTestCase
         static::assertEquals("SELECT * FROM `User` WHERE (`id` < 1 OR `id` = 3) AND `id` != -1", $sql);
     }
 
+    public function testWhereColumn(): void
+    {
+        $sql = $this->selectBuilder()->from('User')->whereColumn('User.id', 'Device.userId')->toSql();
+        static::assertEquals("SELECT * FROM `User` WHERE `User`.`id` = `Device`.`userId`", $sql);
+    }
+
     public function testOrderBy(): void
     {
         $sql = $this->selectBuilder()->from('User')->where('id', 1)->orderBy('id')->toSql();

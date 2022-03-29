@@ -5,6 +5,7 @@ namespace Kirameki\Database\Query\Formatters;
 use BackedEnum;
 use DateTimeInterface;
 use Kirameki\Database\Query\Builders\SelectBuilder;
+use Kirameki\Database\Query\Expressions\Column;
 use Kirameki\Database\Query\Statements\ConditionDefinition;
 use Kirameki\Database\Query\Statements\JoinDefinition;
 use Kirameki\Database\Query\Support\LockOption;
@@ -217,7 +218,7 @@ abstract class Formatter
         $expressions = [];
         foreach ($columns as $column) {
             $expressions[]= ($column instanceof Expr)
-                ? $column->toSql($this)
+                ? $column->prepare($this)
                 : $this->columnize($column, true);
         }
         return $this->asCsv($expressions);
@@ -258,7 +259,7 @@ abstract class Formatter
         $expressions = [];
         foreach ($statement->tables as $table) {
             $expressions[]= ($table instanceof Expr)
-                ? $table->toSql($this)
+                ? $table->prepare($this)
                 : $this->tableize($table);
         }
         return !empty($expressions) ? 'FROM ' . $this->asCsv($expressions) : '';
@@ -392,7 +393,7 @@ abstract class Formatter
     protected function formatConditionForRaw(ConditionDefinition $def): string
     {
         if ($def->value instanceof Expr) {
-            return $def->value->toSql($this);
+            return $def->value->prepare($this);
         }
 
         throw new RuntimeException('Unknown condition:' . Str::valueOf($def->value));
@@ -471,11 +472,11 @@ abstract class Formatter
      */
     protected function formatConditionForOperator(string $column, string $operator, mixed $value): string
     {
-        if ($value instanceof SelectBuilder) {
-            return $column . ' ' . $operator . ' ' . $this->formatSubQuery($value);
-        }
-
-        return $column . ' ' . $operator . ' ' . $this->getParameterMarker();
+        return $column . ' ' . $operator . ' ' . match (true) {
+            $value instanceof SelectBuilder => $this->formatSubQuery($value),
+            $value instanceof Expr => $value->prepare($this),
+            default => $this->getParameterMarker(),
+        };
     }
 
     /**
@@ -770,6 +771,10 @@ abstract class Formatter
             return $this->columnize($column);
         }
 
+        if ($column instanceof Column) {
+            return $column->prepare($this);
+        }
+
         throw new RuntimeException('Column name expected but null given');
     }
 
@@ -802,7 +807,7 @@ abstract class Formatter
                     $bindings[] = $binding;
                 }
             }
-            elseif ($value instanceof SelectBuilder) {
+            elseif ($value instanceof Expr || $value instanceof SelectBuilder) {
                 foreach ($value->getBindings() as $binding) {
                     $bindings[] = $binding;
                 }
