@@ -276,10 +276,10 @@ abstract class Formatter
             return '';
         }
 
-        return implode(' ', array_map(function (JoinDefinition $def) use ($statement) {
+        return implode(' ', array_map(function (JoinDefinition $def) {
             $expr = $def->type->value . ' ';
             $expr.= $this->tableize($def->table) . ' ';
-            $expr.= 'ON ' . $this->formatCondition($def->on, $statement);
+            $expr.= 'ON ' . $this->formatCondition($def->on);
             return $expr;
         }, $joins));
     }
@@ -337,26 +337,25 @@ abstract class Formatter
         }
         $clause = [];
         foreach ($statement->where as $condition) {
-            $clause[] = $this->formatCondition($condition, $statement);
+            $clause[] = $this->formatCondition($condition);
         }
         return 'WHERE ' . implode(' AND ', $clause);
     }
 
     /**
      * @param ConditionDefinition $def
-     * @param ConditionsStatement $statement
      * @return string
      */
-    protected function formatCondition(ConditionDefinition $def, ConditionsStatement $statement): string
+    protected function formatCondition(ConditionDefinition $def): string
     {
         $parts = [];
-        $parts[] = $this->formatConditionSegment($def, $statement);
+        $parts[] = $this->formatConditionSegment($def);
 
         // Dig through all chained clauses if exists
         if ($def->next !== null) {
             $logic = $def->nextLogic;
             while ($def = $def->next) {
-                $parts[] = $logic . ' ' . $this->formatConditionSegment($def, $statement);
+                $parts[] = $logic . ' ' . $this->formatConditionSegment($def);
                 $logic = $def->nextLogic;
             }
         }
@@ -366,10 +365,9 @@ abstract class Formatter
 
     /**
      * @param ConditionDefinition $def
-     * @param ConditionsStatement $statement
      * @return string
      */
-    protected function formatConditionSegment(ConditionDefinition $def, ConditionsStatement $statement): string
+    protected function formatConditionSegment(ConditionDefinition $def): string
     {
         return match ($def->operator) {
             Operator::Raw => $this->formatConditionForRaw($def),
