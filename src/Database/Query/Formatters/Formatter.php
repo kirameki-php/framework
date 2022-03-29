@@ -397,7 +397,7 @@ abstract class Formatter
             return $def->value->toSql($this);
         }
 
-        throw new RuntimeException('Unknown condition');
+        throw new RuntimeException('Unknown condition:' . Str::valueOf($def->value));
     }
 
     /**
