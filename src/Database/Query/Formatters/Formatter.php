@@ -707,7 +707,7 @@ abstract class Formatter
             $pattern = '/^' . implode('', $patterns) . '$/';
             $match = null;
             if (preg_match($pattern, $name, $match)) {
-                $table = !empty($match['table']) ? (string)$match['table'] : null;
+                $table = $match['table'] !== '' ? $match['table'] : null;
                 $name = $match['column'];
                 $as = $match['as'] ?? null;
             }

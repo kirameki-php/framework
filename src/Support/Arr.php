@@ -276,7 +276,7 @@ class Arr
                 $chunk = [];
             }
         }
-        if (!empty($chunk)) {
+        if (count($chunk) > 0) {
             $callback($chunk, $count);
         }
     }
@@ -1300,14 +1300,16 @@ class Arr
     public static function shuffle(iterable $iterable): array
     {
         $copy = static::from($iterable);
+        $size = count($copy);
         $isList = static::isList($copy);
         $array = [];
-        while (!empty($copy)) {
+        while ($size > 0) {
             $key = array_rand($copy);
             $isList
                 ? $array[] = $copy[$key]
                 : $array[$key] = $copy[$key];
             unset($copy[$key]);
+            --$size;
         }
         return $array;
     }

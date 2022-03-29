@@ -5,7 +5,6 @@ namespace Kirameki\Database\Query\Builders;
 use Closure;
 use Kirameki\Database\Connection;
 use Kirameki\Database\Query\Expressions\Aggregate;
-use Kirameki\Database\Query\Expressions\Column;
 use Kirameki\Database\Query\Statements\ConditionDefinition;
 use Kirameki\Database\Query\Statements\SelectStatement;
 use Kirameki\Database\Query\Support\JoinType;
@@ -337,7 +336,7 @@ class SelectBuilder extends ConditionsBuilder
             return $aggregated;
         }
 
-        if (empty($results)) {
+        if (count($results) === 0) {
             return 0;
         }
 

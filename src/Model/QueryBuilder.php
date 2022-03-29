@@ -87,7 +87,7 @@ class QueryBuilder extends SelectBuilder
     {
         $orderBy = $this->statement->orderBy ?? [];
 
-        if (empty($orderBy)) {
+        if (count($orderBy) === 0) {
             throw new RuntimeException("Cursor pagination requires at least one column in ORDER BY");
         }
 
