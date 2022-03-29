@@ -185,7 +185,7 @@ abstract class Formatter
                 return match (true) {
                     is_null($current) => 'NULL',
                     is_bool($current) => $current ? 'TRUE' : 'FALSE',
-                    is_string($current) => "'" . $this->escape($current, "'") . "'",
+                    is_string($current) => $this->literalize($current),
                     default => $current,
                 };
             }
@@ -751,6 +751,14 @@ abstract class Formatter
     }
 
     /**
+     * @return string
+     */
+    public function getStringLiteralDelimiter(): string
+    {
+        return "'";
+    }
+
+    /**
      * @param ConditionDefinition $def
      * @return string
      */
@@ -867,6 +875,16 @@ abstract class Formatter
     protected function escape(string $str, string $escaping): string
     {
         return str_replace($escaping, $escaping . $escaping, $str);
+    }
+
+    /**
+     * @param string $str
+     * @return string
+     */
+    protected function literalize(string $str): string
+    {
+        $delimiter = $this->getStringLiteralDelimiter();
+        return $delimiter . $this->escape($str, $delimiter) . $delimiter;
     }
 
     /**
