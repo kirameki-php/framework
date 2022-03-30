@@ -19,7 +19,7 @@ class JoinDefinition
     /**
      * @var ConditionDefinition
      */
-    public ConditionDefinition $on;
+    public ConditionDefinition $condition;
 
     /**
      * @param JoinType $type

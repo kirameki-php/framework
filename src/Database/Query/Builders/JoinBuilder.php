@@ -2,8 +2,10 @@
 
 namespace Kirameki\Database\Query\Builders;
 
+use Kirameki\Database\Query\Expressions\Column;
 use Kirameki\Database\Query\Statements\JoinDefinition;
 use Kirameki\Database\Query\Support\JoinType;
+use LogicException;
 use Webmozart\Assert\Assert;
 
 class JoinBuilder
@@ -14,9 +16,9 @@ class JoinBuilder
     protected JoinDefinition $definition;
 
     /**
-     * @var ConditionBuilder
+     * @var ConditionBuilder|null
      */
-    protected ConditionBuilder $condition;
+    protected ?ConditionBuilder $condition = null;
 
     /**
      * @param JoinType $type
@@ -33,32 +35,76 @@ class JoinBuilder
      */
     public function on(mixed ...$args): static
     {
-        Assert::countBetween($args, 1, 3);
-        $this->condition = $this->buildCondition(...$args);
-        $this->definition->on = $this->condition->getDefinition();
-        return $this;
+        return $this->applyAndCondition($this->buildOnColumnCondition(...$args));
     }
 
     /**
      * @param mixed ...$args
      * @return $this
      */
-    public function and(mixed ...$args): static
+    public function where(mixed ...$args): static
     {
-        Assert::countBetween($args, 1, 3);
-        $this->condition->and()->apply($this->buildCondition(...$args));
-        return $this;
+        return $this->applyAndCondition($this->buildCondition(...$args));
     }
 
     /**
      * @param mixed ...$args
      * @return $this
      */
-    public function or(mixed ...$args): static
+    public function orOn(mixed ...$args): static
     {
-        Assert::countBetween($args, 1, 3);
-        $this->condition->or()->apply($this->buildCondition(...$args));
+        return $this->applyOrCondition($this->buildOnColumnCondition(...$args));
+    }
+
+    /**
+     * @param mixed ...$args
+     * @return $this
+     */
+    public function orWhere(mixed ...$args): static
+    {
+        return $this->applyOrCondition($this->buildCondition(...$args));
+    }
+
+    /**
+     * @param ConditionBuilder $condition
+     * @return $this
+     */
+    protected function applyAndCondition(ConditionBuilder $condition): static
+    {
+        if ($this->condition === null) {
+            $this->condition = $condition;
+            $this->definition->condition = $condition->getDefinition();
+        } else {
+            $this->condition->and()->apply($condition);
+        }
+
         return $this;
+    }
+
+    /**
+     * @param ConditionBuilder $condition
+     * @return $this
+     */
+    protected function applyOrCondition(ConditionBuilder $condition): static
+    {
+        if ($this->condition === null) {
+            throw new LogicException('on or where must be defined before applying or condition');
+        }
+        $this->condition->or()->apply($condition);
+        return $this;
+    }
+
+    /**
+     * @param mixed ...$args
+     * @return ConditionBuilder
+     */
+    protected function buildOnColumnCondition(mixed ...$args): ConditionBuilder
+    {
+        Assert::countBetween($args, 2, 3);
+
+        array_splice($args, -1, 1, [new Column(end($args))]);
+
+        return ConditionBuilder::fromArgs(...$args);
     }
 
     /**
@@ -67,6 +113,8 @@ class JoinBuilder
      */
     protected function buildCondition(mixed ...$args): ConditionBuilder
     {
+        Assert::countBetween($args, 1, 3);
+
         return ConditionBuilder::fromArgs(...$args);
     }
 

@@ -2,6 +2,7 @@
 
 namespace Tests\Kirameki\Database\Query\Builders;
 
+use Kirameki\Database\Query\Builders\JoinBuilder;
 use Kirameki\Database\Query\Expressions\Expr;
 use Kirameki\Database\Query\Expressions\Raw;
 use Kirameki\Database\Query\Support\Range;
@@ -48,6 +49,26 @@ class SelectBuilderTest extends QueryTestCase
         static::assertEquals("SELECT DISTINCT `id` FROM `User`", $sql);
     }
 
+    public function test_Join_using_on(): void
+    {
+        $sql = $this->selectBuilder()->from('User')->join('Device', fn(JoinBuilder $join) => $join->on('User.id', 'Device.userId'))->toSql();
+        static::assertEquals("SELECT * FROM `User` JOIN `Device` ON `User`.`id` = `Device`.`userId`", $sql);
+    }
+
+    public function test_Join_using_on_and_where(): void
+    {
+        $sql = $this->selectBuilder()->from('User AS u')
+            ->join('Device AS d', fn(JoinBuilder $join) => $join->on('u.id', 'd.userId')->where('id', [1,2]))
+            ->toSql();
+        static::assertEquals("SELECT * FROM `User` AS `u` JOIN `Device` AS `d` ON `u`.`id` = `d`.`userId` AND `id` IN (?, ?)", $sql);
+    }
+
+    public function testJoinOn(): void
+    {
+        $sql = $this->selectBuilder()->from('User AS u')->joinOn('Device AS d', 'u.id', 'd.userId')->toSql();
+        static::assertEquals("SELECT * FROM `User` AS `u` JOIN `Device` AS `d` ON `u`.`id` = `d`.`userId`", $sql);
+    }
+
     public function testWhere_WithTwoArgs(): void
     {
         $sql = $this->selectBuilder()->from('User')->where('id', fn() => 1)->toSql();
@@ -88,6 +109,12 @@ class SelectBuilderTest extends QueryTestCase
     {
         $sql = $this->selectBuilder()->from('User')->whereColumn('User.id', 'Device.userId')->toSql();
         static::assertEquals("SELECT * FROM `User` WHERE `User`.`id` = `Device`.`userId`", $sql);
+    }
+
+    public function testWhereColumn_Aliased(): void
+    {
+        $sql = $this->selectBuilder()->from('User AS u', 'Device AS d')->whereColumn('u.id', 'd.userId')->toSql();
+        static::assertEquals("SELECT * FROM `User` AS `u`, `Device` AS `d` WHERE `u`.`id` = `d`.`userId`", $sql);
     }
 
     public function testOrderBy(): void

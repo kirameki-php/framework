@@ -286,7 +286,7 @@ abstract class Formatter
         return implode(' ', array_map(function (JoinDefinition $def) {
             $expr = $def->type->value . ' ';
             $expr.= $this->tableize($def->table) . ' ';
-            $expr.= 'ON ' . $this->formatCondition($def->on);
+            $expr.= 'ON ' . $this->formatCondition($def->condition);
             return $expr;
         }, $joins));
     }
@@ -342,11 +342,15 @@ abstract class Formatter
         if ($statement->where === null) {
             return '';
         }
-        $clause = [];
-        foreach ($statement->where as $condition) {
-            $clause[] = $this->formatCondition($condition);
+
+        $clauses = [];
+        foreach ($statement->where as $def) {
+            $clauses[] = ($def->next !== null)
+                ? '(' . $this->formatCondition($def) . ')'
+                : $this->formatCondition($def);
         }
-        return 'WHERE ' . implode(' AND ', $clause);
+
+        return 'WHERE ' . implode(' AND ', $clauses);
     }
 
     /**
@@ -367,7 +371,7 @@ abstract class Formatter
             }
         }
 
-        return (count($parts) > 1) ? '(' . implode(' ', $parts) . ')' : $parts[0];
+        return implode(' ', $parts);
     }
 
     /**
