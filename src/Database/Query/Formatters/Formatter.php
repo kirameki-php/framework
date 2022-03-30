@@ -363,12 +363,8 @@ abstract class Formatter
         $parts[] = $this->formatConditionSegment($def);
 
         // Dig through all chained clauses if exists
-        if ($def->next !== null) {
-            $logic = $def->nextLogic;
-            while ($def = $def->next) {
-                $parts[] = $logic . ' ' . $this->formatConditionSegment($def);
-                $logic = $def->nextLogic;
-            }
+        while (($logic = $def->nextLogic) && ($def = $def->next)) {
+            $parts[] = $logic . ' ' . $this->formatConditionSegment($def);
         }
 
         return implode(' ', $parts);
