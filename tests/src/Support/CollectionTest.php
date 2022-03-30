@@ -598,7 +598,7 @@ class CollectionTest extends TestCase
 
     public function testFold(): void
     {
-        $reduced = collect()->fold(0, fn(int $i) => $i + 1);
+        $reduced = collect([])->fold(0, fn(int $i) => $i + 1);
         self::assertEquals(0, $reduced);
 
         $reduced = collect(['a' => 1, 'b' => 2])->fold(collect(), fn(Collection $c, $i, $k) => $c->set($k, $i * 2));
@@ -907,13 +907,13 @@ class CollectionTest extends TestCase
 
     public function testMerge(): void
     {
-        $empty = collect();
+        $empty = collect([]);
         $merged = $empty->merge([1, [2]]);
         self::assertNotSame($empty, $merged);
         self::assertCount(0, $empty);
         self::assertEquals([1, [2]], $merged->toArray());
 
-        $empty = collect();
+        $empty = collect([]);
         $merged = $empty->merge([1, [2]]);
         self::assertEquals([1, [2]], $merged->toArray());
 
@@ -1142,7 +1142,7 @@ class CollectionTest extends TestCase
     {
         $this->expectException(ErrorException::class);
         $this->expectExceptionMessage('Undefined array key "a"');
-        self::assertEquals([], collect()->only(['a'])->toArray());
+        self::assertEquals([], collect([])->only(['a'])->toArray());
     }
 
     public function testPad(): void
@@ -1156,7 +1156,7 @@ class CollectionTest extends TestCase
         $collect = collect(['a' => 1, 'b' => 2]);
         self::assertEquals(['a' => 1, 'b' => 2, 0 => 9], $collect->pad(3, 9)->toArray());
 
-        self::assertEquals([9, 9, 9], collect()->pad(3, 9)->toArray());
+        self::assertEquals([9, 9, 9], collect([])->pad(3, 9)->toArray());
     }
 
     public function testPop(): void
@@ -1197,7 +1197,7 @@ class CollectionTest extends TestCase
 
     public function testPull(): void
     {
-        $collect = collect();
+        $collect = collect([]);
         self::assertEquals(null, $collect->pull(1));
 
         $collect = collect([1, 2]);
@@ -1245,7 +1245,7 @@ class CollectionTest extends TestCase
 
     public function testRemove(): void
     {
-        $collect = collect();
+        $collect = collect([]);
         self::assertEquals([], $collect->remove(1));
 
         $collect = collect([1]);
@@ -1271,7 +1271,7 @@ class CollectionTest extends TestCase
 
     public function testRemoveKey(): void
     {
-        $collect = collect();
+        $collect = collect([]);
         self::assertEquals(false, $collect->removeKey(1));
 
         $collect = collect([1]);
@@ -1339,7 +1339,7 @@ class CollectionTest extends TestCase
     {
         $this->expectException(ValueError::class);
         $this->expectExceptionMessage('array_rand(): Argument #1 ($array) cannot be empty');
-        collect()->sample();
+        collect([])->sample();
     }
 
     public function testSampleMany(): void
@@ -1365,7 +1365,7 @@ class CollectionTest extends TestCase
 
     public function testSatisfyAny(): void
     {
-        $empty = collect();
+        $empty = collect([]);
         self::assertFalse($empty->satisfyAny(static fn() => true));
 
         $collect = collect([1, null, 2, [3], false]);
@@ -1381,28 +1381,28 @@ class CollectionTest extends TestCase
 
     public function testSet(): void
     {
-        self::assertEquals(['a' => 1], collect()->set('a', 1)->toArray());
-        self::assertEquals(['a' => 1], collect()->set('a', 0)->set('a', 1)->toArray());
-        self::assertEquals(['a' => null], collect()->set('a', null)->toArray());
+        self::assertEquals(['a' => 1], collect([])->set('a', 1)->toArray());
+        self::assertEquals(['a' => 1], collect([])->set('a', 0)->set('a', 1)->toArray());
+        self::assertEquals(['a' => null], collect([])->set('a', null)->toArray());
     }
 
     public function testSetIfExists(): void
     {
         self::assertEquals(
             [],
-            collect()->setIfExists('a', 1)->toArray(),
+            collect([])->setIfExists('a', 1)->toArray(),
             'Set when not exists'
         );
 
         self::assertEquals(
             [],
-            collect()->setIfExists('a', 1)->setIfExists('a', 2)->toArray(),
+            collect([])->setIfExists('a', 1)->setIfExists('a', 2)->toArray(),
             'Set when not exists twice on non existing'
         );
 
         self::assertEquals(
             ['a' => 2],
-            collect(['a' => null])->setIfExists('a', 1)->setIfExists('a', 2)->toArray(),
+            collect([])->set('a', null)->setIfExists('a', 1)->setIfExists('a', 2)->toArray(),
             'Set when not exists twice on existing'
         );
 
@@ -1414,48 +1414,48 @@ class CollectionTest extends TestCase
 
         self::assertEquals(
             ['a' => 1],
-            collect(['a' => null])->setIfExists('a', 1)->toArray(),
+            collect([])->set('a', null)->setIfExists('a', 1)->toArray(),
             'null => $value',
         );
 
         self::assertEquals(
             ['a' => null],
-            collect(['a' => 1])->setIfExists('a', null)->toArray(),
+            collect([])->set('a', 1)->setIfExists('a', null)->toArray(),
             '$value => null'
         );
 
         $result = false;
-        collect()->setIfExists('a', 1, $result)->toArray();
+        collect([])->setIfExists('a', 1, $result)->toArray();
         self::assertFalse($result, 'Result for no previous value');
 
         $result = false;
         collect(['a' => 0])->setIfExists('a', 1, $result)->toArray();
-        self::assertTrue($result, 'Result for value already existing');
+        self::assertTrue((bool)$result, 'Result for value already existing');
     }
 
     public function testSetIfNotExists(): void
     {
         self::assertEquals(
             ['a' => 1],
-            collect()->setIfNotExists('a', 1)->toArray(),
+            collect([])->setIfNotExists('a', 1)->toArray(),
             'Set on non-existing'
         );
 
         self::assertEquals(
             ['a' => 0],
-            collect()->setIfNotExists('a', 0)->setIfNotExists('a', 1)->toArray(),
+            collect([])->setIfNotExists('a', 0)->setIfNotExists('a', 1)->toArray(),
             'Set on non existing twice',
         );
 
         self::assertEquals(
             ['a' => null],
-            collect()->setIfNotExists('a', null)->toArray(),
+            collect([])->setIfNotExists('a', null)->toArray(),
             'Set null'
         );
 
         $result = false;
-        collect()->setIfNotExists('a', 1, $result)->toArray();
-        self::assertTrue($result, 'Result for no previous value');
+        collect([])->setIfNotExists('a', 1, $result)->toArray();
+        self::assertTrue((bool)$result, 'Result for no previous value');
 
         $result = false;
         collect(['a' => 0])->setIfNotExists('a', 1, $result)->toArray();
@@ -1670,7 +1670,7 @@ class CollectionTest extends TestCase
 
     public function testToArray(): void
     {
-        self::assertEquals([], collect()->toArray());
+        self::assertEquals([], collect([])->toArray());
         self::assertEquals([1, 2], collect([1, 2])->toArray());
         self::assertEquals(['a' => 1], collect(['a' => 1])->toArray());
 
@@ -1769,7 +1769,7 @@ class CollectionTest extends TestCase
         self::assertEquals(['a' => 1, 'b' => 2], $collect->toArray());
 
         $values = ['3', 3, null, '', 0, true, false];
-        $collect = collect()->merge($values)->merge($values)->unique();
+        $collect = collect([])->merge($values)->merge($values)->unique();
         self::assertEquals($values, $collect->toArray());
 
         $values = ['3', 3, null, '', 0, true, false];
