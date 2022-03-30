@@ -1170,6 +1170,19 @@ class CollectionTest extends TestCase
         self::assertEquals(['a' => 1], $collect->toArray());
     }
 
+    public function testPopMany(): void
+    {
+        $collect = collect([1, 2]);
+        self::assertEquals([2], $collect->popMany(1)->toArray());
+        self::assertEquals([1], $collect->toArray());
+        $collect = collect([1, 2]);
+        self::assertEquals([1, 2], $collect->popMany(2)->toArray());
+        self::assertEquals([], $collect->toArray());
+        $collect = collect([1, 2]);
+        self::assertEquals([1, 2], $collect->popMany(3)->toArray());
+        self::assertEquals([], $collect->toArray());
+    }
+
     public function testPrioritize(): void
     {
         $collect = collect([1, 2, 3])->prioritize(fn(int $i) => $i === 2);
@@ -1452,9 +1465,22 @@ class CollectionTest extends TestCase
     public function testShift(): void
     {
         self::assertEquals(1, collect([1, 2])->shift());
-        self::assertEquals(null, collect()->shift());
+        self::assertEquals(null, collect([])->shift());
         self::assertEquals(1, collect(['a' => 1, 2])->shift());
         self::assertEquals(['b' => 1], collect(['a' => ['b' => 1]])->shift());
+    }
+
+    public function testShiftMany(): void
+    {
+        $collect = collect([1, 2]);
+        self::assertEquals([1], $collect->shiftMany(1)->toArray());
+        self::assertEquals([2], $collect->toArray());
+        $collect = collect([1, 2]);
+        self::assertEquals([1, 2], $collect->shiftMany(2)->toArray());
+        self::assertEquals([], $collect->toArray());
+        $collect = collect([1, 2]);
+        self::assertEquals([1, 2], $collect->shiftMany(3)->toArray());
+        self::assertEquals([], $collect->toArray());
     }
 
     public function testShuffle(): void

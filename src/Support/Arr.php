@@ -1288,7 +1288,7 @@ class Arr
     public static function shiftMany(array &$array, int $amount): array
     {
         Assert::greaterThanOrEqualTo(0, $amount);
-        return array_values(array_splice($array, $amount));
+        return array_values(array_splice($array, 0, $amount));
     }
 
     /**
