@@ -7,6 +7,7 @@ use Kirameki\Exception\DuplicateKeyException;
 use Kirameki\Exception\InvalidKeyException;
 use Kirameki\Exception\InvalidValueException;
 use RuntimeException;
+use Webmozart\Assert\Assert;
 use function array_column;
 use function array_is_list;
 use function array_key_exists;
@@ -261,7 +262,8 @@ class Arr
      */
     public static function eachChunk(iterable $iterable, int $size, callable $callback): void
     {
-        Assert::positiveInt($size);
+        Assert::positiveInteger($size);
+
         $count = 0;
         $remaining = $size;
         $chunk = [];
@@ -441,7 +443,7 @@ class Arr
      */
     public static function flatten(iterable $iterable, int $depth = 1): array
     {
-        Assert::positiveInt($depth);
+        Assert::positiveInteger($depth);
 
         $results = [];
         $func = static function($_iterable, int $depth) use (&$func, &$results) {
@@ -542,7 +544,7 @@ class Arr
         foreach ($iterable as $k => $val) {
             $groupKey = $callable($val, $k);
             if ($groupKey !== null) {
-                Assert::validKey($groupKey);
+                Assert::validArrayKey($groupKey);
                 $map[$groupKey] ??= [];
                 $map[$groupKey][] = $val;
             }
@@ -1024,7 +1026,7 @@ class Arr
      */
     public static function popMany(array &$array, int $amount): array
     {
-        Assert::greaterThanOrEqualTo(0, $amount);
+        Assert::greaterThanEq($amount, 0);
         return array_splice($array, -$amount);
     }
 
@@ -1090,12 +1092,14 @@ class Arr
      */
     public static function reduce(iterable $iterable, callable $callback): mixed
     {
-        Assert::iterableHasAtleastOneElement($iterable);
+        $array = static::from($iterable);
 
-        $reduceable = static::drop($iterable, 1);
-        $intial = static::firstOrFail($iterable);
+        Assert::minCount($array, 1);
 
-        return static::fold($reduceable, $intial, $callback);
+        $reducing = static::drop($array, 1);
+        $initial = static::firstOrFail($array);
+
+        return static::fold($reducing, $initial, $callback);
     }
 
     /**
@@ -1141,7 +1145,7 @@ class Arr
      */
     public static function repeat(iterable $iterable, int $times): array
     {
-        Assert::greaterThanOrEqualTo(0, $times);
+        Assert::greaterThanEq($times, 0);
 
         $array = [];
         for ($i = 0; $i < $times; $i++) {
@@ -1286,7 +1290,7 @@ class Arr
      */
     public static function shiftMany(array &$array, int $amount): array
     {
-        Assert::greaterThanOrEqualTo(0, $amount);
+        Assert::greaterThanEq($amount, 0);
         return array_values(array_splice($array, 0, $amount));
     }
 
@@ -1401,7 +1405,7 @@ class Arr
     {
         $mapping = [];
         foreach ($iterable as $val) {
-            Assert::validKey($val);
+            Assert::validArrayKey($val);
             $mapping[$val] ??= 0;
             $mapping[$val]++;
         }

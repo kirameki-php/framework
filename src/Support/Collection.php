@@ -3,6 +3,7 @@
 namespace Kirameki\Support;
 
 use ArrayAccess;
+use Webmozart\Assert\Assert;
 
 /**
  * @template TKey of array-key|class-string
@@ -55,7 +56,7 @@ class Collection extends Enumerable implements ArrayAccess
         if ($offset === null) {
             $this->items[] = $value;
         } else {
-            Assert::validKey($offset);
+            Assert::validArrayKey($offset);
             $this->items[$offset] = $value;
         }
     }

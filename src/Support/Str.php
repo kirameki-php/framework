@@ -8,6 +8,7 @@ use Ramsey\Uuid\Uuid;
 use RuntimeException;
 use Traversable;
 use UnitEnum;
+use Webmozart\Assert\Assert;
 use function array_map;
 use function ceil;
 use function explode;
@@ -184,12 +185,14 @@ class Str
 
     /**
      * @param string $haystack
-     * @param array<string> $needles
+     * @param iterable<array-key, string> $needles
      * @return bool
      */
-    public static function containsAll(string $haystack, array $needles): bool
+    public static function containsAll(string $haystack, iterable $needles): bool
     {
-        Assert::iterableHasAtleastOneElement($needles);
+        $needles = Arr::from($needles);
+
+        Assert::minCount($needles, 1);
 
         foreach ($needles as $needle) {
             if(!str_contains($haystack, $needle)) {
@@ -201,15 +204,17 @@ class Str
 
     /**
      * @param string $haystack
-     * @param array<string> $needle
+     * @param iterable<array-key, string> $needles
      * @return bool
      */
-    public static function containsAny(string $haystack, array $needle): bool
+    public static function containsAny(string $haystack, iterable $needles): bool
     {
-        Assert::iterableHasAtleastOneElement($needle);
+        $needles = Arr::from($needles);
 
-        foreach ($needle as $each) {
-            if(str_contains($haystack, $each)) {
+        Assert::minCount($needles, 1);
+
+        foreach ($needles as $needle) {
+            if(str_contains($haystack, $needle)) {
                 return true;
             }
         }
@@ -359,7 +364,7 @@ class Str
      */
     public static function padRight(string $string, int $length, string $pad = ' '): string
     {
-        return static::pad($string, $length, $pad, STR_PAD_RIGHT);
+        return static::pad($string, $length, $pad);
     }
 
     /**
@@ -525,7 +530,7 @@ class Str
 
     /**
      * @param string $haystack
-     * @param string|string[] $needle
+     * @param string|list<string> $needle
      * @return bool
      */
     public static function startsWith(string $haystack, string|array $needle): bool

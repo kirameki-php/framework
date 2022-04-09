@@ -4,6 +4,7 @@ namespace Tests\Kirameki\Support;
 
 use DivisionByZeroError;
 use ErrorException;
+use InvalidArgumentException;
 use Kirameki\Exception\DuplicateKeyException;
 use Kirameki\Exception\InvalidKeyException;
 use Kirameki\Exception\InvalidValueException;
@@ -130,7 +131,7 @@ class CollectionTest extends TestCase
         collect([1])->chunk(0);
     }
 
-    public function testCoalease(): void
+    public function testCoalesce(): void
     {
         $result = collect()->coalesce();
         self::assertNull($result);
@@ -157,14 +158,14 @@ class CollectionTest extends TestCase
         self::assertEquals(1, $result);
     }
 
-    public function testCoaleaseOrFail_Empty(): void
+    public function testCoalesceOrFail_Empty(): void
     {
         $this->expectException(InvalidValueException::class);
         $this->expectExceptionMessage('Expected value to be not null. null given.');
         collect([])->coalesceOrFail();
     }
 
-    public function testCoaleaseOrFail_OnlyNull(): void
+    public function testCoalesceOrFail_OnlyNull(): void
     {
         $this->expectException(InvalidValueException::class);
         $this->expectExceptionMessage('Expected value to be not null. null given.');
@@ -445,8 +446,8 @@ class CollectionTest extends TestCase
     public function testEachChunk_NegativeValue(): void
     {
         $collect = collect(['a' => 1, 'b' => 2, 'c' => 3]);
-        $this->expectException(InvalidValueException::class);
-        $this->expectExceptionMessage('Expected value to be positive int. -2 given.');
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Expected a positive integer. Got: -2');
         $collect->eachChunk(-2, fn() => null);
     }
 
@@ -573,16 +574,16 @@ class CollectionTest extends TestCase
 
     public function testFlatten_ZeroDepth(): void
     {
-        $this->expectException(InvalidValueException::class);
-        $this->expectExceptionMessage('Expected value to be positive int. 0 given.');
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Expected a positive integer. Got: 0');
         $collect = collect([1, 2]);
         self::assertEquals([1, 2], $collect->flatten(0)->toArray());
     }
 
     public function testFlatten_NegativeDepth(): void
     {
-        $this->expectException(InvalidValueException::class);
-        $this->expectExceptionMessage('Expected value to be positive int. -1 given.');
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Expected a positive integer. Got: -1');
         $collect = collect([1, 2]);
         self::assertEquals([1, 2], $collect->flatten(-1)->toArray());
     }
@@ -1096,13 +1097,13 @@ class CollectionTest extends TestCase
 
     public function testOffsetSet_BoolAsKey(): void
     {
-        $this->expectException(InvalidKeyException::class);
+        $this->expectException(InvalidArgumentException::class);
         collect([])[true]= 1;
     }
 
     public function testOffsetSet_FloatAsKey(): void
     {
-        $this->expectException(InvalidKeyException::class);
+        $this->expectException(InvalidArgumentException::class);
         collect([])[1.1]= 1;
     }
 
@@ -1238,8 +1239,8 @@ class CollectionTest extends TestCase
 
     public function testReduce_UnableToGuessInitial(): void
     {
-        $this->expectException(RuntimeException::class);
-        $this->expectExceptionMessage('Iterable must contain at least one element.');
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Expected an array to contain at least 1 elements. Got: 0');
         collect([])->reduce(fn($c, $i, $k) => $k);
     }
 
@@ -1304,8 +1305,8 @@ class CollectionTest extends TestCase
 
     public function testRepeat_NegativeTimes(): void
     {
-        $this->expectException(InvalidValueException::class);
-        $this->expectExceptionMessage('Expected value to be greater than or equal to 0. -1 given.');
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Expected a value greater than or equal to 0. Got: -1');
 
         $collect = collect([1])->repeat(-1);
         self::assertEquals([], $collect->toArray(), 'Repeat -1 times (throws error)');

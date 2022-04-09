@@ -6,6 +6,7 @@ use ErrorException;
 use Kirameki\Support\Str;
 use RuntimeException;
 use Tests\Kirameki\TestCase;
+use Webmozart\Assert\InvalidArgumentException;
 
 class StrTest extends TestCase
 {
@@ -183,8 +184,8 @@ class StrTest extends TestCase
 
     public function testContainsAll_EmptyNeedles(): void
     {
-        $this->expectException(RuntimeException::class);
-        $this->expectExceptionMessage('Iterable must contain at least one element.');
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Expected an array to contain at least 1 elements. Got: 0');
         Str::containsAll('abcde', []);
     }
 
@@ -203,8 +204,8 @@ class StrTest extends TestCase
 
     public function testContainsAny_EmptyNeedles(): void
     {
-        $this->expectException(RuntimeException::class);
-        $this->expectExceptionMessage('Iterable must contain at least one element.');
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Expected an array to contain at least 1 elements. Got: 0');
         Str::containsAny('abcde', []);
     }
 

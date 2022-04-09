@@ -8,6 +8,7 @@ use Generator;
 use IteratorAggregate;
 use JsonSerializable;
 use Symfony\Component\VarDumper\VarDumper;
+use Webmozart\Assert\Assert;
 use function array_chunk;
 use function array_diff;
 use function array_diff_key;
@@ -975,7 +976,7 @@ class Enumerable implements Countable, IteratorAggregate, JsonSerializable
     protected function asArrayRecursive(iterable $items, int $depth, bool $validate = false): array
     {
         if ($validate) {
-            Assert::positiveInt($depth);
+            Assert::positiveInteger($depth);
         }
 
         return Arr::map($items, function($item) use ($depth) {

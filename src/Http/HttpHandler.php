@@ -101,8 +101,6 @@ class HttpHandler
      */
     protected function makeController(string $class, Request $request): Controller
     {
-        Assert::isClassOf($class, Controller::class);
-
         return new $class($request);
     }
 
