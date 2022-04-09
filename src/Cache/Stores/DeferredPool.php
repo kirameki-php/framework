@@ -9,7 +9,7 @@ class DeferredPool extends MemoryStore
      */
     public function __construct(?string $namespace = null)
     {
-        parent::__construct($namespace);
+        parent::__construct('__deferred_pool__', $namespace);
         $this->emitEvents(false);
     }
 
@@ -39,7 +39,7 @@ class DeferredPool extends MemoryStore
 
     /**
      * MemoryStore tries to delete expired ones but deferred needs the expired information
-     * because if the record does not exist it will try to get it from the underlying
+     * because if the record does not exist, it will try to get it from the underlying
      * store where the data might still exist.
      *
      * @inheritDoc
