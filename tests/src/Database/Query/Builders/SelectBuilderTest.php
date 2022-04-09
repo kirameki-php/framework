@@ -3,7 +3,6 @@
 namespace Tests\Kirameki\Database\Query\Builders;
 
 use Kirameki\Database\Query\Builders\JoinBuilder;
-use Kirameki\Database\Query\Expressions\Expr;
 use Kirameki\Database\Query\Expressions\Raw;
 use Kirameki\Database\Query\Support\Range;
 use Kirameki\Database\Query\Builders\ConditionBuilder;

@@ -3,7 +3,6 @@
 namespace Kirameki\Model;
 
 use Kirameki\Database\DatabaseManager;
-use Kirameki\Database\Query\Builders\ConditionBuilder;
 use Kirameki\Database\Query\Builders\SelectBuilder;
 use Kirameki\Database\Query\Support\SortOrder;
 use Kirameki\Model\Paginators\CursorPaginator;

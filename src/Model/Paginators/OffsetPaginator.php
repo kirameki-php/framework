@@ -2,9 +2,7 @@
 
 namespace Kirameki\Model\Paginators;
 
-use Kirameki\Model\Model;
 use Kirameki\Model\ModelCollection;
-use Kirameki\Model\Reflection;
 
 /**
  * @template T of Model

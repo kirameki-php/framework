@@ -5,7 +5,6 @@ namespace Kirameki\Model\Concerns;
 use Closure;
 use Kirameki\Database\Connection;
 use Kirameki\Model\Model;
-use Kirameki\Model\Relations\RelationCollection;
 use RuntimeException;
 use function sprintf;
 

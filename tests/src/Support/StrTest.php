@@ -4,7 +4,6 @@ namespace Tests\Kirameki\Support;
 
 use ErrorException;
 use Kirameki\Support\Str;
-use RuntimeException;
 use Tests\Kirameki\TestCase;
 use Webmozart\Assert\InvalidArgumentException;
 

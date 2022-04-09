@@ -3,7 +3,6 @@
 namespace Kirameki\Model\Concerns;
 
 use Kirameki\Model\Model;
-use Kirameki\Support\Arr;
 use Kirameki\Support\Json;
 
 /**

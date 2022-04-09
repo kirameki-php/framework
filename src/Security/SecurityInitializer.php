@@ -4,7 +4,6 @@ namespace Kirameki\Security;
 
 use Kirameki\Core\Application;
 use Kirameki\Core\Initializer;
-use Kirameki\Support\Arr;
 
 class SecurityInitializer implements Initializer
 {

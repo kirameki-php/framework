@@ -4,7 +4,6 @@ namespace Kirameki\Cache\Stores;
 
 use DateInterval;
 use DateTimeInterface;
-use Kirameki\Support\Str;
 use Kirameki\Support\Time;
 use RuntimeException;
 
