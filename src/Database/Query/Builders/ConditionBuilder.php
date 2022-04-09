@@ -10,6 +10,7 @@ use Kirameki\Database\Query\Support\Range;
 use Kirameki\Database\Query\Expressions\Expr;
 use Kirameki\Database\Query\Expressions\Raw;
 use Kirameki\Support\Concerns\Tappable;
+use LogicException;
 use RuntimeException;
 use Traversable;
 use function count;
@@ -70,12 +71,12 @@ class ConditionBuilder
 
         if ($num === 3) {
             [$column, $operator, $value] = $args;
-            if (is_string($column) && is_string($operator)) {
+            if (is_string($column)) {
                 return self::for($column)->match($operator, $value);
             }
         }
 
-        throw new RuntimeException('Invalid number of arguments. expected: 1~3. '.$num.' given.');
+        throw new LogicException('Invalid number of arguments. expected: 1~3. '.$num.' given.');
     }
 
     /**
@@ -150,54 +151,6 @@ class ConditionBuilder
         $this->current = $next;
         $this->defined = false;
         return $this;
-    }
-
-    /**
-     * @see equals()
-     */
-    public function eq(mixed $value): static
-    {
-        return $this->equals($value);
-    }
-
-    /**
-     * @see notEquals()
-     */
-    public function ne(mixed $value): static
-    {
-        return $this->notEquals($value);
-    }
-
-    /**
-     * @see lessThan()
-     */
-    public function lt(mixed $value): static
-    {
-        return $this->lessThan($value);
-    }
-
-    /**
-     * @see lessThanOrEqualTo()
-     */
-    public function lte(mixed $value): static
-    {
-        return $this->lessThanOrEqualTo($value);
-    }
-
-    /**
-     * @see greaterThan()
-     */
-    public function gt(mixed $value): static
-    {
-        return $this->greaterThan($value);
-    }
-
-    /**
-     * @see greaterThanOrEqualTo()
-     */
-    public function gte(mixed $value): static
-    {
-        return $this->greaterThanOrEqualTo($value);
     }
 
     /**
@@ -395,8 +348,12 @@ class ConditionBuilder
      * @param mixed $value
      * @return $this
      */
-    public function match(string $operator, mixed $value): static
+    public function match(string|Operator $operator, mixed $value): static
     {
+        if ($operator instanceof Operator) {
+            $operator = $operator->value;
+        }
+
         return match (strtoupper($operator)) {
             '=' => $this->equals($value),
             '!=', '<>' => $this->notEquals($value),

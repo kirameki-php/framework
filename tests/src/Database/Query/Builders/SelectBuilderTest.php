@@ -161,7 +161,7 @@ class SelectBuilderTest extends QueryTestCase
 
     public function testClone(): void
     {
-        $where = ConditionBuilder::for('id')->eq(1)->or('id')->eq(2);
+        $where = ConditionBuilder::for('id')->equals(1)->or('id')->equals(2);
         $base = $this->selectBuilder()->from('User')->where($where);
         $copy = clone $base;
         $where->or()->in([3,4]); // change $base but should not be reflected on copy
