@@ -67,7 +67,7 @@ trait Relations
      * @template TModel of Model
      * @param iterable<TModel> $srcModels
      * @param string $name
-     * @return ModelCollection<TModel>
+     * @return ModelCollection<int, Model>
      */
     protected function loadRelation(iterable $srcModels, string $name): ModelCollection
     {
@@ -89,14 +89,14 @@ trait Relations
      */
     public function preload(string|array $relationNames): static
     {
-        return $this->preloadRecursive([$this], $relationNames);
+        return $this->preloadRecursive([$this], Arr::wrap($relationNames));
     }
 
     /**
      * @template TModel of Model
      * @param iterable<TModel> $target
      * @param array<array-key, string> $names
-     * @return Model
+     * @return $this
      */
     protected function preloadRecursive(iterable $target, array $names): static
     {

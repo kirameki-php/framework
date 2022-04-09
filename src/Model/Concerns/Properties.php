@@ -140,10 +140,10 @@ trait Properties
 
     /**
      * @param string $name
-     * @param $value
+     * @param mixed $value
      * @return $this
      */
-    protected function setResolvedProperty(string $name, $value): static
+    protected function setResolvedProperty(string $name, mixed $value): static
     {
         $this->_resolvedProperties[$name] = $value;
         return $this;
@@ -181,7 +181,7 @@ trait Properties
     }
 
     /**
-     * @return array
+     * @return array<string, mixed>
      */
     public function getInitialProperties(): array
     {
@@ -218,7 +218,7 @@ trait Properties
     }
 
     /**
-     * @return array
+     * @return array<string, mixed>
      */
     public function getDirtyProperties(): array
     {

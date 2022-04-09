@@ -2,6 +2,9 @@ Core
 - flag to handle Deprecations on dev/prd
 - ex: error in dev / info in prd
 
+Cache
+- purge at certain time
+
 Http
 - mask request parameters from logging
 

@@ -7,7 +7,6 @@ use Kirameki\Exception\DuplicateKeyException;
 use Kirameki\Exception\InvalidKeyException;
 use Kirameki\Exception\InvalidValueException;
 use RuntimeException;
-use Traversable;
 use function array_column;
 use function array_is_list;
 use function array_key_exists;
