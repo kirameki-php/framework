@@ -668,6 +668,15 @@ class Enumerable implements Countable, IteratorAggregate, JsonSerializable
     }
 
     /**
+     * @param int $count
+     * @return static
+     */
+    public function rotate(int $count): static
+    {
+        return $this->newInstance(Arr::rotate($this->items, $count));
+    }
+
+    /**
      * @return TValue|null
      */
     public function sample(): mixed

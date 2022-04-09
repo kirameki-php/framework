@@ -389,8 +389,8 @@ class CollectionTest extends TestCase
         self::assertEquals(['c' => 3], $collect->dropUntil(fn($v, $k) => $k === 'c')->toArray());
 
         // drop until null does not work
-        $this->expectException(InvalidValueException::class);
-        $this->expectExceptionMessage('Expected value to be bool. null given.');
+        $this->expectException(TypeError::class);
+        $this->expectExceptionMessage('Kirameki\Support\Arr::verify(): Return value must be of type bool, null returned');
         $collect->dropUntil(fn($v, $k) => null)->toArray();
     }
 
@@ -404,8 +404,8 @@ class CollectionTest extends TestCase
         self::assertEquals(['c' => 3], $collect->dropWhile(fn($v, $k) => $k !== 'c')->toArray());
 
         // drop until null does not work
-        $this->expectException(InvalidValueException::class);
-        $this->expectExceptionMessage('Expected value to be bool. null given.');
+        $this->expectException(TypeError::class);
+        $this->expectExceptionMessage('Kirameki\Support\Arr::verify(): Return value must be of type bool, null returned');
         $collect->dropWhile(fn($v, $k) => null)->toArray();
     }
 
@@ -1328,6 +1328,18 @@ class CollectionTest extends TestCase
 
         $collect = collect(['a' => 1, 2, 3, 4])->reverse();
         self::assertEquals([2 => 4, 1 => 3, 0 => 2, 'a' => 1], $collect->toArray());
+    }
+
+    public function testRotate(): void
+    {
+        $collect = collect(['a' => 1, 'b' => 2, 'c' => 3])->rotate(1);
+        self::assertEquals(['b' => 2, 'c' => 3, 'a' => 1], $collect->toArray());
+
+        $collect = collect(['a' => 1, 'b' => 2, 'c' => 3])->rotate(2);
+        self::assertEquals(['c' => 3, 'a' => 1, 'b' => 2], $collect->toArray());
+
+        $collect = collect(['a' => 1, 'b' => 2, 'c' => 3])->rotate(-1);
+        self::assertEquals(['c' => 3, 'a' => 1, 'b' => 2], $collect->toArray());
     }
 
     public function testSample(): void

@@ -1172,6 +1172,20 @@ class Arr
      * @template TKey of array-key
      * @template TValue
      * @param iterable<TKey, TValue> $iterable
+     * @param int $count
+     * @return array<TKey, TValue>
+     */
+    public static function rotate(iterable $iterable, int $count): array
+    {
+        $array = static::from($iterable);
+        $rotates = array_splice($array, 0, $count);
+        return array_merge($array, $rotates);
+    }
+
+    /**
+     * @template TKey of array-key
+     * @template TValue
+     * @param iterable<TKey, TValue> $iterable
      * @return TValue
      */
     public static function sample(iterable $iterable): mixed
