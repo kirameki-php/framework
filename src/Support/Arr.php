@@ -1584,11 +1584,7 @@ class Arr
      */
     protected static function verify(callable $condition, mixed $key, mixed $val): bool
     {
-        $result = $condition($val, $key);
-        if (is_bool($result)) {
-            return $result;
-        }
-        throw new InvalidValueException('bool', $result); /** @phpstan-ignore-line */
+        return $condition($val, $key);
     }
 
     /**

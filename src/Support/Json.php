@@ -8,32 +8,37 @@ use function file_get_contents;
 
 class Json
 {
+    protected static int $encodeOptions =
+        JSON_PRESERVE_ZERO_FRACTION |
+        JSON_UNESCAPED_UNICODE |
+        JSON_UNESCAPED_SLASHES;
+
     /**
-     * @param mixed $data
-     * @param int $options
      * @param int<1, max> $depth
-     * @return string
      */
     public static function encode(mixed $data, int $options = 0, int $depth = 512): string
     {
-        $options = $options | JSON_PRESERVE_ZERO_FRACTION | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES;
-        return json_encode($data, JSON_THROW_ON_ERROR | $options, $depth);
+        return json_encode($data, $options | static::$encodeOptions | JSON_THROW_ON_ERROR, $depth);
+    }
+
+    public static function setEncodeOptions(int $options): void
+    {
+        static::$encodeOptions = $options;
+    }
+
+    public static function getEncodeOptions(): int
+    {
+        return static::$encodeOptions;
     }
 
     /**
-     * @param string $json
      * @param int<1, max> $depth
-     * @return mixed
      */
     public static function decode(string $json, int $depth = 512): mixed
     {
         return json_decode($json, true, $depth, JSON_THROW_ON_ERROR);
     }
 
-    /**
-     * @param string $path
-     * @return mixed
-     */
     public static function decodeFile(string $path): mixed
     {
         return static::decode((string) file_get_contents($path));

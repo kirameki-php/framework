@@ -895,12 +895,11 @@ class Enumerable implements Countable, IteratorAggregate, JsonSerializable
 
     /**
      * @param int $options
-     * @param int<1, max> $depth
      * @return string
      */
-    public function toJson(int $options = 0, int $depth = 512): string
+    public function toJson(int $options = 0): string
     {
-        return Json::encode($this->jsonSerialize(), $options, $depth);
+        return Json::encode($this->jsonSerialize(), $options);
     }
 
     /**
