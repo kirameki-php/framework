@@ -4,8 +4,8 @@ namespace Kirameki\Support;
 
 use DateTimeInterface;
 use Kirameki\Support\Concerns;
+use LogicException;
 use Ramsey\Uuid\Uuid;
-use RuntimeException;
 use Traversable;
 use UnitEnum;
 use Webmozart\Assert\Assert;
@@ -22,7 +22,6 @@ use function is_null;
 use function is_object;
 use function is_resource;
 use function is_string;
-use function get_class;
 use function get_resource_type;
 use function grapheme_strlen;
 use function grapheme_strpos;
@@ -406,7 +405,7 @@ class Str
             return $prefix . $string . $suffix;
         }
 
-        throw new RuntimeException('Invalid padding type: '.$type);
+        throw new LogicException('Invalid padding type: '.$type);
     }
 
     /**
@@ -566,7 +565,7 @@ class Str
             $pattern = '/(' . implode('|', array_map('preg_quote', $separator)) . ')/';
             $splits = preg_split($pattern, $string, $limit ?? -1);
             if ($splits === false) {
-                throw new RuntimeException('You should never reach here.');
+                throw new LogicException('You should never reach here.');
             }
             return $splits;
         }
@@ -762,7 +761,7 @@ class Str
             return get_resource_type($var);
         }
 
-        throw new RuntimeException('Unknown type: ' . $var);
+        throw new LogicException('Unknown type: ' . $var);
     }
 
     /**
