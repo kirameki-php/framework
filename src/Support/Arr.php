@@ -623,7 +623,7 @@ class Arr
      */
     public static function join(iterable $iterable, string $glue, ?string $prefix = null, ?string $suffix = null): string
     {
-        return $prefix.implode($glue, static::from($iterable)).$suffix;
+        return $prefix . implode($glue, static::from($iterable)) . $suffix;
     }
 
     /**
