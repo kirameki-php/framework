@@ -10,12 +10,13 @@ use function implode;
 class MySqlAdapter extends PdoAdapter
 {
     /**
-     * @return $this
+     * @return PDO
      */
-    public function connect(): static
+    protected function createPdo(): PDO
     {
         $config = $this->getConfig();
         $parts = [];
+
         if ($config->isNotNull('socket')) {
             $parts[] = 'unix_socket='.$config->getString('socket');
         } else {
@@ -23,12 +24,15 @@ class MySqlAdapter extends PdoAdapter
             $host.= isset($config['port']) ? 'port='.$config->getString('port') : '';
             $parts[] = $host;
         }
+
         if ($config->isNotNull('database')) {
             $parts[] = 'dbname='.$config->getString('database');
         }
+
         if ($config->isNotNull('charset')) {
             $parts[] = 'charset='.$config->getString('charset');
         }
+
         $dsn = 'mysql:'.implode(';', $parts);
         $username = $config->getStringOrNull('username') ?? 'root';
         $password = $config->getStringOrNull('password');
@@ -38,8 +42,8 @@ class MySqlAdapter extends PdoAdapter
             PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
             PDO::MYSQL_ATTR_FOUND_ROWS => true,
         ];
-        $this->pdo = new PDO($dsn, $username, $password, $options);
-        return $this;
+
+        return new PDO($dsn, $username, $password, $options);
     }
 
     /**

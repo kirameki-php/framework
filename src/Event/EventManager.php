@@ -90,7 +90,7 @@ class EventManager
 
     /**
      * @private
-     * @param string $class
+     * @param class-string<Event> $class
      * @param mixed ...$args
      * @return void
      */

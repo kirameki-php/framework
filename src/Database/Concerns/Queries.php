@@ -36,7 +36,7 @@ trait Queries
         $then = microtime(true);
         $result = $this->adapter->query($statement, $bindings);
         $elapsedMs = (microtime(true) - $then) * 1000;
-        $this->events->dispatchClass(QueryExecuted::class, $this, $statement, $bindings, $elapsedMs);
+        $this->events->dispatchClass(QueryExecuted::class, $this, $result, $elapsedMs);
         return $result;
     }
 

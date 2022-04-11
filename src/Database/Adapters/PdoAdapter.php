@@ -8,6 +8,7 @@ use Kirameki\Database\Connection;
 use Kirameki\Database\Query\Formatters\Formatter as QueryFormatter;
 use Kirameki\Database\Query\Result;
 use Kirameki\Database\Schema\Formatters\Formatter as SchemaFormatter;
+use LogicException;
 use PDO;
 use PDOStatement;
 use RuntimeException;
@@ -54,6 +55,15 @@ abstract class PdoAdapter implements Adapter
     }
 
     /**
+     * @return $this
+     */
+    public function connect(): static
+    {
+        $this->pdo = $this->createPdo();
+        return $this;
+    }
+
+    /**
      * @return bool
      */
     public function isConnected(): bool
@@ -69,8 +79,9 @@ abstract class PdoAdapter implements Adapter
     public function query(string $statement, array $bindings = []): Result
     {
         $prepared = $this->execQuery($statement, $bindings);
-        $result = $prepared->fetchAll(PDO::FETCH_ASSOC);
-        return new Result($result, $prepared->rowCount(...));
+        $rows = $prepared->fetchAll(PDO::FETCH_ASSOC);
+        $count = $prepared->rowCount(...);
+        return new Result($this, $statement, $bindings, $rows, $count);
     }
 
     /**
@@ -195,10 +206,12 @@ abstract class PdoAdapter implements Adapter
     protected function getPdo(): PDO
     {
         if ($this->pdo === null) {
-            $this->connect();
+            $this->pdo = $this->createPdo();
         }
-        return $this->pdo; /** @phpstan-ignore-line */
+        return $this->pdo;
     }
+
+    abstract protected function createPdo(): PDO;
 
     /**
      * @param string $str
@@ -207,7 +220,7 @@ abstract class PdoAdapter implements Adapter
     protected function alphanumeric(string $str): string
     {
         if (!preg_match('/^[a-zA-Z0-9_-]+$/', $str)) {
-            throw new RuntimeException('Invalid string: "'.$str.'". Only alphanumeric characters, "_", and "-" are allowed.');
+            throw new LogicException('Invalid string: "'.$str.'". Only alphanumeric characters, "_", and "-" are allowed.');
         }
         return $str;
     }

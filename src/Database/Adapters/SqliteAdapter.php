@@ -21,19 +21,20 @@ class SqliteAdapter extends PdoAdapter
     }
 
     /**
-     * @return $this
+     * @return PDO
      */
-    public function connect(): static
+    public function createPdo(): PDO
     {
         $config = $this->getConfig();
+
         $dsn = 'sqlite:'.$config->getString('path');
         $options = (array) ($config['options'] ?? []);
         $options+= [
             PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
             PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
         ];
-        $this->pdo = new PDO($dsn, null, null, $options);
-        return $this;
+
+        return new PDO($dsn, null, null, $options);
     }
 
     /**

@@ -3,6 +3,7 @@
 namespace Kirameki\Database\Query;
 
 use Closure;
+use Kirameki\Database\Adapters\Adapter;
 use Kirameki\Support\Collection;
 
 /**
@@ -11,18 +12,71 @@ use Kirameki\Support\Collection;
 class Result extends Collection
 {
     /**
+     * @var Adapter
+     */
+    protected Adapter $adapter;
+
+    /**
+     * @var string
+     */
+    protected string $statement;
+
+    /**
+     * @var array<mixed>
+     */
+    protected array $bindings;
+
+    /**
      * @var int|Closure(): int
      */
     protected int|Closure $affectedRowCount;
 
     /**
-     * @param array<int, mixed> $items
+     * @param Adapter $adapter
+     * @param string $statement
+     * @param array<mixed> $bindings
+     * @param array<int, mixed> $rows
      * @param int|Closure(): int $affectedRowCount
      */
-    public function __construct(array $items, int|Closure $affectedRowCount)
+    public function __construct(Adapter $adapter, string $statement, array $bindings, array $rows, int|Closure $affectedRowCount)
     {
-        parent::__construct($items);
+        parent::__construct($rows);
+        $this->adapter = $adapter;
+        $this->statement = $statement;
+        $this->bindings = $bindings;
         $this->affectedRowCount = $affectedRowCount;
+    }
+
+    /**
+     * @return string
+     */
+    public function getExecutedQuery(): string
+    {
+        return $this->adapter->getQueryFormatter()->interpolate($this->statement, $this->bindings);
+    }
+
+    /**
+     * @return Adapter
+     */
+    public function getAdapter(): Adapter
+    {
+        return $this->adapter;
+    }
+
+    /**
+     * @return string
+     */
+    public function getStatement(): string
+    {
+        return $this->statement;
+    }
+
+    /**
+     * @return array<mixed>
+     */
+    public function getBindings(): array
+    {
+        return $this->bindings;
     }
 
     /**
