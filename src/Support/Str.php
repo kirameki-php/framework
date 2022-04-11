@@ -170,7 +170,7 @@ class Str
     {
         $firstChar = mb_strtoupper((string) grapheme_substr($string, 0, 1));
         $otherChars = grapheme_substr($string, 1);
-        return $firstChar.$otherChars;
+        return $firstChar . $otherChars;
     }
 
     /**
@@ -266,8 +266,8 @@ class Str
     public static function insert(string $string, string $insert, int $position): string
     {
         return
-            grapheme_substr($string, 0, $position).
-            $insert.
+            grapheme_substr($string, 0, $position) .
+            $insert .
             grapheme_substr($string, $position);
     }
 
@@ -388,12 +388,12 @@ class Str
 
         if ($type === STR_PAD_RIGHT) {
             $repeat = (int) ceil($length / $padLength);
-            return (string) grapheme_substr($string.str_repeat($pad, $repeat), 0, $length);
+            return (string) grapheme_substr($string . str_repeat($pad, $repeat), 0, $length);
         }
 
         if ($type === STR_PAD_LEFT) {
             $repeat = (int) ceil($length / $padLength);
-            return (string) grapheme_substr(str_repeat($pad, $repeat).$string, -$length);
+            return (string) grapheme_substr(str_repeat($pad, $repeat) . $string, -$length);
         }
 
         if ($type === STR_PAD_BOTH) {
@@ -403,7 +403,7 @@ class Str
             $suffixLength = (int) ceil($halfLengthFraction);
             $prefix = grapheme_substr(str_repeat($pad, $halfRepeat), 0, $prefixLength);
             $suffix = grapheme_substr(str_repeat($pad, $halfRepeat), 0, $suffixLength);
-            return $prefix.$string.$suffix;
+            return $prefix . $string . $suffix;
         }
 
         throw new RuntimeException('Invalid padding type: '.$type);
@@ -563,7 +563,7 @@ class Str
     public static function split(string $string, string|array $separator, ?int $limit = null): array
     {
         if (is_array($separator)) {
-            $pattern = '/('.implode('|', array_map('preg_quote', $separator)).')/';
+            $pattern = '/(' . implode('|', array_map('preg_quote', $separator)) . ')/';
             $splits = preg_split($pattern, $string, $limit ?? -1);
             if ($splits === false) {
                 throw new RuntimeException('You should never reach here.');
@@ -652,7 +652,7 @@ class Str
      */
     public static function truncate(string $string, int $size, string $ellipsis = '...'): string
     {
-        return mb_strcut($string, 0, $size, self::Encoding).$ellipsis;
+        return mb_strcut($string, 0, $size, self::Encoding) . $ellipsis;
     }
 
     /**
@@ -755,14 +755,14 @@ class Str
         }
 
         if (is_object($var)) {
-            return get_class($var) . ':' . spl_object_hash($var);
+            return $var::class . ':' . spl_object_hash($var);
         }
 
         if (is_resource($var)) {
             return get_resource_type($var);
         }
 
-        throw new RuntimeException('Unknown type: '.$var);
+        throw new RuntimeException('Unknown type: ' . $var);
     }
 
     /**
