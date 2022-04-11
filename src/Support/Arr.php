@@ -143,14 +143,13 @@ class Arr
      * @template TKey of array-key
      * @template TValue
      * @param iterable<TKey, TValue> $iterable
-     * @param mixed|Closure(TValue, TKey): bool $value
+     * @param mixed $value
      * @return bool
      */
     public static function contains(iterable $iterable, mixed $value): bool
     {
-        $call = ($value instanceof Closure) ? $value : static fn($val) => $val === $value;
-        foreach ($iterable as $key => $val) {
-            if (static::verify($call, $key, $val)) {
+        foreach ($iterable as $val) {
+            if ($val === $value) {
                 return true;
             }
         }
@@ -946,7 +945,7 @@ class Arr
      * @template TKey of array-key
      * @template TValue
      * @param iterable<TKey, TValue> $iterable
-     * @param mixed|Closure(TValue, TKey): bool $value
+     * @param mixed $value
      * @return bool
      */
     public static function notContains(iterable $iterable, mixed $value): bool
@@ -1235,7 +1234,12 @@ class Arr
      */
     public static function satisfyAny(iterable $iterable, callable $condition): bool
     {
-        return static::contains($iterable, $condition);
+        foreach ($iterable as $key => $val) {
+            if (static::verify($condition, $key, $val)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**

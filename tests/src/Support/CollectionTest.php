@@ -226,7 +226,6 @@ class CollectionTest extends TestCase
     {
         $empty = collect();
         self::assertFalse($empty->contains(null));
-        self::assertFalse($empty->contains(static fn() => true));
 
         // sequence: compared with value
         $collect = collect([1, null, 2, [3], false]);
@@ -237,23 +236,11 @@ class CollectionTest extends TestCase
         self::assertFalse($collect->contains(3));
         self::assertFalse($collect->contains([]));
 
-        // sequence: compared with callback
-        $collect = collect([1, null, 2, [3], false]);
-        self::assertTrue($collect->contains(static fn($v) => true));
-        self::assertFalse($collect->contains(static fn($v) => false));
-        self::assertTrue($collect->contains(static fn($v) => is_array($v)));
-
         // assoc: compared with value
         $collect = collect(['a' => 1]);
         self::assertTrue($collect->contains(1));
         self::assertFalse($collect->contains(['a' => 1]));
         self::assertFalse($collect->contains(['a']));
-
-        // assoc: compared with callback
-        $collect = collect(['a' => 1, 'b' => 2]);
-        self::assertTrue($collect->contains(static fn($v, $k) => true));
-        self::assertFalse($collect->contains(static fn($v) => false));
-        self::assertTrue($collect->contains(static fn($v, $k) => $k === 'b'));
     }
 
     public function testContainsKey(): void
