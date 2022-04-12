@@ -63,8 +63,6 @@ trait Macroable
         if (! static::macroExists($method)) {
             throw new BadMethodCallException(sprintf('Method %s::%s does not exist.', static::class, $method));
         }
-        return static::$macros[$method]
-            ->bindTo($newThis, static::class)
-            ?->call($newThis, ...$parameters);
+        return static::$macros[$method]?->call($newThis, ...$parameters);
     }
 }

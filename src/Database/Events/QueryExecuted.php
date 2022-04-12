@@ -3,14 +3,18 @@
 namespace Kirameki\Database\Events;
 
 use Kirameki\Database\Connection;
-use Kirameki\Database\Query\Result;
 
 class QueryExecuted extends DatabaseEvent
 {
     /**
-     * @var Result
+     * @var string
      */
-    public Result $result;
+    public string $statement;
+
+    /**
+     * @var list<mixed>
+     */
+    public array $bindings;
 
     /**
      * @var float
@@ -19,21 +23,23 @@ class QueryExecuted extends DatabaseEvent
 
     /**
      * @param Connection $connection
-     * @param Result $result
+     * @param string $statement
+     * @param list<mixed> $bindings
      * @param float $elapsedMs
      */
-    public function __construct(Connection $connection, Result $result, float $elapsedMs)
+    public function __construct(Connection $connection, string $statement, array $bindings, float $elapsedMs)
     {
         parent::__construct($connection);
-        $this->result = $result;
+        $this->statement = $statement;
+        $this->bindings = $bindings;
         $this->elapsedMs = $elapsedMs;
     }
 
     /**
      * @return string
      */
-    public function toSql(): string
+    public function getExecutedQuery(): string
     {
-        return $this->result->getExecutedQuery();
+        return $this->connection->getQueryFormatter()->interpolate($this->statement, $this->bindings);
     }
 }

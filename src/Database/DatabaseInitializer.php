@@ -23,17 +23,15 @@ class DatabaseInitializer implements Initializer
         // Log Executed queries
         if ($app->inDebugMode()) {
             $app->get(EventManager::class)->listen(QueryExecuted::class, static function(QueryExecuted $event) {
-                $formatter = $event->connection->getQueryFormatter();
                 $name = $event->connection->getName();
-                $sql = $formatter->interpolate($event->statement, $event->bindings);
+                $executedQuery = $event->getExecutedQuery();
                 $elapsedMs = $event->elapsedMs;
-                $context = [
+                $message = sprintf('[db:%s] %s (%0.2f ms)', $name, $executedQuery, $elapsedMs);
+                logger()->debug($message, [
                     'statement' => $event->statement,
                     'bindings' => $event->bindings,
                     'elapsedMs' => $elapsedMs,
-                ];
-                $message = sprintf('[db:%s] %s (%0.2f ms)', $name, $sql, $elapsedMs);
-                logger()->debug($message, $context);
+                ]);
             });
         }
     }

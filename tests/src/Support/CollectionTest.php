@@ -839,7 +839,7 @@ class CollectionTest extends TestCase
 
     public function testMacro(): void
     {
-        Collection::macro('testMacro', static fn($num) => $num * 100);
+        Collection::macro('testMacro', fn($num) => $num * 100);
         $collect = collect([1]);
         self::assertEquals(200, $collect->testMacro(2));
     }

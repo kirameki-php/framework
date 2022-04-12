@@ -40,7 +40,7 @@ class QueryBuilder extends SelectBuilder
     {
         $reflection = $this->reflection;
         $results = $this->execute();
-        $models = $results->map(static fn(array $props) => $reflection->makeModel($props, true));
+        $models = $results->map(static fn(array $result) => $reflection->makeModel($result, true));
         return new ModelCollection($reflection, $models);
     }
 
