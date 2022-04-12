@@ -10,7 +10,7 @@ class TransactionSaved extends DatabaseEvent
     /**
      * @var Savepoint
      */
-    public Savepoint $savepoint;
+    public readonly Savepoint $savepoint;
 
     /**
      * @param Connection $connection

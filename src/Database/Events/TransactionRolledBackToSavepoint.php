@@ -10,7 +10,7 @@ class TransactionRolledBackToSavepoint extends DatabaseEvent
     /**
      * @var SavepointRollback
      */
-    public SavepointRollback $rollback;
+    public readonly SavepointRollback $rollback;
 
     /**
      * @param Connection $connection

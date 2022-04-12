@@ -9,17 +9,17 @@ class QueryExecuted extends DatabaseEvent
     /**
      * @var string
      */
-    public string $statement;
+    public readonly string $statement;
 
     /**
      * @var list<mixed>
      */
-    public array $bindings;
+    public readonly array $bindings;
 
     /**
      * @var float
      */
-    public float $elapsedMs;
+    public readonly float $elapsedMs;
 
     /**
      * @param Connection $connection

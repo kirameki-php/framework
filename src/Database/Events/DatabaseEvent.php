@@ -10,7 +10,7 @@ abstract class DatabaseEvent extends Event
     /**
      * @var Connection
      */
-    public Connection $connection;
+    public readonly Connection $connection;
 
     /**
      * @param Connection $connection

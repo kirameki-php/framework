@@ -9,22 +9,22 @@ class SchemaExecuted extends DatabaseEvent
     /**
      * @var string
      */
-    public string $statement;
+    public readonly string $statement;
 
     /**
      * @var float
      */
-    public float $time;
+    public readonly float $elapsedMs;
 
     /**
      * @param Connection $connection
      * @param string $statement
-     * @param float $time
+     * @param float $elapsedMs
      */
-    public function __construct(Connection $connection, string $statement, float $time)
+    public function __construct(Connection $connection, string $statement, float $elapsedMs)
     {
         parent::__construct($connection);
         $this->statement = $statement;
-        $this->time = $time;
+        $this->elapsedMs = $elapsedMs;
     }
 }

@@ -32,7 +32,7 @@ trait Schemas
     {
         $then = microtime(true);
         $this->adapter->execute($statement);
-        $time = microtime(true) - $then;
-        $this->events->dispatchClass(SchemaExecuted::class, $this, $statement, $time);
+        $elapsedMs = (microtime(true) - $then) * 1000;
+        $this->events->dispatchClass(SchemaExecuted::class, $this, $statement, $elapsedMs);
     }
 }

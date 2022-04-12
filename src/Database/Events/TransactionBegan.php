@@ -10,7 +10,7 @@ class TransactionBegan extends DatabaseEvent
     /**
      * @var Transaction
      */
-    public Transaction $transaction;
+    public readonly Transaction $transaction;
 
     /**
      * @param Connection $connection

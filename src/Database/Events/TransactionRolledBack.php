@@ -10,7 +10,7 @@ class TransactionRolledBack extends DatabaseEvent
     /**
      * @var Throwable
      */
-    public Throwable $throwable;
+    public readonly Throwable $throwable;
 
     /**
      * @param Connection $connection
