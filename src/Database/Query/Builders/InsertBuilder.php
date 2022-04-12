@@ -20,8 +20,7 @@ class InsertBuilder extends StatementBuilder
      */
     public function __construct(Connection $connection)
     {
-        $this->connection = $connection;
-        $this->statement = new InsertStatement();
+        parent::__construct($connection, new InsertStatement());
     }
 
     /**

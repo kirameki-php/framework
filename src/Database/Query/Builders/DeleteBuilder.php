@@ -15,8 +15,7 @@ class DeleteBuilder extends ConditionsBuilder
      */
     public function __construct(Connection $connection)
     {
-        $this->connection = $connection;
-        $this->statement = new DeleteStatement();
+        parent::__construct($connection, new DeleteStatement());
     }
 
     /**

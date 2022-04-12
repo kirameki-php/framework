@@ -25,6 +25,16 @@ abstract class StatementBuilder
     protected BaseStatement $statement;
 
     /**
+     * @param Connection $connection
+     * @param BaseStatement $statement
+     */
+    public function __construct(Connection $connection, BaseStatement $statement)
+    {
+        $this->connection = $connection;
+        $this->statement = $statement;
+    }
+
+    /**
      * Do a deep clone of object types
      * @return void
      */
@@ -41,6 +51,9 @@ abstract class StatementBuilder
         return $this->connection;
     }
 
+    /**
+     * @return BaseStatement
+     */
     public function getStatement(): BaseStatement
     {
         return $this->statement;

@@ -23,8 +23,7 @@ class SelectBuilder extends ConditionsBuilder
      */
     public function __construct(Connection $connection)
     {
-        $this->connection = $connection;
-        $this->statement = new SelectStatement();
+        parent::__construct($connection, new SelectStatement());
     }
 
     #region selecting --------------------------------------------------------------------------------------------------
