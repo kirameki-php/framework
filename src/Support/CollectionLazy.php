@@ -32,8 +32,7 @@ class CollectionLazy implements IteratorAggregate
      */
     public function getIterator(): Iterator
     {
-        $caller = $this->iteratorCaller;
-        return $caller();
+        return ($this->iteratorCaller)();
     }
 
     /**
