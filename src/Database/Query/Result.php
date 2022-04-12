@@ -14,22 +14,22 @@ class Result extends Collection
     /**
      * @var Adapter
      */
-    protected Adapter $adapter;
+    protected readonly Adapter $adapter;
 
     /**
      * @var string
      */
-    protected string $statement;
+    protected readonly string $statement;
 
     /**
      * @var array<mixed>
      */
-    protected array $bindings;
+    protected readonly array $bindings;
 
     /**
      * @var int|Closure(): int
      */
-    protected int|Closure $affectedRowCount;
+    protected readonly int|Closure $affectedRowCount;
 
     /**
      * @param Adapter $adapter

@@ -176,7 +176,7 @@ class ApcuStore extends AbstractStore
     /**
      * @inheritDoc
      */
-    public function ttl(string $key): ?int
+    public function ttl(string $key): int|float|null
     {
         if ($data = apcu_key_info($key)) {
             if ($data['ttl'] === 0) {

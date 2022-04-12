@@ -21,17 +21,17 @@ class Connection
     /**
      * @var string
      */
-    protected string $name;
+    protected readonly string $name;
 
     /**
      * @var Adapter
      */
-    protected Adapter $adapter;
+    protected readonly Adapter $adapter;
 
     /**
      * @var EventManager
      */
-    protected EventManager $events;
+    protected readonly EventManager $events;
 
     /**
      * @param string $name

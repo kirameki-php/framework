@@ -23,7 +23,7 @@ interface Store
 
     /**
      * @param string ...$keys
-     * @return array<mixed>
+     * @return array<string, mixed>
      */
     public function getMulti(string ...$keys): array;
 
@@ -48,7 +48,7 @@ interface Store
     public function set(string $key, $value, DateTimeInterface|DateInterval|int|float|null $ttl = null): void;
 
     /**
-     * @param array<mixed> $entries
+     * @param array<string, mixed> $entries
      * @param DateTimeInterface|DateInterval|int|float|null $ttl
      * @return void
      */

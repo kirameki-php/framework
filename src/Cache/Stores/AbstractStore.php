@@ -87,7 +87,7 @@ abstract class AbstractStore implements Store
 
     /**
      * @param string[] $keys
-     * @return array
+     * @return list<string>
      */
     public function formatKeys(array $keys): array
     {
@@ -104,8 +104,8 @@ abstract class AbstractStore implements Store
     }
 
     /**
-     * @param array $results
-     * @return array
+     * @param array<mixed> $results
+     * @return list<string>
      */
     public function unformatKeys(array $results): array
     {
@@ -113,8 +113,8 @@ abstract class AbstractStore implements Store
     }
 
     /**
-     * @param array $entries
-     * @return array
+     * @param array<string, mixed> $entries
+     * @return array<string, mixed>
      */
     public function formatEntries(array $entries): array
     {
@@ -145,8 +145,8 @@ abstract class AbstractStore implements Store
 
     /**
      * @param string $command
-     * @param array $keys
-     * @param array $results
+     * @param array<string> $keys
+     * @param array<string, mixed> $results
      * @return void
      */
     protected function triggerAccessEvent(string $command, array $keys, array $results): void
@@ -156,7 +156,7 @@ abstract class AbstractStore implements Store
 
     /**
      * @param string $command
-     * @param array $results
+     * @param array<string, mixed> $results
      * @return void
      */
     protected function triggerCheckEvent(string $command, array $results): void
@@ -166,7 +166,7 @@ abstract class AbstractStore implements Store
 
     /**
      * @param string $command
-     * @param array $entries
+     * @param array<string, mixed> $entries
      * @param DateTimeInterface|DateInterval|int|float|null $ttl
      * @return void
      */
@@ -190,8 +190,8 @@ abstract class AbstractStore implements Store
 
     /**
      * @param string $command
-     * @param array $keys
-     * @param array $missedKeys
+     * @param array<string> $keys
+     * @param array<string> $missedKeys
      * @return void
      */
     protected function triggerDeleteEvent(string $command, array $keys, array $missedKeys): void
@@ -202,7 +202,7 @@ abstract class AbstractStore implements Store
     /**
      * @param string $command
      * @param string $pattern
-     * @param array $keys
+     * @param list<string> $keys
      */
     protected function triggerDeleteMatchedEvent(string $command, string $pattern, array $keys): void
     {
@@ -211,7 +211,7 @@ abstract class AbstractStore implements Store
 
     /**
      * @param string $command
-     * @param array $keys
+     * @param list<string> $keys
      */
     protected function triggerDeleteExpiredEvent(string $command, array $keys): void
     {
@@ -230,9 +230,9 @@ abstract class AbstractStore implements Store
     /**
      * @param DateTimeInterface|DateInterval|int|float|null $ttl
      * @param int|null $now
-     * @return int
+     * @return int|float|null
      */
-    protected function formatTtl(DateTimeInterface|DateInterval|int|float|null $ttl = null, int $now = null): int
+    protected function formatTtl(DateTimeInterface|DateInterval|int|float|null $ttl = null, int $now = null): int|float|null
     {
         if ($ttl instanceof DateTimeInterface) {
             return $ttl->getTimestamp() - ($now ?? time());

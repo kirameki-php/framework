@@ -18,8 +18,8 @@ class CacheDeleted extends CacheEvent
      * @param string $name
      * @param string $namespace
      * @param string $command
-     * @param array $keys
-     * @param array $missedKeys
+     * @param list<string> $keys
+     * @param list<string> $missedKeys
      */
     public function __construct(string $name, string $namespace, string $command, array $keys, array $missedKeys)
     {

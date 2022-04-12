@@ -8,9 +8,9 @@ use DateTimeInterface;
 class CacheCountUpdated extends CacheStored
 {
     /**
-     * @var int
+     * @var int|null
      */
-    public int $result;
+    public ?int $result;
 
     /**
      * @param string $name
@@ -21,7 +21,7 @@ class CacheCountUpdated extends CacheStored
      * @param int $result
      * @param DateTimeInterface|DateInterval|int|float|null $ttl
      */
-    public function __construct(string $name, string $namespace, string $command, string $key, int $by, int $result, DateTimeInterface|DateInterval|int|float|null $ttl)
+    public function __construct(string $name, string $namespace, string $command, string $key, int $by, ?int $result, DateTimeInterface|DateInterval|int|float|null $ttl)
     {
         parent::__construct($name, $namespace, $command, [$key => $by], $ttl);
         $this->result = $result;
