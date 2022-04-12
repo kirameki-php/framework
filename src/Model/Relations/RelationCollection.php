@@ -50,21 +50,11 @@ class RelationCollection extends ModelCollection
     }
 
     /**
-     * @return string
-     */
-    public function getModelClass(): string
-    {
-        return $this->reflection->class;
-    }
-
-    /**
-     * @param array<string, mixed> $properties
-     * @return TDst
+     * @inheritDoc
      */
     public function make(array $properties = []): Model
     {
-        $model = $this->reflection->makeModel($properties);
-        return $this->setRelatedKeys($model);
+        return $this->setRelatedKeys(parent::make($properties));
     }
 
     /**
@@ -84,6 +74,14 @@ class RelationCollection extends ModelCollection
         foreach ($this->items as $item) {
             $item->save();
         }
+    }
+
+    /**
+     * @return int
+     */
+    public function deleteAll(): int
+    {
+        return $this->countBy(static fn(?Model $model) => $model !== null && $model->delete());
     }
 
     /**

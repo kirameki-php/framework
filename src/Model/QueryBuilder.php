@@ -39,9 +39,8 @@ class QueryBuilder extends SelectBuilder
     public function all(): ModelCollection
     {
         $reflection = $this->reflection;
-        /** @var array<int, array<string, mixed>> $results */
         $results = $this->execute();
-        $models = Arr::map($results, static fn(array $props) => $reflection->makeModel($props, true));
+        $models = $results->map(static fn(array $props) => $reflection->makeModel($props, true));
         return new ModelCollection($reflection, $models);
     }
 
@@ -50,7 +49,6 @@ class QueryBuilder extends SelectBuilder
      */
     public function first(): ?Model
     {
-        /** @var array<int, array<string, mixed>> $results */
         $results = $this->copy()->limit(1)->execute();
         return isset($results[0])
             ? $this->reflection->makeModel($results[0], true)

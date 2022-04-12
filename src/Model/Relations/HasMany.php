@@ -50,20 +50,20 @@ class HasMany extends Relation
 
     /**
      * @param TSrc $srcModel
-     * @param iterable<int, TDst> $destModels
+     * @param ModelCollection<int, TDst> $destModels
      * @return RelationCollection<TSrc, TDst>
      */
-    protected function toRelationCollection(Model $srcModel, iterable $destModels): RelationCollection
+    protected function toRelationCollection(Model $srcModel, ModelCollection $destModels): RelationCollection
     {
         return new RelationCollection($this, $srcModel, $this->getDstReflection(), $destModels);
     }
 
     /**
      * @param TSrc $srcModel
-     * @param iterable<TDst> $destModels
+     * @param ModelCollection<int, TDst> $destModels
      * @return void
      */
-    protected function setInverseRelations(Model $srcModel, iterable $destModels): void
+    protected function setInverseRelations(Model $srcModel, ModelCollection $destModels): void
     {
         if ($inverse = $this->getInverseName()) {
             foreach ($destModels as $destModel) {

@@ -45,9 +45,8 @@ class ModelCollection extends Collection
     }
 
     /**
-     * @template TPluckKey of array-key
-     * @param TPluckKey $key
-     * @return Collection<int, TPluckKey>
+     * @param array-key $key
+     * @return Collection<int, mixed>
      */
     public function pluck(int|string $key): Collection
     {
@@ -71,10 +70,13 @@ class ModelCollection extends Collection
     }
 
     /**
-     * @return int
+     * @param array<string, mixed> $properties
+     * @return TModel
      */
-    public function deleteAll(): int
+    public function make(array $properties = []): Model
     {
-        return $this->countBy(static fn(?Model $model) => $model !== null && $model->delete());
+        $model = $this->reflection->makeModel($properties);
+        $this->push($model);
+        return $model;
     }
 }

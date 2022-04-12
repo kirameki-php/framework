@@ -5,7 +5,6 @@ namespace Kirameki\Database\Query\Builders;
 use Closure;
 use Kirameki\Database\Connection;
 use Kirameki\Database\Query\Expressions\Aggregate;
-use Kirameki\Database\Query\Result;
 use Kirameki\Database\Query\Statements\ConditionDefinition;
 use Kirameki\Database\Query\Statements\SelectStatement;
 use Kirameki\Database\Query\Support\JoinType;
@@ -283,22 +282,6 @@ class SelectBuilder extends ConditionsBuilder
     public function getBindings(): array
     {
         return $this->getQueryFormatter()->formatBindingsForSelect($this->statement);
-    }
-
-    /**
-     * @return Result<int, mixed>
-     */
-    public function all(): Result
-    {
-        return $this->execute();
-    }
-
-    /**
-     * @return mixed|null
-     */
-    public function one(): mixed
-    {
-        return $this->copy()->limit(1)->execute()[0] ?? null;
     }
 
     /**

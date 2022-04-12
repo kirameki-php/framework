@@ -472,7 +472,7 @@ class Enumerable implements Countable, IteratorAggregate, JsonSerializable
      * @param bool $overwrite
      * @return static<array-key, TValue>
      */
-    public function keyBy(string|Closure $key, bool $overwrite = false): static /** @phpstan-ignore-line */
+    public function keyBy(string|Closure $key, bool $overwrite = false): static
     {
         return $this->newInstance(Arr::keyBy($this->items, $key, $overwrite));
     }
