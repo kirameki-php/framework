@@ -180,7 +180,7 @@ class DeferrableStore extends AbstractStore
     /**
      * @inheritDoc
      */
-    public function ttl(string $key): ?int
+    public function ttl(string $key): int|float|null
     {
         $result = null;
         if ($this->deferred) {
@@ -313,17 +313,17 @@ class DeferrableStore extends AbstractStore
     }
 
     /**
-     * @param $call
-     * @param ...$args
+     * @param string $call
+     * @param mixed ...$args
      * @return void
      */
-    protected function enqueue($call, ...$args): void
+    protected function enqueue(string $call, mixed ...$args): void
     {
         $this->queue[] = compact('call', 'args');
     }
 
     /**
-     * @param array $task
+     * @param array{ call: string, args: array<mixed> } $task
      * @return mixed
      */
     protected function executeTask(array $task): mixed
@@ -332,21 +332,31 @@ class DeferrableStore extends AbstractStore
     }
 
     /**
-     * @param DateTimeInterface|int|null $ttl
+     * @param DateTimeInterface|DateInterval|int|float|null $ttl
      * @return Time|null
      */
-    protected function toAbsoluteTtl(DateTimeInterface|int|null $ttl): ?Time
+    protected function toAbsoluteTtl(DateTimeInterface|DateInterval|int|float|null $ttl): ?Time
     {
         if (is_null($ttl)) {
             return null;
         }
 
-        if (is_int($ttl)) {
+        if (is_int($ttl) || is_float($ttl)) {
             return Time::createFromTimestamp(time() + $ttl);
         }
 
         if ($ttl instanceof Time) {
             return $ttl;
+        }
+
+        if ($ttl instanceof DateInterval) {
+            $seconds = ($ttl->s)
+                + ($ttl->i * 60)
+                + ($ttl->h * 60 * 60)
+                + ($ttl->d * 60 * 60 * 24)
+                + ($ttl->m * 60 * 60 * 24 * 30)
+                + ($ttl->y * 60 * 60 * 24 * 365);
+            return Time::createFromTimestamp(time() + $seconds);
         }
 
         // is DateTimeInterface
