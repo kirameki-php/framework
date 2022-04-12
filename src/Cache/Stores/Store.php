@@ -35,7 +35,7 @@ interface Store
 
     /**
      * @param string ...$keys
-     * @return array<string>
+     * @return array<string, bool>
      */
     public function existsMulti(string ...$keys): array;
 

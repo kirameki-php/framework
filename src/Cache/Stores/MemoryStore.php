@@ -9,7 +9,7 @@ use DateTimeInterface;
 class MemoryStore extends AbstractStore
 {
     /**
-     * @var array
+     * @var array<string, array{ value: string, created: ?int, ttl: int|float }>
      */
     protected array $stored;
 
@@ -247,7 +247,7 @@ class MemoryStore extends AbstractStore
     }
 
     /**
-     * @return array
+     * @return array<string, mixed>
      */
     public function all(): array
     {
@@ -303,11 +303,11 @@ class MemoryStore extends AbstractStore
     }
 
     /**
-     * @param $key
+     * @param string $key
      * @param bool $deserialize
-     * @return array|null
+     * @return array{ value: string, created: ?int, ttl: int|float }|null
      */
-    protected function fetchEntry($key, bool $deserialize = true): ?array
+    protected function fetchEntry(string $key, bool $deserialize = true): ?array
     {
         if ($data = $this->stored[$key] ?? null) {
             if ($this->calcRemainingTtl($data) > 0) {
@@ -324,23 +324,23 @@ class MemoryStore extends AbstractStore
 
     /**
      * @param string $key
-     * @param $value
+     * @param mixed $value
      * @param int|null $created
      * @param int|null $ttl
-     * @return array
+     * @return array<string, mixed>
      */
-    protected function storeEntry(string $key, $value, ?int $created, ?int $ttl): array
+    protected function storeEntry(string $key, mixed $value, ?int $created, ?int $ttl): array
     {
         return $this->stored[$key] = $this->makeEntry($value, $created, $ttl);
     }
 
     /**
-     * @param $value
+     * @param mixed $value
      * @param int|null $created
      * @param int|null $ttl
-     * @return array
+     * @return array{ value: string, created: ?int, ttl: int|float }
      */
-    protected function makeEntry($value, ?int $created, ?int $ttl): array
+    protected function makeEntry(mixed $value, ?int $created, ?int $ttl): array
     {
         return [
             'value' => $this->serialize($value),
@@ -350,7 +350,7 @@ class MemoryStore extends AbstractStore
     }
 
     /**
-     * @param array $data
+     * @param array{ value: string, created: ?int, ttl: int|float } $data
      * @return int
      */
     protected function calcRemainingTtl(array $data): int
@@ -359,19 +359,19 @@ class MemoryStore extends AbstractStore
     }
 
     /**
-     * @param $value
+     * @param mixed $value
      * @return mixed
      */
-    protected function serialize($value): mixed
+    protected function serialize(mixed $value): mixed
     {
         return ($this->serializeCall)($value);
     }
 
     /**
-     * @param $serialized
+     * @param string $serialized
      * @return mixed
      */
-    protected function deserialize($serialized): mixed
+    protected function deserialize(string $serialized): mixed
     {
         return ($this->deserializeCall)($serialized);
     }
