@@ -5,13 +5,13 @@ namespace Kirameki\Database\Query\Builders;
 use Closure;
 use Kirameki\Database\Connection;
 use Kirameki\Database\Query\Expressions\Aggregate;
+use Kirameki\Database\Query\Result;
 use Kirameki\Database\Query\Statements\ConditionDefinition;
 use Kirameki\Database\Query\Statements\SelectStatement;
 use Kirameki\Database\Query\Support\JoinType;
 use Kirameki\Database\Query\Support\LockOption;
 use Kirameki\Database\Query\Support\LockType;
 use Kirameki\Database\Query\Expressions\Expr;
-use Kirameki\Support\Collection;
 use function is_array;
 
 /**
@@ -286,11 +286,11 @@ class SelectBuilder extends ConditionsBuilder
     }
 
     /**
-     * @return Collection<int, mixed>
+     * @return Result<int, mixed>
      */
-    public function all(): Collection
+    public function all(): Result
     {
-        return new Collection($this->execute());
+        return $this->execute();
     }
 
     /**
