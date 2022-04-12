@@ -8,7 +8,7 @@ use DateTimeInterface;
 class CacheStored extends CacheEvent
 {
     /**
-     * @var array
+     * @var array<string, mixed>
      */
     public array $entries = [];
 
@@ -21,7 +21,7 @@ class CacheStored extends CacheEvent
      * @param string $name
      * @param string $namespace
      * @param string $command
-     * @param array $entries
+     * @param array<string, mixed> $entries
      * @param DateTimeInterface|DateInterval|int|float|null $ttl
      */
     public function __construct(string $name, string $namespace, string $command, array $entries, DateTimeInterface|DateInterval|int|float|null $ttl)

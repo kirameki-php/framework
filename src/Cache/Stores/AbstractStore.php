@@ -156,7 +156,7 @@ abstract class AbstractStore implements Store
 
     /**
      * @param string $command
-     * @param array<string, mixed> $results
+     * @param array<string, bool> $results
      * @return void
      */
     protected function triggerCheckEvent(string $command, array $results): void

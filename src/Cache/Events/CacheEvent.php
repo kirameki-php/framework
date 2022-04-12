@@ -9,17 +9,17 @@ abstract class CacheEvent extends Event
     /**
      * @var string
      */
-    public string $name;
+    public readonly string $name;
 
     /**
      * @var string
      */
-    public string $namespace;
+    public readonly string $namespace;
 
     /**
      * @var string
      */
-    public string $command;
+    public readonly string $command;
 
     /**
      * @param string $name

@@ -10,7 +10,7 @@ class CacheCountUpdated extends CacheStored
     /**
      * @var int|null
      */
-    public ?int $result;
+    public readonly ?int $result;
 
     /**
      * @param string $name

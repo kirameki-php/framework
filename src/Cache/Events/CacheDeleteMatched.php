@@ -7,12 +7,12 @@ class CacheDeleteMatched extends CacheDeleted
     /**
      * @var string
      */
-    public string $pattern;
+    public readonly string $pattern;
 
     /**
-     * @var string[]
+     * @var array<string>
      */
-    public array $keys;
+    public readonly array $keys;
 
     /**
      * @param string $name

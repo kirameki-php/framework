@@ -5,15 +5,15 @@ namespace Kirameki\Cache\Events;
 class CacheChecked extends CacheEvent
 {
     /**
-     * @var array
+     * @var array<string, bool>
      */
-    public array $entries;
+    public readonly array $entries;
 
     /**
      * @param string $name
      * @param string $namespace
      * @param string $command
-     * @param array $entries
+     * @param array<string, bool> $entries
      */
     public function __construct(string $name, string $namespace, string $command, array $entries)
     {

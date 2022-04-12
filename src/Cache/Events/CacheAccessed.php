@@ -7,19 +7,19 @@ class CacheAccessed extends CacheEvent
     /**
      * @var string[]
      */
-    public array $keys;
+    public readonly array $keys;
 
     /**
-     * @var array
+     * @var array<string, mixed>
      */
-    public array $results;
+    public readonly array $results;
 
     /**
      * @param string $name
      * @param string $namespace
      * @param string $command
-     * @param string[] $keys
-     * @param array $results
+     * @param array<string> $keys
+     * @param array<string, mixed> $results
      */
     public function __construct(string $name, string $namespace, string $command, array $keys, array $results)
     {

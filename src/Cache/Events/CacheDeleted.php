@@ -7,12 +7,12 @@ class CacheDeleted extends CacheEvent
     /**
      * @var string[]
      */
-    public array $keys;
+    public readonly array $keys;
 
     /**
      * @var string[]
      */
-    public array $missedKeys;
+    public readonly array $missedKeys;
 
     /**
      * @param string $name

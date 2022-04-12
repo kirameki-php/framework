@@ -25,7 +25,7 @@ class DeferrableStore extends AbstractStore
     protected bool $deferred;
 
     /**
-     * @var array
+     * @var list<array{ call: string, args: array<mixed> }>
      */
     protected array $queue = [];
 
