@@ -49,9 +49,9 @@ class QueryBuilder extends SelectBuilder
      */
     public function first(): ?Model
     {
-        $results = $this->copy()->limit(1)->execute();
-        return isset($results[0])
-            ? $this->reflection->makeModel($results[0], true)
+        $result = $this->copy()->limit(1)->execute()->first();
+        return $result !== null
+            ? $this->reflection->makeModel($result, true)
             : null;
     }
 

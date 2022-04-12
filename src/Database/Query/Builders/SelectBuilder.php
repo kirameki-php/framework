@@ -304,7 +304,6 @@ class SelectBuilder extends ConditionsBuilder
             $this->addToSelect($statement->groupBy[0]);
         }
 
-        /** @var array<array<string|int>> $results */
         $results = $this->copy()->addToSelect(new Aggregate('count', '*', 'total'))->execute();
 
         // when GROUP BY is defined, return in [columnValue => count] format
@@ -319,11 +318,11 @@ class SelectBuilder extends ConditionsBuilder
             return $aggregated;
         }
 
-        if (count($results) === 0) {
+        if ($results->isEmpty()) {
             return 0;
         }
 
-        return (int) $results[0]['total'];
+        return (int) $results->first()['total'];
     }
 
     /**
