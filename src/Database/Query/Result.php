@@ -4,12 +4,12 @@ namespace Kirameki\Database\Query;
 
 use Closure;
 use Kirameki\Database\Adapters\Adapter;
-use Kirameki\Support\Enumerable;
+use Kirameki\Support\Sequence;
 
 /**
- * @extends Enumerable<int, mixed>
+ * @extends Sequence<int, mixed>
  */
-class Result extends Enumerable
+class Result extends Sequence
 {
     /**
      * @var Adapter

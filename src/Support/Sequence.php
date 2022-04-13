@@ -27,7 +27,7 @@ use function ksort;
  * @template TValue
  * @implements IteratorAggregate<TKey, TValue>
  */
-class Enumerable implements Countable, IteratorAggregate, JsonSerializable
+class Sequence implements Countable, IteratorAggregate, JsonSerializable
 {
     use Concerns\Macroable;
     use Concerns\Tappable;
@@ -687,9 +687,9 @@ class Enumerable implements Countable, IteratorAggregate, JsonSerializable
 
     /**
      * @param int $amount
-     * @return static<int, TValue>
+     * @return static
      */
-    public function sampleMany(int $amount): Collection
+    public function sampleMany(int $amount): static
     {
         return $this->newInstance(Arr::sampleMany($this->items, $amount));
     }
@@ -881,7 +881,7 @@ class Enumerable implements Countable, IteratorAggregate, JsonSerializable
     /**
      * @return static<array-key, int>
      */
-    public function tally(): static
+    public function tally(): static /** @phpstan-ignore-line */
     {
         return $this->newInstance(Arr::tally($this->items));
     }

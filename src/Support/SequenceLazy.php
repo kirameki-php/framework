@@ -4,13 +4,14 @@ namespace Kirameki\Support;
 
 use Closure;
 use Iterator;
+use IteratorAggregate;
 
 /**
  * @template TKey of array-key
  * @template TValue
- * @extends Enumerable<TKey, TValue>
+ * @implements IteratorAggregate<TKey, TValue>
  */
-class EnumerableLazy extends Enumerable
+class SequenceLazy implements IteratorAggregate
 {
     /**
      * @var Closure(): Iterator<TKey, TValue>
@@ -39,7 +40,7 @@ class EnumerableLazy extends Enumerable
      */
     public function each(callable $callback): static
     {
-        return $this->newInstance(function () use ($callback) {
+        return new static(function () use ($callback) {
             foreach ($this as $key => $item) {
                 $callback($item, $key);
                 yield $key => $item;
@@ -53,7 +54,7 @@ class EnumerableLazy extends Enumerable
      */
     public function filter(callable $condition): static
     {
-        return $this->newInstance(function () use ($condition) {
+        return new static(function () use ($condition) {
             foreach ($this as $key => $item) {
                 if($condition($item, $key)) {
                     yield $key => $item;
@@ -63,13 +64,13 @@ class EnumerableLazy extends Enumerable
     }
 
     /**
-     * @template TNew
-     * @param callable(TValue, TKey): TNew $callback
-     * @return static<TKey, TNew>
+     * @template TNewValue
+     * @param callable(TValue, TKey): TNewValue $callback
+     * @return static<TKey, TNewValue>
      */
     public function map(callable $callback): static /** @phpstan-ignore-line */
     {
-        return $this->newInstance(function () use ($callback) {
+        return new static(function () use ($callback) {
             foreach ($this as $key => $item) {
                 yield $key => $callback($item, $key);
             }
