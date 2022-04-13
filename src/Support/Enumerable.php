@@ -5,6 +5,7 @@ namespace Kirameki\Support;
 use Closure;
 use Countable;
 use Generator;
+use Iterator;
 use IteratorAggregate;
 use JsonSerializable;
 use Symfony\Component\VarDumper\VarDumper;
@@ -47,10 +48,10 @@ class Enumerable implements Countable, IteratorAggregate, JsonSerializable
     /**
      * @template TNewKey of array-key
      * @template TNewValue
-     * @param iterable<TNewKey, TNewValue> $items
+     * @param iterable<TNewKey, TNewValue> $args
      * @return static<TNewKey, TNewValue>
      */
-    public function newInstance(iterable $items = []): static /** @phpstan-ignore-line */
+    public function newInstance(mixed $items): static /** @phpstan-ignore-line */
     {
         return new static($items);
     }
@@ -68,9 +69,9 @@ class Enumerable implements Countable, IteratorAggregate, JsonSerializable
     }
 
     /**
-     * @return Generator<TKey, TValue>
+     * @return Iterator<TKey, TValue>
      */
-    public function getIterator(): Generator
+    public function getIterator(): Iterator
     {
         foreach ($this->items as $key => $item) {
             yield $key => $item;
@@ -399,11 +400,11 @@ class Enumerable implements Countable, IteratorAggregate, JsonSerializable
 
     /**
      * @param string|Closure(TValue, TKey): array-key $key
-     * @return Collection<array-key, static>
+     * @return static<array-key, static>
      */
-    public function groupBy(string|Closure $key): Collection
+    public function groupBy(string|Closure $key): static
     {
-        return $this->newCollection(Arr::groupBy($this->items, $key))->map(fn($array) => $this->newInstance($array));
+        return $this->newInstance(Arr::groupBy($this->items, $key))->map(fn($array) => $this->newInstance($array));
     }
 
     /**
@@ -478,11 +479,11 @@ class Enumerable implements Countable, IteratorAggregate, JsonSerializable
     }
 
     /**
-     * @return Collection<int, TKey>
+     * @return static<int, TKey>
      */
-    public function keys(): Collection
+    public function keys(): static
     {
-        return $this->newCollection(Arr::keys($this->items));
+        return $this->newInstance(Arr::keys($this->items));
     }
 
     /**
@@ -524,11 +525,11 @@ class Enumerable implements Countable, IteratorAggregate, JsonSerializable
     /**
      * @template TNew
      * @param callable(TValue, TKey): TNew $callback
-     * @return Collection<TKey, TNew>
+     * @return static<TKey, TNew>
      */
-    public function map(callable $callback): Collection
+    public function map(callable $callback): static /** @phpstan-ignore-line */
     {
-        return $this->newCollection(Arr::map($this->items, $callback));
+        return $this->newInstance(Arr::map($this->items, $callback));
     }
 
     /**
@@ -686,11 +687,11 @@ class Enumerable implements Countable, IteratorAggregate, JsonSerializable
 
     /**
      * @param int $amount
-     * @return Collection<int, TValue>
+     * @return static<int, TValue>
      */
     public function sampleMany(int $amount): Collection
     {
-        return $this->newCollection(Arr::sampleMany($this->items, $amount));
+        return $this->newInstance(Arr::sampleMany($this->items, $amount));
     }
 
     /**
@@ -878,11 +879,11 @@ class Enumerable implements Countable, IteratorAggregate, JsonSerializable
     }
 
     /**
-     * @return Collection<array-key, int>
+     * @return static<array-key, int>
      */
-    public function tally(): Collection
+    public function tally(): static
     {
-        return $this->newCollection(Arr::tally($this->items));
+        return $this->newInstance(Arr::tally($this->items));
     }
 
     /**
@@ -990,16 +991,5 @@ class Enumerable implements Countable, IteratorAggregate, JsonSerializable
         return Arr::map($items, function($item) use ($depth) {
             return (is_iterable($item) && $depth > 1) ? $this->asArrayRecursive($item, $depth - 1) : $item;
         });
-    }
-
-    /**
-     * @template UKey of array-key
-     * @template UValue
-     * @param iterable<UKey, UValue> $items
-     * @return Collection<UKey, UValue>
-     */
-    protected function newCollection(iterable $items): Collection
-    {
-        return new Collection($items);
     }
 }

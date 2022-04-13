@@ -110,11 +110,11 @@ class Collection extends Enumerable implements ArrayAccess
 
     /**
      * @param int $amount
-     * @return Collection<int, TValue>
+     * @return static<int, TValue>
      */
     public function popMany(int $amount): Collection
     {
-        return $this->newCollection(Arr::popMany($this->items, $amount));
+        return $this->newInstance(Arr::popMany($this->items, $amount));
     }
 
     /**
@@ -204,11 +204,11 @@ class Collection extends Enumerable implements ArrayAccess
 
     /**
      * @param int $amount
-     * @return Collection<int, TValue>
+     * @return static<int, TValue>
      */
     public function shiftMany(int $amount): Collection
     {
-        return $this->newCollection(Arr::shiftMany($this->items, $amount));
+        return $this->newInstance(Arr::shiftMany($this->items, $amount));
     }
 
     /**

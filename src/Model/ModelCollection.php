@@ -79,4 +79,15 @@ class ModelCollection extends Collection
         $this->push($model);
         return $model;
     }
+
+    /**
+     * @template UKey of array-key
+     * @template UValue
+     * @param iterable<UKey, UValue> $items
+     * @return Collection<UKey, UValue>
+     */
+    protected function newCollection(iterable $items): Collection
+    {
+        return new Collection($items);
+    }
 }
