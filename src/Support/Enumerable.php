@@ -402,7 +402,7 @@ class Enumerable implements Countable, IteratorAggregate, JsonSerializable
      * @param string|Closure(TValue, TKey): array-key $key
      * @return static<array-key, static>
      */
-    public function groupBy(string|Closure $key): static
+    public function groupBy(string|Closure $key): static /** @phpstan-ignore-line */
     {
         return $this->newInstance(Arr::groupBy($this->items, $key))->map(fn($array) => $this->newInstance($array));
     }

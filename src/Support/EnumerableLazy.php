@@ -4,15 +4,13 @@ namespace Kirameki\Support;
 
 use Closure;
 use Iterator;
-use IteratorAggregate;
-use function iterator_to_array;
 
 /**
  * @template TKey of array-key
  * @template TValue
- * @implements IteratorAggregate<TKey, TValue>
+ * @extends Enumerable<TKey, TValue>
  */
-class CollectionLazy implements IteratorAggregate
+class EnumerableLazy extends Enumerable
 {
     /**
      * @var Closure(): Iterator<TKey, TValue>
@@ -28,7 +26,7 @@ class CollectionLazy implements IteratorAggregate
     }
 
     /**
-     * @return Iterator<TKey, TValue>
+     * @inheritDoc
      */
     public function getIterator(): Iterator
     {
@@ -36,22 +34,8 @@ class CollectionLazy implements IteratorAggregate
     }
 
     /**
-     * @return $this
-     */
-    public function dump(): static
-    {
-        return $this->newInstance(function () {
-            foreach ($this as $key => $item) {
-                /** @noinspection ForgottenDebugOutputInspection */
-                dump("$key => $item");
-                yield $key => $item;
-            }
-        });
-    }
-
-    /**
      * @param callable(TValue, TKey): void $callback
-     * @return $this
+     * @return static
      */
     public function each(callable $callback): static
     {
@@ -64,14 +48,14 @@ class CollectionLazy implements IteratorAggregate
     }
 
     /**
-     * @param callable(TValue, TKey): bool $callback
-     * @return $this
+     * @param callable(TValue, TKey): bool $condition
+     * @return static
      */
-    public function filter(callable $callback): static
+    public function filter(callable $condition): static
     {
-        return $this->newInstance(function () use ($callback) {
+        return $this->newInstance(function () use ($condition) {
             foreach ($this as $key => $item) {
-                if($callback($item, $key)) {
+                if($condition($item, $key)) {
                     yield $key => $item;
                 }
             }
@@ -79,33 +63,17 @@ class CollectionLazy implements IteratorAggregate
     }
 
     /**
-     * @param callable $callback
-     * @return $this
+     * @template TNew
+     * @param callable(TValue, TKey): TNew $callback
+     * @return static<TKey, TNew>
      */
-    public function map(callable $callback): static
+    public function map(callable $callback): static /** @phpstan-ignore-line */
     {
         return $this->newInstance(function () use ($callback) {
             foreach ($this as $key => $item) {
                 yield $key => $callback($item, $key);
             }
         });
-    }
-
-    /**
-     * @param Closure(): Iterator<TKey, TValue> $callback
-     * @return self<TKey, TValue>
-     */
-    protected function newInstance(Closure $callback): self
-    {
-        return new self($callback);
-    }
-
-    /**
-     * @return Collection<TKey, TValue>
-     */
-    public function collect(): Collection
-    {
-        return new Collection(iterator_to_array($this->getIterator()));
     }
 
     /**

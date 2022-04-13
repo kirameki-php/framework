@@ -4,12 +4,12 @@ namespace Kirameki\Database\Query;
 
 use Closure;
 use Kirameki\Database\Adapters\Adapter;
-use Kirameki\Support\Collection;
+use Kirameki\Support\Enumerable;
 
 /**
- * @template-extends Collection<int, mixed>
+ * @extends Enumerable<int, mixed>
  */
-class Result extends Collection
+class Result extends Enumerable
 {
     /**
      * @var Adapter
@@ -29,7 +29,7 @@ class Result extends Collection
     /**
      * @var int|Closure(): int
      */
-    protected readonly int|Closure $affectedRowCount;
+    protected int|Closure $affectedRowCount;
 
     /**
      * @param Adapter $adapter

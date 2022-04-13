@@ -997,11 +997,11 @@ class CollectionTest extends TestCase
     public function testNewInstance(): void
     {
         $collect = collect([]);
-        self::assertNotSame($collect, $collect->newInstance());
-        self::assertEquals($collect, $collect->newInstance());
+        self::assertNotSame($collect, $collect->newInstance([]));
+        self::assertEquals($collect, $collect->newInstance([]));
 
         $collect = collect([1, 10]);
-        self::assertEquals([], $collect->newInstance()->toArray());
+        self::assertEquals([], $collect->newInstance([])->toArray());
     }
 
     public function testNotContains(): void
