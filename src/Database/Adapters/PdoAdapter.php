@@ -7,6 +7,7 @@ use Kirameki\Core\Config;
 use Kirameki\Database\Connection;
 use Kirameki\Database\Query\Formatters\Formatter as QueryFormatter;
 use Kirameki\Database\Query\Result;
+use Kirameki\Database\Query\ResultLazy;
 use Kirameki\Database\Schema\Formatters\Formatter as SchemaFormatter;
 use LogicException;
 use PDO;
@@ -87,21 +88,25 @@ abstract class PdoAdapter implements Adapter
     /**
      * @param string $statement
      * @param array<mixed> $bindings
-     * @return Generator<mixed>
+     * @return ResultLazy
      */
-    public function cursor(string $statement, array $bindings = []): Generator
+    public function cursor(string $statement, array $bindings = []): ResultLazy
     {
         $prepared = $this->execQuery($statement, $bindings);
-        while (true) {
-            $data = $prepared->fetch();
-            if ($data === false) {
-                if ($prepared->errorCode() === '00000') {
-                    break;
+        $iterator = function() use ($prepared) {
+            while (true) {
+                $data = $prepared->fetch();
+                if ($data === false) {
+                    if ($prepared->errorCode() === '00000') {
+                        break;
+                    }
+                    $this->throwException($prepared);
                 }
-                $this->throwException($prepared);
+                yield $data;
             }
-            yield $data;
-        }
+        };
+        $count = $prepared->rowCount(...);
+        return new ResultLazy($this, $statement, $bindings, $iterator, $count);
     }
 
     /**

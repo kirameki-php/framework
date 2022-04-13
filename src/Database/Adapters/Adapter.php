@@ -6,6 +6,7 @@ use Generator;
 use Kirameki\Core\Config;
 use Kirameki\Database\Query\Formatters\Formatter as QueryFormatter;
 use Kirameki\Database\Query\Result;
+use Kirameki\Database\Query\ResultLazy;
 use Kirameki\Database\Schema\Formatters\Formatter as SchemaFormatter;
 
 interface Adapter
@@ -40,9 +41,9 @@ interface Adapter
     /**
      * @param string $statement
      * @param array<mixed> $bindings
-     * @return Generator<mixed>
+     * @return ResultLazy<int, mixed>
      */
-    public function cursor(string $statement, array $bindings = []): Generator;
+    public function cursor(string $statement, array $bindings = []): ResultLazy;
 
     /**
      * @return void

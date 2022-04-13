@@ -23,7 +23,7 @@ class SequenceLazy implements IteratorAggregate
      */
     public function __construct(iterable|Closure $source)
     {
-        $this->iteratorCaller = $this->arrayToIteratorCaller($source);
+        $this->iteratorCaller = $this->toIteratorCaller($source);
     }
 
     /**
@@ -78,10 +78,18 @@ class SequenceLazy implements IteratorAggregate
     }
 
     /**
+     * @return Sequence<TKey, TValue>
+     */
+    public function toSequence(): Sequence
+    {
+        return new Sequence(iterator_to_array($this));
+    }
+
+    /**
      * @param iterable<TKey, TValue>|Closure(): Iterator<TKey, TValue> $iterable
      * @return Closure
      */
-    protected function arrayToIteratorCaller(iterable|Closure $iterable): Closure
+    protected function toIteratorCaller(iterable|Closure $iterable): Closure
     {
         if ($iterable instanceof Closure) {
             return $iterable;
