@@ -267,7 +267,7 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
 
     /**
      * @param int $size
-     * @param callable (static<TKey, TValue>, int): void $callback
+     * @param callable(static<TKey, TValue>, int): void $callback
      * @return $this
      */
     public function eachChunk(int $size, callable $callback): static
@@ -334,7 +334,7 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
     }
 
     /**
-     * @param callable(TValue, TKey):bool | null $condition
+     * @param callable(TValue, TKey):bool|null $condition
      * @return TKey|null
      */
     public function firstKey(callable $condition = null): mixed
@@ -343,7 +343,7 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
     }
 
     /**
-     * @param callable(TValue, TKey):bool | null $condition
+     * @param callable(TValue, TKey):bool|null $condition
      * @return TValue
      */
     public function firstOrFail(callable $condition = null): mixed
@@ -487,7 +487,7 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
     }
 
     /**
-     * @param callable|null $condition
+     * @param callable(TValue, TKey): bool|null $condition
      * @return TValue|null
      */
     public function last(callable $condition = null): mixed
@@ -496,7 +496,7 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
     }
 
     /**
-     * @param callable $condition
+     * @param callable(TValue, TKey): bool $condition
      * @return int|null
      */
     public function lastIndex(callable $condition): ?int
@@ -505,7 +505,7 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
     }
 
     /**
-     * @param callable(TValue, TKey):bool | null $condition
+     * @param callable(TValue, TKey): bool|null $condition
      * @return mixed
      */
     public function lastKey(callable $condition = null): mixed
@@ -514,7 +514,7 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
     }
 
     /**
-     * @param callable(TValue, TKey):bool | null $condition
+     * @param callable(TValue, TKey): bool|null $condition
      * @return TValue
      */
     public function lastOrFail(callable $condition = null): mixed
@@ -861,7 +861,7 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
     }
 
     /**
-     * @param callable $condition
+     * @param callable(TValue, TKey): bool $condition
      * @return static
      */
     public function takeUntil(callable $condition): static
@@ -870,7 +870,7 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
     }
 
     /**
-     * @param callable $condition
+     * @param callable(TValue, TKey): bool $condition
      * @return static
      */
     public function takeWhile(callable $condition): static
@@ -949,7 +949,7 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
     }
 
     /**
-     * @param callable $callback
+     * @param callable(TValue, TKey): bool $callback
      * @return static
      */
     public function uniqueBy(callable $callback): static

@@ -686,7 +686,7 @@ class Arr
      * @template TKey of array-key
      * @template TValue
      * @param iterable<TKey, TValue> $iterable
-     * @param callable(TValue, TKey): bool $condition
+     * @param callable(TValue, TKey): bool|null $condition
      * @return TValue|null
      */
     public static function last(iterable $iterable, ?callable $condition = null): mixed
