@@ -37,7 +37,6 @@ use function iterator_to_array;
 use function key;
 use function max;
 use function min;
-use function next;
 use function prev;
 
 class Arr
