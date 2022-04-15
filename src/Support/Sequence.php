@@ -853,11 +853,11 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
     }
 
     /**
-     * @return static<array-key, int>
+     * @return Collection<array-key, int>
      */
-    public function tally(): static /** @phpstan-ignore-line */
+    public function tally(): Collection
     {
-        return $this->newInstance(Arr::tally($this));
+        return new Collection(Arr::tally($this));
     }
 
     /**
