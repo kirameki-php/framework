@@ -32,16 +32,16 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
     use Concerns\Tappable;
 
     /**
-     * @var iterable<TKey, TValue>
+     * @var iterable<TKey, TValue>|null
      */
-    protected iterable $items;
+    protected ?iterable $items;
 
     /**
      * @param iterable<TKey, TValue>|null $items
      */
     public function __construct(iterable|null $items = null)
     {
-        $this->items = $items ?? [];
+        $this->items = $items;
     }
 
     /**
@@ -72,8 +72,10 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
      */
     public function getIterator(): Iterator
     {
-        foreach ($this->items as $key => $item) {
-            yield $key => $item;
+        if ($this->items !== null) {
+            foreach ($this->items as $key => $item) {
+                yield $key => $item;
+            }
         }
     }
 

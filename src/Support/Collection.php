@@ -21,11 +21,7 @@ class Collection extends Sequence implements ArrayAccess
      */
     public function __construct(iterable|null $items = null)
     {
-        if ($items !== null) {
-            $items = Arr::from($items);
-        }
-
-        parent::__construct($items);
+        parent::__construct(Arr::from($items ?? []));
     }
 
     /**

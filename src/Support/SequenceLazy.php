@@ -24,6 +24,7 @@ class SequenceLazy extends Sequence
     public function __construct(iterable|Closure $source)
     {
         $this->iteratorCaller = $this->toIteratorCaller($source);
+        parent::__construct();
     }
 
     /**
