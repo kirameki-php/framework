@@ -12,7 +12,7 @@ use function preg_replace;
 
 /**
  * @template T as Model
- * @template-implements Auth<T>
+ * @implements Auth<T>
  */
 class TokenAuth implements Auth
 {

@@ -8,7 +8,7 @@ use Kirameki\Model\ModelCollection;
 /**
  * @template TSrc of Model
  * @template TDst of Model
- * @template-extends Relation<TSrc, TDst>
+ * @extends Relation<TSrc, TDst>
  */
 class HasOne extends Relation
 {

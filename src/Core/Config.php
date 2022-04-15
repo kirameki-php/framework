@@ -6,7 +6,7 @@ use ArrayAccess;
 use RuntimeException;
 
 /**
- * @template-implements ArrayAccess<array-key, mixed>
+ * @implements ArrayAccess<array-key, mixed>
  */
 class Config implements ArrayAccess
 {

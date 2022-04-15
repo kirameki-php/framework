@@ -4,7 +4,7 @@ namespace Kirameki\Container;
 
 /**
  * @template TEntry
- * @template-implements Entry<TEntry>
+ * @implements Entry<TEntry>
  */
 class InstanceEntry implements Entry
 {

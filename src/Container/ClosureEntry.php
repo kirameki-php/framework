@@ -7,7 +7,7 @@ use Webmozart\Assert\Assert;
 
 /**
  * @template TEntry
- * @template-implements Entry<TEntry>
+ * @implements Entry<TEntry>
  */
 class ClosureEntry implements Entry
 {

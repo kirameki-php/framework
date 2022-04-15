@@ -7,7 +7,7 @@ use Kirameki\Model\ModelCollection;
 
 /**
  * @template T of Model
- * @template-extends ModelCollection<int, T>
+ * @extends ModelCollection<int, T>
  */
 class OffsetPaginator extends ModelCollection
 {

@@ -9,7 +9,7 @@ use Webmozart\Assert\Assert;
  * @template TKey of array-key|class-string
  * @template TValue
  *
- * @extends  Sequence<TKey, TValue>
+ * @extends Sequence<TKey, TValue>
  * @implements ArrayAccess<TKey, TValue>
  *
  * @property array<TKey, TValue> $items

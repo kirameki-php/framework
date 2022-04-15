@@ -6,7 +6,7 @@ use IteratorAggregate;
 use Traversable;
 
 /**
- * @template-implements IteratorAggregate<int, mixed>
+ * @implements IteratorAggregate<int, mixed>
  */
 class Range implements IteratorAggregate
 {

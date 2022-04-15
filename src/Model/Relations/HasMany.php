@@ -10,7 +10,7 @@ use Kirameki\Model\Reflection;
 /**
  * @template TSrc of Model
  * @template TDst of Model
- * @template-extends Relation<TSrc, TDst>
+ * @extends Relation<TSrc, TDst>
  */
 class HasMany extends Relation
 {
