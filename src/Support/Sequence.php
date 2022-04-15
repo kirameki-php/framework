@@ -308,7 +308,7 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
     }
 
     /**
-     * @param callable(TValue, TKey):bool|null $condition
+     * @param callable(TValue, TKey): bool|null $condition
      * @return TKey|null
      */
     public function firstKey(callable $condition = null): mixed
@@ -317,7 +317,7 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
     }
 
     /**
-     * @param callable(TValue, TKey):bool|null $condition
+     * @param callable(TValue, TKey): bool|null $condition
      * @return TValue
      */
     public function firstOrFail(callable $condition = null): mixed
@@ -326,7 +326,7 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
     }
 
     /**
-     * @param callable(TValue, TKey):mixed $callable
+     * @param callable(TValue, TKey): mixed $callable
      * @return static
      */
     public function flatMap(callable $callable): static
