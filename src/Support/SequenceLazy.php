@@ -80,7 +80,7 @@ class SequenceLazy implements IteratorAggregate
     /**
      * @return Sequence<TKey, TValue>
      */
-    public function toSequence(): Sequence
+    public function eager(): Sequence
     {
         return new Sequence(iterator_to_array($this));
     }

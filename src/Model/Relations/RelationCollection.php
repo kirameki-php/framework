@@ -71,7 +71,7 @@ class RelationCollection extends ModelCollection
      */
     public function save(): void
     {
-        foreach ($this->items as $item) {
+        foreach ($this as $item) {
             $item->save();
         }
     }

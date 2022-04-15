@@ -7,6 +7,7 @@ use Kirameki\Database\Connection;
 use Kirameki\Database\Events\QueryExecuted;
 use Kirameki\Database\Query\Formatters\Formatter as QueryFormatter;
 use Kirameki\Database\Query\Result;
+use Kirameki\Database\Query\ResultLazy;
 
 /**
  * @mixin Connection
@@ -43,9 +44,9 @@ trait Queries
     /**
      * @param string $statement
      * @param array<mixed> $bindings
-     * @return Generator<mixed>
+     * @return ResultLazy
      */
-    public function cursor(string $statement, array $bindings = []): Generator
+    public function cursor(string $statement, array $bindings = []): ResultLazy
     {
         $then = microtime(true);
         $result = $this->adapter->cursor($statement, $bindings);
