@@ -113,15 +113,14 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
 
     /**
      * @param int<1, max> $size
-     * @return static<int, static<TKey, TValue>>
+     * @return static<int, Collection<TKey, TValue>>
      */
-    public function chunk(int $size): self
+    public function chunk(int $size): static /** @phpstan-ignore-line */
     {
         $array = $this->toArray();
         $chunks = [];
-        foreach (array_chunk($array, $size, Arr::isAssoc($array)) as $chunk) {
-            /** @var static<TKey, TValue> $chunk */
-            $converted = $this->newInstance($chunk);
+        foreach (Arr::chunk($array, $size) as $chunk) {
+            $converted = new Collection($chunk);
             $chunks[] = $converted;
         }
         return $this->newInstance($chunks);
@@ -167,7 +166,7 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
      */
     public function count(): int
     {
-        return Arr::count(Arr::from($this));
+        return Arr::count($this->toArray());
     }
 
     /**
@@ -251,20 +250,6 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
     public function each(callable $callback): static
     {
         Arr::each($this, $callback);
-        return $this;
-    }
-
-    /**
-     * @param int $size
-     * @param callable(static<TKey, TValue>, int): void $callback
-     * @return $this
-     */
-    public function eachChunk(int $size, callable $callback): static
-    {
-        Arr::eachChunk($this, $size, function(array $items, int $count) use ($callback) {
-            $instance = $this->newInstance($items);
-            $callback($instance, $count);
-        });
         return $this;
     }
 
@@ -472,7 +457,7 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
      */
     public function keys(): static
     {
-        return $this->newInstance(Arr::keys($this->items));
+        return $this->newInstance(Arr::keys($this));
     }
 
     /**
@@ -880,7 +865,7 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
      */
     public function toArray(): array
     {
-        return $this->asArray($this->items);
+        return $this->asArray($this);
     }
 
     /**
@@ -889,7 +874,7 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
      */
     public function toArrayRecursive(?int $depth = null): array
     {
-        return $this->asArrayRecursive($this->items, $depth ?? PHP_INT_MAX, true);
+        return $this->asArrayRecursive($this, $depth ?? PHP_INT_MAX, true);
     }
 
     /**
@@ -978,7 +963,10 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
         }
 
         return Arr::map($items, function($item) use ($depth) {
-            return (is_iterable($item) && $depth > 1) ? $this->asArrayRecursive($item, $depth - 1) : $item;
+            if (is_iterable($item) && $depth > 1) {
+                return $this->asArrayRecursive($item, $depth - 1);
+            }
+            return $item;
         });
     }
 }

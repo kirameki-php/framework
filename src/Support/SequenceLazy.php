@@ -4,14 +4,14 @@ namespace Kirameki\Support;
 
 use Closure;
 use Iterator;
-use IteratorAggregate;
+use Webmozart\Assert\Assert;
 
 /**
  * @template TKey of array-key
  * @template TValue
- * @implements IteratorAggregate<TKey, TValue>
+ * @extends Sequence<TKey, TValue>
  */
-class SequenceLazy implements IteratorAggregate
+class SequenceLazy extends Sequence
 {
     /**
      * @var Closure(): Iterator<TKey, TValue>
@@ -35,8 +35,102 @@ class SequenceLazy implements IteratorAggregate
     }
 
     /**
-     * @param callable(TValue, TKey): void $callback
-     * @return static
+     * @inheritDoc
+     */
+    public function chunk(int $size): static
+    {
+        Assert::positiveInteger($size);
+
+        return new static(function () use ($size) {
+            $remaining = $size;
+            $chunk = [];
+            foreach ($this as $key => $val) {
+                $chunk[$key] = $val;
+                $remaining--;
+                if ($remaining === 0) {
+                    yield $chunk;
+                    $remaining = $size;
+                    $chunk = [];
+                }
+            }
+            if (count($chunk) > 0) {
+                yield $chunk;
+            }
+        });
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function compact(int $depth = 1): static
+    {
+        return new static(function() use ($depth) {
+            $result = [];
+            foreach ($this as $key => $val) {
+                if (is_iterable($val) && $depth > 1) {
+                    $val = Arr::compact($val, $depth - 1); /** @phpstan-ignore-line */
+                }
+                if ($val !== null) {
+                    $result[$key] = $val;
+                    yield $key => $val;
+                }
+            }
+            return $result;
+        });
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function drop(int $amount): static
+    {
+        return new static(function () use ($amount) {
+            $count = 0;
+            foreach ($this as $key => $item) {
+                if ($count > $amount) {
+                    yield $key => $item;
+                }
+                ++$count;
+            }
+        });
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function dropUntil(callable $condition): static
+    {
+        return new static(function () use ($condition) {
+            $drop = true;
+            foreach ($this as $key => $item) {
+                if ($drop && $condition($item, $key)) {
+                    $drop = false;
+                } else {
+                    yield $key => $item;
+                }
+            }
+        });
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function dropWhile(callable $condition): static
+    {
+        return new static(function () use ($condition) {
+            $drop = true;
+            foreach ($this as $key => $item) {
+                if ($drop && !$condition($item, $key)) {
+                    $drop = false;
+                } else {
+                    yield $key => $item;
+                }
+            }
+        });
+    }
+
+    /**
+     * @inheritDoc
      */
     public function each(callable $callback): static
     {
@@ -49,14 +143,13 @@ class SequenceLazy implements IteratorAggregate
     }
 
     /**
-     * @param callable(TValue, TKey): bool $condition
-     * @return static
+     * @inheritDoc
      */
     public function filter(callable $condition): static
     {
         return new static(function () use ($condition) {
             foreach ($this as $key => $item) {
-                if($condition($item, $key)) {
+                if ($condition($item, $key)) {
                     yield $key => $item;
                 }
             }
@@ -64,15 +157,74 @@ class SequenceLazy implements IteratorAggregate
     }
 
     /**
-     * @template TNewValue
-     * @param callable(TValue, TKey): TNewValue $callback
-     * @return static<TKey, TNewValue>
+     * @return static
      */
-    public function map(callable $callback): static /** @phpstan-ignore-line */
+    public function keys(): static
+    {
+        return new static(function () {
+            foreach ($this as $key => $item) {
+                yield $key;
+            }
+        });
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function map(callable $callback): static
     {
         return new static(function () use ($callback) {
             foreach ($this as $key => $item) {
                 yield $key => $callback($item, $key);
+            }
+        });
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function take(int $amount): static
+    {
+        return new static(function () use ($amount) {
+            $count = 0;
+            foreach ($this as $key => $item) {
+                if ($count > $amount) {
+                    break;
+                }
+                yield $key => $item;
+                ++$count;
+            }
+        });
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function takeUntil(callable $condition): static
+    {
+        return new static(function () use ($condition) {
+            foreach ($this as $key => $item) {
+                if (!$condition($item, $key)) {
+                    yield $key => $item;
+                } else {
+                    break;
+                }
+            }
+        });
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function takeWhile(callable $condition): static
+    {
+        return new static(function () use ($condition) {
+            foreach ($this as $key => $item) {
+                if ($condition($item, $key)) {
+                    yield $key => $item;
+                } else {
+                    break;
+                }
             }
         });
     }

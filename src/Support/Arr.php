@@ -51,7 +51,7 @@ class Arr
      * @param int $position
      * @return TValue|null
      */
-    public static function at(iterable $iterable, int $position)
+    public static function at(iterable $iterable, int $position): mixed
     {
         $array = static::from($iterable);
         $offset = $position >= 0 ? $position : count($array) + $position;
@@ -83,6 +83,39 @@ class Arr
         }
 
         return array_sum($array) / $size;
+    }
+
+    /**
+     * @template TKey of array-key
+     * @template TValue
+     * @param iterable<TKey, TValue> $iterable
+     * @param int $size
+     * @return array<int, array<TKey, TValue>>
+     */
+    public static function chunk(iterable $iterable, int $size): array
+    {
+        Assert::positiveInteger($size);
+
+        $retainKey = static::isAssoc($iterable);
+        $remaining = $size;
+
+        $chunks = [];
+        $block = [];
+        foreach ($iterable as $key => $val) {
+            $retainKey
+                ? $block[$key] = $val
+                : $block[] = $val;
+
+            if ((--$remaining) === 0) {
+                $remaining = $size;
+                $chunks[] = $block;
+                $block = [];
+            }
+        }
+        if (count($block) > 0) {
+            $chunks[] = $block;
+        }
+        return $chunks;
     }
 
     /**
@@ -248,36 +281,6 @@ class Arr
     {
         foreach ($iterable as $key => $val) {
             $callback($val, $key);
-        }
-    }
-
-    /**
-     * @template TKey of array-key
-     * @template TValue
-     * @param iterable<TKey, TValue> $iterable
-     * @param int $size
-     * @param callable(array<TKey, TValue>, int): void $callback
-     * @return void
-     */
-    public static function eachChunk(iterable $iterable, int $size, callable $callback): void
-    {
-        Assert::positiveInteger($size);
-
-        $count = 0;
-        $remaining = $size;
-        $chunk = [];
-        foreach ($iterable as $key => $val) {
-            $chunk[$key] = $val;
-            $remaining--;
-            if ($remaining === 0) {
-                $callback($chunk, $count);
-                ++$count;
-                $remaining = $size;
-                $chunk = [];
-            }
-        }
-        if (count($chunk) > 0) {
-            $callback($chunk, $count);
         }
     }
 
@@ -499,21 +502,15 @@ class Arr
     /**
      * @template TKey of array-key
      * @template TValue
-     * @param iterable<TKey, TValue> $iterable
+     * @param iterable<TKey, TValue> $iterator
      * @return array<TKey, TValue>
      */
-    public static function from(iterable $iterable): array
+    public static function from(iterable $iterator): array
     {
-        if (is_array($iterable)) {
-            return $iterable;
+        if (is_array($iterator)) {
+            return $iterator;
         }
-
-        if ($iterable instanceof Collection) {
-            /** @var Collection<TKey, TValue> $iterable */
-            return $iterable->toArray();
-        }
-
-        return iterator_to_array($iterable);
+        return iterator_to_array($iterator);
     }
 
     /**
@@ -646,10 +643,8 @@ class Arr
     public static function keys(iterable $iterable): array
     {
         $keys = [];
-        while(($key = key($iterable)) !== null) {
-            /** @var TKey $key */
+        foreach ($iterable as $key => $_) {
             $keys[] = $key;
-            next($iterable);
         }
         return $keys;
     }
@@ -917,15 +912,13 @@ class Arr
     /**
      * @template T
      * @param iterable<T> $iterable
-     * @return array<int, T>
+     * @return array{ min: T, max: T }
      */
     public static function minMax(iterable $iterable): array
     {
         $min = null;
         $max = null;
-        $containsValues = false;
         foreach ($iterable as $val) {
-            $containsValues = true;
             if ($min === null || $min > $val) {
                 $min = $val;
             }
@@ -934,11 +927,11 @@ class Arr
             }
         }
 
-        if (!$containsValues) {
+        if ($min === null || $max === null) {
             throw new RuntimeException('Iterable must contain at least one element.');
         }
 
-        return [$min, $max]; /** @phpstan-ignore-line */
+        return compact('min', 'max');
     }
 
     /**
@@ -1091,14 +1084,22 @@ class Arr
      */
     public static function reduce(iterable $iterable, callable $callback): mixed
     {
-        $array = static::from($iterable);
+        $result = null;
+        $initialized = false;
+        foreach ($iterable as $key => $val) {
+            if (!$initialized) {
+                $result = $val;
+                $initialized = true;
+            } else {
+                $result = $callback($result, $val, $key);
+            }
+        }
 
-        Assert::minCount($array, 1);
+        if ($result === null) {
+            Assert::minCount([], 1);
+        }
 
-        $reducing = static::drop($array, 1);
-        $initial = static::firstOrFail($array);
-
-        return static::fold($reducing, $initial, $callback);
+        return $result; /** @phpstan-ignore-line */
     }
 
     /**
@@ -1189,8 +1190,8 @@ class Arr
      */
     public static function sample(iterable $iterable): mixed
     {
-        $arr = static::from($iterable);
-        return $arr[array_rand($arr)];
+        $array = static::from($iterable);
+        return $array[array_rand($array)];
     }
 
     /**
@@ -1439,8 +1440,8 @@ class Arr
      */
     public static function toUrlQuery(iterable $iterable, ?string $namespace = null): string
     {
-        $arr = static::from($iterable);
-        $data = $namespace !== null ? [$namespace => $arr] : $arr;
+        $array = static::from($iterable);
+        $data = $namespace !== null ? [$namespace => $array] : $array;
         return http_build_query($data, '', '&', PHP_QUERY_RFC3986);
     }
 

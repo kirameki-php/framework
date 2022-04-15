@@ -126,8 +126,8 @@ class CollectionTest extends TestCase
 
     public function testChunkInvalidSize(): void
     {
-        $this->expectException(ValueError::class);
-        $this->expectExceptionMessage('array_chunk(): Argument #2 ($length) must be greater than 0');
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Expected a positive integer. Got: 0');
         collect([1])->chunk(0);
     }
 
@@ -402,33 +402,6 @@ class CollectionTest extends TestCase
                     break;
             }
         });
-    }
-
-    public function testEachChunk(): void
-    {
-        $collect = collect(['a' => 1, 'b' => 2, 'c' => 3]);
-        $collect->eachChunk(2, function (Collection $chunk, int $count) {
-            if ($count === 0) {
-                self::assertEquals(['a' => 1, 'b' => 2], $chunk->toArray());
-            }
-            if ($count === 1) {
-                self::assertEquals(['c' => 3], $chunk->toArray());
-            }
-        });
-
-        // chunk larger than assoc length
-        $collect = collect(['a' => 1]);
-        $collect->eachChunk(2, function (Collection $chunk) {
-            self::assertEquals(['a' => 1], $chunk->toArray());
-        });
-    }
-
-    public function testEachChunk_NegativeValue(): void
-    {
-        $collect = collect(['a' => 1, 'b' => 2, 'c' => 3]);
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Expected a positive integer. Got: -2');
-        $collect->eachChunk(-2, fn() => null);
     }
 
     public function testEachWithIndex(): void
@@ -974,10 +947,10 @@ class CollectionTest extends TestCase
     public function testMinMax(): void
     {
         $collect = collect([1]);
-        self::assertEquals([1, 1], $collect->minMax());
+        self::assertEquals(['min' => 1, 'max' => 1], $collect->minMax());
 
         $collect = collect([1, 10, -100]);
-        self::assertEquals([-100, 10], $collect->minMax());
+        self::assertEquals(['min' => -100, 'max' => 10], $collect->minMax());
     }
 
     public function testMinMax_Empty(): void
