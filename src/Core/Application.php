@@ -10,6 +10,8 @@ use Kirameki\Http\HttpInitializer;
 use Kirameki\Logging\LogInitializer;
 use Kirameki\Model\ModelInitializer;
 use Kirameki\Security\SecurityInitializer;
+use Kirameki\Support\Str;
+use LogicException;
 use RuntimeException;
 
 class Application extends Container
@@ -44,7 +46,7 @@ class Application extends Container
      */
     public static function instance(): Application
     {
-        return static::$instance;
+        return static::$instance ?? throw new LogicException('Application should not be null');
     }
 
     /**
@@ -93,7 +95,7 @@ class Application extends Container
      */
     public function version(): string
     {
-        return file_get_contents(__DIR__.'/../VERSION');
+        return file_get_contents(__DIR__ . '/../VERSION');
     }
 
     /**
@@ -101,7 +103,13 @@ class Application extends Container
      */
     public function env(): string
     {
-        return Env::get('APP_ENV') ?? 'production';
+        $env = Env::get('APP_ENV') ?? 'production';
+
+        if (!is_string($env)) {
+            throw new LogicException('APP_ENV expected to be null. ' . Str::typeOf($env) . ' given.');
+        }
+
+        return $env;
     }
 
     /**

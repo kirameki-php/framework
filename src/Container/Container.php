@@ -20,7 +20,7 @@ class Container
      */
     public function get(string $id): mixed
     {
-        return $this->entries[$id]->getInstance(); /** @phpstan-ignore-line */
+        return $this->entries[$id]->getInstance();
     }
 
     /**
@@ -75,7 +75,7 @@ class Container
      */
     public function entry(string $id): Entry
     {
-        return $this->entries[$id]; /** @phpstan-ignore-line */
+        return $this->entries[$id];
     }
 
     /**
@@ -83,6 +83,6 @@ class Container
      */
     public function entries(): Collection
     {
-        return new Collection($this->entries); /** @phpstan-ignore-line */
+        return new Collection($this->entries);
     }
 }

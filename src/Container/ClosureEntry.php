@@ -12,7 +12,7 @@ use Webmozart\Assert\Assert;
 class ClosureEntry implements Entry
 {
     /**
-     * @var class-string
+     * @var class-string<TEntry>
      */
     protected string $id;
 
