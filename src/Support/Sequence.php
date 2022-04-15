@@ -4,7 +4,6 @@ namespace Kirameki\Support;
 
 use Closure;
 use Countable;
-use Generator;
 use Iterator;
 use IteratorAggregate;
 use JsonSerializable;
@@ -62,7 +61,7 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
     public function jsonSerialize(): array
     {
         $values = [];
-        foreach ($this->items as $key => $item) {
+        foreach ($this as $key => $item) {
             $values[$key] = ($item instanceof JsonSerializable) ? $item->jsonSerialize() : $item;
         }
         return $values;
@@ -84,7 +83,7 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
      */
     public function at(int $position)
     {
-        return Arr::at($this->items, $position);
+        return Arr::at($this, $position);
     }
 
     /**
@@ -93,7 +92,7 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
      */
     public function average(?bool $allowEmpty = true): float|int
     {
-        return Arr::average($this->items, $allowEmpty);
+        return Arr::average($this, $allowEmpty);
     }
 
     /**
@@ -101,7 +100,7 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
      */
     public function coalesce(): mixed
     {
-        return Arr::coalesce($this->items);
+        return Arr::coalesce($this);
     }
 
     /**
@@ -109,7 +108,7 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
      */
     public function coalesceOrFail(): mixed
     {
-        return Arr::coalesceOrFail($this->items);
+        return Arr::coalesceOrFail($this);
     }
 
     /**
@@ -134,7 +133,7 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
      */
     public function compact(int $depth = 1): static
     {
-        return $this->newInstance(Arr::compact($this->items, $depth));
+        return $this->newInstance(Arr::compact($this, $depth));
     }
 
     /**
@@ -143,7 +142,7 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
      */
     public function contains(mixed $value): bool
     {
-        return Arr::contains($this->items, $value);
+        return Arr::contains($this, $value);
     }
 
     /**
@@ -168,7 +167,7 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
      */
     public function count(): int
     {
-        return Arr::count($this->items);
+        return Arr::count(Arr::from($this));
     }
 
     /**
@@ -177,17 +176,7 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
      */
     public function countBy(callable $condition): int
     {
-        return Arr::countBy($this->items, $condition);
-    }
-
-    /**
-     * @return Generator<TKey, TValue>
-     */
-    public function cursor(): Generator
-    {
-        foreach ($this->items as $key => $item) {
-            yield $key => $item;
-        }
+        return Arr::countBy($this, $condition);
     }
 
     /**
@@ -224,7 +213,7 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
      */
     public function drop(int $amount): static
     {
-        return $this->newInstance(Arr::drop($this->items, $amount));
+        return $this->newInstance(Arr::drop($this, $amount));
     }
 
     /**
@@ -233,7 +222,7 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
      */
     public function dropUntil(callable $condition): static
     {
-        return $this->newInstance(Arr::dropUntil($this->items, $condition));
+        return $this->newInstance(Arr::dropUntil($this, $condition));
     }
 
     /**
@@ -242,7 +231,7 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
      */
     public function dropWhile(callable $condition): static
     {
-        return $this->newInstance(Arr::dropWhile($this->items, $condition));
+        return $this->newInstance(Arr::dropWhile($this, $condition));
     }
 
     /**
@@ -261,7 +250,7 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
      */
     public function each(callable $callback): static
     {
-        Arr::each($this->items, $callback);
+        Arr::each($this, $callback);
         return $this;
     }
 
@@ -272,7 +261,7 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
      */
     public function eachChunk(int $size, callable $callback): static
     {
-        Arr::eachChunk($this->items, $size, function(array $items, int $count) use ($callback) {
+        Arr::eachChunk($this, $size, function(array $items, int $count) use ($callback) {
             $instance = $this->newInstance($items);
             $callback($instance, $count);
         });
@@ -285,7 +274,7 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
      */
     public function eachWithIndex(callable $callback): static
     {
-        Arr::eachWithIndex($this->items, $callback);
+        Arr::eachWithIndex($this, $callback);
         return $this;
     }
 
@@ -303,7 +292,7 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
      */
     public function except(iterable $keys): static
     {
-        return $this->newInstance(Arr::except($this->items, $keys));
+        return $this->newInstance(Arr::except($this, $keys));
     }
 
     /**
@@ -312,7 +301,7 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
      */
     public function filter(callable $condition): static
     {
-        return $this->newInstance(Arr::filter($this->items, $condition));
+        return $this->newInstance(Arr::filter($this, $condition));
     }
 
     /**
@@ -321,7 +310,7 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
      */
     public function first(callable $condition = null): mixed
     {
-        return Arr::first($this->items, $condition);
+        return Arr::first($this, $condition);
     }
 
     /**
@@ -330,7 +319,7 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
      */
     public function firstIndex(callable $condition): ?int
     {
-        return Arr::firstIndex($this->items, $condition);
+        return Arr::firstIndex($this, $condition);
     }
 
     /**
@@ -339,7 +328,7 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
      */
     public function firstKey(callable $condition = null): mixed
     {
-        return Arr::firstKey($this->items, $condition);
+        return Arr::firstKey($this, $condition);
     }
 
     /**
@@ -348,7 +337,7 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
      */
     public function firstOrFail(callable $condition = null): mixed
     {
-        return Arr::firstOrFail($this->items, $condition);
+        return Arr::firstOrFail($this, $condition);
     }
 
     /**
@@ -357,7 +346,7 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
      */
     public function flatMap(callable $callable): static
     {
-        return $this->newInstance(Arr::flatMap($this->items, $callable));
+        return $this->newInstance(Arr::flatMap($this, $callable));
     }
 
     /**
@@ -366,7 +355,7 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
      */
     public function flatten(int $depth = 1): static
     {
-        return $this->newInstance(Arr::flatten($this->items, $depth));
+        return $this->newInstance(Arr::flatten($this, $depth));
     }
 
     /**
@@ -375,7 +364,7 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
      */
     public function flip(bool $overwrite = false): static
     {
-        return $this->newInstance(Arr::flip($this->items, $overwrite));
+        return $this->newInstance(Arr::flip($this, $overwrite));
     }
 
     /**
@@ -386,7 +375,7 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
      */
     public function fold(mixed $initial, callable $callback): mixed
     {
-        return Arr::fold($this->items, $initial, $callback);
+        return Arr::fold($this, $initial, $callback);
     }
 
     /**
@@ -395,7 +384,7 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
      */
     public function get(int|string $key): mixed
     {
-        return Arr::get($this->items, $key);
+        return Arr::get($this, $key);
     }
 
     /**
@@ -404,7 +393,7 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
      */
     public function groupBy(string|Closure $key): static /** @phpstan-ignore-line */
     {
-        return $this->newInstance(Arr::groupBy($this->items, $key))->map(fn($array) => $this->newInstance($array));
+        return $this->newInstance(Arr::groupBy($this, $key))->map(fn($array) => $this->newInstance($array));
     }
 
     /**
@@ -430,7 +419,7 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
      */
     public function isAssoc(): bool
     {
-        return Arr::isAssoc($this->items);
+        return Arr::isAssoc($this);
     }
 
     /**
@@ -438,7 +427,7 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
      */
     public function isEmpty(): bool
     {
-        return Arr::isEmpty($this->items);
+        return Arr::isEmpty($this);
     }
 
     /**
@@ -446,7 +435,7 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
      */
     public function isList(): bool
     {
-        return Arr::isList($this->items);
+        return Arr::isList($this);
     }
 
     /**
@@ -454,7 +443,7 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
      */
     public function isNotEmpty(): bool
     {
-        return Arr::isNotEmpty($this->items);
+        return Arr::isNotEmpty($this);
     }
 
     /**
@@ -465,7 +454,7 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
      */
     public function join(string $glue, ?string $prefix = null, ?string $suffix = null): string
     {
-        return Arr::join($this->items, $glue, $prefix, $suffix);
+        return Arr::join($this, $glue, $prefix, $suffix);
     }
 
     /**
@@ -475,7 +464,7 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
      */
     public function keyBy(string|Closure $key, bool $overwrite = false): static
     {
-        return $this->newInstance(Arr::keyBy($this->items, $key, $overwrite));
+        return $this->newInstance(Arr::keyBy($this, $key, $overwrite));
     }
 
     /**
@@ -492,7 +481,7 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
      */
     public function last(callable $condition = null): mixed
     {
-        return Arr::last($this->items, $condition);
+        return Arr::last($this, $condition);
     }
 
     /**
@@ -501,7 +490,7 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
      */
     public function lastIndex(callable $condition): ?int
     {
-        return Arr::lastIndex($this->items, $condition);
+        return Arr::lastIndex($this, $condition);
     }
 
     /**
@@ -510,7 +499,7 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
      */
     public function lastKey(callable $condition = null): mixed
     {
-        return Arr::lastKey($this->items, $condition);
+        return Arr::lastKey($this, $condition);
     }
 
     /**
@@ -519,7 +508,7 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
      */
     public function lastOrFail(callable $condition = null): mixed
     {
-        return Arr::lastOrFail($this->items, $condition);
+        return Arr::lastOrFail($this, $condition);
     }
 
     /**
@@ -529,7 +518,7 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
      */
     public function map(callable $callback): static /** @phpstan-ignore-line */
     {
-        return $this->newInstance(Arr::map($this->items, $callback));
+        return $this->newInstance(Arr::map($this, $callback));
     }
 
     /**
@@ -537,7 +526,7 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
      */
     public function max(): mixed
     {
-        return Arr::max($this->items);
+        return Arr::max($this);
     }
 
     /**
@@ -545,7 +534,7 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
      */
     public function maxBy(callable $callback): mixed
     {
-        return Arr::maxBy($this->items, $callback);
+        return Arr::maxBy($this, $callback);
     }
 
     /**
@@ -554,7 +543,7 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
      */
     public function merge(iterable $iterable): static
     {
-        return $this->newInstance(Arr::merge($this->items, $iterable));
+        return $this->newInstance(Arr::merge($this, $iterable));
     }
 
     /**
@@ -564,7 +553,7 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
      */
     public function mergeRecursive(iterable $iterable, int $depth = PHP_INT_MAX): static
     {
-        return $this->newInstance(Arr::mergeRecursive($this->items, $iterable, $depth));
+        return $this->newInstance(Arr::mergeRecursive($this, $iterable, $depth));
     }
 
     /**
@@ -574,7 +563,7 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
      */
     public function min(): mixed
     {
-        return Arr::min($this->items);
+        return Arr::min($this);
     }
 
     /**
@@ -584,7 +573,7 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
      */
     public function minBy(callable $callback): mixed
     {
-        return Arr::minBy($this->items, $callback);
+        return Arr::minBy($this, $callback);
     }
 
     /**
@@ -592,7 +581,7 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
      */
     public function minMax(): array
     {
-        return Arr::minMax($this->items);
+        return Arr::minMax($this);
     }
 
     /**
@@ -601,7 +590,7 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
      */
     public function notContains(mixed $value): bool
     {
-        return Arr::notContains($this->items, $value);
+        return Arr::notContains($this, $value);
     }
 
     /**
@@ -610,7 +599,7 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
      */
     public function notContainsKey(int|string $key): bool
     {
-        return Arr::notContainsKey($this->items, $key);
+        return Arr::notContainsKey($this, $key);
     }
 
     /**
@@ -628,7 +617,7 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
      */
     public function only(iterable $keys): static
     {
-        return $this->newInstance(Arr::only($this->items, $keys));
+        return $this->newInstance(Arr::only($this, $keys));
     }
 
     /**
@@ -639,7 +628,7 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
      */
     public function prioritize(callable $condition): static
     {
-        return $this->newInstance(Arr::prioritize($this->items, $condition));
+        return $this->newInstance(Arr::prioritize($this, $condition));
     }
 
     /**
@@ -648,7 +637,7 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
      */
     public function reduce(callable $callback): mixed
     {
-        return Arr::reduce($this->items, $callback);
+        return Arr::reduce($this, $callback);
     }
 
     /**
@@ -657,7 +646,7 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
      */
     public function repeat(int $times): static
     {
-        return $this->newInstance(Arr::repeat($this->items, $times));
+        return $this->newInstance(Arr::repeat($this, $times));
     }
 
     /**
@@ -665,7 +654,7 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
      */
     public function reverse(): static
     {
-        return $this->newInstance(Arr::reverse($this->items));
+        return $this->newInstance(Arr::reverse($this));
     }
 
     /**
@@ -674,7 +663,7 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
      */
     public function rotate(int $count): static
     {
-        return $this->newInstance(Arr::rotate($this->items, $count));
+        return $this->newInstance(Arr::rotate($this, $count));
     }
 
     /**
@@ -682,7 +671,7 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
      */
     public function sample(): mixed
     {
-        return Arr::sample($this->items);
+        return Arr::sample($this);
     }
 
     /**
@@ -691,7 +680,7 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
      */
     public function sampleMany(int $amount): static
     {
-        return $this->newInstance(Arr::sampleMany($this->items, $amount));
+        return $this->newInstance(Arr::sampleMany($this, $amount));
     }
 
     /**
@@ -700,7 +689,7 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
      */
     public function satisfyAll(callable $condition): bool
     {
-        return Arr::satisfyAll($this->items, $condition);
+        return Arr::satisfyAll($this, $condition);
     }
 
     /**
@@ -709,7 +698,7 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
      */
     public function satisfyAny(callable $condition): bool
     {
-        return Arr::satisfyAny($this->items, $condition);
+        return Arr::satisfyAny($this, $condition);
     }
 
     /**
@@ -717,7 +706,7 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
      */
     public function shuffle(): static
     {
-        return $this->newInstance(Arr::shuffle($this->items));
+        return $this->newInstance(Arr::shuffle($this));
     }
 
     /**
@@ -738,7 +727,7 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
      */
     public function sole(callable $condition = null): mixed
     {
-        return Arr::sole($this->items, $condition);
+        return Arr::sole($this, $condition);
     }
 
     /**
@@ -848,7 +837,7 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
      */
     public function sum(): float|int
     {
-        return Arr::sum($this->items);
+        return Arr::sum($this);
     }
 
     /**
@@ -857,7 +846,7 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
      */
     public function take(int $amount): static
     {
-        return $this->newInstance(Arr::take($this->items, $amount));
+        return $this->newInstance(Arr::take($this, $amount));
     }
 
     /**
@@ -866,7 +855,7 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
      */
     public function takeUntil(callable $condition): static
     {
-        return $this->newInstance(Arr::takeUntil($this->items, $condition));
+        return $this->newInstance(Arr::takeUntil($this, $condition));
     }
 
     /**
@@ -875,7 +864,7 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
      */
     public function takeWhile(callable $condition): static
     {
-        return $this->newInstance(Arr::takeWhile($this->items, $condition));
+        return $this->newInstance(Arr::takeWhile($this, $condition));
     }
 
     /**
@@ -883,7 +872,7 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
      */
     public function tally(): static /** @phpstan-ignore-line */
     {
-        return $this->newInstance(Arr::tally($this->items));
+        return $this->newInstance(Arr::tally($this));
     }
 
     /**
@@ -918,7 +907,7 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
      */
     public function toUrlQuery(?string $namespace = null): string
     {
-        return Arr::toUrlQuery($this->items, $namespace);
+        return Arr::toUrlQuery($this, $namespace);
     }
 
     /**
@@ -927,7 +916,7 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
      */
     public function union(iterable $iterable): static
     {
-        return $this->newInstance(Arr::union($this->items, $iterable));
+        return $this->newInstance(Arr::union($this, $iterable));
     }
 
     /**
@@ -937,7 +926,7 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
      */
     public function unionRecursive(iterable $iterable, int $depth = PHP_INT_MAX): static
     {
-        return $this->newInstance(Arr::unionRecursive($this->items, $iterable, $depth));
+        return $this->newInstance(Arr::unionRecursive($this, $iterable, $depth));
     }
 
     /**
@@ -945,7 +934,7 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
      */
     public function unique(): static
     {
-        return $this->newInstance(Arr::unique($this->items));
+        return $this->newInstance(Arr::unique($this));
     }
 
     /**
@@ -954,7 +943,7 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
      */
     public function uniqueBy(callable $callback): static
     {
-        return $this->newInstance(Arr::uniqueBy($this->items, $callback));
+        return $this->newInstance(Arr::uniqueBy($this, $callback));
     }
 
     /**

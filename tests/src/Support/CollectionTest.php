@@ -307,13 +307,6 @@ class CollectionTest extends TestCase
         self::assertEquals(2, $simple->countBy(fn($v) => $v > 1));
     }
 
-    public function testCursor(): void
-    {
-        $array = ['a' => 1, 'b' => 2];
-        $simple = collect($array);
-        self::assertSame($array, iterator_to_array($simple->cursor()));
-    }
-
     public function testDiff(): void
     {
         $empty = collect();
