@@ -9,10 +9,6 @@ use IteratorAggregate;
 use JsonSerializable;
 use Symfony\Component\VarDumper\VarDumper;
 use Webmozart\Assert\Assert;
-use function array_diff;
-use function array_diff_key;
-use function array_intersect;
-use function array_intersect_key;
 use function is_iterable;
 
 /**
@@ -190,7 +186,7 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
      */
     public function diff(iterable $items): static
     {
-        return $this->newInstance(array_diff($this->toArray(), $this->asArray($items)));
+        return $this->newInstance(Arr::diff($this, $items));
     }
 
     /**
@@ -199,7 +195,7 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
      */
     public function diffKeys(iterable $items): static
     {
-        return $this->newInstance(array_diff_key($this->toArray(), $this->asArray($items)));
+        return $this->newInstance(Arr::diffKeys($this, $items));
     }
 
     /**
@@ -388,7 +384,7 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
      */
     public function intersect(iterable $items): static
     {
-        return $this->newInstance(array_intersect($this->toArray(), $this->asArray($items)));
+        return $this->newInstance(Arr::intersect($this, $items));
     }
 
     /**
@@ -397,7 +393,7 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
      */
     public function intersectKeys(iterable $items): static
     {
-        return $this->newInstance(array_intersect_key($this->toArray(), $this->asArray($items)));
+        return $this->newInstance(Arr::intersectKeys($this, $items));
     }
 
     /**

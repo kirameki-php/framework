@@ -9,6 +9,10 @@ use Kirameki\Exception\InvalidValueException;
 use RuntimeException;
 use Webmozart\Assert\Assert;
 use function array_column;
+use function array_diff;
+use function array_diff_key;
+use function array_intersect;
+use function array_intersect_key;
 use function array_is_list;
 use function array_key_exists;
 use function array_key_last;
@@ -236,6 +240,30 @@ class Arr
             }
         }
         return $counter;
+    }
+
+    /**
+     * @template TKey of array-key
+     * @template TValue
+     * @param iterable<TKey, TValue> $iterable
+     * @param iterable<TKey, TValue> $items
+     * @return array<TKey, TValue>
+     */
+    public static function diff(iterable $iterable, iterable $items): array
+    {
+        return array_diff(static::from($iterable), static::from($items));
+    }
+
+    /**
+     * @template TKey of array-key
+     * @template TValue
+     * @param iterable<TKey, TValue> $iterable
+     * @param iterable<TKey, TValue> $items
+     * @return array<TKey, TValue>
+     */
+    public static function diffKeys(iterable $iterable, iterable $items): array
+    {
+        return array_diff_key(static::from($iterable), static::from($items));
     }
 
     /**
@@ -573,6 +601,30 @@ class Arr
             $index = $index === -1 ? count($array) : $index + 1;
         }
         array_splice($array, $index, 0, $value);
+    }
+
+    /**
+     * @template TKey of array-key
+     * @template TValue
+     * @param iterable<TKey, TValue> $iterable
+     * @param iterable<TKey, TValue> $items
+     * @return array<TKey, TValue>
+     */
+    public static function intersect(iterable $iterable, iterable $items): array
+    {
+        return array_intersect(static::from($iterable), static::from($items));
+    }
+
+    /**
+     * @template TKey of array-key
+     * @template TValue
+     * @param iterable<TKey, TValue> $iterable
+     * @param iterable<TKey, TValue> $items
+     * @return array<TKey, TValue>
+     */
+    public static function intersectKeys(iterable $iterable, iterable $items): array
+    {
+        return array_intersect_key(static::from($iterable), static::from($items));
     }
 
     /**
