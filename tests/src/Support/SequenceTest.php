@@ -1214,19 +1214,19 @@ class SequenceTest extends TestCase
 
     public function testSortKeys(): void
     {
-        $collect = $this->seq(['b' => 0, 'a' => 1, 'c' => 2])->sortKeys();
+        $collect = $this->seq(['b' => 0, 'a' => 1, 'c' => 2])->sortByKey();
         self::assertEquals(['a' => 1, 'b' => 0, 'c' => 2], $collect->toArray());
 
-        $collect = $this->seq(['2' => 0, '100' => 1, '30' => 2])->sortKeys(SORT_NATURAL);
+        $collect = $this->seq(['2' => 0, '100' => 1, '30' => 2])->sortByKey(SORT_NATURAL);
         self::assertEquals(['2' => 0, '30' => 2, '100' => 1], $collect->toArray());
     }
 
     public function testSortKeysDesc(): void
     {
-        $collect = $this->seq(['b' => 0, 'a' => 1, 'c' => 2])->sortKeysDesc();
+        $collect = $this->seq(['b' => 0, 'a' => 1, 'c' => 2])->sortByKeyDesc();
         self::assertEquals(['c' => 2, 'b' => 0, 'a' => 1], $collect->toArray());
 
-        $collect = $this->seq(['2' => 0, '100' => 1, '30' => 2])->sortKeysDesc(SORT_NATURAL);
+        $collect = $this->seq(['2' => 0, '100' => 1, '30' => 2])->sortByKeyDesc(SORT_NATURAL);
         self::assertEquals(['100' => 1, '30' => 2, '2' => 0], $collect->toArray());
     }
 
@@ -1234,6 +1234,12 @@ class SequenceTest extends TestCase
     {
         $collect = $this->seq(['b' => 1, 'a' => 3, 'c' => 2])->sortWith(static fn($a, $b) => ($a === $b ? 0 : (($a < $b) ? -1 : 1)));
         self::assertEquals(['b' => 1, 'c' => 2, 'a' => 3], $collect->toArray());
+    }
+
+    public function testSortWithKey(): void
+    {
+        $collect = $this->seq([1 => 'a', 3 => 'b', 2 => 'c'])->sortWithKey(static fn($a, $b) => ($a === $b ? 0 : (($a < $b) ? -1 : 1)));
+        self::assertEquals([1 => 'a', 2 => 'c', 3 => 'b'], $collect->toArray());
     }
 
     public function testSum(): void

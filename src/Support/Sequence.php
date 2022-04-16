@@ -9,17 +9,12 @@ use IteratorAggregate;
 use JsonSerializable;
 use Symfony\Component\VarDumper\VarDumper;
 use Webmozart\Assert\Assert;
-use function array_chunk;
 use function array_diff;
 use function array_diff_key;
 use function array_intersect;
 use function array_intersect_key;
 use function array_slice;
-use function arsort;
-use function asort;
 use function is_iterable;
-use function krsort;
-use function ksort;
 
 /**
  * @template TKey of array-key|class-string
@@ -271,8 +266,13 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
      */
     public function equals(mixed $items): bool
     {
-        return is_iterable($items) && ($this->toArray() === $this->asArray($items)); /** @phpstan-ignore-line */
+        if (is_iterable($items)) {
+            /** @var iterable<array-key, mixed> $items */
+            return $this->toArray() === $this->asArray($items);
+        }
+        return false;
     }
+
     /**
      * @param array<TKey> $keys
      * @return static
@@ -723,9 +723,7 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
      */
     public function sort(int $flag = SORT_REGULAR): static
     {
-        $copy = $this->toArray();
-        asort($copy, $flag);
-        return $this->newInstance($copy);
+        return $this->newInstance(Arr::sort($this, $flag));
     }
 
     /**
@@ -735,7 +733,7 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
      */
     public function sortBy(callable $callback, int $flag = SORT_REGULAR): static
     {
-        return $this->sortByInternal($callback, $flag, true);
+        return $this->newInstance(Arr::sortBy($this, $callback, $flag));
     }
 
     /**
@@ -745,34 +743,25 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
      */
     public function sortByDesc(callable $callback, int $flag = SORT_REGULAR): static
     {
-        return $this->sortByInternal($callback, $flag, false);
+        return $this->newInstance(Arr::sortByDesc($this, $callback, $flag));
     }
 
     /**
-     * @param callable(TValue, TKey): mixed $callback
      * @param int $flag
-     * @param bool $ascending
      * @return static
      */
-    protected function sortByInternal(callable $callback, int $flag, bool $ascending): static
+    public function sortByKey(int $flag = SORT_REGULAR): static
     {
-        $copy = $this->toArray();
+        return $this->newInstance(Arr::sortByKey($this, $flag));
+    }
 
-        $refs = [];
-        foreach ($copy as $key => $item) {
-            $refs[$key] = $callback($item, $key);
-        }
-
-        $ascending
-            ? asort($refs, $flag)
-            : arsort($refs, $flag);
-
-        $sorted = [];
-        foreach ($refs as $key => $_) {
-            $sorted[$key] = $copy[$key];
-        }
-
-        return $this->newInstance($sorted);
+    /**
+     * @param int $flag
+     * @return static
+     */
+    public function sortByKeyDesc(int $flag = SORT_REGULAR): static
+    {
+        return $this->newInstance(Arr::sortByKeyDesc($this, $flag));
     }
 
     /**
@@ -781,42 +770,25 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
      */
     public function sortDesc(int $flag = SORT_REGULAR): static
     {
-        $copy = $this->toArray();
-        arsort($copy, $flag);
-        return $this->newInstance($copy);
+        return $this->newInstance(Arr::sortDesc($this, $flag));
     }
 
     /**
-     * @param int $flag
-     * @return static
-     */
-    public function sortKeys(int $flag = SORT_REGULAR): static
-    {
-        $copy = $this->toArray();
-        ksort($copy, $flag);
-        return $this->newInstance($copy);
-    }
-
-    /**
-     * @param int $flag
-     * @return static
-     */
-    public function sortKeysDesc(int $flag = SORT_REGULAR): static
-    {
-        $copy = $this->toArray();
-        krsort($copy, $flag);
-        return $this->newInstance($copy);
-    }
-
-    /**
-     * @param callable $comparison
+     * @param callable(TValue, TValue): int $comparison
      * @return static
      */
     public function sortWith(callable $comparison): static
     {
-        $copy = $this->toArray();
-        uasort($copy, $comparison);
-        return $this->newInstance($copy);
+        return $this->newInstance(Arr::sortWith($this, $comparison));
+    }
+
+    /**
+     * @param callable(TKey, TKey): int $comparison
+     * @return static
+     */
+    public function sortWithKey(callable $comparison): static
+    {
+        return $this->newInstance(Arr::sortWithKey($this, $comparison));
     }
 
     /**

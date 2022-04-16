@@ -21,6 +21,8 @@ use function array_slice;
 use function array_splice;
 use function array_unshift;
 use function array_values;
+use function arsort;
+use function asort;
 use function count;
 use function current;
 use function end;
@@ -34,9 +36,12 @@ use function is_iterable;
 use function is_string;
 use function iterator_to_array;
 use function key;
+use function krsort;
+use function ksort;
 use function max;
 use function min;
 use function prev;
+use function uasort;
 
 class Arr
 {
@@ -1359,6 +1364,146 @@ class Arr
         $current = current($array);
 
         return $current;
+    }
+
+    /**
+     * @template TKey of array-key
+     * @template TValue
+     * @param iterable<TKey, TValue> $iterable
+     * @param int $flag
+     * @return array<TKey, TValue>
+     */
+    public static function sort(iterable $iterable, int $flag = SORT_REGULAR): array
+    {
+        $copy = static::from($iterable);
+        asort($copy, $flag);
+        return $copy;
+    }
+
+    /**
+     * @template TKey of array-key
+     * @template TValue
+     * @param iterable<TKey, TValue> $iterable
+     * @param callable(TValue, TKey): mixed $callback
+     * @param int $flag
+     * @return array<TKey, TValue>
+     */
+    public static function sortBy(iterable $iterable, callable $callback, int $flag = SORT_REGULAR): array
+    {
+        return static::sortByInternal($iterable, $callback, $flag, true);
+    }
+
+    /**
+     * @template TKey of array-key
+     * @template TValue
+     * @param iterable<TKey, TValue> $iterable
+     * @param callable(TValue, TKey): mixed $callback
+     * @param int $flag
+     * @return array<TKey, TValue>
+     */
+    public static function sortByDesc(iterable $iterable, callable $callback, int $flag = SORT_REGULAR): array
+    {
+        return static::sortByInternal($iterable, $callback, $flag, false);
+    }
+
+    /**
+     * @template TKey of array-key
+     * @template TValue
+     * @param iterable<TKey, TValue> $iterable
+     * @param int $flag
+     * @return array<TKey, TValue>
+     */
+    public static function sortByKey(iterable $iterable, int $flag = SORT_REGULAR): array
+    {
+        $copy = static::from($iterable);
+        ksort($copy, $flag);
+        return $copy;
+    }
+
+    /**
+     * @template TKey of array-key
+     * @template TValue
+     * @param iterable<TKey, TValue> $iterable
+     * @param int $flag
+     * @return array<TKey, TValue>
+     */
+    public static function sortByKeyDesc(iterable $iterable, int $flag = SORT_REGULAR): array
+    {
+        $copy = static::from($iterable);
+        krsort($copy, $flag);
+        return $copy;
+    }
+
+    /**
+     * @template TKey of array-key
+     * @template TValue
+     * @param iterable<TKey, TValue> $iterable
+     * @param callable(TValue, TKey): mixed $callback
+     * @param int $flag
+     * @param bool $ascending
+     * @return array<TKey, TValue>
+     */
+    protected static function sortByInternal(iterable $iterable, callable $callback, int $flag, bool $ascending): array
+    {
+        $copy = static::from($iterable);
+
+        $refs = [];
+        foreach ($copy as $key => $item) {
+            $refs[$key] = $callback($item, $key);
+        }
+
+        $ascending
+            ? asort($refs, $flag)
+            : arsort($refs, $flag);
+
+        $sorted = [];
+        foreach ($refs as $key => $_) {
+            $sorted[$key] = $copy[$key];
+        }
+
+        return $sorted;
+    }
+
+    /**
+     * @template TKey of array-key
+     * @template TValue
+     * @param iterable<TKey, TValue> $iterable
+     * @param int $flag
+     * @return array<TKey, TValue>
+     */
+    public static function sortDesc(iterable $iterable, int $flag = SORT_REGULAR): array
+    {
+        $copy = static::from($iterable);
+        arsort($copy, $flag);
+        return $copy;
+    }
+
+    /**
+     * @template TKey of array-key
+     * @template TValue
+     * @param iterable<TKey, TValue> $iterable
+     * @param callable(TValue, TValue): int $comparison
+     * @return array<TKey, TValue>
+     */
+    public static function sortWith(iterable $iterable, callable $comparison): array
+    {
+        $copy = static::from($iterable);
+        uasort($copy, $comparison);
+        return $copy;
+    }
+
+    /**
+     * @template TKey of array-key
+     * @template TValue
+     * @param iterable<TKey, TValue> $iterable
+     * @param callable(TKey, TKey): int $comparison
+     * @return array<TKey, TValue>
+     */
+    public static function sortWithKey(iterable $iterable, callable $comparison): array
+    {
+        $copy = static::from($iterable);
+        uksort($copy, $comparison);
+        return $copy;
     }
 
     /**
