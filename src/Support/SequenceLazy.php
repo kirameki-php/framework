@@ -85,6 +85,10 @@ class SequenceLazy extends Sequence
      */
     public function drop(int $amount): static
     {
+        if ($amount < 0) {
+            return parent::drop($amount);
+        }
+
         return new static(function () use ($amount) {
             $count = 0;
             foreach ($this as $key => $item) {
@@ -186,6 +190,10 @@ class SequenceLazy extends Sequence
      */
     public function take(int $amount): static
     {
+        if ($amount < 0) {
+            return parent::take($amount);
+        }
+
         return new static(function () use ($amount) {
             $count = 0;
             foreach ($this as $key => $item) {
