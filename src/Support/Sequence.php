@@ -13,7 +13,6 @@ use function array_diff;
 use function array_diff_key;
 use function array_intersect;
 use function array_intersect_key;
-use function array_slice;
 use function is_iterable;
 
 /**
@@ -703,9 +702,7 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
      */
     public function slice(int $offset, int $length = null): static
     {
-        $array = $this->toArray();
-        $sliced = array_slice($array, $offset, $length, Arr::isAssoc($array));
-        return $this->newInstance($sliced);
+        return $this->newInstance(Arr::slice($this, $offset, $length));
     }
 
     /**

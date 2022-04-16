@@ -1348,6 +1348,21 @@ class Arr
      * @template TKey of array-key
      * @template TValue
      * @param iterable<TKey, TValue> $iterable
+     * @param int $offset
+     * @param int|null $length
+     * @return array<TKey, TValue>
+     */
+    public static function slice(iterable $iterable, int $offset, ?int $length = null): array
+    {
+        $array = static::from($iterable);
+        $preserveKeys = static::isAssoc($array);
+        return array_slice($array, $offset, $length, $preserveKeys);
+    }
+
+    /**
+     * @template TKey of array-key
+     * @template TValue
+     * @param iterable<TKey, TValue> $iterable
      * @param callable(TValue, TKey): bool | null $condition
      * @return TValue
      */
