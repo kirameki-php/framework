@@ -152,7 +152,7 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
      */
     public function containsKey(int|string $key): bool
     {
-        return Arr::containsKey($this->toArray(), $key);
+        return Arr::containsKey($this, $key);
     }
 
     /**
@@ -938,7 +938,7 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
      */
     public function values(): static
     {
-        return $this->newInstance(Arr::values($this->toArray()));
+        return $this->newInstance(Arr::values($this));
     }
 
     /**
