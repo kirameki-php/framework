@@ -42,6 +42,7 @@ use function max;
 use function min;
 use function prev;
 use function uasort;
+use function uksort;
 
 class Arr
 {
