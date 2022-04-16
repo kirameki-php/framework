@@ -19,7 +19,6 @@ use function array_reverse;
 use function array_shift;
 use function array_slice;
 use function array_splice;
-use function array_sum;
 use function array_unshift;
 use function array_values;
 use function count;
@@ -74,14 +73,18 @@ class Arr
      */
     public static function average(iterable $iterable, ?bool $allowEmpty = true): float|int
     {
-        $array = static::from($iterable);
-        $size = count($array);
+        $size = 0;
+        $sum = 0;
+        foreach ($iterable as $val) {
+            $sum += $val;
+            ++$size;
+        }
 
         if ($size === 0 && $allowEmpty) {
             return 0;
         }
 
-        return array_sum($array) / $size;
+        return $sum / $size;
     }
 
     /**
@@ -1367,7 +1370,7 @@ class Arr
     public static function sum(iterable $iterable): float|int
     {
         $total = 0;
-        foreach(static::from($iterable) as $num) {
+        foreach($iterable as $num) {
             $total += $num;
         }
         return $total;
