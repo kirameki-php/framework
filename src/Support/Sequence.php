@@ -516,6 +516,7 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
     }
 
     /**
+     * @param callable(TValue, TKey): mixed $callback
      * @return TValue|null
      */
     public function maxBy(callable $callback): mixed
@@ -555,6 +556,7 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
     /**
      * Returns the minimum element in the sequence using the given predicate as the comparison between elements.
      *
+     * @param callable(TValue, TKey): mixed $callback
      * @return TValue|null
      */
     public function minBy(callable $callback): mixed
