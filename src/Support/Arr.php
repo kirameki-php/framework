@@ -562,24 +562,28 @@ class Arr
     }
 
     /**
-     * @template TGroupKey as string
+     * @template TGroupKey as array-key
      * @template TKey
      * @template TValue
      * @param iterable<TKey, TValue> $iterable
      * @param TGroupKey|Closure(TValue, TKey): TGroupKey $key
-     * @return array<TGroupKey, array<int, TValue>>
+     * @return array<TGroupKey, array<TKey, TValue>>
      */
-    public static function groupBy(iterable $iterable, string|Closure $key): array
+    public static function groupBy(iterable $iterable, int|string|Closure $key): array
     {
-        $callable = is_string($key) ? static::createDigger($key) : $key;
+        $callable = (is_string($key) || is_int($key))
+            ? static fn(array $val, $_key) => $val[$key]
+            : $key;
 
         $map = [];
-        foreach ($iterable as $k => $val) {
-            $groupKey = $callable($val, $k);
+
+        foreach ($iterable as $_key => $val) {
+            /** @var TGroupKey $groupKey */
+            $groupKey = $callable($val, $_key);
             if ($groupKey !== null) {
                 Assert::validArrayKey($groupKey);
                 $map[$groupKey] ??= [];
-                $map[$groupKey][] = $val;
+                $map[$groupKey][$_key] = $val;
             }
         }
 
@@ -1796,17 +1800,6 @@ class Arr
             $array = $array[$key];
         }
         return $array;
-    }
-
-    /**
-     * @private
-     * @param string $key
-     * @return Closure
-     */
-    protected static function createDigger(string $key): Closure
-    {
-        $segments = explode('.', $key);
-        return static fn($v, $k) => static::dig($v, $segments);
     }
 
     /**

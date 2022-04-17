@@ -105,9 +105,9 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
 
     /**
      * @param int<1, max> $size
-     * @return Sequence<int, static>
+     * @return self<int, static>
      */
-    public function chunk(int $size): Sequence
+    public function chunk(int $size): self
     {
         $chunks = [];
         foreach (Arr::chunk($this, $size) as $chunk) {
@@ -369,14 +369,17 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
     }
 
     /**
-     * @template TGroupKey as string
-     * @param TGroupKey|Closure(TValue, TKey): TGroupKey $key
-     * @return static<TGroupKey, Collection<int, TValue>>
+     * @template TGroupKey as array-key
+     * @param Closure(TValue, TKey): TGroupKey|TGroupKey $key
+     * @return Sequence<TGroupKey, static>
      */
-    public function groupBy(string|Closure $key): static /** @phpstan-ignore-line */
+    public function groupBy(int|string|Closure $key): Sequence
     {
-        return $this->newInstance(Arr::groupBy($this, $key))
-            ->map(static fn(array $group) => new Collection($group));
+        $grouped = Arr::groupBy($this, $key);
+        return (new Sequence($grouped))->map(static function(array $group) {
+            /** @var array<TKey, TValue> $group */
+            return new static($group);
+        });
     }
 
     /**

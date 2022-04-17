@@ -112,13 +112,13 @@ class SequenceTest extends TestCase
 
         $chunked = $seq->chunk(2);
         self::assertCount(2, $chunked);
-        self::assertEquals([1, 2], $chunked->firstOrNull()->toArray());
-        self::assertEquals([3], $chunked->lastOrNull()->toArray());
+        self::assertEquals([1, 2], $chunked->first()->toArray());
+        self::assertEquals([3], $chunked->last()->toArray());
 
         // size larger than items -> returns everything
         $chunked = $seq->chunk(4);
         self::assertCount(1, $chunked);
-        self::assertEquals([1, 2, 3], $chunked->firstOrNull()->toArray());
+        self::assertEquals([1, 2, 3], $chunked->first()->toArray());
         self::assertNotSame($chunked, $seq);
 
         $assoc = $this->seq(['a' => 1, 'b' => 2, 'c' => 3]);
@@ -126,8 +126,8 @@ class SequenceTest extends TestCase
         // test preserveKeys: true
         $chunked = $assoc->chunk(2);
         self::assertCount(2, $chunked);
-        self::assertEquals(['a' => 1, 'b' => 2], $chunked->firstOrNull()->toArray());
-        self::assertEquals(['c' => 3], $chunked->lastOrNull()->toArray());
+        self::assertEquals(['a' => 1, 'b' => 2], $chunked->first()->toArray());
+        self::assertEquals(['c' => 3], $chunked->last()->toArray());
 
         // size larger than items -> returns everything
         $chunked = $assoc->chunk(4);
@@ -579,22 +579,29 @@ class SequenceTest extends TestCase
 
     public function testGetIterator(): void
     {
-        $iterator = $this->seq()->getIterator();
-        self::assertEquals([], iterator_to_array($iterator));
+        $iterator = $this->seq([1])->getIterator();
+        self::assertEquals([1], iterator_to_array($iterator));
     }
 
     public function testGroupBy(): void
     {
         $seq = $this->seq([1, 2, 3, 4, 5, 6]);
-        self::assertEquals([[3, 6], [1, 4], [2, 5]], $seq->groupBy(fn($n) => $n % 3)->toArrayRecursive());
+        $grouped = $seq->groupBy(fn(int $n): int => $n % 3)->toArrayRecursive();
+        self::assertEquals([[2 => 3, 5 => 6], [0 => 1, 3 => 4], [1 => 2, 4 => 5]], $grouped);
 
         $seq = $this->seq([
             ['id' => 1],
             ['id' => 1],
             ['id' => 2],
-            ['dummy' => 3],
         ]);
         self::assertEquals([1 => [['id' => 1], ['id' => 1]], 2 => [['id' => 2]]], $seq->groupBy('id')->toArrayRecursive());
+    }
+
+    public function testGroupBy_missing_key(): void
+    {
+        $this->expectException(ErrorException::class);
+        $this->expectExceptionMessage('Undefined array key "id"');
+        $this->seq([['dummy' => 3]])->groupBy('id');
     }
 
     public function testIntersect(): void
