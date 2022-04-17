@@ -562,11 +562,12 @@ class Arr
     }
 
     /**
+     * @template TGroupKey as string
      * @template TKey
      * @template TValue
      * @param iterable<TKey, TValue> $iterable
-     * @param string|Closure(TValue, TKey): mixed $key
-     * @return array<array-key, array<int, TValue>>
+     * @param TGroupKey|Closure(TValue, TKey): TGroupKey $key
+     * @return array<TGroupKey, array<int, TValue>>
      */
     public static function groupBy(iterable $iterable, string|Closure $key): array
     {
@@ -843,10 +844,10 @@ class Arr
     /**
      * @template TKey of array-key
      * @template TValue
-     * @template U
+     * @template TMapValue
      * @param iterable<TKey, TValue> $iterable
-     * @param callable (TValue, TKey): U $callback
-     * @return array<TKey, U>
+     * @param callable(TValue, TKey): TMapValue $callback
+     * @return array<TKey, TMapValue>
      */
     public static function map(iterable $iterable, callable $callback): array
     {
