@@ -105,17 +105,16 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
 
     /**
      * @param int<1, max> $size
-     * @return static<int, Collection<TKey, TValue>>
+     * @return Sequence<int, static>
      */
-    public function chunk(int $size): static /** @phpstan-ignore-line */
+    public function chunk(int $size): Sequence
     {
-        $array = $this->toArray();
         $chunks = [];
-        foreach (Arr::chunk($array, $size) as $chunk) {
-            $converted = new Collection($chunk);
+        foreach (Arr::chunk($this, $size) as $chunk) {
+            $converted = $this->newInstance($chunk);
             $chunks[] = $converted;
         }
-        return $this->newInstance($chunks);
+        return new self($chunks);
     }
 
     /**
