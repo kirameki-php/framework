@@ -34,16 +34,16 @@ interface Adapter
     /**
      * @param string $statement
      * @param array<mixed> $bindings
-     * @return Result
+     * @return Execution
      */
-    public function query(string $statement, array $bindings = []): Result;
+    public function query(string $statement, array $bindings = []): Execution;
 
     /**
      * @param string $statement
      * @param array<mixed> $bindings
-     * @return ResultLazy<int, mixed>
+     * @return Execution
      */
-    public function cursor(string $statement, array $bindings = []): ResultLazy;
+    public function cursor(string $statement, array $bindings = []): Execution;
 
     /**
      * @return void

@@ -2,9 +2,8 @@
 
 namespace Kirameki\Database\Adapters;
 
-use Generator;
+use Iterator;
 use Kirameki\Core\Config;
-use Kirameki\Database\Connection;
 use Kirameki\Database\Query\Formatters\Formatter as QueryFormatter;
 use Kirameki\Database\Query\Result;
 use Kirameki\Database\Query\ResultLazy;
@@ -16,9 +15,6 @@ use RuntimeException;
 use Throwable;
 use function preg_match;
 
-/**
- * @mixin Connection
- */
 abstract class PdoAdapter implements Adapter
 {
     /**
@@ -75,25 +71,35 @@ abstract class PdoAdapter implements Adapter
     /**
      * @param string $statement
      * @param array<mixed> $bindings
-     * @return Result
+     * @return Execution
      */
-    public function query(string $statement, array $bindings = []): Result
+    public function query(string $statement, array $bindings = []): Execution
     {
+        $startTime = hrtime(true);
+
         $prepared = $this->execQuery($statement, $bindings);
+        $afterExecTime = hrtime(true);
+        $execTimeMs = ($afterExecTime - $startTime) / 1_000_000;
+
         $rows = $prepared->fetchAll(PDO::FETCH_ASSOC);
+        $fetchTimeMs = (hrtime(true) - $startTime) / 1_000_000;
+
         $count = $prepared->rowCount(...);
-        return new Result($this, $statement, $bindings, $rows, $count);
+
+        return new Execution($this, $statement, $bindings, $rows, $count, $execTimeMs, $fetchTimeMs);
     }
 
     /**
      * @param string $statement
      * @param array<mixed> $bindings
-     * @return ResultLazy
+     * @return Execution
      */
-    public function cursor(string $statement, array $bindings = []): ResultLazy
+    public function cursor(string $statement, array $bindings = []): Execution
     {
+        $startTime = hrtime(true);
+
         $prepared = $this->execQuery($statement, $bindings);
-        $iterator = function() use ($prepared) {
+        $iterator = (function() use ($prepared): Iterator {
             while (true) {
                 $data = $prepared->fetch();
                 if ($data === false) {
@@ -104,9 +110,12 @@ abstract class PdoAdapter implements Adapter
                 }
                 yield $data;
             }
-        };
+        })();
+        $execTimeMs = (hrtime(true) - $startTime) / 1_000_000;
+
         $count = $prepared->rowCount(...);
-        return new ResultLazy($this, $statement, $bindings, $iterator, $count);
+
+        return new Execution($this, $statement, $bindings, $iterator, $count, $execTimeMs, null);
     }
 
     /**

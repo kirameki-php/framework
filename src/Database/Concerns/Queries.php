@@ -34,10 +34,9 @@ trait Queries
      */
     public function query(string $statement, array $bindings = []): Result
     {
-        $then = microtime(true);
-        $result = $this->adapter->query($statement, $bindings);
-        $elapsedMs = (microtime(true) - $then) * 1000;
-        $this->events->dispatchClass(QueryExecuted::class, $this, $statement, $bindings, $elapsedMs);
+        $execution = $this->adapter->query($statement, $bindings);
+        $result = new Result($this, $execution);
+        $this->events->dispatchClass(QueryExecuted::class, $this, $result);
         return $result;
     }
 
@@ -48,10 +47,9 @@ trait Queries
      */
     public function cursor(string $statement, array $bindings = []): ResultLazy
     {
-        $then = microtime(true);
-        $result = $this->adapter->cursor($statement, $bindings);
-        $elapsedMs = (microtime(true) - $then) * 1000;
-        $this->events->dispatchClass(QueryExecuted::class, $this, $statement, $bindings, $elapsedMs);
+        $execution = $this->adapter->cursor($statement, $bindings);
+        $result = new ResultLazy($this, $execution);
+        $this->events->dispatchClass(QueryExecuted::class, $this, $result);
         return $result;
     }
 }

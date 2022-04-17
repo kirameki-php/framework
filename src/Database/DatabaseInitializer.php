@@ -24,13 +24,13 @@ class DatabaseInitializer implements Initializer
         if ($app->inDebugMode()) {
             $app->get(EventManager::class)->listen(QueryExecuted::class, static function(QueryExecuted $event) {
                 $name = $event->connection->getName();
-                $executedQuery = $event->getExecutedQuery();
-                $elapsedMs = $event->elapsedMs;
-                $message = sprintf('[db:%s] %s (%0.2f ms)', $name, $executedQuery, $elapsedMs);
+                $executedQuery = $event->result->getExecutedQuery();
+                $timeMs = $event->result->getTotalRunTimeInMilliSeconds();
+                $message = sprintf('[db:%s] %s (%0.2f ms)', $name, $executedQuery, $timeMs);
                 logger()->debug($message, [
-                    'statement' => $event->statement,
-                    'bindings' => $event->bindings,
-                    'elapsedMs' => $elapsedMs,
+                    'statement' => $event->result->getStatement(),
+                    'bindings' => $event->result->getBindings(),
+                    'timeInMs' => $timeMs,
                 ]);
             });
         }

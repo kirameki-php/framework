@@ -3,43 +3,23 @@
 namespace Kirameki\Database\Events;
 
 use Kirameki\Database\Connection;
+use Kirameki\Database\Query\Result;
+use Kirameki\Database\Query\ResultLazy;
 
 class QueryExecuted extends DatabaseEvent
 {
     /**
-     * @var string
+     * @var Result|ResultLazy
      */
-    public readonly string $statement;
-
-    /**
-     * @var list<mixed>
-     */
-    public readonly array $bindings;
-
-    /**
-     * @var float
-     */
-    public readonly float $elapsedMs;
+    public readonly Result|ResultLazy $result;
 
     /**
      * @param Connection $connection
-     * @param string $statement
-     * @param list<mixed> $bindings
-     * @param float $elapsedMs
+     * @param Result|ResultLazy $result
      */
-    public function __construct(Connection $connection, string $statement, array $bindings, float $elapsedMs)
+    public function __construct(Connection $connection, Result|ResultLazy $result)
     {
         parent::__construct($connection);
-        $this->statement = $statement;
-        $this->bindings = $bindings;
-        $this->elapsedMs = $elapsedMs;
-    }
-
-    /**
-     * @return string
-     */
-    public function getExecutedQuery(): string
-    {
-        return $this->connection->getQueryFormatter()->interpolate($this->statement, $this->bindings);
+        $this->result = $result;
     }
 }

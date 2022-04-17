@@ -591,10 +591,18 @@ class SequenceTest extends TestCase
 
         $seq = $this->seq([
             ['id' => 1],
-            ['id' => 1],
             ['id' => 2],
+            ['id' => 1],
         ]);
-        self::assertEquals([1 => [['id' => 1], ['id' => 1]], 2 => [['id' => 2]]], $seq->groupBy('id')->toArrayRecursive());
+        self::assertEquals([
+            1 => [
+                0 => ['id' => 1],
+                2 => ['id' => 1]
+            ],
+            2 => [
+                1 => ['id' => 2]
+            ]
+        ], $seq->groupBy('id')->toArrayRecursive());
     }
 
     public function testGroupBy_missing_key(): void
