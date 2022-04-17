@@ -4,6 +4,7 @@ namespace Tests\Kirameki\Database\Query\Builders;
 
 use Kirameki\Database\Query\Builders\JoinBuilder;
 use Kirameki\Database\Query\Expressions\Raw;
+use Kirameki\Database\Query\Support\LockOption;
 use Kirameki\Database\Query\Support\Range;
 use Kirameki\Database\Query\Builders\ConditionBuilder;
 use Tests\Kirameki\Database\Query\QueryTestCase;
@@ -82,6 +83,30 @@ class SelectBuilderTest extends QueryTestCase
     {
         $sql = $this->selectBuilder()->from('User AS u')->joinOn('Device AS d', 'u.id', 'd.userId')->toSql();
         static::assertEquals("SELECT * FROM `User` AS `u` JOIN `Device` AS `d` ON `u`.`id` = `d`.`userId`", $sql);
+    }
+
+    public function testLockForUpdate(): void
+    {
+        $sql = $this->selectBuilder()->from('User')->where('id', 1)->forUpdate()->toSql();
+        static::assertEquals("SELECT * FOR UPDATE FROM `User` WHERE `id` = 1", $sql);
+    }
+
+    public function testLockForUpdate_with_option_nowait(): void
+    {
+        $sql = $this->selectBuilder()->from('User')->where('id', 1)->forUpdate(LockOption::Nowait)->toSql();
+        static::assertEquals("SELECT * FOR UPDATE NOWAIT FROM `User` WHERE `id` = 1", $sql);
+    }
+
+    public function testLockForUpdate_with_option_skip_locked(): void
+    {
+        $sql = $this->selectBuilder()->from('User')->where('id', 1)->forUpdate(LockOption::SkipLocked)->toSql();
+        static::assertEquals("SELECT * FOR UPDATE SKIP LOCKED FROM `User` WHERE `id` = 1", $sql);
+    }
+
+    public function testLockForShare(): void
+    {
+        $sql = $this->selectBuilder()->from('User')->where('id', 1)->forShare()->toSql();
+        static::assertEquals("SELECT * FOR SHARE FROM `User` WHERE `id` = 1", $sql);
     }
 
     public function testWhere_WithTwoArgs(): void
