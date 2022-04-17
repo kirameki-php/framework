@@ -477,7 +477,7 @@ class Arr
      * @template TKey of array-key
      * @param iterable<TKey, mixed> $iterable
      * @param int<1, max> $depth
-     * @return array<array-key, mixed>
+     * @return array<int, mixed>
      */
     public static function flatten(iterable $iterable, int $depth = 1): array
     {

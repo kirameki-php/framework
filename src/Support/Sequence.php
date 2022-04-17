@@ -324,7 +324,7 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
 
     /**
      * @param callable(TValue, TKey): mixed $callable
-     * @return static
+     * @return static<int, mixed>
      */
     public function flatMap(callable $callable): static
     {
@@ -333,7 +333,7 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
 
     /**
      * @param int<1, max> $depth
-     * @return static
+     * @return static<int, mixed>
      */
     public function flatten(int $depth = 1): static
     {
