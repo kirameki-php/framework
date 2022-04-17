@@ -44,4 +44,10 @@ class InsertBuilderTest extends QueryTestCase
         $sql = $this->insertBuilder()->table('User')->value(['createdAt' => new Time('2020-01-01T01:12:34.56789Z')])->toSql();
         static::assertEquals("INSERT INTO `User` (`createdAt`) VALUES ('2020-01-01 01:12:34.567890')", $sql);
     }
+
+    public function testReturning(): void
+    {
+        $sql = $this->insertBuilder()->table('User')->value(['id'=> 1, 'name' => 'abc'])->returning('id', 'name')->toSql();
+        static::assertEquals("INSERT INTO `User` (`id`, `name`) VALUES (1, 'abc') RETURNING `id`, `name`", $sql);
+    }
 }

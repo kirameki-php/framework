@@ -31,4 +31,10 @@ class UpdateBuilderTest extends QueryTestCase
         $sql = $this->updateBuilder()->table('User')->set(['status'=> 1])->where('lock', 1)->orderByDesc('id')->limit(1)->toSql();
         static::assertEquals("UPDATE `User` SET `status` = 1 WHERE `lock` = 1 ORDER BY `id` DESC LIMIT 1", $sql);
     }
+
+    public function testReturning(): void
+    {
+        $sql = $this->updateBuilder()->table('User')->set(['status'=> 1])->returning('id', 'status')->toSql();
+        static::assertEquals("UPDATE `User` SET `status` = 1 RETURNING `id`, `status`", $sql);
+    }
 }

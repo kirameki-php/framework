@@ -30,6 +30,22 @@ class SelectBuilderTest extends QueryTestCase
         static::assertEquals("SELECT * FROM `User` AS `u`", $sql);
     }
 
+    public function testFrom_multiple(): void
+    {
+        $sql = $this->selectBuilder()->from('User AS u', 'UserItem')->toSql();
+        static::assertEquals("SELECT * FROM `User` AS `u`, `UserItem`", $sql);
+    }
+
+    public function testFrom_multiple_whereColumn(): void
+    {
+        $sql = $this->selectBuilder()
+            ->columns('User.*')
+            ->from('User', 'UserItem')
+            ->whereColumn('User.id', 'UserItem.userId')
+            ->toSql();
+        static::assertEquals("SELECT `User`.* FROM `User`, `UserItem` WHERE `User`.`id` = `UserItem`.`userId`", $sql);
+    }
+
     public function testColumns(): void
     {
         $sql = $this->selectBuilder()->from('User')->columns('id', 'name')->toSql();

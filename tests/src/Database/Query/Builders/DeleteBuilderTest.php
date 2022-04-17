@@ -25,4 +25,10 @@ class DeleteBuilderTest extends QueryTestCase
         $sql = $this->deleteBuilder()->table('User')->where('id', 1)->orderByDesc('id')->limit(1)->toSql();
         static::assertEquals("DELETE FROM `User` WHERE `id` = 1 ORDER BY `id` DESC LIMIT 1", $sql);
     }
+
+    public function testReturning(): void
+    {
+        $sql = $this->deleteBuilder()->table('User')->where('id', 1)->returning('id', 'name')->toSql();
+        static::assertEquals("DELETE FROM `User` WHERE `id` = 1 RETURNING `id`, `name`", $sql);
+    }
 }
