@@ -132,7 +132,7 @@ class SequenceTest extends TestCase
         // size larger than items -> returns everything
         $chunked = $assoc->chunk(4);
         self::assertCount(1, $chunked);
-        self::assertEquals(['a' => 1, 'b' => 2, 'c' => 3], $chunked->firstOrNull()->toArray());
+        self::assertEquals(['a' => 1, 'b' => 2, 'c' => 3], $chunked->first()->toArray());
         self::assertNotSame($chunked, $assoc);
     }
 
@@ -459,10 +459,23 @@ class SequenceTest extends TestCase
     public function testFirst(): void
     {
         $seq = $this->seq([10, 20]);
-        self::assertEquals(10, $seq->firstOrNull());
-        self::assertEquals(20, $seq->firstOrNull(fn($v, $k) => $k === 1));
-        self::assertEquals(20, $seq->firstOrNull(fn($v, $k) => $v === 20));
-        self::assertEquals(null, $seq->firstOrNull(fn() => false));
+        self::assertEquals(10, $seq->first());
+        self::assertEquals(20, $seq->first(fn($v, $k) => $k === 1));
+        self::assertEquals(20, $seq->first(fn($v, $k) => $v === 20));
+    }
+
+    public function testFirst_Empty(): void
+    {
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('Iterable must contain at least one element.');
+        $this->seq([])->first();
+    }
+
+    public function testFirst_BadCondition(): void
+    {
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('Failed to find matching condition.');
+        $this->seq([1,2])->first(fn(int $i) => $i > 2);
     }
 
     public function testFirstIndex(): void
@@ -484,26 +497,13 @@ class SequenceTest extends TestCase
         self::assertEquals('c', $seq->firstKey(fn($v, $k) => $k === 'c'));
     }
 
-    public function testFirstOrFail(): void
+    public function testFirstOrNull(): void
     {
         $seq = $this->seq([10, 20]);
-        self::assertEquals(10, $seq->first());
-        self::assertEquals(20, $seq->first(fn($v, $k) => $k === 1));
-        self::assertEquals(20, $seq->first(fn($v, $k) => $v === 20));
-    }
-
-    public function testFirstOrFail_Empty(): void
-    {
-        $this->expectException(RuntimeException::class);
-        $this->expectExceptionMessage('Iterable must contain at least one element.');
-        $this->seq([])->first();
-    }
-
-    public function testFirstOrFail_BadCondition(): void
-    {
-        $this->expectException(RuntimeException::class);
-        $this->expectExceptionMessage('Failed to find matching condition.');
-        $this->seq([1,2])->first(fn(int $i) => $i > 2);
+        self::assertEquals(10, $seq->firstOrNull());
+        self::assertEquals(20, $seq->firstOrNull(fn($v, $k) => $k === 1));
+        self::assertEquals(20, $seq->firstOrNull(fn($v, $k) => $v === 20));
+        self::assertEquals(null, $seq->firstOrNull(fn() => false));
     }
 
     public function testFlatMap(): void
@@ -1137,7 +1137,7 @@ class SequenceTest extends TestCase
         $seq = $this->seq(['a' => 1, 'b' => 2, 'c' => 3]);
         self::assertTrue($seq->satisfyAll(static fn($v, $k) => is_string($k)));
 
-        $seq = $this->seq(['a' => 1, 'b' => 2, 'c' => 3, 4]);
+        $seq = $this->seq(['a' => 1, 'b' => 2, 'c' => 3, 4, '1']);
         self::assertFalse($seq->satisfyAll(static fn($k) => is_string($k)));
     }
 
@@ -1334,7 +1334,7 @@ class SequenceTest extends TestCase
         self::assertEquals([1, 2], $seq->toArray());
 
         $cnt = 0;
-        $seq = $this->seq([])->tap(function() use (&$cnt) { $cnt+= 1; });
+        $seq = $this->seq([])->tap(function() use (&$cnt) { ++$cnt; });
         self::assertEquals([], $seq->toArray());
         self::assertEquals(1, $cnt);
     }
