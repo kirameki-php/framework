@@ -1584,8 +1584,8 @@ class Arr
     public static function sum(iterable $iterable): float|int
     {
         $total = 0;
-        foreach($iterable as $num) {
-            $total += $num;
+        foreach($iterable as $val) {
+            $total += $val;
         }
         return $total;
     }

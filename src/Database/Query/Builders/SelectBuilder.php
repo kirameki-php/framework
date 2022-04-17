@@ -77,6 +77,7 @@ class SelectBuilder extends ConditionsBuilder
     public function forShare(): static
     {
         $this->statement->lockType = LockType::Shared;
+        $this->statement->lockOption = null;
         return $this;
     }
 

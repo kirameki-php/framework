@@ -376,7 +376,8 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
      */
     public function groupBy(string|Closure $key): static /** @phpstan-ignore-line */
     {
-        return $this->newInstance(Arr::groupBy($this, $key))->map(fn($array) => new Collection($array));
+        return $this->newInstance(Arr::groupBy($this, $key))
+            ->map(static fn(array $group) => new Collection($group));
     }
 
     /**
