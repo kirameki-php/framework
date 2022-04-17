@@ -112,13 +112,13 @@ class SequenceTest extends TestCase
 
         $chunked = $seq->chunk(2);
         self::assertCount(2, $chunked);
-        self::assertEquals([1, 2], $chunked->first()->toArray());
-        self::assertEquals([3], $chunked->last()->toArray());
+        self::assertEquals([1, 2], $chunked->firstOrNull()->toArray());
+        self::assertEquals([3], $chunked->lastOrNull()->toArray());
 
         // size larger than items -> returns everything
         $chunked = $seq->chunk(4);
         self::assertCount(1, $chunked);
-        self::assertEquals([1, 2, 3], $chunked->first()->toArray());
+        self::assertEquals([1, 2, 3], $chunked->firstOrNull()->toArray());
         self::assertNotSame($chunked, $seq);
 
         $assoc = $this->seq(['a' => 1, 'b' => 2, 'c' => 3]);
@@ -126,13 +126,13 @@ class SequenceTest extends TestCase
         // test preserveKeys: true
         $chunked = $assoc->chunk(2);
         self::assertCount(2, $chunked);
-        self::assertEquals(['a' => 1, 'b' => 2], $chunked->first()->toArray());
-        self::assertEquals(['c' => 3], $chunked->last()->toArray());
+        self::assertEquals(['a' => 1, 'b' => 2], $chunked->firstOrNull()->toArray());
+        self::assertEquals(['c' => 3], $chunked->lastOrNull()->toArray());
 
         // size larger than items -> returns everything
         $chunked = $assoc->chunk(4);
         self::assertCount(1, $chunked);
-        self::assertEquals(['a' => 1, 'b' => 2, 'c' => 3], $chunked->first()->toArray());
+        self::assertEquals(['a' => 1, 'b' => 2, 'c' => 3], $chunked->firstOrNull()->toArray());
         self::assertNotSame($chunked, $assoc);
     }
 
@@ -143,45 +143,45 @@ class SequenceTest extends TestCase
         $this->seq([1])->chunk(0);
     }
 
-    public function testCoalesce(): void
+    public function testCoalesce_Empty(): void
     {
-        $result = $this->seq()->coalesce();
+        $this->expectException(InvalidValueException::class);
+        $this->expectExceptionMessage('Expected value to be not null. null given.');
+        $this->seq([])->coalesce();
+    }
+
+    public function testCoalesce_OnlyNull(): void
+    {
+        $this->expectException(InvalidValueException::class);
+        $this->expectExceptionMessage('Expected value to be not null. null given.');
+        $this->seq([null])->coalesce();
+    }
+
+    public function testCoalesceOrNull(): void
+    {
+        $result = $this->seq()->coalesceOrNull();
         self::assertNull($result);
 
-        $result = $this->seq([null, 0, 1])->coalesce();
+        $result = $this->seq([null, 0, 1])->coalesceOrNull();
         self::assertEquals(0, $result);
 
-        $result = $this->seq([0, null, 1])->coalesce();
+        $result = $this->seq([0, null, 1])->coalesceOrNull();
         self::assertEquals(0, $result);
 
-        $result = $this->seq(['', null, 1])->coalesce();
+        $result = $this->seq(['', null, 1])->coalesceOrNull();
         self::assertEquals('', $result);
 
-        $result = $this->seq(['', null, 1])->coalesce();
+        $result = $this->seq(['', null, 1])->coalesceOrNull();
         self::assertEquals('', $result);
 
-        $result = $this->seq([[], null, 1])->coalesce();
+        $result = $this->seq([[], null, 1])->coalesceOrNull();
         self::assertEquals([], $result);
 
-        $result = $this->seq([null, [], 1])->coalesce();
+        $result = $this->seq([null, [], 1])->coalesceOrNull();
         self::assertEquals([], $result);
 
-        $result = $this->seq([null, null, 1])->coalesce();
+        $result = $this->seq([null, null, 1])->coalesceOrNull();
         self::assertEquals(1, $result);
-    }
-
-    public function testCoalesceOrFail_Empty(): void
-    {
-        $this->expectException(InvalidValueException::class);
-        $this->expectExceptionMessage('Expected value to be not null. null given.');
-        $this->seq([])->coalesceOrFail();
-    }
-
-    public function testCoalesceOrFail_OnlyNull(): void
-    {
-        $this->expectException(InvalidValueException::class);
-        $this->expectExceptionMessage('Expected value to be not null. null given.');
-        $this->seq([null])->coalesceOrFail();
     }
 
     public function testCompact(): void
@@ -459,10 +459,10 @@ class SequenceTest extends TestCase
     public function testFirst(): void
     {
         $seq = $this->seq([10, 20]);
-        self::assertEquals(10, $seq->first());
-        self::assertEquals(20, $seq->first(fn($v, $k) => $k === 1));
-        self::assertEquals(20, $seq->first(fn($v, $k) => $v === 20));
-        self::assertEquals(null, $seq->first(fn() => false));
+        self::assertEquals(10, $seq->firstOrNull());
+        self::assertEquals(20, $seq->firstOrNull(fn($v, $k) => $k === 1));
+        self::assertEquals(20, $seq->firstOrNull(fn($v, $k) => $v === 20));
+        self::assertEquals(null, $seq->firstOrNull(fn() => false));
     }
 
     public function testFirstIndex(): void
@@ -487,23 +487,23 @@ class SequenceTest extends TestCase
     public function testFirstOrFail(): void
     {
         $seq = $this->seq([10, 20]);
-        self::assertEquals(10, $seq->firstOrFail());
-        self::assertEquals(20, $seq->firstOrFail(fn($v, $k) => $k === 1));
-        self::assertEquals(20, $seq->firstOrFail(fn($v, $k) => $v === 20));
+        self::assertEquals(10, $seq->first());
+        self::assertEquals(20, $seq->first(fn($v, $k) => $k === 1));
+        self::assertEquals(20, $seq->first(fn($v, $k) => $v === 20));
     }
 
     public function testFirstOrFail_Empty(): void
     {
         $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('Iterable must contain at least one element.');
-        $this->seq([])->firstOrFail();
+        $this->seq([])->first();
     }
 
     public function testFirstOrFail_BadCondition(): void
     {
         $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('Failed to find matching condition.');
-        $this->seq([1,2])->firstOrFail(fn(int $i) => $i > 2);
+        $this->seq([1,2])->first(fn(int $i) => $i > 2);
     }
 
     public function testFlatMap(): void
@@ -742,7 +742,6 @@ class SequenceTest extends TestCase
         self::assertEquals(20, $seq->last());
         self::assertEquals(20, $seq->last(fn($v, $k) => $k === 1));
         self::assertEquals(20, $seq->last(fn($v, $k) => $v === 20));
-        self::assertEquals(null, $seq->last(fn() => false));
     }
 
     public function testLastIndex(): void
@@ -762,26 +761,27 @@ class SequenceTest extends TestCase
         self::assertEquals(null, $seq->lastKey(fn() => false));
     }
 
-    public function testLastOrFail(): void
+    public function testLastOrNull(): void
     {
         $seq = $this->seq([10, 20]);
-        self::assertEquals(20, $seq->lastOrFail());
-        self::assertEquals(20, $seq->lastOrFail(fn($v, $k) => $k === 1));
-        self::assertEquals(20, $seq->lastOrFail(fn($v, $k) => $v === 20));
+        self::assertEquals(20, $seq->lastOrNull());
+        self::assertEquals(20, $seq->lastOrNull(fn($v, $k) => $k === 1));
+        self::assertEquals(20, $seq->lastOrNull(fn($v, $k) => $v === 20));
+        self::assertEquals(null, $seq->lastOrNull(fn() => false));
     }
 
     public function testLastOrFail_Empty(): void
     {
         $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('Iterable must contain at least one element.');
-        $this->seq([])->lastOrFail();
+        $this->seq([])->last();
     }
 
     public function testLastOrFail_BadCondition(): void
     {
         $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('Failed to find matching condition.');
-        $this->seq([1,2])->lastOrFail(fn(int $i) => $i > 2);
+        $this->seq([1,2])->last(fn(int $i) => $i > 2);
     }
 
     public function testMacro(): void

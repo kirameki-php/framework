@@ -86,6 +86,6 @@ class Router
     public function findMatch(string $method, string $path): Route
     {
         $this->scanForRoutesIn('app/Http/Controllers');
-        return $this->getRoutes()->first();
+        return $this->getRoutes()->firstOrNull();
     }
 }

@@ -67,7 +67,7 @@ class TokenAuth implements Auth
                 throw new RuntimeException($user::class . ' must inherit ' . Authenticatable::class . ' to be used for Authentication');
             }
             $builder = new QueryBuilder($this->modelManager->getDatabaseManager(), $reflection);
-            $this->user = $builder->where($user->getAuthIdentifierName(), $token)->first();
+            $this->user = $builder->where($user->getAuthIdentifierName(), $token)->firstOrNull();
             $this->validated = true;
         }
         return $this->user;

@@ -47,7 +47,7 @@ abstract class Controller
     protected function getActionArg(string $method): object
     {
         $reflection = new ReflectionMethod($this, $method);
-        $parameterReflection = Arr::first($reflection->getParameters());
+        $parameterReflection = Arr::firstOrNull($reflection->getParameters());
         if ($typeReflection = $parameterReflection?->getType()) {
             if ($typeReflection instanceof ReflectionNamedType) {
                 $class = $typeReflection->getName();

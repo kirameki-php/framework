@@ -134,9 +134,26 @@ class Arr
      * @template TKey
      * @template TValue
      * @param iterable<TKey, TValue> $iterable
-     * @return TValue|null
+     * @return TValue
      */
     public static function coalesce(iterable $iterable): mixed
+    {
+        $result = static::coalesceOrNull($iterable);
+
+        if ($result !== null) {
+            return $result;
+        }
+
+        throw new InvalidValueException('not null', null);
+    }
+
+    /**
+     * @template TKey
+     * @template TValue
+     * @param iterable<TKey, TValue> $iterable
+     * @return TValue|null
+     */
+    public static function coalesceOrNull(iterable $iterable): mixed
     {
         foreach ($iterable as $val) {
             if ($val !== null) {
@@ -144,23 +161,6 @@ class Arr
             }
         }
         return null;
-    }
-
-    /**
-     * @template TKey
-     * @template TValue
-     * @param iterable<TKey, TValue> $iterable
-     * @return TValue
-     */
-    public static function coalesceOrFail(iterable $iterable): mixed
-    {
-        $result = static::coalesce($iterable);
-
-        if ($result !== null) {
-            return $result;
-        }
-
-        throw new InvalidValueException('not null', null);
     }
 
     /**
@@ -375,19 +375,20 @@ class Arr
      * @template TValue
      * @param iterable<TKey, TValue> $iterable
      * @param callable(TValue, TKey): bool $condition
-     * @return TValue|null
+     * @return TValue
      */
     public static function first(iterable $iterable, ?callable $condition = null): mixed
     {
-        $condition ??= static fn() => true;
+        $result = static::firstOrNull($iterable, $condition);
 
-        foreach ($iterable as $key => $val) {
-            if (static::verify($condition, $key, $val)) {
-                return $val;
-            }
+        if ($result === null) {
+            $message = ($condition !== null)
+                ? 'Failed to find matching condition.'
+                : 'Iterable must contain at least one element.';
+            throw new RuntimeException($message);
         }
 
-        return null;
+        return $result;
     }
 
     /**
@@ -434,20 +435,19 @@ class Arr
      * @template TValue
      * @param iterable<TKey, TValue> $iterable
      * @param callable(TValue, TKey): bool $condition
-     * @return TValue
+     * @return TValue|null
      */
-    public static function firstOrFail(iterable $iterable, ?callable $condition = null): mixed
+    public static function firstOrNull(iterable $iterable, ?callable $condition = null): mixed
     {
-        $result = static::first($iterable, $condition);
+        $condition ??= static fn() => true;
 
-        if ($result === null) {
-            $message = ($condition !== null)
-                ? 'Failed to find matching condition.'
-                : 'Iterable must contain at least one element.';
-            throw new RuntimeException($message);
+        foreach ($iterable as $key => $val) {
+            if (static::verify($condition, $key, $val)) {
+                return $val;
+            }
         }
 
-        return $result;
+        return null;
     }
 
     /**
@@ -742,27 +742,21 @@ class Arr
      * @template TKey of array-key
      * @template TValue
      * @param iterable<TKey, TValue> $iterable
-     * @param callable(TValue, TKey): bool|null $condition
-     * @return TValue|null
+     * @param callable(TValue, TKey): bool $condition
+     * @return TValue
      */
     public static function last(iterable $iterable, ?callable $condition = null): mixed
     {
-        $copy = static::from($iterable);
-        end($copy);
+        $result = static::lastOrNull($iterable, $condition);
 
-        $condition ??= static fn($v, $k) => true;
-
-        while(($key = key($copy)) !== null) {
-            /** @var TKey $key */
-            /** @var TValue $val */
-            $val = current($copy);
-            if (static::verify($condition, $key, $val)) {
-                return $val;
-            }
-            prev($copy);
+        if ($result === null) {
+            $message = ($condition !== null)
+                ? 'Failed to find matching condition.'
+                : 'Iterable must contain at least one element.';
+            throw new RuntimeException($message);
         }
 
-        return null;
+        return $result;
     }
 
     /**
@@ -824,21 +818,27 @@ class Arr
      * @template TKey of array-key
      * @template TValue
      * @param iterable<TKey, TValue> $iterable
-     * @param callable(TValue, TKey): bool $condition
-     * @return TValue
+     * @param callable(TValue, TKey): bool|null $condition
+     * @return TValue|null
      */
-    public static function lastOrFail(iterable $iterable, ?callable $condition = null): mixed
+    public static function lastOrNull(iterable $iterable, ?callable $condition = null): mixed
     {
-        $result = static::last($iterable, $condition);
+        $copy = static::from($iterable);
+        end($copy);
 
-        if ($result === null) {
-            $message = ($condition !== null)
-                ? 'Failed to find matching condition.'
-                : 'Iterable must contain at least one element.';
-            throw new RuntimeException($message);
+        $condition ??= static fn($v, $k) => true;
+
+        while(($key = key($copy)) !== null) {
+            /** @var TKey $key */
+            /** @var TValue $val */
+            $val = current($copy);
+            if (static::verify($condition, $key, $val)) {
+                return $val;
+            }
+            prev($copy);
         }
 
-        return $result;
+        return null;
     }
 
     /**

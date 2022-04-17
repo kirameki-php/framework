@@ -88,7 +88,7 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
     }
 
     /**
-     * @return TValue|null
+     * @return TValue
      */
     public function coalesce(): mixed
     {
@@ -96,11 +96,11 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
     }
 
     /**
-     * @return TValue
+     * @return TValue|null
      */
-    public function coalesceOrFail(): mixed
+    public function coalesceOrNull(): mixed
     {
-        return Arr::coalesceOrFail($this);
+        return Arr::coalesceOrNull($this);
     }
 
     /**
@@ -288,7 +288,7 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
 
     /**
      * @param callable(TValue, TKey): bool|null $condition
-     * @return TValue|null
+     * @return TValue
      */
     public function first(callable $condition = null): mixed
     {
@@ -315,11 +315,11 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
 
     /**
      * @param callable(TValue, TKey): bool|null $condition
-     * @return TValue
+     * @return TValue|null
      */
-    public function firstOrFail(callable $condition = null): mixed
+    public function firstOrNull(callable $condition = null): mixed
     {
-        return Arr::firstOrFail($this, $condition);
+        return Arr::firstOrNull($this, $condition);
     }
 
     /**
@@ -460,7 +460,7 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
 
     /**
      * @param callable(TValue, TKey): bool|null $condition
-     * @return TValue|null
+     * @return TValue
      */
     public function last(callable $condition = null): mixed
     {
@@ -487,11 +487,11 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
 
     /**
      * @param callable(TValue, TKey): bool|null $condition
-     * @return TValue
+     * @return TValue|null
      */
-    public function lastOrFail(callable $condition = null): mixed
+    public function lastOrNull(callable $condition = null): mixed
     {
-        return Arr::lastOrFail($this, $condition);
+        return Arr::lastOrNull($this, $condition);
     }
 
     /**

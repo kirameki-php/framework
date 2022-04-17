@@ -33,7 +33,7 @@ class FieldMap
         $this->class = new ReflectionClass($class);
         $this->fields = [];
         foreach ($this->class->getProperties() as $prop) {
-            $input = Arr::first($prop->getAttributes(Input::class))?->newInstance();
+            $input = Arr::firstOrNull($prop->getAttributes(Input::class))?->newInstance();
             if ($input instanceof Input) {
                 $input->name ??= $prop->name;
                 $this->fields[$input->name] = new FieldReflection($input, $prop);

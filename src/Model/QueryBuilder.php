@@ -45,22 +45,22 @@ class QueryBuilder extends SelectBuilder
     }
 
     /**
-     * @return T|null
+     * @return T
      */
-    public function first(): ?Model
+    public function first(): Model
     {
-        $result = $this->copy()->limit(1)->execute()->first();
-        return $result !== null
-            ? $this->reflection->makeModel($result, true)
-            : null;
+        return $this->firstOrNull() ?? throw new RuntimeException('No record found for query: '.$this->toSql());
     }
 
     /**
-     * @return T
+     * @return T|null
      */
-    public function firstOrFail(): Model
+    public function firstOrNull(): ?Model
     {
-        return $this->first() ?? throw new RuntimeException('No record found for query: '.$this->toSql());
+        $result = $this->copy()->limit(1)->execute()->firstOrNull();
+        return $result !== null
+            ? $this->reflection->makeModel($result, true)
+            : null;
     }
 
     /**

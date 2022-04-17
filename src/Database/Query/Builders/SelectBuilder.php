@@ -321,7 +321,7 @@ class SelectBuilder extends ConditionsBuilder
             return 0;
         }
 
-        return (int) $results->first()['total'];
+        return (int) $results->firstOrNull()['total'];
     }
 
     /**
@@ -369,9 +369,7 @@ class SelectBuilder extends ConditionsBuilder
     {
         $alias = 'aggregate';
         $aggregate = new Aggregate($function, $column, $alias);
-        /** @var array{ aggregate: int } $results */
-        $results = $this->copy()->columns($aggregate)->execute()->first() ?? [$alias => 0];
-        return $results[$alias];
+        return $this->copy()->columns($aggregate)->execute()->first()[$alias];
     }
 
     #endregion execution -----------------------------------------------------------------------------------------------
