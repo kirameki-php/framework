@@ -2,6 +2,7 @@
 
 namespace Kirameki\Exception;
 
+use Closure;
 use ErrorException;
 use Kirameki\Container\Container;
 use Kirameki\Container\Entry;
@@ -25,17 +26,17 @@ class ExceptionManager
     }
 
     /**
-     * @param string $name
-     * @param $handler
+     * @param class-string $name
+     * @param Closure(): Handler $handler
      * @return void
      */
-    public function setHandler(string $name, $handler): void
+    public function setHandler(string $name, Closure $handler): void
     {
         $this->handlers->singleton($name, $handler);
     }
 
     /**
-     * @param string $name
+     * @param class-string $name
      * @return bool
      */
     public function removeHandler(string $name): bool
@@ -51,7 +52,7 @@ class ExceptionManager
     {
         try {
             $this->handlers->entries()
-                ->map(fn(Entry $entry) => $entry->getInstance())
+                ->map(fn(Entry $entry): Handler => $entry->getInstance())
                 ->each(fn(Handler $handler) => $handler->handle($exception));
         }
         catch (Throwable $innerException) {
@@ -60,7 +61,7 @@ class ExceptionManager
     }
 
     /**
-     * @return array
+     * @return array<string, mixed>
      */
     protected function context(): array
     {
