@@ -25,6 +25,19 @@ class Collection extends Sequence implements ArrayAccess
     }
 
     /**
+     * @inheritDoc
+     * @template TMapValue
+     * @param callable(TValue, TKey): TMapValue $callback
+     * @return self<TKey, TMapValue>
+     *
+     * OVERRIDDEN to fix PHPStan bug
+     */
+    public function map(callable $callback): self
+    {
+        return $this->newInstance(Arr::map($this, $callback));
+    }
+
+    /**
      * @param TKey $offset
      * @return bool
      */

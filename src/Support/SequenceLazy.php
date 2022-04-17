@@ -175,8 +175,13 @@ class SequenceLazy extends Sequence
 
     /**
      * @inheritDoc
+     * @template TMapValue
+     * @param callable(TValue, TKey): TMapValue $callback
+     * @return self<TKey, TMapValue>
+     *
+     * OVERRIDDEN to fix PHPStan bug
      */
-    public function map(callable $callback): static
+    public function map(callable $callback): self
     {
         return new static(function () use ($callback) {
             foreach ($this as $key => $item) {
