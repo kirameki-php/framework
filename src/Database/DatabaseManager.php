@@ -8,17 +8,18 @@ use Kirameki\Database\Adapters\Adapter;
 use Kirameki\Database\Adapters\MySqlAdapter;
 use Kirameki\Database\Adapters\SqliteAdapter;
 use Kirameki\Event\EventManager;
+use Kirameki\Support\Collection;
 use RuntimeException;
 
 class DatabaseManager
 {
     /**
-     * @var Connection[]
+     * @var array<Connection>
      */
     protected array $connections;
 
     /**
-     * @var callable[]
+     * @var array<string, Closure>
      */
     protected array $adapters;
 
@@ -82,7 +83,7 @@ class DatabaseManager
      */
     public function addAdapter(string $name, callable $deferred): static
     {
-        $this->adapters[$name] = $deferred;
+        $this->adapters[$name] = $deferred(...);
         return $this;
     }
 
@@ -99,11 +100,11 @@ class DatabaseManager
     }
 
     /**
-     * @return Connection[]
+     * @return Collection<string, Connection>
      */
-    public function resolvedConnections(): array
+    public function resolvedConnections(): Collection
     {
-        return $this->connections;
+        return new Collection($this->connections);
     }
 
     /**
@@ -122,9 +123,9 @@ class DatabaseManager
 
     /**
      * @param string $name
-     * @return callable(Config): Adapter
+     * @return Closure(Config): Adapter
      */
-    protected function getAdapterResolver(string $name): callable
+    protected function getAdapterResolver(string $name): Closure
     {
         if (!isset($this->adapters[$name])) {
             $this->addAdapter($name, $this->getDefaultAdapterResolver($name));

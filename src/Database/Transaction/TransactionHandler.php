@@ -1,38 +1,38 @@
 <?php declare(strict_types=1);
 
-namespace Kirameki\Database\Concerns;
+namespace Kirameki\Database\Transaction;
 
-use Kirameki\Database\Connection;
+use Kirameki\Database\Adapters\Adapter;
 use Kirameki\Database\Events\TransactionBegan;
 use Kirameki\Database\Events\TransactionCommitted;
 use Kirameki\Database\Events\TransactionRolledBack;
-use Kirameki\Database\Events\TransactionSaved;
 use Kirameki\Database\Events\TransactionRolledBackToSavepoint;
-use Kirameki\Database\Transaction\Rollback;
-use Kirameki\Database\Transaction\Savepoint;
-use Kirameki\Database\Transaction\SavepointRollback;
-use Kirameki\Database\Transaction\Transaction;
+use Kirameki\Database\Events\TransactionSaved;
+use Kirameki\Event\EventManager;
 use RuntimeException;
 use Throwable;
-use function array_pop;
-use function count;
 
-/**
- * @mixin Connection
- */
-trait Transactions
+class TransactionHandler
 {
     /**
-     * @var Transaction[]
+     * @param Adapter $adapter
+     * @param EventManager $events
+     * @param array<Transaction> $txStack
      */
-    protected array $txStack = [];
+    public function __construct(
+        protected Adapter      $adapter,
+        protected EventManager $events,
+        protected array        $txStack = [],
+    )
+    {
+    }
 
     /**
      * @param callable $callback
      * @param bool $useSavepoint
      * @return mixed
      */
-    public function transaction(callable $callback, bool $useSavepoint = false): mixed
+    public function run(callable $callback, bool $useSavepoint = false): mixed
     {
         try {
             // Actual transaction
@@ -47,18 +47,18 @@ trait Transactions
             return $callback($this->txStack[-1]);
         }
 
-        // This is thrown when user calls rollback() on Savepoint instance.
+            // This is thrown when user calls rollback() on Savepoint instance.
         catch (SavepointRollback $rollback) {
             $this->rollbackToSavepoint($rollback);
         }
 
-        // This is thrown when user calls rollback() on Transaction instances.
-        // We will propagate up to the first transaction block and do a rollback there.
+            // This is thrown when user calls rollback() on Transaction instances.
+            // We will propagate up to the first transaction block and do a rollback there.
         catch (Rollback $rollback) {
             $this->rollback($rollback);
         }
 
-        // We will propagate up to the first transaction block, rollback and then rethrow.
+            // We will propagate up to the first transaction block, rollback and then rethrow.
         catch (Throwable $throwable) {
             $this->rollbackAndThrow($throwable);
         }
@@ -74,9 +74,9 @@ trait Transactions
     }
 
     /**
-     * @return Transaction[]
+     * @return array<Transaction>
      */
-    public function getTransactionStack(): array
+    public function getTxStack(): array
     {
         return $this->txStack;
     }

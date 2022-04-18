@@ -30,7 +30,7 @@ class ConnectionTest extends DatabaseTestCase
         $this->mysqlConnection()->insertInto('User')->value(['id' => 1])->execute();
         $this->mysqlConnection()->insertInto('UserItem')->value(['id' => 100, 'userId' => 1])->execute();
 
-        dump($this->mysqlConnection()->query('SELECT * FROM User INNER JOIN UserItem AS ui ON User.id = ui.userId;'));
+        //dump($this->mysqlConnection()->query('SELECT * FROM User INNER JOIN UserItem AS ui ON User.id = ui.userId;'));
     }
 
     public function testTableExists(): void

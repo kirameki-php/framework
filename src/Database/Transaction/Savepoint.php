@@ -22,8 +22,6 @@ class Savepoint extends Transaction
      */
     public function rollback(): void
     {
-        $trigger = new SavepointRollback('Rollback to Savepoint:'.$this->id);
-        $trigger->id = $this->id;
-        throw $trigger;
+        throw new SavepointRollback($this->id, 'Rollback to Savepoint:' . $this->id);
     }
 }
