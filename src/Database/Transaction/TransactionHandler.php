@@ -74,14 +74,6 @@ class TransactionHandler
     }
 
     /**
-     * @return array<Transaction>
-     */
-    public function getTxStack(): array
-    {
-        return $this->txStack;
-    }
-
-    /**
      * @param callable $callback
      * @return mixed
      */
