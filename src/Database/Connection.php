@@ -9,6 +9,7 @@ use Kirameki\Database\Query\Builders\DeleteBuilder;
 use Kirameki\Database\Query\Builders\InsertBuilder;
 use Kirameki\Database\Query\Builders\SelectBuilder;
 use Kirameki\Database\Query\Builders\UpdateBuilder;
+use Kirameki\Database\Query\Execution;
 use Kirameki\Database\Query\Expressions\Expr;
 use Kirameki\Database\Query\Formatters\Formatter as QueryFormatter;
 use Kirameki\Database\Query\Result;
@@ -238,12 +239,12 @@ class Connection
 
     /**
      * @param string $statement
+     * @return Execution
      */
-    public function executeSchema(string $statement): void
+    public function applySchema(string $statement): Execution
     {
-        $then = microtime(true);
-        $this->adapter->execute($statement);
-        $elapsedMs = (microtime(true) - $then) * 1000;
-        $this->events->dispatchClass(SchemaExecuted::class, $this, $statement, $elapsedMs);
+        $execution = $this->adapter->execute($statement);
+        $this->events->dispatchClass(SchemaExecuted::class, $this, $execution);
+        return $execution;
     }
 }

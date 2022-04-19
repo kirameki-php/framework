@@ -20,15 +20,15 @@ class TransactionHandler
      * @param array<Transaction> $txStack
      */
     public function __construct(
-        protected Adapter      $adapter,
+        protected Adapter $adapter,
         protected EventManager $events,
-        protected array        $txStack = [],
+        protected array $txStack = [],
     )
     {
     }
 
     /**
-     * @param callable $callback
+     * @param callable(Transaction): mixed $callback
      * @param bool $useSavepoint
      * @return mixed
      */
@@ -37,28 +37,25 @@ class TransactionHandler
         try {
             // Actual transaction
             if (!$this->inTransaction()) {
-                $this->runInTransaction($callback);
+                return $this->runInTransaction($callback);
             }
             // Savepoint if already in transaction and flag is set
             if ($useSavepoint) {
-                $this->runInSavepoint($callback);
+                return $this->runInSavepoint($callback);
             }
             // Already in transaction so just execute callback
             return $callback($this->txStack[-1]);
         }
-
-            // This is thrown when user calls rollback() on Savepoint instance.
+        // This is thrown when user calls rollback() on Savepoint instance.
         catch (SavepointRollback $rollback) {
             $this->rollbackToSavepoint($rollback);
         }
-
-            // This is thrown when user calls rollback() on Transaction instances.
-            // We will propagate up to the first transaction block and do a rollback there.
+        // This is thrown when user calls rollback() on Transaction instances.
+        // We will propagate up to the first transaction block and do a rollback there.
         catch (Rollback $rollback) {
             $this->rollback($rollback);
         }
-
-            // We will propagate up to the first transaction block, rollback and then rethrow.
+        // We will propagate up to the first transaction block, rollback and then rethrow.
         catch (Throwable $throwable) {
             $this->rollbackAndThrow($throwable);
         }
@@ -74,7 +71,7 @@ class TransactionHandler
     }
 
     /**
-     * @param callable $callback
+     * @param callable(Transaction): mixed $callback
      * @return mixed
      */
     protected function runInTransaction(callable $callback): mixed
@@ -95,7 +92,7 @@ class TransactionHandler
     }
 
     /**
-     * @param callable $callback
+     * @param callable(Transaction): mixed $callback
      * @return mixed
      */
     protected function runInSavepoint(callable $callback): mixed
@@ -126,7 +123,7 @@ class TransactionHandler
             }
         }
 
-        throw new RuntimeException('Invalid Savepoint:'.$rollback->id);
+        throw new RuntimeException("Invalid Savepoint: $rollback->id");
     }
 
     /**

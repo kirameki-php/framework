@@ -94,7 +94,7 @@ abstract class Migration
     public function apply(): void
     {
         foreach ($this->toDdls() as $ddl) {
-            $this->using->executeSchema($ddl);
+            $this->using->applySchema($ddl);
         }
     }
 

@@ -4,6 +4,7 @@ namespace Kirameki\Database\Adapters;
 
 use Generator;
 use Kirameki\Core\Config;
+use Kirameki\Database\Query\Execution;
 use Kirameki\Database\Query\Formatters\Formatter as QueryFormatter;
 use Kirameki\Database\Query\Result;
 use Kirameki\Database\Query\ResultLazy;
@@ -30,6 +31,12 @@ interface Adapter
      * @return bool
      */
     public function isConnected(): bool;
+
+    /**
+     * @param string $statement
+     * @return Execution
+     */
+    public function execute(string $statement): Execution;
 
     /**
      * @param string $statement
@@ -76,12 +83,6 @@ interface Adapter
      * @return bool
      */
     public function inTransaction(): bool;
-
-    /**
-     * @param string $statement
-     * @return void
-     */
-    public function execute(string $statement): void;
 
     /**
      * @param bool $ifNotExist

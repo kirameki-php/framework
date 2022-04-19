@@ -2,6 +2,7 @@
 
 namespace Kirameki\Database\Adapters;
 
+use Closure;
 use Kirameki\Database\Query\Formatters\MySqlFormatter as MySqlQueryFormatter;
 use PDO;
 use function array_filter;
@@ -18,19 +19,19 @@ class MySqlAdapter extends PdoAdapter
         $parts = [];
 
         if ($config->isNotNull('socket')) {
-            $parts[] = 'unix_socket='.$config->getString('socket');
+            $parts[] = "unix_socket={$config->getString('socket')}";
         } else {
-            $host = 'host='.$config->getString('host');
-            $host.= isset($config['port']) ? 'port='.$config->getString('port') : '';
+            $host = "host={$config->getString('host')}";
+            $host.= isset($config['port']) ? "port={$config->getString('port')}" : '';
             $parts[] = $host;
         }
 
         if ($config->isNotNull('database')) {
-            $parts[] = 'dbname='.$config->getString('database');
+            $parts[] = "dbname={$config->getString('database')}";
         }
 
         if ($config->isNotNull('charset')) {
-            $parts[] = 'charset='.$config->getString('charset');
+            $parts[] = "charset={$config->getString('charset')}";
         }
 
         $dsn = 'mysql:'.implode(';', $parts);
@@ -96,7 +97,10 @@ class MySqlAdapter extends PdoAdapter
      */
     public function databaseExists(): bool
     {
-        return $this->query("SHOW DATABASES LIKE '".$this->config['database']."'")->isNotEmpty();
+        $execution = $this->query("SHOW DATABASES LIKE '{$this->config['database']}'");
+        $rowCount = $execution->affectedRowCount;
+        $trueRowCount = ($rowCount instanceof Closure) ? $rowCount() : $rowCount;
+        return $trueRowCount > 0;
     }
 
     /**
@@ -104,7 +108,7 @@ class MySqlAdapter extends PdoAdapter
      */
     public function truncate(string $table): void
     {
-        $this->execute('TRUNCATE TABLE '.$table);
+        $this->execute("TRUNCATE TABLE $table");
     }
 
     /**

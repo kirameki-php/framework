@@ -1,8 +1,9 @@
 <?php declare(strict_types=1);
 
-namespace Kirameki\Database\Adapters;
+namespace Kirameki\Database\Query;
 
 use Closure;
+use Kirameki\Database\Adapters\Adapter;
 
 class Execution
 {
@@ -11,7 +12,7 @@ class Execution
      * @param string $statement
      * @param array<mixed> $bindings
      * @param iterable<int, mixed> $rowIterator
-     * @param int|Closure(): int $affectedRowCount
+     * @param Closure(): int $affectedRowCount
      * @param float $execTimeMs
      * @param ?float $fetchTimeMs
      */

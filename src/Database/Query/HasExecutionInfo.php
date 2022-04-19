@@ -3,7 +3,6 @@
 namespace Kirameki\Database\Query;
 
 use Closure;
-use Kirameki\Database\Adapters\Execution;
 use Kirameki\Database\Connection;
 
 trait HasExecutionInfo

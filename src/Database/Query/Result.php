@@ -2,7 +2,6 @@
 
 namespace Kirameki\Database\Query;
 
-use Kirameki\Database\Adapters\Execution;
 use Kirameki\Database\Connection;
 use Kirameki\Support\Sequence;
 

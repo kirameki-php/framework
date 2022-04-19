@@ -27,6 +27,6 @@ class DatabaseTestCase extends TestCase
         $connection = $this->mysqlConnection();
         $builder = new CreateTableBuilder($connection, $table);
         $callback($builder);
-        Arr::map($builder->build(), fn($ddl) => $connection->executeSchema($ddl));
+        Arr::map($builder->build(), fn($ddl) => $connection->applySchema($ddl));
     }
 }
