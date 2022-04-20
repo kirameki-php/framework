@@ -25,7 +25,7 @@ class DatabaseInitializer implements Initializer
             $app->get(EventManager::class)->listen(QueryExecuted::class, static function(QueryExecuted $event) {
                 $name = $event->connection->getName();
                 $executedQuery = $event->result->getExecutedQuery();
-                $timeMs = $event->result->getTotalRunTimeInMilliSeconds();
+                $timeMs = $event->result->getTotalTimeInMilliSeconds();
                 $message = sprintf('[db:%s] %s (%0.2f ms)', $name, $executedQuery, $timeMs);
                 logger()->debug($message, [
                     'statement' => $event->result->getStatement(),

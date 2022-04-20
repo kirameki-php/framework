@@ -87,7 +87,7 @@ trait HasExecutionInfo
     /**
      * @return float
      */
-    public function getTotalRunTimeInMilliSeconds(): float
+    public function getTotalTimeInMilliSeconds(): float
     {
         $execTime = $this->getExecTimeInMilliSeconds();
         $fetchTime = $this->getFetchTimeInMilliSeconds() ?? 0.0;

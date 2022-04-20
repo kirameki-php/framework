@@ -33,8 +33,9 @@ class Container
     }
 
     /**
-     * @param class-string $id
-     * @param mixed $entry
+     * @template TEntry
+     * @param class-string<TEntry> $id
+     * @param TEntry $entry
      * @param bool $cached
      * @return void
      */
@@ -46,8 +47,9 @@ class Container
     }
 
     /**
-     * @param class-string $id
-     * @param mixed|callable(static): mixed $entry
+     * @template TEntry
+     * @param class-string<TEntry> $id
+     * @param TEntry|callable(static): TEntry $entry
      * @return void
      */
     public function singleton(string $id, mixed $entry): void
@@ -56,7 +58,8 @@ class Container
     }
 
     /**
-     * @param class-string $id
+     * @template TEntry
+     * @param class-string<TEntry> $id
      * @return bool
      */
     public function delete(string $id): bool

@@ -26,7 +26,7 @@ class ExceptionManager
     }
 
     /**
-     * @param class-string $name
+     * @param string $name
      * @param Closure(): Handler $handler
      * @return void
      */

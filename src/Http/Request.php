@@ -43,9 +43,9 @@ class Request implements Stringable
     protected float $timestamp;
 
     /**
-     * @var RequestHeaders|null
+     * @var RequestHeaders
      */
-    public ?RequestHeaders $headers;
+    public RequestHeaders $headers;
 
     /**
      * @var RequestData

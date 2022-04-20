@@ -26,7 +26,7 @@ class HashingManager
      */
     public function __construct(Config $config)
     {
-        $this->algorithm = $config->getString('algorithm') ?? static::$defaultAlgorithm;
+        $this->algorithm = $config->getStringOrNull('algorithm') ?? static::$defaultAlgorithm;
         $this->pepper = $config->getString('pepper');
     }
 
@@ -36,8 +36,7 @@ class HashingManager
      */
     public function make(string $password): string
     {
-        $password = $this->pepper.'.'.$password;
-        return password_hash($password, $this->algorithm);
+        return password_hash("$this->pepper.$password", $this->algorithm);
     }
 
     /**
