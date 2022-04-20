@@ -30,7 +30,6 @@ use function asort;
 use function count;
 use function current;
 use function end;
-use function explode;
 use function http_build_query;
 use function implode;
 use function in_array;
@@ -1375,7 +1374,7 @@ class Arr
     public static function shiftMany(array &$array, int $amount): array
     {
         Assert::greaterThanEq($amount, 0);
-        return array_values(array_splice($array, 0, $amount));
+        return array_splice($array, 0, $amount);
     }
 
     /**
