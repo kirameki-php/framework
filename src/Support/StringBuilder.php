@@ -56,12 +56,12 @@ class StringBuilder implements Stringable
     }
 
     /**
-     * @param bool|float|int|string|null $string
+     * @param string ...$string
      * @return $this
      */
-    public function append(string|bool|int|float|null $string): static
+    public function append(string ...$string): static
     {
-        $this->value.= $string;
+        $this->value = Str::concat($this->value, ...$string);
         return $this;
     }
 
@@ -291,12 +291,13 @@ class StringBuilder implements Stringable
     }
 
     /**
-     * @param string $string
+     * @param string ...$string
      * @return $this
      */
-    public function prepend(string $string): static
+    public function prepend(string ...$string): static
     {
-        $this->value = $string.$this->value;
+        $string[] = $this->value;
+        $this->value = Str::concat(...$string);
         return $this;
     }
 

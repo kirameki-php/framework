@@ -173,6 +173,15 @@ class Str
     }
 
     /**
+     * @param string ...$string
+     * @return string
+     */
+    public static function concat(string ...$string): string
+    {
+        return implode('', $string);
+    }
+
+    /**
      * @param string $haystack
      * @param string $needle
      * @return bool

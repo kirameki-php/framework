@@ -4,25 +4,22 @@ namespace Kirameki\Exception;
 
 use Closure;
 use ErrorException;
-use Kirameki\Container\Container;
-use Kirameki\Container\Entry;
 use Kirameki\Exception\Handlers\Handler;
 use Throwable;
 
 class ExceptionManager
 {
     /**
-     * @var Container
+     * @var array<string, Handler|Closure>
      */
-    protected Container $handlers;
+    protected array $registered;
 
     public function __construct()
     {
         $this->setErrorHandling();
         $this->setExceptionHandling();
         $this->setFatalHandling();
-
-        $this->handlers = new Container();
+        $this->registered = [];
     }
 
     /**
@@ -32,16 +29,16 @@ class ExceptionManager
      */
     public function setHandler(string $name, Closure $handler): void
     {
-        $this->handlers->singleton($name, $handler);
+        $this->registered[$name] = $handler;
     }
 
     /**
      * @param class-string $name
-     * @return bool
+     * @return void
      */
-    public function removeHandler(string $name): bool
+    public function removeHandler(string $name): void
     {
-        return $this->handlers->delete($name);
+        unset($this->registered[$name]);
     }
 
     /**
@@ -51,9 +48,12 @@ class ExceptionManager
     protected function handle(Throwable $exception): void
     {
         try {
-            $this->handlers->entries()
-                ->map(fn(Entry $entry): Handler => $entry->getInstance())
-                ->each(fn(Handler $handler) => $handler->handle($exception));
+            foreach ($this->registered as $name => $handler) {
+                if ($handler instanceof Closure) {
+                    $handler = $this->registered[$name] = $handler();
+                }
+                $handler->handle($exception);
+            }
         }
         catch (Throwable $innerException) {
             $this->fallback($innerException);
