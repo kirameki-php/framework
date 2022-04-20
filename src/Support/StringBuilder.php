@@ -67,10 +67,10 @@ class StringBuilder implements Stringable
 
     /**
      * @param string $format
-     * @param bool|float|int|string|null ...$values
+     * @param float|int|string ...$values
      * @return $this
      */
-    public function appendFormat(string $format, ...$values): static
+    public function appendFormat(string $format, float|int|string ...$values): static
     {
         $this->value.= sprintf($format, ...$values);
         return $this;
