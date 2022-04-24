@@ -9,10 +9,12 @@ use Kirameki\Exception\ExceptionInitializer;
 use Kirameki\Http\HttpInitializer;
 use Kirameki\Logging\LogInitializer;
 use Kirameki\Model\ModelInitializer;
+use Kirameki\Redis\RedisInitializer;
 use Kirameki\Security\SecurityInitializer;
 use Kirameki\Support\Str;
 use LogicException;
 use RuntimeException;
+use Webmozart\Assert\Assert;
 
 class Application extends Container
 {
@@ -81,13 +83,20 @@ class Application extends Container
      */
     protected function initialize(): void
     {
-        (new ExceptionInitializer)->register($this);
-        (new LogInitializer)->register($this);
-        (new EventInitializer)->register($this);
-        (new DatabaseInitializer)->register($this);
-        (new ModelInitializer)->register($this);
-        (new HttpInitializer)->register($this);
-        (new SecurityInitializer)->register($this);
+        $initializerClasses = [
+            ExceptionInitializer::class, // must come first!
+            LogInitializer::class,
+            EventInitializer::class,
+            DatabaseInitializer::class,
+            ModelInitializer::class,
+            HttpInitializer::class,
+            SecurityInitializer::class,
+            RedisInitializer::class,
+        ];
+
+        foreach ($initializerClasses as $class) {
+            $this->registerInitializer($class);
+        }
     }
 
     /**
@@ -224,5 +233,16 @@ class Application extends Container
     protected function setTimeZone(string $timezone): bool
     {
         return date_default_timezone_set($timezone);
+    }
+
+    /**
+     * @param class-string<Initializer> $class
+     * @return void
+     */
+    protected function registerInitializer(string $class): void
+    {
+        $initializer = new $class();
+        Assert::isInstanceOf($initializer, Initializer::class);
+        $initializer->register($this);
     }
 }

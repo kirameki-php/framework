@@ -59,7 +59,7 @@ class Config implements ArrayAccess
      */
     public function getBool(string $key): bool
     {
-        return $this->getInternal($key, true);
+        return (bool)$this->getInternal($key, true);
     }
 
     /**
@@ -68,7 +68,43 @@ class Config implements ArrayAccess
      */
     public function getBoolOrNull(string $key): bool|null
     {
-        return $this->getInternal($key, false);
+        return (bool)$this->getInternal($key, false);
+    }
+
+    /**
+     * @param string $key
+     * @return int
+     */
+    public function getInt(string $key): int
+    {
+        return (int) $this->getInternal($key, true);
+    }
+
+    /**
+     * @param string $key
+     * @return int|null
+     */
+    public function getIntOrNull(string $key): int|null
+    {
+        return (int) $this->getInternal($key, false);
+    }
+
+    /**
+     * @param string $key
+     * @return float
+     */
+    public function getFloat(string $key): float
+    {
+        return (float) $this->getInternal($key, true);
+    }
+
+    /**
+     * @param string $key
+     * @return float|null
+     */
+    public function getFloatOrNull(string $key): float|null
+    {
+        return (float) $this->getInternal($key, false);
     }
 
     /**

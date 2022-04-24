@@ -1,17 +1,17 @@
 <?php declare(strict_types=1);
 
-namespace Kirameki\Database;
+namespace Kirameki\Redis;
 
 use Closure;
 use Kirameki\Core\Config;
-use Kirameki\Database\Adapters\Adapter;
-use Kirameki\Database\Adapters\MySqlAdapter;
-use Kirameki\Database\Adapters\SqliteAdapter;
 use Kirameki\Event\EventManager;
+use Kirameki\Redis\Adapters\Adapter;
+use Kirameki\Redis\Adapters\PhpRedisAdapter;
 use Kirameki\Support\Collection;
 use LogicException;
+use function config;
 
-class DatabaseManager
+class RedisManager
 {
     /**
      * @var array<Connection>
@@ -27,6 +27,11 @@ class DatabaseManager
      * @var EventManager
      */
     protected EventManager $events;
+
+    /**
+     * @var string
+     */
+    protected string $defaultAdapter = 'phpredis';
 
     /**
      * @param EventManager $events
@@ -58,15 +63,6 @@ class DatabaseManager
     }
 
     /**
-     * @return $this
-     */
-    public function purgeAll(): static
-    {
-        $this->connections = [];
-        return $this;
-    }
-
-    /**
      * @param Connection $connection
      * @return $this
      */
@@ -94,7 +90,8 @@ class DatabaseManager
      */
     protected function createConnection(string $name, Config $config): Connection
     {
-        $adapterResolver = $this->getAdapterResolver($config->getString('adapter'));
+        $adapterName = $config->getStringOrNull('adapter') ?? $this->defaultAdapter;
+        $adapterResolver = $this->getAdapterResolver($adapterName);
         $adapter = $adapterResolver($config);
         return new Connection($name, $adapter, $this->events);
     }
@@ -140,8 +137,7 @@ class DatabaseManager
     protected function getDefaultAdapterResolver(string $adapter): Closure
     {
         return match ($adapter) {
-            'mysql' => static fn(Config $config) => new MySqlAdapter($config),
-            'sqlite' => static fn(Config $config) => new SqliteAdapter($config),
+            'phpredis' => static fn(Config $config) => new PhpRedisAdapter($config),
             default => throw new LogicException("Adapter: $adapter does not exist"),
         };
     }
