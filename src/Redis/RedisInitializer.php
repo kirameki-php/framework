@@ -20,7 +20,7 @@ class RedisInitializer implements Initializer
     public function register(Application $app): void
     {
         $app->singleton(RedisManager::class, function (Application $app) {
-            return new RedisManager($app->get(EventManager::class));
+            return new RedisManager($app->config('redis'), $app->get(EventManager::class));
         });
 
         // Log Executed queries

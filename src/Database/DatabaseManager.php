@@ -14,6 +14,16 @@ use LogicException;
 class DatabaseManager
 {
     /**
+     * @var Config
+     */
+    protected Config $config;
+
+    /**
+     * @var EventManager
+     */
+    protected EventManager $events;
+
+    /**
      * @var array<Connection>
      */
     protected array $connections;
@@ -24,15 +34,12 @@ class DatabaseManager
     protected array $adapters;
 
     /**
-     * @var EventManager
-     */
-    protected EventManager $events;
-
-    /**
+     * @param Config $config
      * @param EventManager $events
      */
-    public function __construct(EventManager $events)
+    public function __construct(Config $config, EventManager $events)
     {
+        $this->config = $config;
         $this->connections = [];
         $this->adapters = [];
         $this->events = $events;
@@ -113,11 +120,8 @@ class DatabaseManager
      */
     public function getConfig(string $name): Config
     {
-        $config = config()->for('database.connections.'.$name);
-
-        $config['connection'] = $name;
+        $config = config()->for('connections.'.$name);
         $config['database'] ??= $name;
-
         return $config;
     }
 

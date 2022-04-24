@@ -17,7 +17,7 @@ class DatabaseInitializer implements Initializer
     public function register(Application $app): void
     {
         $app->singleton(DatabaseManager::class, function (Application $app) {
-            return new DatabaseManager($app->get(EventManager::class));
+            return new DatabaseManager($app->config('database'), $app->get(EventManager::class));
         });
 
         // Log Executed queries

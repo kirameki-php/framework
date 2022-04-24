@@ -9,10 +9,19 @@ use Kirameki\Redis\Adapters\Adapter;
 use Kirameki\Redis\Adapters\PhpRedisAdapter;
 use Kirameki\Support\Collection;
 use LogicException;
-use function config;
 
 class RedisManager
 {
+    /**
+     * @var Config
+     */
+    protected Config $config;
+
+    /**
+     * @var EventManager
+     */
+    protected EventManager $events;
+
     /**
      * @var array<Connection>
      */
@@ -24,20 +33,17 @@ class RedisManager
     protected array $adapters;
 
     /**
-     * @var EventManager
-     */
-    protected EventManager $events;
-
-    /**
      * @var string
      */
     protected string $defaultAdapter = 'phpredis';
 
     /**
+     * @param Config $config
      * @param EventManager $events
      */
-    public function __construct(EventManager $events)
+    public function __construct(Config $config, EventManager $events)
     {
+        $this->config = $config;
         $this->connections = [];
         $this->adapters = [];
         $this->events = $events;
@@ -110,12 +116,7 @@ class RedisManager
      */
     public function getConfig(string $name): Config
     {
-        $config = config()->for('database.connections.'.$name);
-
-        $config['connection'] = $name;
-        $config['database'] ??= $name;
-
-        return $config;
+        return $this->config->for('connections.'.$name);
     }
 
     /**
