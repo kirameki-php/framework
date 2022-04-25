@@ -2,8 +2,26 @@
 
 namespace Kirameki\Redis\Adapters;
 
+use Kirameki\Core\Config;
+
 interface Adapter
 {
+    /**
+     * @return Config
+     */
+    public function getConfig(): Config;
+
+    /**
+     * @return string
+     */
+    public function getPrefix(): string;
+
+    /**
+     * @param string $prefix
+     * @return $this
+     */
+    public function setPrefix(string $prefix): static;
+
     /**
      * @return $this
      */

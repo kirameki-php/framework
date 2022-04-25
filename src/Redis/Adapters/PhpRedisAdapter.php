@@ -34,7 +34,7 @@ class PhpRedisAdapter implements Adapter
     /**
      * @return Config
      */
-    public function getConfig()
+    public function getConfig(): Config
     {
         return $this->config;
     }
@@ -72,15 +72,17 @@ class PhpRedisAdapter implements Adapter
         $host = $config->getStringOrNull('host') ?? 'localhost';
         $port = $config->getIntOrNull('port') ?? 6379;
         $timeout = $config->getFloatOrNull('timeout') ?? 0.0;
-        $readTimeout = $config->getFloatOrNull('read_timeout') ?? 0.0;
         $prefix = $config->getStringOrNull('prefix') ?? '';
 
-        $this->phpRedis->connect($host, $port, $timeout, null, 0, $readTimeout,);
+        $config->getBoolOrNull('persistent')
+            ? $this->phpRedis->pconnect($host, $port, $timeout)
+            : $this->phpRedis->connect($host, $port, $timeout);
 
         $this->phpRedis->setOption(Redis::OPT_PREFIX, $prefix);
         $this->phpRedis->setOption(Redis::OPT_TCP_KEEPALIVE, true);
         $this->phpRedis->setOption(Redis::SCAN_NORETRY, true);
         $this->phpRedis->setOption(Redis::SCAN_PREFIX, true);
+        $this->phpRedis->setOption(Redis::SERIALIZER_IGBINARY, true);
 
         return $this;
     }

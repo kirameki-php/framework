@@ -63,9 +63,7 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
     public function getIterator(): Iterator
     {
         if ($this->items !== null) {
-            foreach ($this->items as $key => $item) {
-                yield $key => $item;
-            }
+            yield from $this->items;
         }
     }
 

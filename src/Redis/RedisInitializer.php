@@ -6,8 +6,8 @@ use Kirameki\Core\Application;
 use Kirameki\Core\Initializer;
 use Kirameki\Event\EventManager;
 use Kirameki\Redis\Events\CommandExecuted;
+use Kirameki\Support\Arr;
 use Kirameki\Support\Str;
-use function array_map;
 use function implode;
 use function sprintf;
 
@@ -28,15 +28,14 @@ class RedisInitializer implements Initializer
             $app->get(EventManager::class)->listen(CommandExecuted::class, static function(CommandExecuted $event) {
                 $name = $event->connection->getName();
                 $command = $event->command;
-                $args = array_map(static fn (mixed $v) => Str::valueOf($v), $event->args);
-                $result = $event->result;
+                $args = Arr::map($event->args, static fn (mixed $v): string => Str::valueOf($v));
                 $timeMs = $event->execTimeMs;
                 $message = sprintf('[redis:%s] %s %s (%0.2f ms)', $name, $command, implode(' ', $args), $timeMs);
                 logger()->debug($message, [
                     'name' => $name,
                     'command' => $command,
-                    'args' => $args,
-                    'result' => $result,
+                    'args' => $event->args,
+                    'result' => $event->result,
                     'timeMs' => $timeMs,
                 ]);
             });

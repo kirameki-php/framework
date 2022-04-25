@@ -262,9 +262,7 @@ class SequenceLazy extends Sequence
         }
 
         return static function () use ($iterable) {
-            foreach ($iterable as $key => $value) {
-                yield $key => $value;
-            }
+            yield from $iterable;
         };
     }
 }

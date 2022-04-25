@@ -25,7 +25,6 @@ use Kirameki\Support\Str;
 use RuntimeException;
 use function array_filter;
 use function array_keys;
-use function array_map;
 use function array_merge;
 use function count;
 use function current;
@@ -131,7 +130,7 @@ abstract class Formatter
     {
         $columns = array_keys($statement->data);
         $marker = $this->getParameterMarker();
-        $assignments = array_map(fn($column) => $this->quote($column) . ' = ' . $marker, $columns);
+        $assignments = Arr::map($columns, fn(string $column): string => $this->quote($column) . ' = ' . $marker);
         return $this->asCsv($assignments);
     }
 
@@ -220,11 +219,11 @@ abstract class Formatter
             return '*';
         }
 
-        return $this->asCsv(array_map(function (string|Expr $column) {
+        return $this->asCsv(Arr::map($columns, function (string|Expr $column): string {
             return ($column instanceof Expr)
                 ? $column->prepare($this)
                 : $this->columnize($column);
-        }, $columns));
+        }));
     }
 
     /**
@@ -283,12 +282,12 @@ abstract class Formatter
             return '';
         }
 
-        return implode(' ', array_map(function (JoinDefinition $def) {
+        return implode(' ', Arr::map($joins, function (JoinDefinition $def): string {
             $expr = $def->type->value . ' ';
             $expr.= $this->tableize($def->table) . ' ';
             $expr.= 'ON ' . $this->formatCondition($def->condition);
             return $expr;
-        }, $joins));
+        }));
     }
 
     /**
@@ -297,7 +296,9 @@ abstract class Formatter
      */
     protected function formatInsertColumnsPart(InsertStatement $statement): string
     {
-        return $this->asEnclosedCsv(array_map(fn($column) => $this->quote($column), $statement->columns()));
+        return $this->asEnclosedCsv(Arr::map($statement->columns(), function(string $column): string {
+            return $this->quote($column);
+        }));
     }
 
     /**
@@ -651,7 +652,10 @@ abstract class Formatter
             return '';
         }
 
-        $columns = array_map(fn($column) => $this->quote($column), $statement->returning);
+        $columns = Arr::map($statement->returning, function (string $column): string {
+            return $this->quote($column);
+        });
+
         return 'RETURNING ' . $this->asCsv($columns);
     }
 
