@@ -44,9 +44,9 @@ class RedisManager
     public function __construct(Config $config, EventManager $events)
     {
         $this->config = $config;
+        $this->events = $events;
         $this->connections = [];
         $this->adapters = [];
-        $this->events = $events;
     }
 
     /**

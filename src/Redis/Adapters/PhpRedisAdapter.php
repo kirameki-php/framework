@@ -68,21 +68,27 @@ class PhpRedisAdapter implements Adapter
     public function connect(): static
     {
         $config = $this->config;
+        $redis = $this->phpRedis;
 
         $host = $config->getStringOrNull('host') ?? 'localhost';
         $port = $config->getIntOrNull('port') ?? 6379;
         $timeout = $config->getFloatOrNull('timeout') ?? 0.0;
         $prefix = $config->getStringOrNull('prefix') ?? '';
+        $password = $config->getStringOrNull('password');
 
         $config->getBoolOrNull('persistent')
-            ? $this->phpRedis->pconnect($host, $port, $timeout)
-            : $this->phpRedis->connect($host, $port, $timeout);
+            ? $redis->pconnect($host, $port, $timeout)
+            : $redis->connect($host, $port, $timeout);
 
-        $this->phpRedis->setOption(Redis::OPT_PREFIX, $prefix);
-        $this->phpRedis->setOption(Redis::OPT_TCP_KEEPALIVE, true);
-        $this->phpRedis->setOption(Redis::SCAN_NORETRY, true);
-        $this->phpRedis->setOption(Redis::SCAN_PREFIX, true);
-        $this->phpRedis->setOption(Redis::SERIALIZER_IGBINARY, true);
+        $redis->setOption(Redis::OPT_PREFIX, $prefix);
+        $redis->setOption(Redis::OPT_TCP_KEEPALIVE, true);
+        $redis->setOption(Redis::SCAN_NORETRY, true);
+        $redis->setOption(Redis::SCAN_PREFIX, true);
+        $redis->setOption(Redis::SERIALIZER_IGBINARY, true);
+
+        if ($password !== null && $password !== '') {
+            $redis->auth($password);
+        }
 
         return $this;
     }
@@ -114,18 +120,18 @@ class PhpRedisAdapter implements Adapter
 
     /**
      * @param string $name
-     * @param array<mixed> $args
+     * @param mixed $args
      * @return mixed
      */
-    public function __call(string $name, array $args): mixed
+    public function __call(string $name, mixed ...$args): mixed
     {
-        return $this->command($name, $args);
+        return $this->command($name, ...$args);
     }
 
     /**
      * @inheritDoc
      */
-    public function command(string $name, array $args): mixed
+    public function command(string $name, mixed ...$args): mixed
     {
         $instance = $this->phpRedis;
 
@@ -144,6 +150,32 @@ class PhpRedisAdapter implements Adapter
     }
 
     /**
+     * @param string $message
+     * @return string
+     */
+    public function echo(string $message): string
+    {
+        return $this->command('echo', $message);
+    }
+
+    /**
+     * @param string ...$key
+     * @return int
+     */
+    public function exists(string ...$key): int
+    {
+        return (int)$this->command(...$key);
+    }
+
+    /**
+     * @return bool
+     */
+    public function ping(): bool
+    {
+        return $this->command('ping');
+    }
+
+    /**
      * @param string $key
      * @param mixed $value
      * @param SetOptions|null $options
@@ -153,6 +185,16 @@ class PhpRedisAdapter implements Adapter
     {
         $opts = $options?->toArray() ?? [];
         return $this->command('set', [$key, $value, ...$opts]);
+    }
+
+    /**
+     * @return float
+     */
+    public function time(): float
+    {
+        /** @var list<int> $time */
+        $time = $this->command('time');
+        return (float)"$time[0].$time[1]";
     }
 
     /**

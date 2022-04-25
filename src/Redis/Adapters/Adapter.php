@@ -44,8 +44,8 @@ interface Adapter
 
     /**
      * @param string $name
-     * @param array<mixed> $args
+     * @param mixed $args
      * @return mixed
      */
-    public function command(string $name, array $args): mixed;
+    public function command(string $name, mixed ...$args): mixed;
 }

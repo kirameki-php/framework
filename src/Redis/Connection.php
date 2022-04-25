@@ -6,6 +6,7 @@ use Kirameki\Event\EventManager;
 use Kirameki\Redis\Adapters\Adapter;
 use Kirameki\Redis\Events\CommandExecuted;
 use Kirameki\Redis\Support\Type;
+use function hrtime;
 
 /**
  * KEYS ----------------------------------------------------------------------------------------------------------------

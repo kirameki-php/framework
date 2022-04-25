@@ -40,7 +40,8 @@
       "Kirameki\\": "src/"
     },
     "files": [
-      "src/helpers.php"
+      "src/_helpers.php",
+      "src/Support/_helpers.php"
     ]
   },
   "autoload-dev": {

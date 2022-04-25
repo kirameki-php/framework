@@ -4,7 +4,6 @@ use Kirameki\Core\Application;
 use Kirameki\Database\DatabaseManager;
 use Kirameki\Event\EventManager;
 use Kirameki\Logging\LogManager;
-use Kirameki\Support\Collection;
 use Kirameki\Core\Config;
 use Kirameki\Core\Env;
 
@@ -14,27 +13,6 @@ use Kirameki\Core\Env;
 function app(): Application
 {
     return Application::instance();
-}
-
-/**
- * @template TKey of array-key
- * @template TValue
- * @param iterable<TKey, TValue>|null $items
- * @return Collection<TKey, TValue>
- */
-function collect(?iterable $items = null): Collection
-{
-    return new Collection($items);
-}
-
-/**
- * @param string|object $class
- * @return non-empty-string
- */
-function class_basename(string|object $class): string
-{
-    $class = is_object($class) ? get_class($class) : $class;
-    return basename(str_replace('\\', '/', $class)); /** @phpstan-ignore-line */
 }
 
 /**
@@ -87,14 +65,3 @@ function storage_path(string $relPath = null): string
     return app()->getBasePath('storage/'.$relPath);
 }
 
-/**
- * @template T
- * @param T $value
- * @param callable $callable
- * @return T
- */
-function tap(mixed $value, callable $callable)
-{
-    $callable($value);
-    return $value;
-}
