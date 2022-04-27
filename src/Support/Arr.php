@@ -557,7 +557,8 @@ class Arr
      */
     public static function get(iterable $iterable, int|string $key): mixed
     {
-        return static::from($iterable)[$key];
+        $result = static::getOrNull($iterable, $key);
+        return $result ?? throw new RuntimeException("Undefined array key $key");
     }
 
     /**

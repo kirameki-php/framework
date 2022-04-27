@@ -72,14 +72,28 @@ class CollectionTest extends TestCase
     public function testGet(): void
     {
         $collect = collect([1, 2]);
-        $collect->pull("");
         self::assertEquals(2, $collect->get(1));
 
         $collect = collect(['a' => [1, 'b' => 2, 'c' => ['d' => 3]], 'c' => 'd', 'e' => []]);
         // get existing data
         self::assertEquals([1, 'b' => 2, 'c' => ['d' => 3]], $collect->get('a'));
         self::assertEquals('d', $collect->get('c'));
-        self::assertEquals(null, $collect->get(0));
+    }
+
+    public function testGet_invalid_key_exception(): void
+    {
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('Undefined array key 2');
+        collect([1, 2])->get(2);
+    }
+
+    public function testGetOrNull(): void
+    {
+        $collect = collect(['a' => [1, 'b' => 2, 'c' => ['d' => 3]], 'c' => 'd', 'e' => []]);
+        // get existing data
+        self::assertEquals([1, 'b' => 2, 'c' => ['d' => 3]], $collect->get('a'));
+        self::assertEquals('d', $collect->getOrNull('c'));
+        self::assertEquals(null, $collect->getOrNull(0));
     }
 
     public function testInsertAt(): void

@@ -356,15 +356,6 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
     }
 
     /**
-     * @param int|string $key
-     * @return TValue|null
-     */
-    public function get(int|string $key): mixed
-    {
-        return Arr::get($this, $key);
-    }
-
-    /**
      * @template TGroupKey as array-key
      * @param Closure(TValue, TKey): TGroupKey|TGroupKey $key
      * @return Sequence<TGroupKey, static>
