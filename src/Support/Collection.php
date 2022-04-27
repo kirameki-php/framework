@@ -229,4 +229,12 @@ class Collection extends Sequence implements ArrayAccess
         Arr::unshift($this->items, ...$value);
         return $this;
     }
+
+    /**
+     * @return Sequence<TKey, TValue>
+     */
+    public function toSequence(): Sequence
+    {
+        return new Sequence($this->toArray());
+    }
 }

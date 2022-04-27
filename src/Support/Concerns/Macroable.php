@@ -34,35 +34,34 @@ trait Macroable
 
     /**
      * @param string $method
-     * @param array $parameters
+     * @param array<int|string, mixed> $parameters
      * @return mixed
      */
     public static function __callStatic(string $method, array $parameters)
     {
-        return static::callMacro(null, $method, $parameters);
+        return static::callMacro($method, $parameters);
     }
 
     /**
      * @param string $method
-     * @param array $parameters
+     * @param array<int|string, mixed> $parameters
      * @return mixed
      */
     public function __call(string $method, array $parameters)
     {
-        return static::callMacro($this, $method, $parameters);
+        return static::callMacro($method, $parameters);
     }
 
     /**
-     * @param Macroable $newThis
      * @param string $method
-     * @param array $parameters
+     * @param array<int|string, mixed> $parameters
      * @return mixed
      */
-    protected static function callMacro(self $newThis, string $method, array $parameters): mixed
+    protected static function callMacro(string $method, array $parameters): mixed
     {
-        if (! static::macroExists($method)) {
-            throw new BadMethodCallException(sprintf('Method %s::%s does not exist.', static::class, $method));
+        if (isset(static::$macros[$method])) {
+            return static::$macros[$method](...$parameters);
         }
-        return static::$macros[$method]?->call($newThis, ...$parameters);
+        throw new BadMethodCallException(sprintf('Method %s::%s does not exist.', static::class, $method));
     }
 }

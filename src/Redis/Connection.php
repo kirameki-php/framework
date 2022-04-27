@@ -5,16 +5,25 @@ namespace Kirameki\Redis;
 use Kirameki\Event\EventManager;
 use Kirameki\Redis\Adapters\Adapter;
 use Kirameki\Redis\Events\CommandExecuted;
+use Kirameki\Redis\Support\SetOptions;
 use Kirameki\Redis\Support\Type;
 use function hrtime;
 
 /**
- * KEYS ----------------------------------------------------------------------------------------------------------------
- * @method int del(string ...$key)
+ *
+ * @method string echo(string $message)
  * @method int exists(string ...$key)
  * @method bool expire(string $key, int $time)
  * @method bool expireAt(string $key, int $time)
  * @method int expireTime()
+ * @method bool ping()
+ * @method mixed set(string $key, mixed $value, SetOptions $options = null)
+ * @method array|false scan(int &$iterator, ?string $pattern = null, int $count = 0)
+ * @method float time()
+ * @method Type type(string $key)
+ *
+ * KEYS ----------------------------------------------------------------------------------------------------------------
+ * @method int del(string ...$key)
  * @method array<int, string> keys(string $pattern)
  * @method bool move(string $key, int $db)
  * @method bool persist(string $key)
@@ -24,7 +33,6 @@ use function hrtime;
  * @method int pTtl()
  *
  * @method bool|int ttl(string $key)
- * @method Type type(string $key)
  *
  * HASHES --------------------------------------------------------------------------------------------------------------
  * @method mixed hDel(string $key, string $field)
@@ -62,7 +70,7 @@ use function hrtime;
  * @method int zAdd(string $key, array $options, float $score, string $member, ...$scoreThenMember) // options: ['NX', 'XX', 'CH', 'INCR']
  * @method int zCard(string $key)
  * @method int zCount(string $key, string $start, string $end)
- * @method int zIncrBy(string $key, float $increment, string $memeber)
+ * @method int zIncrBy(string $key, float $increment, string $member)
  * @method int zInterStore(string $output, $zSetKeys, array $weight = null, string $aggregateFunction = 'SUM')
  * @method int zLexCount(string $key, int $min, int $max)
  * @method array zPopMax(string $key, int $count = 1)

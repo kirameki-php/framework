@@ -184,7 +184,7 @@ class PhpRedisAdapter implements Adapter
     public function set(string $key, mixed $value, SetOptions $options = null): mixed
     {
         $opts = $options?->toArray() ?? [];
-        return $this->command('set', [$key, $value, ...$opts]);
+        return $this->command('set', $key, $value, ...$opts);
     }
 
     /**

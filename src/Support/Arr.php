@@ -702,7 +702,7 @@ class Arr
     /**
      * @template TKey of array-key
      * @param iterable<TKey, mixed> $iterable
-     * @return array<TKey>
+     * @return array<int, TKey>
      */
     public static function keys(iterable $iterable): array
     {
@@ -723,7 +723,9 @@ class Arr
      */
     public static function keyByRecursive(iterable $iterable, string|Closure $key, bool $overwrite = false, int $depth = PHP_INT_MAX): array
     {
-        $callable = is_string($key) ? static::createDigger($key) : $key;
+        $callable = is_string($key)
+            ? static fn (): string => $key
+            : $key;
 
         $result = [];
         foreach ($iterable as $oldKey => $val) {
