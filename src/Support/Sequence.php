@@ -22,16 +22,16 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
     use Concerns\Tappable;
 
     /**
-     * @var iterable<TKey, TValue>|null
+     * @var iterable<TKey, TValue>
      */
-    protected ?iterable $items;
+    protected iterable $items;
 
     /**
      * @param iterable<TKey, TValue>|null $items
      */
     public function __construct(iterable|null $items = null)
     {
-        $this->items = $items;
+        $this->items = $items ?? [];
     }
 
     /**
