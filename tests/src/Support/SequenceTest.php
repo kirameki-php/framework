@@ -957,16 +957,6 @@ class SequenceTest extends TestCase
         $this->seq([])->minMax();
     }
 
-    public function testNewInstance(): void
-    {
-        $seq = $this->seq([]);
-        self::assertNotSame($seq, $seq->newInstance([]));
-        self::assertEquals($seq, $seq->newInstance([]));
-
-        $seq = $this->seq([1, 10]);
-        self::assertEquals([], $seq->newInstance([])->toArray());
-    }
-
     public function testNotContains(): void
     {
         self::assertTrue($this->seq([])->notContains(0));

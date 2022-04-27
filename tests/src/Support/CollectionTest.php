@@ -100,16 +100,6 @@ class CollectionTest extends TestCase
         self::assertEquals([1, 2, 3, 'a', 4], $collect->insertAt(-2, 'a')->toArray());
     }
 
-    public function testNewInstance(): void
-    {
-        $collect = collect([]);
-        self::assertNotSame($collect, $collect->newInstance([]));
-        self::assertEquals($collect, $collect->newInstance([]));
-
-        $collect = collect([1, 10]);
-        self::assertEquals([], $collect->newInstance([])->toArray());
-    }
-
     public function testOffsetExists(): void
     {
         $seq = collect([1, 2]);

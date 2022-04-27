@@ -553,9 +553,21 @@ class Arr
      * @template TValue
      * @param iterable<TKey, TValue> $iterable
      * @param int|string $key
-     * @return TValue|null
+     * @return TValue
      */
     public static function get(iterable $iterable, int|string $key): mixed
+    {
+        return static::from($iterable)[$key];
+    }
+
+    /**
+     * @template TKey of array-key
+     * @template TValue
+     * @param iterable<TKey, TValue> $iterable
+     * @param int|string $key
+     * @return TValue|null
+     */
+    public static function getOrNull(iterable $iterable, int|string $key): mixed
     {
         return static::from($iterable)[$key] ?? null;
     }

@@ -37,10 +37,10 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
     /**
      * @template TNewKey of array-key
      * @template TNewValue
-     * @param iterable<TNewKey, TNewValue> $args
+     * @param iterable<TNewKey, TNewValue> $items
      * @return static<TNewKey, TNewValue>
      */
-    public function newInstance(mixed $items): static /** @phpstan-ignore-line */
+    protected function newInstance(mixed $items): static /** @phpstan-ignore-line */
     {
         return new static($items);
     }
@@ -62,9 +62,7 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
      */
     public function getIterator(): Iterator
     {
-        if ($this->items !== null) {
-            yield from $this->items;
-        }
+        yield from $this->items;
     }
 
     /**
@@ -260,7 +258,7 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
     {
         if (is_iterable($items)) {
             /** @var iterable<array-key, mixed> $items */
-            return $this->toArray() === $this->asArray($items);
+            return $this->toArray() === Arr::from($items);
         }
         return false;
     }
@@ -839,7 +837,7 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
      */
     public function toArray(): array
     {
-        return $this->asArray($this);
+        return Arr::from($this);
     }
 
     /**
@@ -911,17 +909,6 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
     public function values(): static
     {
         return $this->newInstance(Arr::values($this));
-    }
-
-    /**
-     * @template TNewKey of array-key
-     * @template TNewValue
-     * @param iterable<TNewKey, TNewValue> $items
-     * @return array<TNewKey, TNewValue>
-     */
-    protected function asArray(iterable $items): array
-    {
-        return Arr::from($items);
     }
 
     /**
