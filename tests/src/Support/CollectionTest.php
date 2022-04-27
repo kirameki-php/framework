@@ -227,15 +227,40 @@ class CollectionTest extends TestCase
 
     public function testPull(): void
     {
-        $collect = collect([]);
-        self::assertEquals(null, $collect->pull(1));
-
         $collect = collect([1, 2]);
         self::assertEquals(2, $collect->pull(1));
         self::assertEquals([1], $collect->toArray());
 
         $collect = collect(['a' => 1, 'b' => 2]);
         self::assertEquals(2, $collect->pull('b'));
+        self::assertEquals(['a' => 1], $collect->toArray());
+    }
+
+    public function testPull_pull_on_empty(): void
+    {
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('Tried to pull undefined array key "1"');
+        collect([])->pull(1);
+    }
+
+    public function testPull_pull_undefined_key(): void
+    {
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('Tried to pull undefined array key "c"');
+        collect(['a' => 1, 'b' => 2])->pull('c');
+    }
+
+    public function testPullOrNull(): void
+    {
+        $collect = collect([]);
+        self::assertEquals(null, $collect->pullOrNull(1));
+
+        $collect = collect([1, 2]);
+        self::assertEquals(2, $collect->pullOrNull(1));
+        self::assertEquals([1], $collect->toArray());
+
+        $collect = collect(['a' => 1, 'b' => 2]);
+        self::assertEquals(2, $collect->pullOrNull('b'));
         self::assertEquals(['a' => 1], $collect->toArray());
     }
 

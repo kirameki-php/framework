@@ -133,11 +133,20 @@ class Collection extends Sequence implements ArrayAccess
 
     /**
      * @param TKey $key
-     * @return TValue|null
+     * @return TValue
      */
     public function pull(int|string $key): mixed
     {
         return Arr::pull($this->items, $key);
+    }
+
+    /**
+     * @param TKey $key
+     * @return TValue|null
+     */
+    public function pullOrNull(int|string $key): mixed
+    {
+        return Arr::pullOrNull($this->items, $key);
     }
 
     /**

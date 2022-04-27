@@ -1126,14 +1126,23 @@ class Arr
      * @template T
      * @param array<T> $array
      * @param array-key $key
-     * @param bool $found
+     * @return T
+     */
+    public static function pull(array &$array, int|string $key): mixed
+    {
+        $result = static::pullOrNull($array, $key);
+        return $result ?? throw new RuntimeException("Tried to pull undefined array key \"$key\"");
+    }
+
+    /**
+     * @template T
+     * @param array<T> $array
+     * @param array-key $key
      * @return T|null
      */
-    public static function pull(array &$array, int|string $key, bool &$found = null): mixed
+    public static function pullOrNull(array &$array, int|string $key): mixed
     {
-        $found = false;
         if (array_key_exists($key, $array)) {
-            $found = true;
             $value = $array[$key];
             unset($array[$key]);
             return $value;
@@ -1211,9 +1220,7 @@ class Arr
      */
     public static function removeKey(array &$array, int|string $key): bool
     {
-        $found = false;
-        static::pull($array, $key, $found);
-        return $found;
+        return static::pullOrNull($array, $key) !== null;
     }
 
     /**
