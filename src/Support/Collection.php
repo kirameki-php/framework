@@ -25,6 +25,16 @@ class Collection extends Sequence implements ArrayAccess
     }
 
     /**
+     * @param TValue ...$value
+     * @return $this
+     */
+    public function append(mixed ...$value): static
+    {
+        Arr::append($this->items, ...$value);
+        return $this;
+    }
+
+    /**
      * @param int|string $key
      * @return TValue
      */
@@ -132,6 +142,16 @@ class Collection extends Sequence implements ArrayAccess
     }
 
     /**
+     * @param mixed ...$value
+     * @return $this
+     */
+    public function prepend(mixed ...$value): static
+    {
+        Arr::prepend($this->items, ...$value);
+        return $this;
+    }
+
+    /**
      * @param TKey $key
      * @return TValue
      */
@@ -147,16 +167,6 @@ class Collection extends Sequence implements ArrayAccess
     public function pullOrNull(int|string $key): mixed
     {
         return Arr::pullOrNull($this->items, $key);
-    }
-
-    /**
-     * @param TValue ...$value
-     * @return $this
-     */
-    public function push(mixed ...$value): static
-    {
-        Arr::push($this->items, ...$value);
-        return $this;
     }
 
     /**
@@ -232,16 +242,6 @@ class Collection extends Sequence implements ArrayAccess
     public function shiftMany(int $amount): Collection
     {
         return $this->newInstance(Arr::shiftMany($this->items, $amount));
-    }
-
-    /**
-     * @param mixed ...$value
-     * @return $this
-     */
-    public function unshift(mixed ...$value): static
-    {
-        Arr::unshift($this->items, ...$value);
-        return $this;
     }
 
     /**

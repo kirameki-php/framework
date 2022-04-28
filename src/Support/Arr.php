@@ -18,6 +18,7 @@ use function array_key_exists;
 use function array_key_last;
 use function array_pad;
 use function array_pop;
+use function array_push;
 use function array_rand;
 use function array_reverse;
 use function array_shift;
@@ -50,6 +51,17 @@ use function uksort;
 class Arr
 {
     use Concerns\Macroable;
+
+    /**
+     * @template T
+     * @param array<T> $array
+     * @param T ...$value
+     * @return void
+     */
+    public static function append(array &$array, mixed ...$value): void
+    {
+        array_push($array, ...$value);
+    }
 
     /**
      * @template TKey of array-key
@@ -1102,6 +1114,16 @@ class Arr
     }
 
     /**
+     * @param array<mixed> $array
+     * @param mixed ...$value
+     * @return void
+     */
+    public static function prepend(array &$array, mixed ...$value): void
+    {
+        array_unshift($array, ...$value);
+    }
+
+    /**
      * Move elements that match condition to the top of the array.
      *
      * @template TKey of array-key
@@ -1148,19 +1170,6 @@ class Arr
             return $value;
         }
         return null;
-    }
-
-    /**
-     * @template T
-     * @param array<T> $array
-     * @param T ...$value
-     * @return void
-     */
-    public static function push(array &$array, mixed ...$value): void
-    {
-        foreach ($value as $v) {
-            $array[] = $v;
-        }
     }
 
     /**
@@ -1757,18 +1766,6 @@ class Arr
             }
         }
         return $preserved;
-    }
-
-    /**
-     * @param array<mixed> $array
-     * @param mixed ...$value
-     * @return void
-     */
-    public static function unshift(array &$array, mixed ...$value): void
-    {
-        for($i = count($value) - 1; $i >= 0; $i--) {
-            array_unshift($array, $value[$i]);
-        }
     }
 
     /**

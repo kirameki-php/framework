@@ -76,7 +76,7 @@ class ModelCollection extends Collection
     public function make(array $properties = []): Model
     {
         $model = $this->reflection->makeModel($properties);
-        $this->push($model);
+        $this->append($model);
         return $model;
     }
 

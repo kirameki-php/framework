@@ -69,6 +69,21 @@ class CollectionTest extends TestCase
         self::assertEquals(['a' => 3, 'b' => 4], $seq->toArray());
     }
 
+    public function testAppend(): void
+    {
+        $collect = collect([1, 2]);
+        self::assertSame($collect, $collect->append(3));
+        self::assertEquals([1, 2, 3], $collect->toArray());
+
+        $collect = collect([1, 2]);
+        self::assertSame($collect, $collect->append(3));
+        self::assertEquals([1, 2, 3], $collect->toArray());
+
+        $collect = collect(['a' => 1, 'b' => 2]);
+        self::assertSame($collect, $collect->append('b'));
+        self::assertEquals(['a' => 1, 'b' => 2, 'b'], $collect->toArray());
+    }
+
     public function testGet(): void
     {
         $collect = collect([1, 2]);
@@ -225,6 +240,18 @@ class CollectionTest extends TestCase
         self::assertEquals([], $collect->toArray());
     }
 
+    public function testPrepend(): void
+    {
+        $collect = collect([])->prepend(1);
+        self::assertEquals([1], $collect->toArray());
+
+        $collect = collect([1, 1])->prepend(0);
+        self::assertEquals([0, 1, 1], $collect->toArray());
+
+        $collect = collect(['a' => 1])->prepend(1, 2);
+        self::assertEquals([1, 2, 'a' => 1], $collect->toArray());
+    }
+
     public function testPull(): void
     {
         $collect = collect([1, 2]);
@@ -262,21 +289,6 @@ class CollectionTest extends TestCase
         $collect = collect(['a' => 1, 'b' => 2]);
         self::assertEquals(2, $collect->pullOrNull('b'));
         self::assertEquals(['a' => 1], $collect->toArray());
-    }
-
-    public function testPush(): void
-    {
-        $collect = collect([1, 2]);
-        self::assertSame($collect, $collect->push(3));
-        self::assertEquals([1, 2, 3], $collect->toArray());
-
-        $collect = collect([1, 2]);
-        self::assertSame($collect, $collect->push(3));
-        self::assertEquals([1, 2, 3], $collect->toArray());
-
-        $collect = collect(['a' => 1, 'b' => 2]);
-        self::assertSame($collect, $collect->push('b'));
-        self::assertEquals(['a' => 1, 'b' => 2, 'b'], $collect->toArray());
     }
 
     public function testRemove(): void
@@ -434,17 +446,5 @@ class CollectionTest extends TestCase
 
         $collect = collect([1, 2, 3])->slice(0, -1);
         self::assertEquals([1, 2], $collect->toArray());
-    }
-
-    public function testUnshift(): void
-    {
-        $collect = collect([])->unshift(1);
-        self::assertEquals([1], $collect->toArray());
-
-        $collect = collect([1, 1])->unshift(0);
-        self::assertEquals([0, 1, 1], $collect->toArray());
-
-        $collect = collect(['a' => 1])->unshift(1, 2);
-        self::assertEquals([1, 2, 'a' => 1], $collect->toArray());
     }
 }
