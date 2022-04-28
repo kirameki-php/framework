@@ -623,13 +623,33 @@ class Arr
      */
     public static function insertAt(array &$array, int $index, mixed ...$value): void
     {
+        // NOTE: This used to be simply array_splice($array, $index, 0, $value) but passing replacement
+        // in the 4th argument does not preserve keys so implementation was changed to the current one.
+
         // Offset is off by one for negative indexes (Ex: -2 inserts at 3rd element from right).
         // So we add one to correct offset. If adding to one results in 0, we set it to max count
         // to put it at the end.
         if ($index < 0) {
             $index = $index === -1 ? count($array) : $index + 1;
         }
-        array_splice($array, $index, 0, $value);
+
+        $tail = array_splice($array, $index);
+
+        foreach ($value as $key => $val) {
+            if (is_int($key)) {
+                $array[] = $val;
+            } else {
+                $array[$key] = $val;
+            }
+        }
+
+        foreach ($tail as $key => $val) {
+            if (is_int($key)) {
+                $array[] = $val;
+            } elseif (!array_key_exists($key, $array)) {
+                $array[$key] = $val;
+            }
+        }
     }
 
     /**
@@ -1274,7 +1294,10 @@ class Arr
     {
         $array = static::from($iterable);
         $rotates = array_splice($array, 0, $count);
-        return array_merge($array, $rotates);
+        foreach ($rotates as $key => $val) {
+            $array[$key] = $val;
+        }
+        return $array;
     }
 
     /**
@@ -1400,7 +1423,7 @@ class Arr
      * @template TValue
      * @param array<TKey, TValue> $array
      * @param int $amount
-     * @return array<int, TValue>
+     * @return array<TKey, TValue>
      */
     public static function shiftMany(array &$array, int $amount): array
     {

@@ -127,6 +127,12 @@ class CollectionTest extends TestCase
 
         $collect = collect([1, 2, 3, 4]);
         self::assertEquals([1, 2, 3, 'a', 4], $collect->insertAt(-2, 'a')->toArray());
+
+        $collect = collect(['a' => 1, 'b' => 2]);
+        self::assertEquals(['a' => 1, 'c' => 3, 'b' => 2], $collect->insertAt(1, c: 3)->toArray());
+
+        $collect = collect(['a' => 1, 'b' => 2]);
+        self::assertEquals(['a' => 1, 'b' => 3], $collect->insertAt(1, b: 3)->toArray());
     }
 
     public function testOffsetExists(): void
