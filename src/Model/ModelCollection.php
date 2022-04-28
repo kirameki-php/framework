@@ -28,10 +28,10 @@ class ModelCollection extends Collection
     }
 
     /**
-     * @param iterable<TKey, TModel>|null $items
+     * @param iterable<TKey, TModel> $items
      * @return static
      */
-    public function newInstance(?iterable $items = null): static
+    public function newInstance(mixed $items): static
     {
         return new static($this->reflection, $items);
     }

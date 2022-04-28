@@ -50,6 +50,15 @@ class RelationCollection extends ModelCollection
     }
 
     /**
+     * @param iterable<int, TDst> $items
+     * @return static
+     */
+    public function newInstance(mixed $items): static
+    {
+        return new static($this->relation, $this->srcModel, $this->reflection, $items);
+    }
+
+    /**
      * @inheritDoc
      */
     public function make(array $properties = []): Model
