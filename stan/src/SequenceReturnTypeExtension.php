@@ -13,7 +13,7 @@ use PHPStan\Type\TypeSpecifierAwareExtension;
 use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\StaticType;
 use PHPStan\Type\Type;
-use function dump;
+use function in_array;
 
 class SequenceReturnTypeExtension implements DynamicMethodReturnTypeExtension
 {
@@ -24,7 +24,11 @@ class SequenceReturnTypeExtension implements DynamicMethodReturnTypeExtension
 
     public function isMethodSupported(MethodReflection $methodReflection): bool
     {
-        return $methodReflection->getName() === 'newInstance';
+        return in_array($methodReflection->getName(), [
+            'keys',
+            'newInstance',
+            'values',
+        ], true);
     }
 
     public function getTypeFromMethodCall(
@@ -34,8 +38,7 @@ class SequenceReturnTypeExtension implements DynamicMethodReturnTypeExtension
     ): Type
     {
         $calledOnType = $scope->getType($methodCall->var);
-
-        $keyType = $methodReflection->getVariants()[0]->getTemplateTypeMap()->getType('TKey');
+        $keyType = $methodReflection->getVariants()[0]->getTemplateTypeMap()->getType('TNewKey');
         $valueType = $methodReflection->getVariants()[0]->getTemplateTypeMap()->getType('TValue');
 
         $genericObjectType = new GenericObjectType($calledOnType->getClassName(), [$keyType, $valueType]);

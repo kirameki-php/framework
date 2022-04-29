@@ -1799,7 +1799,11 @@ class Arr
      */
     public static function values(iterable $iterable): array
     {
-        return array_values(static::from($iterable));
+        $values = [];
+        foreach ($iterable as $val) {
+            $values[] = $val;
+        }
+        return $values;
     }
 
     /**

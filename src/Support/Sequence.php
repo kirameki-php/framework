@@ -40,7 +40,7 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
      * @param iterable<TNewKey, TNewValue> $items
      * @return static<TNewKey, TNewValue>
      */
-    protected function newInstance(mixed $items): static /** @phpstan-ignore-line */
+    public function newInstance(mixed $items): static /** @phpstan-ignore-line */
     {
         return new static($items);
     }
@@ -487,12 +487,12 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
     /**
      * @template TMapValue
      * @param callable(TValue, TKey): TMapValue $callback
-     * @return self<TKey, TMapValue>
+     * @return static<TKey, TMapValue>
      *
      * This method returns self since PHPStan can't handle static return types yet.
      * @see https://github.com/phpstan/phpstan/issues/5512#issuecomment-904592529
      */
-    public function map(callable $callback): self
+    public function map(callable $callback): static
     {
         return $this->newInstance(Arr::map($this, $callback));
     }
@@ -895,7 +895,7 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
     }
 
     /**
-     * @return static
+     * @return static<int, TValue>
      */
     public function values(): static
     {

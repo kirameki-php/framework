@@ -133,7 +133,7 @@ abstract class Relation
      */
     public function getDstKeyNames(): Collection
     {
-        return $this->getKeyPairs()->values(); /** @phpstan-ignore-line */
+        return $this->getKeyPairs()->values();
     }
 
     /**
