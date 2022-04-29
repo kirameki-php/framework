@@ -21,7 +21,7 @@
     "ramsey/uuid": "^4.1"
   },
   "require-dev": {
-    "phpstan/phpstan": "^1.4",
+    "phpstan/phpstan": "^1.6",
     "phpunit/phpunit": "~9.0",
     "symfony/var-dumper": "^6"
   },
@@ -46,7 +46,8 @@
   },
   "autoload-dev": {
     "psr-4": {
-      "Tests\\Kirameki\\": "tests/src/"
+      "Tests\\Kirameki\\": "tests/src/",
+      "Stan\\Kirameki\\": "stan/src/"
     }
   },
   "config": {
