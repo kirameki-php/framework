@@ -279,6 +279,31 @@ class Arr
     /**
      * @template TKey of array-key
      * @template TValue
+     * @param array<TKey, TValue> $array
+     * @param array<TKey> $keys
+     * @return mixed
+     */
+    public static function dig(array $array, array $keys): mixed
+    {
+        foreach ($keys as $key) {
+            if (!isset($array[$key])) {
+                return null;
+            }
+            if (!is_array($array[$key])) {
+                // If at last key, return the referenced value
+                if ($key === $keys[array_key_last($keys)]) {
+                    return $array[$key];
+                }
+                return null;
+            }
+            $array = $array[$key];
+        }
+        return $array;
+    }
+
+    /**
+     * @template TKey of array-key
+     * @template TValue
      * @param iterable<TKey, TValue> $iterable
      * @param int $amount
      * @return array<TKey, TValue>
@@ -327,22 +352,6 @@ class Arr
     {
         foreach ($iterable as $key => $val) {
             $callback($val, $key);
-        }
-    }
-
-    /**
-     * @template TKey of array-key
-     * @template TValue
-     * @param iterable<TKey, TValue> $iterable
-     * @param callable(TValue, TKey, int): void $callback
-     * @return void
-     */
-    public static function eachWithIndex(iterable $iterable, callable $callback): void
-    {
-        $offset = 0;
-        foreach ($iterable as $key => $val) {
-            $callback($val, $key, $offset);
-            $offset++;
         }
     }
 
@@ -1819,31 +1828,6 @@ class Arr
             return $value;
         }
         return [$value];
-    }
-
-    /**
-     * @template TKey of array-key
-     * @template TValue
-     * @param array<TKey, TValue> $array
-     * @param array<TKey> $keys
-     * @return mixed
-     */
-    protected static function dig(array $array, array $keys): mixed
-    {
-        foreach ($keys as $key) {
-            if (!isset($array[$key])) {
-                return null;
-            }
-            if (!is_array($array[$key])) {
-                // If at last key, return the referenced value
-                if ($key === $keys[array_key_last($keys)]) {
-                    return $array[$key];
-                }
-                return null;
-            }
-            $array = $array[$key];
-        }
-        return $array;
     }
 
     /**

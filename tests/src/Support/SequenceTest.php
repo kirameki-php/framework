@@ -416,23 +416,6 @@ class SequenceTest extends TestCase
         });
     }
 
-    public function testEachWithIndex(): void
-    {
-        $seq = $this->seq(['a' => 1, 'b' => 2]);
-        $seq->eachWithIndex(function ($v, $k, $n) {
-            switch ($k) {
-                case 'a':
-                    self::assertEquals(['a' => 1], [$k => $v]);
-                    self::assertEquals(0, $n);
-                    break;
-                case 'b':
-                    self::assertEquals(['b' => 2], [$k => $v]);
-                    self::assertEquals(1, $n);
-                    break;
-            }
-        });
-    }
-
     public function testExcept(): void
     {
         $seq = $this->seq(['a' => 1, 'b' => 2]);

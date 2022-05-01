@@ -242,16 +242,6 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
     }
 
     /**
-     * @param callable(TValue, TKey, int): void $callback
-     * @return $this
-     */
-    public function eachWithIndex(callable $callback): static
-    {
-        Arr::eachWithIndex($this, $callback);
-        return $this;
-    }
-
-    /**
      * @param mixed $items
      * @return bool
      */
