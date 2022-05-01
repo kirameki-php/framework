@@ -40,7 +40,7 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
      * @param iterable<TNewKey, TNewValue> $items
      * @return static<TNewKey, TNewValue>
      */
-    public function newInstance(mixed $items): static /** @phpstan-ignore-line */
+    public function newInstance(mixed $items): static
     {
         return new static($items);
     }
