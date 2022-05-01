@@ -134,7 +134,7 @@ class Collection extends Sequence implements ArrayAccess
 
     /**
      * @param int $amount
-     * @return static<TKey, TValue>
+     * @return static
      */
     public function popMany(int $amount): Collection
     {
@@ -237,7 +237,7 @@ class Collection extends Sequence implements ArrayAccess
 
     /**
      * @param int $amount
-     * @return static<TKey, TValue>
+     * @return static
      */
     public function shiftMany(int $amount): Collection
     {

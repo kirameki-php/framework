@@ -107,6 +107,7 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
     {
         $chunks = [];
         foreach (Arr::chunk($this, $size) as $chunk) {
+            /** @var static $converted */
             $converted = $this->newInstance($chunk);
             $chunks[] = $converted;
         }
@@ -363,8 +364,7 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
     public function groupBy(int|string|Closure $key): Sequence
     {
         $grouped = Arr::groupBy($this, $key);
-        return (new Sequence($grouped))->map(static function(array $group) {
-            /** @var array<TKey, TValue> $group */
+        return (new self($grouped))->map(static function(array $group): static {
             return new static($group);
         });
     }
@@ -488,11 +488,8 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
      * @template TMapValue
      * @param callable(TValue, TKey): TMapValue $callback
      * @return static<TKey, TMapValue>
-     *
-     * This method returns self since PHPStan can't handle static return types yet.
-     * @see https://github.com/phpstan/phpstan/issues/5512#issuecomment-904592529
      */
-    public function map(callable $callback): static
+    public function map(callable $callback): static /** @phpstan-ignore-line */
     {
         return $this->newInstance(Arr::map($this, $callback));
     }

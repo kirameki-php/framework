@@ -26,6 +26,7 @@ class SequenceReturnTypeExtension implements DynamicMethodReturnTypeExtension
     {
         return in_array($methodReflection->getName(), [
             'keys',
+            'map',
             'newInstance',
             'values',
         ], true);
@@ -38,8 +39,9 @@ class SequenceReturnTypeExtension implements DynamicMethodReturnTypeExtension
     ): Type
     {
         $calledOnType = $scope->getType($methodCall->var);
-        $keyType = $methodReflection->getVariants()[0]->getTemplateTypeMap()->getType('TNewKey');
-        $valueType = $methodReflection->getVariants()[0]->getTemplateTypeMap()->getType('TValue');
+        $firstArg = $methodReflection->getVariants()[0];
+        $keyType = $firstArg->getTemplateTypeMap()->getType('TKey');
+        $valueType = $firstArg->getTemplateTypeMap()->getType('TValue');
 
         $genericObjectType = new GenericObjectType($calledOnType->getClassName(), [$keyType, $valueType]);
 
