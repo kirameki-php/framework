@@ -357,15 +357,15 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
     }
 
     /**
-     * @template TGroupKey as array-key
+     * @template TGroupKey of array-key
      * @param Closure(TValue, TKey): TGroupKey|TGroupKey $key
      * @return Sequence<TGroupKey, static>
      */
     public function groupBy(int|string|Closure $key): Sequence
     {
         $grouped = Arr::groupBy($this, $key);
-        return (new self($grouped))->map(static function(array $group): static {
-            return new static($group);
+        return (new self($grouped))->map(function(array $group): static {
+            return $this->newInstance($group);
         });
     }
 
@@ -431,7 +431,7 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
     }
 
     /**
-     * @param string|Closure(TValue, mixed): array-key $key
+     * @param string|Closure(TValue, TKey): array-key $key
      * @param bool $overwrite
      * @return static<array-key, TValue>
      */
@@ -489,7 +489,7 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
      * @param callable(TValue, TKey): TMapValue $callback
      * @return static<TKey, TMapValue>
      */
-    public function map(callable $callback): static /** @phpstan-ignore-line */
+    public function map(callable $callback): static
     {
         return $this->newInstance(Arr::map($this, $callback));
     }

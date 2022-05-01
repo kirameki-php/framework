@@ -26,7 +26,7 @@ class File
         static::assertDirectory($dirPath);
 
         return (new Collection(static::scan($dirPath, $deep)))
-            ->map(fn($path) => new FileInfo($path));
+            ->map(fn($path): FileInfo => new FileInfo($path));
     }
 
     /**

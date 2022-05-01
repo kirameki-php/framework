@@ -892,7 +892,7 @@ class Arr
     }
 
     /**
-     * @template TKey of array-key
+     * @template TKey
      * @template TValue
      * @template TMapValue
      * @param iterable<TKey, TValue> $iterable
