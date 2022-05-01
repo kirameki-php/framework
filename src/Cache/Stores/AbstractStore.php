@@ -86,7 +86,7 @@ abstract class AbstractStore implements Store
     }
 
     /**
-     * @param string[] $keys
+     * @param list<string> $keys
      * @return list<string>
      */
     public function formatKeys(array $keys): array
