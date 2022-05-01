@@ -25,7 +25,6 @@ use function array_shift;
 use function array_slice;
 use function array_splice;
 use function array_unshift;
-use function array_values;
 use function arsort;
 use function asort;
 use function count;
