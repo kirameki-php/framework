@@ -15,7 +15,6 @@ use function array_intersect;
 use function array_intersect_key;
 use function array_is_list;
 use function array_key_exists;
-use function array_key_last;
 use function array_pad;
 use function array_pop;
 use function array_push;
@@ -917,7 +916,7 @@ class Arr
             $result = $callback($val, $key);
 
             if ($result === null) {
-                throw new RuntimeException('Non-comparable value "null" returned for key:'.$key);
+                throw new RuntimeException("Non-comparable value \"null\" returned for key: $key");
             }
 
             if ($maxResult === null || $result > $maxResult) {
@@ -991,7 +990,7 @@ class Arr
             $result = $callback($val, $key);
 
             if ($result === null) {
-                throw new RuntimeException('Non-comparable value "null" returned for key:'.$key);
+                throw new RuntimeException("Non-comparable value \"null\" returned for key: $key");
             }
 
             if ($minResult === null || $result < $minResult) {
@@ -1025,7 +1024,10 @@ class Arr
             throw new RuntimeException('Iterable must contain at least one element.');
         }
 
-        return compact('min', 'max');
+        return [
+            'min' => $min,
+            'max' => $max,
+        ];
     }
 
     /**

@@ -64,7 +64,7 @@ class ModelCollection extends Collection
     /**
      * @return static<array-key, TModel>
      */
-    public function keyByPrimaryKey(): static /** @phpstan-ignore-line */
+    public function keyByPrimaryKey(): static
     {
         return $this->keyBy($this->reflection->primaryKey);
     }

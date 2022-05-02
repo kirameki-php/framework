@@ -5,7 +5,7 @@ namespace Kirameki\Model;
 use Closure;
 use Kirameki\Database\DatabaseManager;
 use Kirameki\Model\Casts\Cast;
-use RuntimeException;
+use LogicException;
 
 class ModelManager
 {
@@ -74,7 +74,7 @@ class ModelManager
             return $this->casts[$name] = $this->deferredCasts['{enum}']($name);
         }
 
-        throw new RuntimeException('Unknown cast:' .$name);
+        throw new LogicException('Unknown cast:' .$name);
     }
 
     /**
