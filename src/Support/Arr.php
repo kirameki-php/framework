@@ -72,13 +72,13 @@ class Arr
     {
         $array = static::from($iterable);
         $offset = $position >= 0 ? $position : count($array) + $position;
-        $counter = 0;
+        $count = 0;
 
         foreach ($array as $val) {
-            if ($counter === $offset) {
+            if ($count === $offset) {
                 return $val;
             }
-            ++$counter;
+            ++$count;
         }
 
         return null;
@@ -242,13 +242,13 @@ class Arr
      */
     public static function countBy(iterable $iterable, callable $condition): int
     {
-        $counter = 0;
+        $count = 0;
         foreach ($iterable as $key => $val) {
             if (static::verify($condition, $key, $val)) {
-                $counter++;
+                ++$count;
             }
         }
-        return $counter;
+        return $count;
     }
 
     /**
@@ -398,7 +398,7 @@ class Arr
             if (static::verify($condition, $key, $val)) {
                 return $count;
             }
-            $count++;
+            ++$count;
         }
         return null;
     }
@@ -1214,14 +1214,14 @@ class Arr
      */
     public static function remove(array &$array, mixed $value, ?int $limit = null): array
     {
-        $counter = 0;
+        $count = 0;
         $limit ??= PHP_INT_MAX;
         $removed = [];
         foreach ($array as $key => $val) {
-            if ($counter < $limit && $val === $value) {
+            if ($count < $limit && $val === $value) {
                 unset($array[$key]);
                 $removed[] = $key;
-                ++$counter;
+                ++$count;
             }
         }
         return $removed;
@@ -1684,7 +1684,7 @@ class Arr
         foreach ($iterable as $val) {
             Assert::validArrayKey($val);
             $mapping[$val] ??= 0;
-            $mapping[$val]++;
+            ++$mapping[$val];
         }
         return $mapping;
     }
