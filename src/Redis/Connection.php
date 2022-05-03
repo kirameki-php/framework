@@ -2,11 +2,16 @@
 
 namespace Kirameki\Redis;
 
+use Closure;
 use Kirameki\Event\EventManager;
 use Kirameki\Redis\Adapters\Adapter;
 use Kirameki\Redis\Events\CommandExecuted;
 use Kirameki\Redis\Support\SetOptions;
 use Kirameki\Redis\Support\Type;
+use Redis;
+use function count;
+use function dump;
+use function func_num_args;
 use function hrtime;
 
 /**
@@ -18,12 +23,10 @@ use function hrtime;
  * @method int expireTime()
  * @method bool ping()
  * @method mixed set(string $key, mixed $value, SetOptions $options = null)
- * @method array|false scan(int &$iterator, ?string $pattern = null, int $count = 0)
  * @method float time()
  * @method Type type(string $key)
  *
  * KEYS ----------------------------------------------------------------------------------------------------------------
- * @method int del(string ...$key)
  * @method array<int, string> keys(string $pattern)
  * @method bool move(string $key, int $db)
  * @method bool persist(string $key)
@@ -93,7 +96,6 @@ use function hrtime;
  * @method int decr(string $key)
  * @method int decrBy(string $key, int $amount)
  * @method mixed get(string $key)
- * @method array<mixed> mget(string ...$keys)
  * @method mixed getSet(string $key, $value)
  * @method int incr(string $key)
  * @method int incrBy(string $key, int $amount)
@@ -151,7 +153,7 @@ class Connection
      */
     public function __call(string $name, array $args): mixed
     {
-        return $this->command($name, $args);
+        return $this->command($name, ...$args);
     }
 
     /**
@@ -161,9 +163,22 @@ class Connection
      */
     protected function command(string $name, mixed ...$args): mixed
     {
+        return $this->withEvent($name, $args, function(string $name, array $args): mixed {
+            return $this->adapter->$name(...$args);
+        });
+    }
+
+    /**
+     * @param string $name
+     * @param array<mixed> $args
+     * @param Closure $callback
+     * @return mixed
+     */
+    protected function withEvent(string $name, array $args, Closure $callback): mixed
+    {
         $then = hrtime(true);
 
-        $result = ($this->adapter->$name)(...$args);
+        $result = $callback($name, $args);
 
         $timeMs = (hrtime(true) - $then) * 1_000_000;
 
@@ -171,4 +186,71 @@ class Connection
 
         return $result;
     }
+
+    /**
+     * @return int
+     */
+    public function flush(): int
+    {
+        $count = 0;
+        $iterator = null;
+        while(true) {
+            $keys = $this->scan($iterator);
+            if ($keys === false) {
+                break;
+            }
+            if (count($keys) > 0) {
+                $count += $this->del(...$keys);
+            }
+        }
+        return $count;
+    }
+
+    #region Generic ----------------------------------------------------------------------------------------------------
+
+    /**
+     * @param string ...$key
+     * @return int
+     */
+    public function del(string ...$key): int
+    {
+        return $this->command('del', ...$key);
+    }
+
+    /**
+     * @param int|null $iterator
+     * @param string $pattern
+     * @param int $count
+     * @return list<string>|false
+     */
+    public function scan(?int &$iterator, ?string $pattern = null, int $count = 0): array|false
+    {
+        return $this->withEvent('scan', [$iterator, $pattern, $count], function() use (&$iterator, $pattern, $count) : mixed {
+            return $this->adapter->scan($iterator, $pattern, $count);
+        });
+    }
+
+    #endregion Generic -------------------------------------------------------------------------------------------------
+
+    #region String -----------------------------------------------------------------------------------------------------
+
+    /**
+     * @param string ...$keys
+     * @return list<string>
+     */
+    public function mGet(string ...$keys): array
+    {
+        return $this->command('mGet', $keys);
+    }
+
+    /**
+     * @param array<string, mixed> $pairs
+     * @return bool
+     */
+    public function mSet(array $pairs): bool
+    {
+        return $this->command('mSet', $pairs);
+    }
+
+    #endregion String --------------------------------------------------------------------------------------------------
 }

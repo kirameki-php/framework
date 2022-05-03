@@ -120,10 +120,10 @@ class PhpRedisAdapter implements Adapter
 
     /**
      * @param string $name
-     * @param mixed $args
+     * @param array<mixed> $args
      * @return mixed
      */
-    public function __call(string $name, mixed ...$args): mixed
+    public function __call(string $name, array $args): mixed
     {
         return $this->command($name, ...$args);
     }
@@ -133,10 +133,10 @@ class PhpRedisAdapter implements Adapter
      */
     public function command(string $name, mixed ...$args): mixed
     {
-        $instance = $this->phpRedis;
+        $instance = $this->getClient();
 
         try {
-            $result = ($instance->$name)(...$args);
+            $result = $instance->$name(...$args);
         } catch (RedisException $e) {
             throw new CommandException($e->getMessage(), $e->getCode(), $e);
         }
@@ -147,6 +147,17 @@ class PhpRedisAdapter implements Adapter
         }
 
         return $result;
+    }
+
+    /**
+     * @return Redis
+     */
+    protected function getClient(): Redis
+    {
+        if (!$this->isConnected()) {
+            $this->connect();
+        }
+        return $this->phpRedis;
     }
 
     /**
@@ -173,6 +184,17 @@ class PhpRedisAdapter implements Adapter
     public function ping(): bool
     {
         return $this->command('ping');
+    }
+
+    /**
+     * @param int|null $iterator
+     * @param string $pattern
+     * @param int $count
+     * @return list<string>|false
+     */
+    public function scan(?int &$iterator, ?string $pattern = null, int $count = 0): array|false
+    {
+        return $this->getClient()->scan($iterator, $pattern, $count);
     }
 
     /**
