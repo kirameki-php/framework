@@ -12,12 +12,9 @@ use function count;
 use function hrtime;
 
 /**
- *
- * @method string echo(string $message)
  * @method bool expire(string $key, int $time)
  * @method bool expireAt(string $key, int $time)
  * @method int expireTime()
- * @method bool ping()
  * @method mixed set(string $key, mixed $value, SetOptions $options = null)
  * @method float time()
  * @method Type type(string $key)
@@ -168,7 +165,7 @@ class Connection
     protected function command(string $name, mixed ...$args): mixed
     {
         return $this->withEvent($name, $args, function(string $name, array $args): mixed {
-            return $this->adapter->$name(...$args);
+            return $this->adapter->command($name, ...$args);
         });
     }
 
@@ -209,6 +206,27 @@ class Connection
         }
         return $count;
     }
+
+    #region Connection Management --------------------------------------------------------------------------------------
+
+    /**
+     * @param string $message
+     * @return string
+     */
+    public function echo(string $message): string
+    {
+        return $this->command('echo', $message);
+    }
+
+    /**
+     * @return bool
+     */
+    public function ping(): bool
+    {
+        return $this->command('ping');
+    }
+
+    #endregion Connection Management -----------------------------------------------------------------------------------
 
     #region Generic ----------------------------------------------------------------------------------------------------
 

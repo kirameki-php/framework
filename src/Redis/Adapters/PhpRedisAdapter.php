@@ -126,16 +126,6 @@ class PhpRedisAdapter implements Adapter
     }
 
     /**
-     * @param string $name
-     * @param array<mixed> $args
-     * @return mixed
-     */
-    public function __call(string $name, array $args): mixed
-    {
-        return $this->command($name, ...$args);
-    }
-
-    /**
      * @inheritDoc
      */
     public function command(string $name, mixed ...$args): mixed

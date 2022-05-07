@@ -38,6 +38,13 @@ class ConnectionTest extends TestCase
         $this->assertFalse($result[1]);
     }
 
+    public function testEcho(): void
+    {
+        $conn = $this->createRedisConnection('phpredis');
+        $result = $conn->echo('hi');
+        $this->assertEquals('hi', $result);
+    }
+
     public function testExists(): void
     {
         $conn = $this->createRedisConnection('phpredis');
@@ -53,4 +60,12 @@ class ConnectionTest extends TestCase
         $result = $conn->exists('x', 'y', 'z');
         $this->assertEquals(0, $result);
     }
+
+    public function testPing(): void
+    {
+        $conn = $this->createRedisConnection('phpredis');
+        $result = $conn->ping();
+        $this->assertTrue($result);
+    }
+
 }
