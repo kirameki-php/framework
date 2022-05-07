@@ -17,7 +17,11 @@ trait UsesRedis
 
         $connection = $redis->using($name);
 
-        $this->runAfterTearDown(fn() => $connection->flush());
+        $this->runAfterTearDown(static function () use ($connection): void {
+            if ($connection->isConnected()) {
+                $connection->flush();
+            }
+        });
 
         return $connection;
     }

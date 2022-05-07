@@ -2,13 +2,16 @@
 
 namespace Kirameki\Redis\Adapters;
 
+use Closure;
 use Kirameki\Core\Config;
 use Kirameki\Redis\Exceptions\CommandException;
+use Kirameki\Redis\Exceptions\ConnectionException;
 use Kirameki\Redis\Support\SetOptions;
 use Kirameki\Redis\Support\Type;
 use LogicException;
 use Redis;
 use RedisException;
+use Throwable;
 
 class PhpRedisAdapter implements Adapter
 {
@@ -76,9 +79,13 @@ class PhpRedisAdapter implements Adapter
         $prefix = $config->getStringOrNull('prefix') ?? '';
         $password = $config->getStringOrNull('password');
 
-        $config->getBoolOrNull('persistent')
-            ? $redis->pconnect($host, $port, $timeout)
-            : $redis->connect($host, $port, $timeout);
+        try {
+            $config->getBoolOrNull('persistent')
+                ? $redis->pconnect($host, $port, $timeout)
+                : $redis->connect($host, $port, $timeout);
+        } catch (RedisException $e) {
+            throw new ConnectionException($e->getMessage(), $e->getCode(), $this->getRootException($e));
+        }
 
         $redis->setOption(Redis::OPT_PREFIX, $prefix);
         $redis->setOption(Redis::OPT_TCP_KEEPALIVE, true);
@@ -133,16 +140,29 @@ class PhpRedisAdapter implements Adapter
      */
     public function command(string $name, mixed ...$args): mixed
     {
-        $instance = $this->getClient();
+        return $this->run(static function(Redis $client) use ($name, $args): mixed {
+            return $client->$name(...$args);
+        });
+    }
+
+    /**
+     * @param Closure(Redis): mixed $callback
+     * @return mixed
+     */
+    protected function run(Closure $callback): mixed
+    {
+        $client = $this->getClient();
 
         try {
-            $result = $instance->$name(...$args);
+            $result = $callback($client);
         } catch (RedisException $e) {
-            throw new CommandException($e->getMessage(), $e->getCode(), $e);
+            // Dig through exceptions to get to the root one that is not wrapped in RedisException
+            // since wrapping it twice is pointless.
+            throw new CommandException($e->getMessage(), $e->getCode(), $this->getRootException($e));
         }
 
-        if ($err = $instance->getLastError()) {
-            $instance->clearLastError();
+        if ($err = $client->getLastError()) {
+            $client->clearLastError();
             throw new CommandException($err);
         }
 
@@ -161,29 +181,19 @@ class PhpRedisAdapter implements Adapter
     }
 
     /**
-     * @param string $message
-     * @return string
+     * Dig through exceptions to get to the root one that is not wrapped in RedisException
+     * since wrapping it twice is pointless.
+     *
+     * @param Throwable $throwable
+     * @return Throwable
      */
-    public function echo(string $message): string
+    protected function getRootException(Throwable $throwable): Throwable
     {
-        return $this->command('echo', $message);
-    }
-
-    /**
-     * @param string ...$key
-     * @return int
-     */
-    public function exists(string ...$key): int
-    {
-        return (int)$this->command(...$key);
-    }
-
-    /**
-     * @return bool
-     */
-    public function ping(): bool
-    {
-        return $this->command('ping');
+        $root = $throwable;
+        while ($last = $root->getPrevious()) {
+            $root = $last;
+        }
+        return $root;
     }
 
     /**
@@ -194,7 +204,9 @@ class PhpRedisAdapter implements Adapter
      */
     public function scan(?int &$iterator, ?string $pattern = null, int $count = 0): array|false
     {
-        return $this->getClient()->scan($iterator, $pattern, $count);
+        return $this->run(static function (Redis $client) use (&$iterator, $pattern, $count): array|false {
+            return $client->scan($iterator, $pattern, $count);
+        });
     }
 
     /**

@@ -2,6 +2,6 @@
 
 namespace Kirameki\Redis\Exceptions;
 
-class CommandException extends RedisException
+class ConnectionException extends RedisException
 {
 }

@@ -9,10 +9,24 @@ abstract class TestCase extends BaseTestCase
 {
     protected Application $app;
 
+    /**
+     * @var array<callable>
+     */
     private array $beforeSetupCallbacks = [];
+
+    /**
+     * @var array<callable>
+     */
     private array $afterSetupCallbacks = [];
 
+    /**
+     * @var array<callable>
+     */
     private array $beforeTearDownCallbacks = [];
+
+    /**
+     * @var array<callable>
+     */
     private array $afterTearDownCallbacks = [];
 
     /**

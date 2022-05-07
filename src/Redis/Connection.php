@@ -8,16 +8,12 @@ use Kirameki\Redis\Adapters\Adapter;
 use Kirameki\Redis\Events\CommandExecuted;
 use Kirameki\Redis\Support\SetOptions;
 use Kirameki\Redis\Support\Type;
-use Redis;
 use function count;
-use function dump;
-use function func_num_args;
 use function hrtime;
 
 /**
  *
  * @method string echo(string $message)
- * @method int exists(string ...$key)
  * @method bool expire(string $key, int $time)
  * @method bool expireAt(string $key, int $time)
  * @method int expireTime()
@@ -147,6 +143,14 @@ class Connection
     }
 
     /**
+     * @return bool
+     */
+    public function isConnected(): bool
+    {
+        return $this->adapter->isConnected();
+    }
+
+    /**
      * @param string $name
      * @param array<mixed> $args
      * @return mixed
@@ -215,6 +219,15 @@ class Connection
     public function del(string ...$key): int
     {
         return $this->command('del', ...$key);
+    }
+
+    /**
+     * @param string ...$key
+     * @return int
+     */
+    public function exists(string ...$key): int
+    {
+        return $this->command('exists', ...$key);
     }
 
     /**
