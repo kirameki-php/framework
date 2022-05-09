@@ -3,6 +3,7 @@
 namespace Kirameki\Redis\Adapters;
 
 use Kirameki\Core\Config;
+use Kirameki\Redis\Support\ScanResult;
 
 interface Adapter
 {
@@ -50,10 +51,9 @@ interface Adapter
     public function command(string $name, mixed ...$args): mixed;
 
     /**
-     * @param int|null $iterator
      * @param string|null $pattern
      * @param int $count
-     * @return list<string>|false
+     * @return ScanResult
      */
-    public function scan(?int &$iterator, ?string $pattern = null, int $count = 0): array|false;
+    public function scan(?string $pattern = null, ?int $count = null): ScanResult;
 }

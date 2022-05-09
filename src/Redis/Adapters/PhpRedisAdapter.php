@@ -6,12 +6,14 @@ use Closure;
 use Kirameki\Core\Config;
 use Kirameki\Redis\Exceptions\CommandException;
 use Kirameki\Redis\Exceptions\ConnectionException;
+use Kirameki\Redis\Support\ScanResult;
 use Kirameki\Redis\Support\SetOptions;
 use Kirameki\Redis\Support\Type;
 use LogicException;
 use Redis;
 use RedisException;
 use Throwable;
+use function dump;
 
 class PhpRedisAdapter implements Adapter
 {
@@ -78,6 +80,7 @@ class PhpRedisAdapter implements Adapter
         $timeout = $config->getFloatOrNull('timeout') ?? 0.0;
         $prefix = $config->getStringOrNull('prefix') ?? '';
         $password = $config->getStringOrNull('password');
+        $database = $config->getIntOrNull('database');
 
         try {
             $config->getBoolOrNull('persistent')
@@ -89,12 +92,16 @@ class PhpRedisAdapter implements Adapter
 
         $redis->setOption(Redis::OPT_PREFIX, $prefix);
         $redis->setOption(Redis::OPT_TCP_KEEPALIVE, true);
-        $redis->setOption(Redis::SCAN_NORETRY, true);
-        $redis->setOption(Redis::SCAN_PREFIX, true);
-        $redis->setOption(Redis::SERIALIZER_IGBINARY, true);
+        $redis->setOption(Redis::OPT_SCAN, Redis::SCAN_PREFIX);
+        $redis->setOption(Redis::OPT_SCAN, Redis::SCAN_RETRY);
+        $redis->setOption(Redis::OPT_SERIALIZER, Redis::SERIALIZER_IGBINARY);
 
         if ($password !== null && $password !== '') {
             $redis->auth($password);
+        }
+
+        if ($database !== null) {
+            $redis->select($database);
         }
 
         return $this;
@@ -187,15 +194,28 @@ class PhpRedisAdapter implements Adapter
     }
 
     /**
-     * @param int|null $iterator
      * @param string $pattern
      * @param int $count
-     * @return list<string>|false
+     * @return ScanResult
      */
-    public function scan(?int &$iterator, ?string $pattern = null, int $count = 0): array|false
+    public function scan(?string $pattern = null, ?int $count = null): ScanResult
     {
-        return $this->run(static function (Redis $client) use (&$iterator, $pattern, $count): array|false {
-            return $client->scan($iterator, $pattern, $count);
+        return $this->run(static function (Redis $client) use ($pattern, $count): ScanResult {
+            return new ScanResult(static function() use ($client, $pattern, $count) {
+                $iterator = null;
+                $index = 0;
+                $count ??= 10_000;
+                while(true) {
+                    $keys = $client->scan($iterator, $pattern, $count);
+                    if ($keys === false) {
+                        break;
+                    }
+                    foreach ($keys as $key) {
+                        yield $index => $key;
+                        ++$index;
+                    }
+                }
+            });
         });
     }
 

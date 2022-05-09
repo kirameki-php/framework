@@ -246,7 +246,7 @@ class SequenceLazy extends Sequence
      */
     public function eager(): Sequence
     {
-        return new Sequence(iterator_to_array($this));
+        return new Sequence($this->toArray());
     }
 
     /**

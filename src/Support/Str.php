@@ -14,11 +14,13 @@ use function ceil;
 use function explode;
 use function floor;
 use function implode;
+use function in_array;
 use function is_array;
 use function is_bool;
 use function is_float;
 use function is_int;
 use function is_null;
+use function is_numeric;
 use function is_object;
 use function is_resource;
 use function is_string;
@@ -44,6 +46,7 @@ use function str_replace;
 use function str_starts_with;
 use function strlen;
 use function strrev;
+use function strtolower;
 use function substr_replace;
 use function trim;
 use function ucwords;
@@ -771,6 +774,31 @@ class Str
         }
 
         throw new LogicException('Unknown type: ' . $var);
+    }
+
+    /**
+     * @param string $string
+     * @return ?scalar
+     */
+    public static function purify(string $string): bool|float|int|string|null
+    {
+        if (is_numeric($string)) {
+            // Use Identity operator to cast to int/float.
+            // @see https://www.php.net/manual/en/language.operators.arithmetic.php
+            return +$string;
+        }
+
+        $lowered = strtolower($string);
+
+        if ($lowered === 'null') {
+            return null;
+        }
+
+        if (in_array($lowered, ['true', 'false'], true)) {
+            return $lowered === 'true';
+        }
+
+        return $string;
     }
 
     /**

@@ -6,10 +6,20 @@ use Closure;
 use Kirameki\Event\EventManager;
 use Kirameki\Redis\Adapters\Adapter;
 use Kirameki\Redis\Events\CommandExecuted;
+use Kirameki\Redis\Support\ScanResult;
 use Kirameki\Redis\Support\SetOptions;
 use Kirameki\Redis\Support\Type;
+use Kirameki\Support\Str;
+use Webmozart\Assert\Assert;
 use function count;
+use function dump;
+use function explode;
 use function hrtime;
+use function is_numeric;
+use function parse_ini_string;
+use function split;
+use function str_contains;
+use function str_replace;
 
 /**
  * @method bool expire(string $key, int $time)
@@ -191,23 +201,37 @@ class Connection
     /**
      * @return int
      */
-    public function flush(): int
+    public function flush(int $per = 100_000): int
     {
-        $count = 0;
-        $iterator = null;
-        while(true) {
-            $keys = $this->scan($iterator);
-            if ($keys === false) {
-                break;
-            }
-            if (count($keys) > 0) {
-                $count += $this->del(...$keys);
-            }
-        }
-        return $count;
+        $keys = $this->scan(null, $per)->toArray();
+        return count($keys) > 0
+            ? $this->del(...$keys)
+            : 0;
     }
 
     #region Connection Management --------------------------------------------------------------------------------------
+
+    /**
+     * @return list<string>
+     */
+    public function clientList(): array
+    {
+        return $this->command('client', 'list');
+    }
+
+    /**
+     * @return array<string, ?scalar>
+     */
+    public function clientInfo(): array
+    {
+        $result = $this->command('client', 'info');
+        $formatted = [];
+        foreach (explode(' ', $result) as $item) {
+            [$key, $val] = explode('=', $item);
+            $formatted[$key] = Str::purify($val);
+        }
+        return $formatted;
+    }
 
     /**
      * @param string $message
@@ -226,6 +250,15 @@ class Connection
         return $this->command('ping');
     }
 
+    /**
+     * @param int $index
+     * @return bool
+     */
+    public function select(int $index): bool
+    {
+        return $this->command('select', $index);
+    }
+
     #endregion Connection Management -----------------------------------------------------------------------------------
 
     #region Generic ----------------------------------------------------------------------------------------------------
@@ -236,6 +269,9 @@ class Connection
      */
     public function del(string ...$key): int
     {
+        if (count($key) <= 0) {
+            return 0;
+        }
         return $this->command('del', ...$key);
     }
 
@@ -249,15 +285,14 @@ class Connection
     }
 
     /**
-     * @param int|null $iterator
      * @param string $pattern
      * @param int $count
-     * @return list<string>|false
+     * @return ScanResult
      */
-    public function scan(?int &$iterator, ?string $pattern = null, int $count = 0): array|false
+    public function scan(?string $pattern = null, ?int $count = null): ScanResult
     {
-        return $this->withEvent('scan', [$iterator, $pattern, $count], function() use (&$iterator, $pattern, $count) : mixed {
-            return $this->adapter->scan($iterator, $pattern, $count);
+        return $this->withEvent('scan', [$pattern, $count], function() use ($pattern, $count): ScanResult {
+            return $this->adapter->scan($pattern, $count);
         });
     }
 
@@ -266,19 +301,22 @@ class Connection
     #region String -----------------------------------------------------------------------------------------------------
 
     /**
-     * @param string ...$keys
+     * @param string ...$key
      * @return list<string>
      */
-    public function mGet(string ...$keys): array
+    public function mGet(string ...$key): array
     {
-        return $this->command('mGet', $keys);
+        if (count($key) <= 0) {
+            return [];
+        }
+        return $this->command('mGet', $key);
     }
 
     /**
-     * @param array<string, mixed> $pairs
+     * @param iterable<string, mixed> $pairs
      * @return bool
      */
-    public function mSet(array $pairs): bool
+    public function mSet(iterable $pairs): bool
     {
         return $this->command('mSet', $pairs);
     }

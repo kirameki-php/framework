@@ -39,3 +39,7 @@ update:
 .PHONY: mysql
 mysql:
 	$(DOCKER_COMPOSE_COMMAND) exec mysql mysql
+
+.PHONY: mysql
+redis:
+	$(DOCKER_COMPOSE_COMMAND) exec redis redis-cli

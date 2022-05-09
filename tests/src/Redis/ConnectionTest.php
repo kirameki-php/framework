@@ -6,6 +6,7 @@ use Kirameki\Redis\Exceptions\ConnectionException;
 use Kirameki\Testing\Concerns\UsesRedis;
 use Tests\Kirameki\TestCase;
 use function array_keys;
+use function dump;
 
 class ConnectionTest extends TestCase
 {
@@ -41,8 +42,7 @@ class ConnectionTest extends TestCase
     public function testEcho(): void
     {
         $conn = $this->createRedisConnection('phpredis');
-        $result = $conn->echo('hi');
-        $this->assertEquals('hi', $result);
+        $this->assertEquals('hi', $conn->echo('hi'));
     }
 
     public function testExists(): void
@@ -64,8 +64,38 @@ class ConnectionTest extends TestCase
     public function testPing(): void
     {
         $conn = $this->createRedisConnection('phpredis');
-        $result = $conn->ping();
-        $this->assertTrue($result);
+        $this->assertTrue($conn->ping());
+    }
+
+    public function testSelect(): void
+    {
+        $conn = $this->createRedisConnection('phpredis');
+        $this->assertTrue($conn->select(1));
+        $this->assertEquals(1, $conn->clientInfo()['db']);
+    }
+
+    public function testScan(): void
+    {
+        $conn = $this->createRedisConnection('phpredis');
+
+        $sets = [];
+        for($i = 0; $i < 50; $i++) {
+            $sets['a' . $i] = 1;
+        }
+
+        $conn->mSet($sets);
+
+        $result = $conn->scan();
+
+        dump("SCAN ", $result->toArray());
+
+        dump("DEL ", $conn->del(...$result->toArray()));
+
+        dump("COUNT ", $result->count());
+
+        $result1 = $conn->scan()->toArray();
+
+        dump($result1);
     }
 
 }
