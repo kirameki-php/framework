@@ -9,12 +9,13 @@ use Kirameki\Event\EventManager;
 use Kirameki\Redis\Events\CommandExecuted;
 use Kirameki\Redis\Exceptions\CommandException;
 use Kirameki\Redis\Exceptions\ConnectionException;
+use Kirameki\Redis\Exceptions\RedisException;
 use Kirameki\Redis\Support\SetOptions;
 use Kirameki\Redis\Support\Type;
 use Kirameki\Support\Str;
 use LogicException;
 use Redis;
-use RedisException;
+use RedisException as PhpRedisException;
 use Throwable;
 use Webmozart\Assert\Assert;
 use function count;
@@ -204,8 +205,8 @@ class Connection
             $config->getBoolOrNull('persistent')
                 ? $redis->pconnect($host, $port, $timeout)
                 : $redis->connect($host, $port, $timeout);
-        } catch (RedisException $e) {
-            throw new ConnectionException($e->getMessage(), $e->getCode(), $this->getRootException($e));
+        } catch (PhpRedisException $e) {
+            $this->throwAs(ConnectionException::class, $e);
         }
 
         $redis->setOption(Redis::OPT_PREFIX, $prefix);
@@ -278,8 +279,8 @@ class Connection
 
         try {
             $result = $callback($name, $args);
-        } catch (RedisException $e) {
-            throw new CommandException($e->getMessage(), $e->getCode(), $this->getRootException($e));
+        } catch (PhpRedisException $e) {
+            $this->throwAs(CommandException::class, $e);
         }
 
         if ($err = $this->phpRedis->getLastError()) {
@@ -289,37 +290,25 @@ class Connection
 
         $timeMs = (hrtime(true) - $then) * 1_000_000;
 
-        $this->dispatchEvent($name, $args, $result, $timeMs);
+        $this->event->dispatchClass(CommandExecuted::class, $this, $name, $args, $result, $timeMs);
 
         return $result;
     }
 
     /**
-     * Dig through exceptions to get to the root one that is not wrapped in RedisException
-     * since wrapping it twice is pointless.
-     *
-     * @param Throwable $throwable
-     * @return Throwable
+     * @param class-string<RedisException> $exceptionClass
+     * @param Throwable $base
+     * @return no-return
      */
-    protected function getRootException(Throwable $throwable): Throwable
+    protected function throwAs(string $exceptionClass, Throwable $base): never
     {
-        $root = $throwable;
+        // Dig through exceptions to get to the root one that is not wrapped in RedisException
+        // since wrapping it twice is pointless.
+        $root = $base;
         while ($last = $root->getPrevious()) {
             $root = $last;
         }
-        return $root;
-    }
-
-    /**
-     * @param string $name
-     * @param array<mixed> $args
-     * @param mixed $result
-     * @param int $timeMs
-     * @return void
-     */
-    protected function dispatchEvent(string $name, array $args, mixed $result, int $timeMs): void
-    {
-        $this->event->dispatchClass(CommandExecuted::class, $this, $name, $args, $result, $timeMs);
+        throw new $exceptionClass($base->getMessage(), $base->getCode(), $root);
     }
 
     /**
