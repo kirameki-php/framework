@@ -64,11 +64,21 @@ class Config implements ArrayAccess
 
     /**
      * @param string $key
+     * @param bool $default
      * @return bool
+     */
+    public function getBoolOr(string $key, bool $default): bool
+    {
+        return $this->getInternal($key, false) ?? $default;
+    }
+
+    /**
+     * @param string $key
+     * @return bool|null
      */
     public function getBoolOrNull(string $key): bool|null
     {
-        return (bool)$this->getInternal($key, false);
+        return $this->getInternal($key, false);
     }
 
     /**
@@ -77,7 +87,17 @@ class Config implements ArrayAccess
      */
     public function getInt(string $key): int
     {
-        return (int) $this->getInternal($key, true);
+        return $this->getInternal($key, true);
+    }
+
+    /**
+     * @param string $key
+     * @param int $default
+     * @return int
+     */
+    public function getIntOr(string $key, int $default): int
+    {
+        return $this->getInternal($key, false) ?? $default;
     }
 
     /**
@@ -86,7 +106,7 @@ class Config implements ArrayAccess
      */
     public function getIntOrNull(string $key): int|null
     {
-        return (int) $this->getInternal($key, false);
+        return $this->getInternal($key, false);
     }
 
     /**
@@ -100,11 +120,21 @@ class Config implements ArrayAccess
 
     /**
      * @param string $key
+     * @param float $default
+     * @return float
+     */
+    public function getFloatOr(string $key, float $default): float
+    {
+        return $this->getInternal($key, false) ?? $default;
+    }
+
+    /**
+     * @param string $key
      * @return float|null
      */
     public function getFloatOrNull(string $key): float|null
     {
-        return (float) $this->getInternal($key, false);
+        return $this->getInternal($key, false);
     }
 
     /**
@@ -114,6 +144,16 @@ class Config implements ArrayAccess
     public function getString(string $key): string
     {
         return $this->getInternal($key, true);
+    }
+
+    /**
+     * @param string $key
+     * @param string $default
+     * @return string
+     */
+    public function getStringOr(string $key, string $default): string
+    {
+        return $this->getInternal($key, false) ?? $default;
     }
 
     /**

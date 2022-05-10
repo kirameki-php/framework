@@ -194,15 +194,15 @@ class Connection
         $config = $this->config;
         $redis = $this->phpRedis;
 
-        $host = $config->getStringOrNull('host') ?? 'localhost';
-        $port = $config->getIntOrNull('port') ?? 6379;
-        $timeout = $config->getFloatOrNull('timeout') ?? 0.0;
-        $prefix = $config->getStringOrNull('prefix') ?? '';
+        $host = $config->getStringOr('host', default: 'localhost');
+        $port = $config->getIntOr('port', default: 6379);
+        $timeout = $config->getFloatOr('timeout', default: 0.0);
+        $prefix = $config->getStringOr('prefix', default: '');
         $password = $config->getStringOrNull('password');
         $database = $config->getIntOrNull('database');
 
         try {
-            $config->getBoolOrNull('persistent')
+            $config->getBoolOr('persistent', default: false)
                 ? $redis->pconnect($host, $port, $timeout)
                 : $redis->connect($host, $port, $timeout);
         } catch (PhpRedisException $e) {

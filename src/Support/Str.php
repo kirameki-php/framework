@@ -6,6 +6,7 @@ use DateTimeInterface;
 use Kirameki\Support\Concerns;
 use LogicException;
 use Ramsey\Uuid\Uuid;
+use RuntimeException;
 use Traversable;
 use UnitEnum;
 use Webmozart\Assert\Assert;
@@ -799,6 +800,49 @@ class Str
         }
 
         return $string;
+    }
+
+    /**
+     * @param string $string
+     * @return int
+     */
+    public static function toInt(string $string): int
+    {
+        if (is_numeric($string)) {
+            $inferred = +$string;
+            if (is_int($inferred)) {
+                return $inferred;
+            }
+        }
+        throw new RuntimeException("\"$string\" could not be converted to int.");
+    }
+
+    /**
+     * @param string $string
+     * @return float
+     */
+    public static function toFloat(string $string): float
+    {
+        if (is_numeric($string)) {
+            $inferred = +$string;
+            if (is_float($inferred)) {
+                return $inferred;
+            }
+        }
+        throw new RuntimeException("\"$string\" could not be converted to float.");
+    }
+
+    /**
+     * @param string $string
+     * @return bool
+     */
+    public static function toBool(string $string): bool
+    {
+        $lowered = strtolower($string);
+        if (in_array($lowered, ['true', 'false'], true)) {
+            return $lowered === 'true';
+        }
+        throw new RuntimeException("\"$string\" could not be converted to bool.");
     }
 
     /**
