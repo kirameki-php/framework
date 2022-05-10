@@ -433,7 +433,6 @@ class Connection
      */
     public function select(int $index): bool
     {
-        Assert::range($index, 0, 15, "DB index must be between 0 and 15. $index given");
         return $this->command('select', $index);
     }
 
