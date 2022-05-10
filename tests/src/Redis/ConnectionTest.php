@@ -73,29 +73,4 @@ class ConnectionTest extends TestCase
         $this->assertTrue($conn->select(1));
         $this->assertEquals(1, $conn->clientInfo()['db']);
     }
-
-    public function testScan(): void
-    {
-        $conn = $this->createRedisConnection('phpredis');
-
-        $sets = [];
-        for($i = 0; $i < 50; $i++) {
-            $sets['a' . $i] = 1;
-        }
-
-        $conn->mSet($sets);
-
-        $result = $conn->scan();
-
-        dump("SCAN ", $result->toArray());
-
-        dump("DEL ", $conn->del(...$result->toArray()));
-
-        dump("COUNT ", $result->count());
-
-        $result1 = $conn->scan()->toArray();
-
-        dump($result1);
-    }
-
 }

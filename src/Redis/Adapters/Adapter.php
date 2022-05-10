@@ -4,6 +4,8 @@ namespace Kirameki\Redis\Adapters;
 
 use Kirameki\Core\Config;
 use Kirameki\Redis\Support\ScanResult;
+use Kirameki\Redis\Support\SetOptions;
+use Kirameki\Redis\Support\Type;
 
 interface Adapter
 {
@@ -56,4 +58,29 @@ interface Adapter
      * @return ScanResult
      */
     public function scan(?string $pattern = null, ?int $count = null): ScanResult;
+
+    /**
+     * @param int $index
+     * @return bool
+     */
+    public function select(int $index): bool;
+
+    /**
+     * @param string $key
+     * @param mixed $value
+     * @param SetOptions|null $options
+     * @return mixed
+     */
+    public function set(string $key, mixed $value, SetOptions $options = null): mixed;
+
+    /**
+     * @return float
+     */
+    public function time(): float;
+
+    /**
+     * @param string $key
+     * @return Type
+     */
+    public function type(string $key): Type;
 }

@@ -780,7 +780,7 @@ class Str
      * @param string $string
      * @return ?scalar
      */
-    public static function purify(string $string): bool|float|int|string|null
+    public static function infer(string $string): bool|float|int|string|null
     {
         if (is_numeric($string)) {
             // Use Identity operator to cast to int/float.

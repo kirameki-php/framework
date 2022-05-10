@@ -20,6 +20,7 @@ trait UsesRedis
         $this->runAfterTearDown(static function () use ($connection): void {
             if ($connection->isConnected()) {
                 $connection->flush();
+                $connection->select(0);
             }
         });
 

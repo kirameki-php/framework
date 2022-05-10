@@ -133,11 +133,21 @@ class PhpRedisAdapter implements Adapter
     }
 
     /**
+     * @param string $name
+     * @param array<mixed> $args
+     * @return mixed
+     */
+    public function __call(string $name, array $args)
+    {
+        return $this->command($name, ...$args);
+    }
+
+    /**
      * @inheritDoc
      */
     public function command(string $name, mixed ...$args): mixed
     {
-        return $this->run(static function(Redis $client) use ($name, $args): mixed {
+        return $this->process(static function(Redis $client) use ($name, $args): mixed {
             return $client->$name(...$args);
         });
     }
@@ -146,7 +156,7 @@ class PhpRedisAdapter implements Adapter
      * @param Closure(Redis): mixed $callback
      * @return mixed
      */
-    protected function run(Closure $callback): mixed
+    protected function process(Closure $callback): mixed
     {
         $client = $this->getClient();
 
@@ -200,7 +210,7 @@ class PhpRedisAdapter implements Adapter
      */
     public function scan(?string $pattern = null, ?int $count = null): ScanResult
     {
-        return $this->run(static function (Redis $client) use ($pattern, $count): ScanResult {
+        return $this->process(static function (Redis $client) use ($pattern, $count): ScanResult {
             return new ScanResult(static function() use ($client, $pattern, $count) {
                 $iterator = null;
                 $index = 0;
@@ -220,12 +230,21 @@ class PhpRedisAdapter implements Adapter
     }
 
     /**
+     * @param int $index
+     * @return bool
+     */
+    public function select(int $index): bool
+    {
+        return $this->command('select', $index);
+    }
+
+    /**
      * @param string $key
      * @param mixed $value
      * @param SetOptions|null $options
      * @return mixed
      */
-    public function set(string $key, mixed $value, SetOptions $options = null): mixed
+    public function set(string $key, mixed $value, ?SetOptions $options = null): mixed
     {
         $opts = $options?->toArray() ?? [];
         return $this->command('set', $key, $value, ...$opts);

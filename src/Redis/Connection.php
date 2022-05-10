@@ -12,14 +12,8 @@ use Kirameki\Redis\Support\Type;
 use Kirameki\Support\Str;
 use Webmozart\Assert\Assert;
 use function count;
-use function dump;
 use function explode;
 use function hrtime;
-use function is_numeric;
-use function parse_ini_string;
-use function split;
-use function str_contains;
-use function str_replace;
 
 /**
  * @method bool expire(string $key, int $time)
@@ -174,8 +168,8 @@ class Connection
      */
     protected function command(string $name, mixed ...$args): mixed
     {
-        return $this->withEvent($name, $args, function(string $name, array $args): mixed {
-            return $this->adapter->command($name, ...$args);
+        return $this->process($name, $args, function(string $name, array $args): mixed {
+            return $this->adapter->$name(...$args);
         });
     }
 
@@ -185,7 +179,7 @@ class Connection
      * @param Closure $callback
      * @return mixed
      */
-    protected function withEvent(string $name, array $args, Closure $callback): mixed
+    protected function process(string $name, array $args, Closure $callback): mixed
     {
         $then = hrtime(true);
 
@@ -199,6 +193,7 @@ class Connection
     }
 
     /**
+     * @param int $per
      * @return int
      */
     public function flush(int $per = 100_000): int
@@ -208,8 +203,6 @@ class Connection
             ? $this->del(...$keys)
             : 0;
     }
-
-    #region Connection Management --------------------------------------------------------------------------------------
 
     /**
      * @return list<string>
@@ -228,9 +221,19 @@ class Connection
         $formatted = [];
         foreach (explode(' ', $result) as $item) {
             [$key, $val] = explode('=', $item);
-            $formatted[$key] = Str::purify($val);
+            $formatted[$key] = Str::infer($val);
         }
         return $formatted;
+    }
+
+    /**
+     * @param string ...$key
+     * @return int
+     */
+    public function del(string ...$key): int
+    {
+        Assert::isNonEmptyList($key);
+        return $this->command('del', ...$key);
     }
 
     /**
@@ -243,62 +246,14 @@ class Connection
     }
 
     /**
-     * @return bool
-     */
-    public function ping(): bool
-    {
-        return $this->command('ping');
-    }
-
-    /**
-     * @param int $index
-     * @return bool
-     */
-    public function select(int $index): bool
-    {
-        return $this->command('select', $index);
-    }
-
-    #endregion Connection Management -----------------------------------------------------------------------------------
-
-    #region Generic ----------------------------------------------------------------------------------------------------
-
-    /**
-     * @param string ...$key
-     * @return int
-     */
-    public function del(string ...$key): int
-    {
-        if (count($key) <= 0) {
-            return 0;
-        }
-        return $this->command('del', ...$key);
-    }
-
-    /**
      * @param string ...$key
      * @return int
      */
     public function exists(string ...$key): int
     {
+        Assert::isNonEmptyList($key);
         return $this->command('exists', ...$key);
     }
-
-    /**
-     * @param string $pattern
-     * @param int $count
-     * @return ScanResult
-     */
-    public function scan(?string $pattern = null, ?int $count = null): ScanResult
-    {
-        return $this->withEvent('scan', [$pattern, $count], function() use ($pattern, $count): ScanResult {
-            return $this->adapter->scan($pattern, $count);
-        });
-    }
-
-    #endregion Generic -------------------------------------------------------------------------------------------------
-
-    #region String -----------------------------------------------------------------------------------------------------
 
     /**
      * @param string ...$key
@@ -306,9 +261,7 @@ class Connection
      */
     public function mGet(string ...$key): array
     {
-        if (count($key) <= 0) {
-            return [];
-        }
+        Assert::isNonEmptyList($key);
         return $this->command('mGet', $key);
     }
 
@@ -318,8 +271,36 @@ class Connection
      */
     public function mSet(iterable $pairs): bool
     {
+        Assert::isNonEmptyMap($pairs);
         return $this->command('mSet', $pairs);
     }
 
-    #endregion String --------------------------------------------------------------------------------------------------
+    /**
+     * @return bool
+     */
+    public function ping(): bool
+    {
+        return $this->command('ping');
+    }
+
+    /**
+     * @param string $pattern
+     * @param int $count
+     * @return ScanResult
+     */
+    public function scan(?string $pattern = null, ?int $count = null): ScanResult
+    {
+        return $this->command('scan', $pattern, $count);
+    }
+
+    /**
+     * @param int $index
+     * @return bool
+     */
+    public function select(int $index): bool
+    {
+        Assert::range($index, 0, 15, "DB index must be between 0 and 15. $index given");
+        return $this->command('select', $index);
+    }
+
 }
