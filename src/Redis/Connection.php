@@ -3,25 +3,30 @@
 namespace Kirameki\Redis;
 
 use Closure;
+use Iterator;
+use Kirameki\Core\Config;
 use Kirameki\Event\EventManager;
-use Kirameki\Redis\Adapters\Adapter;
 use Kirameki\Redis\Events\CommandExecuted;
-use Kirameki\Redis\Support\ScanResult;
+use Kirameki\Redis\Exceptions\CommandException;
+use Kirameki\Redis\Exceptions\ConnectionException;
 use Kirameki\Redis\Support\SetOptions;
 use Kirameki\Redis\Support\Type;
 use Kirameki\Support\Str;
+use LogicException;
+use Redis;
+use RedisException;
+use Throwable;
 use Webmozart\Assert\Assert;
 use function count;
 use function explode;
+use function func_get_args;
 use function hrtime;
+use function iterator_to_array;
 
 /**
  * @method bool expire(string $key, int $time)
  * @method bool expireAt(string $key, int $time)
  * @method int expireTime()
- * @method mixed set(string $key, mixed $value, SetOptions $options = null)
- * @method float time()
- * @method Type type(string $key)
  *
  * KEYS ----------------------------------------------------------------------------------------------------------------
  * @method array<int, string> keys(string $pattern)
@@ -101,14 +106,19 @@ use function hrtime;
 class Connection
 {
     /**
+     * @var Redis
+     */
+    protected Redis $phpRedis;
+
+    /**
      * @var string
      */
     protected string $name;
 
     /**
-     * @var Adapter
+     * @var Config
      */
-    protected Adapter $adapter;
+    protected Config $config;
 
     /**
      * @var EventManager
@@ -117,14 +127,23 @@ class Connection
 
     /**
      * @param string $name
-     * @param Adapter $adapter
+     * @param Config $config
      * @param EventManager $event
      */
-    public function __construct(string $name, Adapter $adapter, EventManager $event)
+    public function __construct(string $name, Config $config, EventManager $event)
     {
+        $this->phpRedis = new Redis();
         $this->name = $name;
-        $this->adapter = $adapter;
+        $this->config = $config;
         $this->event = $event;
+    }
+
+    /**
+     * @return Redis
+     */
+    public function getClient(): Redis
+    {
+        return $this->phpRedis;
     }
 
     /**
@@ -136,11 +155,91 @@ class Connection
     }
 
     /**
-     * @return Adapter
+     * @return Config
      */
-    public function getAdapter(): Adapter
+    public function getConfig(): Config
     {
-        return $this->adapter;
+        return $this->config;
+    }
+
+    /**
+     * @return string
+     */
+    public function getPrefix(): string
+    {
+        return $this->config->getStringOrNull('prefix') ?? '';
+    }
+
+    /**
+     * @param string $prefix
+     * @return $this
+     */
+    public function setPrefix(string $prefix): static
+    {
+        $this->config->set('prefix', $prefix);
+
+        if ($this->isConnected()) {
+            $this->phpRedis->setOption(Redis::OPT_PREFIX, $prefix);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return $this
+     */
+    public function connect(): static
+    {
+        $config = $this->config;
+        $redis = $this->phpRedis;
+
+        $host = $config->getStringOrNull('host') ?? 'localhost';
+        $port = $config->getIntOrNull('port') ?? 6379;
+        $timeout = $config->getFloatOrNull('timeout') ?? 0.0;
+        $prefix = $config->getStringOrNull('prefix') ?? '';
+        $password = $config->getStringOrNull('password');
+        $database = $config->getIntOrNull('database');
+
+        try {
+            $config->getBoolOrNull('persistent')
+                ? $redis->pconnect($host, $port, $timeout)
+                : $redis->connect($host, $port, $timeout);
+        } catch (RedisException $e) {
+            throw new ConnectionException($e->getMessage(), $e->getCode(), $this->getRootException($e));
+        }
+
+        $redis->setOption(Redis::OPT_PREFIX, $prefix);
+        $redis->setOption(Redis::OPT_TCP_KEEPALIVE, true);
+        $redis->setOption(Redis::OPT_SCAN, Redis::SCAN_PREFIX);
+        $redis->setOption(Redis::OPT_SCAN, Redis::SCAN_RETRY);
+        $redis->setOption(Redis::OPT_SERIALIZER, Redis::SERIALIZER_IGBINARY);
+
+        if ($password !== null && $password !== '') {
+            $redis->auth($password);
+        }
+
+        if ($database !== null) {
+            $redis->select($database);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return bool
+     */
+    public function disconnect(): bool
+    {
+        return $this->phpRedis->close();
+    }
+
+    /**
+     * @return $this
+     */
+    public function reconnect(): static
+    {
+        $this->disconnect();
+        return $this->connect();
     }
 
     /**
@@ -148,17 +247,7 @@ class Connection
      */
     public function isConnected(): bool
     {
-        return $this->adapter->isConnected();
-    }
-
-    /**
-     * @param string $name
-     * @param array<mixed> $args
-     * @return mixed
-     */
-    public function __call(string $name, array $args): mixed
-    {
-        return $this->command($name, ...$args);
+        return $this->phpRedis->isConnected();
     }
 
     /**
@@ -169,7 +258,7 @@ class Connection
     protected function command(string $name, mixed ...$args): mixed
     {
         return $this->process($name, $args, function(string $name, array $args): mixed {
-            return $this->adapter->$name(...$args);
+            return $this->phpRedis->$name(...$args);
         });
     }
 
@@ -181,15 +270,56 @@ class Connection
      */
     protected function process(string $name, array $args, Closure $callback): mixed
     {
+        if (!$this->isConnected()) {
+            $this->connect();
+        }
+
         $then = hrtime(true);
 
-        $result = $callback($name, $args);
+        try {
+            $result = $callback($name, $args);
+        } catch (RedisException $e) {
+            throw new CommandException($e->getMessage(), $e->getCode(), $this->getRootException($e));
+        }
+
+        if ($err = $this->phpRedis->getLastError()) {
+            $this->phpRedis->clearLastError();
+            throw new CommandException($err);
+        }
 
         $timeMs = (hrtime(true) - $then) * 1_000_000;
 
-        $this->event->dispatchClass(CommandExecuted::class, $this, $name, $args, $result, $timeMs);
+        $this->dispatchEvent($name, $args, $result, $timeMs);
 
         return $result;
+    }
+
+    /**
+     * Dig through exceptions to get to the root one that is not wrapped in RedisException
+     * since wrapping it twice is pointless.
+     *
+     * @param Throwable $throwable
+     * @return Throwable
+     */
+    protected function getRootException(Throwable $throwable): Throwable
+    {
+        $root = $throwable;
+        while ($last = $root->getPrevious()) {
+            $root = $last;
+        }
+        return $root;
+    }
+
+    /**
+     * @param string $name
+     * @param array<mixed> $args
+     * @param mixed $result
+     * @param int $timeMs
+     * @return void
+     */
+    protected function dispatchEvent(string $name, array $args, mixed $result, int $timeMs): void
+    {
+        $this->event->dispatchClass(CommandExecuted::class, $this, $name, $args, $result, $timeMs);
     }
 
     /**
@@ -198,7 +328,7 @@ class Connection
      */
     public function flush(int $per = 100_000): int
     {
-        $keys = $this->scan(null, $per)->toArray();
+        $keys = iterator_to_array($this->scan(null, $per));
         return count($keys) > 0
             ? $this->del(...$keys)
             : 0;
@@ -286,11 +416,26 @@ class Connection
     /**
      * @param string $pattern
      * @param int $count
-     * @return ScanResult
+     * @return Iterator<int, string>
      */
-    public function scan(?string $pattern = null, ?int $count = null): ScanResult
+    public function scan(?string $pattern = null, ?int $count = null): Iterator
     {
-        return $this->command('scan', $pattern, $count);
+        return $this->process('scan', func_get_args(), function () use ($pattern, $count): Iterator {
+            $iterator = null;
+            $index = 0;
+            $count ??= 10_000;
+            $client = $this->phpRedis;
+            while(true) {
+                $keys = $client->scan($iterator, $pattern, $count);
+                if ($keys === false) {
+                    break;
+                }
+                foreach ($keys as $key) {
+                    yield $index => $key;
+                    ++$index;
+                }
+            }
+        });
     }
 
     /**
@@ -303,4 +448,44 @@ class Connection
         return $this->command('select', $index);
     }
 
+    /**
+     * @param string $key
+     * @param mixed $value
+     * @param SetOptions|null $options
+     * @return mixed
+     */
+    public function set(string $key, mixed $value, ?SetOptions $options = null): mixed
+    {
+        $opts = $options?->toArray() ?? [];
+        return $this->command('set', $key, $value, ...$opts);
+    }
+
+    /**
+     * @return float
+     */
+    public function time(): float
+    {
+        /** @var list<int> $time */
+        $time = $this->command('time');
+        return (float)"$time[0].$time[1]";
+    }
+
+    /**
+     * @param string $key
+     * @return Type
+     */
+    public function type(string $key): Type
+    {
+        $type = $this->command('type', $key);
+        return match ($type) {
+            Redis::REDIS_NOT_FOUND => Type::None,
+            Redis::REDIS_STRING => Type::String,
+            Redis::REDIS_LIST => Type::List,
+            Redis::REDIS_SET => Type::Set,
+            Redis::REDIS_ZSET => Type::ZSet,
+            Redis::REDIS_HASH => Type::Hash,
+            Redis::REDIS_STREAM => Type::Stream,
+            default => throw new LogicException("Unknown Type: $type"),
+        };
+    }
 }
