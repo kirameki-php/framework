@@ -33,14 +33,14 @@ class ConnectionTest extends DatabaseTestCase
         //dump($this->mysqlConnection()->query('SELECT * FROM User INNER JOIN UserItem AS ui ON User.id = ui.userId;'));
     }
 
-    public function testTableExists(): void
+    public function test_tableExists(): void
     {
         $this->createDummyTable();
 
         self::assertTrue($this->mysqlConnection()->tableExists('Dummy'));
     }
 
-    public function testCursor(): void
+    public function test_cursor(): void
     {
         $this->createDummyTable();
         $conn = $this->mysqlConnection();

@@ -9,7 +9,7 @@ use Kirameki\Support\Str;
 
 class PropertyTest extends ModelTestCase
 {
-    public function testDefiningInt(): void
+    public function test_defining_int(): void
     {
         $reflection = new Reflection(SampleUser::class);
         $builder = $this->makeReflectionBuilder($reflection);
@@ -31,7 +31,7 @@ class PropertyTest extends ModelTestCase
         self::assertEquals($value, $propValue);
     }
 
-    public function testDefiningFloat(): void
+    public function test_defining_float(): void
     {
         $reflection = new Reflection(SampleUser::class);
         $builder = $this->makeReflectionBuilder($reflection);
@@ -53,7 +53,7 @@ class PropertyTest extends ModelTestCase
         self::assertEquals($value, $propValue);
     }
 
-    public function testDefiningBool(): void
+    public function test_defining_bool(): void
     {
         $reflection = new Reflection(SampleUser::class);
         $builder = $this->makeReflectionBuilder($reflection);
@@ -75,7 +75,7 @@ class PropertyTest extends ModelTestCase
         self::assertEquals($value, $propValue);
     }
 
-    public function testDefiningString(): void
+    public function test_defining_string(): void
     {
         $reflection = new Reflection(SampleUser::class);
         $builder = $this->makeReflectionBuilder($reflection);
@@ -97,7 +97,7 @@ class PropertyTest extends ModelTestCase
         self::assertEquals($value, $propValue);
     }
 
-    public function testDefiningDateTime(): void
+    public function test_defining_DateTime(): void
     {
         $reflection = new Reflection(SampleUser::class);
         $builder = $this->makeReflectionBuilder($reflection);
@@ -119,7 +119,7 @@ class PropertyTest extends ModelTestCase
         self::assertEquals($value, $propValue);
     }
 
-    public function testDefiningCollection(): void
+    public function test_defining_Collection(): void
     {
         $reflection = new Reflection(SampleUser::class);
         $builder = $this->makeReflectionBuilder($reflection);
