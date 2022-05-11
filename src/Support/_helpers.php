@@ -1,10 +1,11 @@
 <?php declare(strict_types=1);
 
 use Kirameki\Support\Collection;
+use Kirameki\Support\Str;
 
-function blank(?string $value): bool
+function blank(?string $string): bool
 {
-    return $value === null || $value === '';
+    return Str::isBlank($string);
 }
 
 /**
