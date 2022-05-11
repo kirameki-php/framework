@@ -3,12 +3,10 @@
 return [
     'connections' => [
         'phpredis' => [
-            'adapter' => 'phpredis',
             'host' => 'redis',
             'persistent' => true,
         ],
         'phpredis-ng' => [
-            'adapter' => 'phpredis',
             'host' => 'redis-ng',
             'persistent' => true,
         ],

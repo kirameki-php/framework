@@ -19,6 +19,7 @@ use RedisException as PhpRedisException;
 use Throwable;
 use Webmozart\Assert\Assert;
 use function count;
+use function dump;
 use function explode;
 use function func_get_args;
 use function hrtime;
@@ -168,7 +169,7 @@ class Connection
      */
     public function getPrefix(): string
     {
-        return $this->config->getStringOrNull('prefix') ?? '';
+        return $this->config->getStringOr('prefix', '');
     }
 
     /**
@@ -375,13 +376,21 @@ class Connection
     }
 
     /**
+     * Returns array of retrieved key => value.
+     * if key is not found, the value will be set to false.
+     *
      * @param string ...$key
-     * @return list<string>
+     * @return array<string, mixed|false>
      */
     public function mGet(string ...$key): array
     {
         Assert::isNonEmptyList($key);
-        return $this->command('mGet', $key);
+        $values = $this->command('mGet', $key);
+        $result = [];
+        foreach ($key as $i => $k) {
+            $result[$k] = $values[$i];
+        }
+        return $result;
     }
 
     /**
