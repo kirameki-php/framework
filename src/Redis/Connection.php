@@ -387,8 +387,10 @@ class Connection
         Assert::isNonEmptyList($key);
         $values = $this->command('mGet', $key);
         $result = [];
-        foreach ($key as $i => $k) {
-            $result[$k] = $values[$i];
+        $index = 0;
+        foreach ($key as $k) {
+            $result[$k] = $values[$index];
+            ++$index;
         }
         return $result;
     }

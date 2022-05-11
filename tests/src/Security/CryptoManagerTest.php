@@ -7,7 +7,7 @@ use Tests\Kirameki\TestCase;
 
 class CryptoManagerTest extends TestCase
 {
-    public function testEncryptDecrypt(): void
+    public function test_encrypt_decrypt(): void
     {
         $crypto = $this->app->get(CryptoManager::class);
         $encrypting = 'my testing crypto!';
@@ -17,7 +17,7 @@ class CryptoManagerTest extends TestCase
         self::assertEquals($encrypting, $decrypted);
     }
 
-    public function testEncryptWithoutKey(): void
+    public function test_encrypt_without_key(): void
     {
         $this->expectErrorMessage('Return value must be of type string, null returned');
 

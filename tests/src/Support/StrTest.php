@@ -245,7 +245,7 @@ class StrTest extends TestCase
         self::assertFalse(Str::endsWith("あ\n", 'あ'));
     }
 
-    public function testInsert(): void
+    public function test_insert(): void
     {
         self::assertEquals('xyzabc', Str::insert('abc', 'xyz', 0));
         self::assertEquals('axyzbc', Str::insert('abc', 'xyz', 1));
@@ -253,6 +253,14 @@ class StrTest extends TestCase
         self::assertEquals('abcxyz', Str::insert('abc', 'xyz', 3));
         self::assertEquals('あxyzい', Str::insert('あい', 'xyz', 1));
         self::assertEquals('あxyzい', Str::insert('あい', 'xyz', -1));
+    }
+
+    public function test_isBlank(): void
+    {
+        self::assertTrue(Str::isBlank(null));
+        self::assertTrue(Str::isBlank(''));
+        self::assertFalse(Str::isBlank('0'));
+        self::assertFalse(Str::isBlank(' '));
     }
 
     public function testKebabCase(): void

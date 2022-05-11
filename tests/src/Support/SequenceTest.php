@@ -29,7 +29,7 @@ class SequenceTest extends TestCase
         return new Sequence($items ?? []);
     }
 
-    public function test__Construct(): void
+    public function test___construct(): void
     {
         // empty
         $empty = new Sequence();
@@ -53,14 +53,14 @@ class SequenceTest extends TestCase
         self::assertEquals([1, 2], $seq->toArray());
     }
 
-    public function test__Construct_BadArgument(): void
+    public function test___construct_bad_argument(): void
     {
         $this->expectException(TypeError::class);
         $this->expectExceptionMessage('Argument #1 ($items) must be of type ?iterable, int given');
         new Sequence(1);
     }
 
-    public function testAt(): void
+    public function test_at(): void
     {
         self::assertEquals(null, $this->seq()->at(0));
         self::assertEquals(null, $this->seq([1, 2, 3])->at(5));
@@ -76,7 +76,7 @@ class SequenceTest extends TestCase
         self::assertEquals(3, $this->seq(['a' => 1, 'b' => 2, 'c' => 3])->at(-1));
     }
 
-    public function testAverage(): void
+    public function test_average(): void
     {
         $average = $this->seq([])->average();
         self::assertEquals(0, $average);
@@ -94,13 +94,13 @@ class SequenceTest extends TestCase
         self::assertEquals(0, $average);
     }
 
-    public function testAverage_NotEmpty(): void
+    public function test_average_not_empty(): void
     {
         $this->expectException(DivisionByZeroError::class);
         $this->seq([])->average(allowEmpty: false);
     }
 
-    public function testChunk(): void
+    public function test_chunk(): void
     {
         // empty but not same instance
         $empty = $this->seq();
@@ -136,28 +136,28 @@ class SequenceTest extends TestCase
         self::assertNotSame($chunked, $assoc);
     }
 
-    public function testChunkInvalidSize(): void
+    public function test_chunk_invalid_size(): void
     {
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Expected a positive integer. Got: 0');
         $this->seq([1])->chunk(0);
     }
 
-    public function testCoalesce_Empty(): void
+    public function test_coalesce_empty(): void
     {
         $this->expectException(InvalidValueException::class);
         $this->expectExceptionMessage('Expected value to be not null. null given.');
         $this->seq([])->coalesce();
     }
 
-    public function testCoalesce_OnlyNull(): void
+    public function test_coalesce_only_null(): void
     {
         $this->expectException(InvalidValueException::class);
         $this->expectExceptionMessage('Expected value to be not null. null given.');
         $this->seq([null])->coalesce();
     }
 
-    public function testCoalesceOrNull(): void
+    public function test_coalesceOrNull(): void
     {
         $result = $this->seq()->coalesceOrNull();
         self::assertNull($result);
@@ -184,7 +184,7 @@ class SequenceTest extends TestCase
         self::assertEquals(1, $result);
     }
 
-    public function testCompact(): void
+    public function test_compact(): void
     {
         // empty but not same instance
         $empty = $this->seq();
@@ -234,7 +234,7 @@ class SequenceTest extends TestCase
         self::assertEquals(['a' => ['b' => null]], $compacted->toArray());
     }
 
-    public function testContains(): void
+    public function test_contains(): void
     {
         $empty = $this->seq();
         self::assertFalse($empty->contains(null));
@@ -255,7 +255,7 @@ class SequenceTest extends TestCase
         self::assertFalse($seq->contains(['a']));
     }
 
-    public function testContainsKey(): void
+    public function test_containsKey(): void
     {
         // empty but not same instance
         $empty = $this->seq();
@@ -281,7 +281,7 @@ class SequenceTest extends TestCase
         self::assertTrue($assoc->containsKey('f'));
     }
 
-    public function testCopy(): void
+    public function test_copy(): void
     {
         // empty but not same instance
         $empty = $this->seq();
@@ -302,7 +302,7 @@ class SequenceTest extends TestCase
         self::assertEquals(['a' => 3, 'b' => 4], $seq->toArray());
     }
 
-    public function testCount(): void
+    public function test_count(): void
     {
         // empty
         $empty = $this->seq();
@@ -313,13 +313,13 @@ class SequenceTest extends TestCase
         self::assertEquals(3, $simple->count());
     }
 
-    public function testCountBy(): void
+    public function test_countBy(): void
     {
         $simple = $this->seq([1, 2, 3]);
         self::assertEquals(2, $simple->countBy(fn($v) => $v > 1));
     }
 
-    public function testDiff(): void
+    public function test_diff(): void
     {
         $empty = $this->seq();
         $diffed = $empty->diff([1]);
@@ -336,7 +336,7 @@ class SequenceTest extends TestCase
         self::assertSame([-1], $diffed->toArray());
     }
 
-    public function testDiffKeys(): void
+    public function test_diffKeys(): void
     {
         $empty = $this->seq();
         $diffed = $empty->diffKeys([-1]);
@@ -353,7 +353,7 @@ class SequenceTest extends TestCase
         self::assertSame(['b' => 2, -10 => -10], $diffed->toArray());
     }
 
-    public function testDrop(): void
+    public function test_drop(): void
     {
         $seq = $this->seq(['a' => 1, 'b' => 2, 'c' => 3]);
         self::assertEquals(['b' => 2, 'c' => 3], $seq->drop(1)->toArray());
@@ -371,7 +371,7 @@ class SequenceTest extends TestCase
         self::assertEquals(['a' => 1], $seq->drop(0)->toArray());
     }
 
-    public function testDropUntil(): void
+    public function test_dropUntil(): void
     {
         // look at value
         $seq = $this->seq(['a' => 1, 'b' => 2, 'c' => 3]);
@@ -386,7 +386,7 @@ class SequenceTest extends TestCase
         $seq->dropUntil(fn($v, $k) => null)->toArray();
     }
 
-    public function testDropWhile(): void
+    public function test_dropWhile(): void
     {
         // look at value
         $seq = $this->seq(['a' => 1, 'b' => 2, 'c' => 3]);
@@ -401,7 +401,7 @@ class SequenceTest extends TestCase
         $seq->dropWhile(fn($v, $k) => null)->toArray();
     }
 
-    public function testEach(): void
+    public function test_each(): void
     {
         $seq = $this->seq(['a' => 1, 'b' => 2]);
         $seq->each(function ($v, $k) {
@@ -416,7 +416,7 @@ class SequenceTest extends TestCase
         });
     }
 
-    public function testExcept(): void
+    public function test_except(): void
     {
         $seq = $this->seq(['a' => 1, 'b' => 2]);
         self::assertEquals(['b' => 2], $seq->except(['a'])->toArray());
@@ -425,7 +425,7 @@ class SequenceTest extends TestCase
         self::assertEquals(['b' => 2], $seq->except(['a', 'c'])->toArray());
     }
 
-    public function testFilter(): void
+    public function test_filter(): void
     {
         // sequence: remove ones with empty value
         $seq = $this->seq([0, 1, '', '0', null]);
@@ -439,7 +439,7 @@ class SequenceTest extends TestCase
         self::assertEquals(['d' => ''], $seq->filter(fn($v) => $v === '')->toArray());
     }
 
-    public function testFirst(): void
+    public function test_first(): void
     {
         $seq = $this->seq([10, 20]);
         self::assertEquals(10, $seq->first());
@@ -447,21 +447,21 @@ class SequenceTest extends TestCase
         self::assertEquals(20, $seq->first(fn($v, $k) => $v === 20));
     }
 
-    public function testFirst_Empty(): void
+    public function test_first_empty(): void
     {
         $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('Iterable must contain at least one element.');
         $this->seq([])->first();
     }
 
-    public function testFirst_BadCondition(): void
+    public function test_first_bad_condition(): void
     {
         $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('Failed to find matching condition.');
         $this->seq([1,2])->first(fn(int $i) => $i > 2);
     }
 
-    public function testFirstIndex(): void
+    public function test_firstIndex(): void
     {
         $seq = $this->seq([10, 20, 20, 30]);
         self::assertEquals(2, $seq->firstIndex(fn($v, $k) => $k === 2));
@@ -469,7 +469,7 @@ class SequenceTest extends TestCase
         self::assertEquals(null, $seq->firstIndex(fn() => false));
     }
 
-    public function testFirstKey(): void
+    public function test_firstKey(): void
     {
         $seq = $this->seq([10, 20, 30]);
         self::assertEquals(1, $seq->firstKey(fn($v, $k) => $v === 20));
@@ -480,7 +480,7 @@ class SequenceTest extends TestCase
         self::assertEquals('c', $seq->firstKey(fn($v, $k) => $k === 'c'));
     }
 
-    public function testFirstOrNull(): void
+    public function test_firstOrNull(): void
     {
         $seq = $this->seq([10, 20]);
         self::assertEquals(10, $seq->firstOrNull());
@@ -489,7 +489,7 @@ class SequenceTest extends TestCase
         self::assertEquals(null, $seq->firstOrNull(fn() => false));
     }
 
-    public function testFlatMap(): void
+    public function test_flatMap(): void
     {
         $seq = $this->seq([1, 2]);
         self::assertEquals([1, -1, 2, -2], $seq->flatMap(fn($i) => [$i, -$i])->toArray());
@@ -501,7 +501,7 @@ class SequenceTest extends TestCase
         self::assertEquals([1, 2, 2], $seq->flatMap(fn($a) => $a)->toArray());
     }
 
-    public function testFlatten(): void
+    public function test_flatten(): void
     {
         // nothing to flatten
         $seq = $this->seq([1, 2]);
@@ -520,7 +520,7 @@ class SequenceTest extends TestCase
         self::assertEquals(['a', 'b', 'd'], $seq->flatten()->toArray());
     }
 
-    public function testFlatten_ZeroDepth(): void
+    public function test_flatten_zero_depth(): void
     {
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Expected a positive integer. Got: 0');
@@ -528,7 +528,7 @@ class SequenceTest extends TestCase
         self::assertEquals([1, 2], $seq->flatten(0)->toArray());
     }
 
-    public function testFlatten_NegativeDepth(): void
+    public function test_flatten_negative_depth(): void
     {
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Expected a positive integer. Got: -1');
@@ -536,7 +536,7 @@ class SequenceTest extends TestCase
         self::assertEquals([1, 2], $seq->flatten(-1)->toArray());
     }
 
-    public function testFlip(): void
+    public function test_flip(): void
     {
         $seq = $this->seq([1, 2]);
         self::assertEquals([1 => 0, 2 => 1], $seq->flip()->toArray());
@@ -545,7 +545,7 @@ class SequenceTest extends TestCase
         self::assertEquals(['b' => 'a', 'd' => 'c'], $seq->flip()->toArray());
     }
 
-    public function testFold(): void
+    public function test_fold(): void
     {
         $reduced = $this->seq([])->fold(0, fn(int $i) => $i + 1);
         self::assertEquals(0, $reduced);
@@ -560,13 +560,13 @@ class SequenceTest extends TestCase
         self::assertEquals(6, $reduced);
     }
 
-    public function testGetIterator(): void
+    public function test_getIterator(): void
     {
         $iterator = $this->seq([1])->getIterator();
         self::assertEquals([1], iterator_to_array($iterator));
     }
 
-    public function testGroupBy(): void
+    public function test_groupBy(): void
     {
         $seq = $this->seq([1, 2, 3, 4, 5, 6]);
         $grouped = $seq->groupBy(fn(int $n): int => $n % 3)->toArrayRecursive();
@@ -588,14 +588,14 @@ class SequenceTest extends TestCase
         ], $seq->groupBy('id')->toArrayRecursive());
     }
 
-    public function testGroupBy_missing_key(): void
+    public function test_groupBy_missing_key(): void
     {
         $this->expectException(ErrorException::class);
         $this->expectExceptionMessage('Undefined array key "id"');
         $this->seq([['dummy' => 3]])->groupBy('id');
     }
 
-    public function testIntersect(): void
+    public function test_intersect(): void
     {
         $seq = $this->seq([1, 2, 3]);
         self::assertEquals([1], $seq->intersect([1])->toArray());
@@ -607,7 +607,7 @@ class SequenceTest extends TestCase
         self::assertEquals([], $seq->intersect([1])->toArray());
     }
 
-    public function testIntersectKeys(): void
+    public function test_intersectKeys(): void
     {
         $seq = $this->seq([1, 2, 3]);
         self::assertEquals([1, 2], $seq->intersectKeys([1, 3])->toArray());
@@ -625,7 +625,7 @@ class SequenceTest extends TestCase
         self::assertEquals([], $seq->intersectKeys([])->toArray());
     }
 
-    public function testIsAssoc(): void
+    public function test_isAssoc(): void
     {
         $seq = $this->seq([]);
         self::assertTrue($seq->isAssoc());
@@ -637,7 +637,7 @@ class SequenceTest extends TestCase
         self::assertTrue($seq->isAssoc());
     }
 
-    public function testIsEmpty(): void
+    public function test_isEmpty(): void
     {
         $seq = $this->seq([]);
         self::assertTrue($seq->isEmpty());
@@ -649,7 +649,7 @@ class SequenceTest extends TestCase
         self::assertFalse($seq->isEmpty());
     }
 
-    public function testIsNotEmpty(): void
+    public function test_isNotEmpty(): void
     {
         $seq = $this->seq([]);
         self::assertFalse($seq->isNotEmpty());
@@ -661,7 +661,7 @@ class SequenceTest extends TestCase
         self::assertTrue($seq->isNotEmpty());
     }
 
-    public function testIsList(): void
+    public function test_isList(): void
     {
         $seq = $this->seq([]);
         self::assertTrue($seq->isList());
@@ -673,7 +673,7 @@ class SequenceTest extends TestCase
         self::assertFalse($seq->isList());
     }
 
-    public function testJoin(): void
+    public function test_join(): void
     {
         $seq = $this->seq([1, 2]);
         self::assertEquals('1, 2', $seq->join(', '));
@@ -686,7 +686,7 @@ class SequenceTest extends TestCase
         self::assertEquals('[1, 2]', $seq->join(', ', '[', ']'));
     }
 
-    public function testJsonSerialize(): void
+    public function test_jsonSerialize(): void
     {
         $seq = $this->seq([]);
         self::assertEquals([], $seq->jsonSerialize());
@@ -695,7 +695,7 @@ class SequenceTest extends TestCase
         self::assertEquals(['a' => 1, 'b' => 2], $seq->jsonSerialize());
     }
 
-    public function testKeyBy(): void
+    public function test_keyBy(): void
     {
         $seq = $this->seq([1, 2])->keyBy(fn($v) => 'a'.$v);
         self::assertEquals(['a1' => 1, 'a2' => 2], $seq->toArray());
@@ -704,13 +704,13 @@ class SequenceTest extends TestCase
         self::assertEquals(['b' => ['id' => 'b'], 'c' => ['id' => 'c']], $seq->toArray());
     }
 
-    public function testKeyBy_WithDuplicateKey(): void
+    public function test_keyBy_with_duplicate_key(): void
     {
         $this->expectException(DuplicateKeyException::class);
         $this->seq([['id' => 'b'], ['id' => 'b']])->keyBy(fn($v) => $v['id']);
     }
 
-    public function testKeyBy_WithOverwrittenKey(): void
+    public function test_keyBy_with_overwritten_key(): void
     {
         $seq = $this->seq([['id' => 'b', 1], ['id' => 'b', 2]])->keyBy(fn($v) => $v['id'], true);
         self::assertEquals(['b' => ['id' => 'b', 2]], $seq->toArray());
@@ -719,13 +719,13 @@ class SequenceTest extends TestCase
         $this->seq([['id' => 'b', 1], ['id' => 'b', 2]])->keyBy(fn($v) => $v['id'], false);
     }
 
-    public function testKeyBy_WithInvalidKey(): void
+    public function test_keyBy_with_invalid_key(): void
     {
         $this->expectException(InvalidKeyException::class);
         $this->seq([['id' => 'b', 1], ['id' => 'b', 2]])->keyBy(fn($v) => false);
     }
 
-    public function testKeys(): void
+    public function test_keys(): void
     {
         $keys = $this->seq([1,2])->keys();
         self::assertEquals([0,1], $keys->toArray());
@@ -734,7 +734,7 @@ class SequenceTest extends TestCase
         self::assertEquals(['a', 'b'], $keys->toArray());
     }
 
-    public function testLast(): void
+    public function test_last(): void
     {
         $seq = $this->seq([10, 20]);
         self::assertEquals(20, $seq->last());
@@ -742,7 +742,7 @@ class SequenceTest extends TestCase
         self::assertEquals(20, $seq->last(fn($v, $k) => $v === 20));
     }
 
-    public function testLastIndex(): void
+    public function test_lastIndex(): void
     {
         $seq = $this->seq([10, 20, 20]);
         self::assertEquals(1, $seq->lastIndex(fn($v, $k) => $k === 1));
@@ -750,7 +750,7 @@ class SequenceTest extends TestCase
         self::assertEquals(null, $seq->lastIndex(fn() => false));
     }
 
-    public function testLastKey(): void
+    public function test_lastKey(): void
     {
         $seq = $this->seq(['a' => 10, 'b' => 20, 'c' => 20]);
         self::assertEquals('c', $seq->lastKey());
@@ -759,7 +759,7 @@ class SequenceTest extends TestCase
         self::assertEquals(null, $seq->lastKey(fn() => false));
     }
 
-    public function testLastOrNull(): void
+    public function test_lastOrNull(): void
     {
         $seq = $this->seq([10, 20]);
         self::assertEquals(20, $seq->lastOrNull());
@@ -768,28 +768,28 @@ class SequenceTest extends TestCase
         self::assertEquals(null, $seq->lastOrNull(fn() => false));
     }
 
-    public function testLastOrFail_Empty(): void
+    public function test_lastOrFail_empty(): void
     {
         $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('Iterable must contain at least one element.');
         $this->seq([])->last();
     }
 
-    public function testLastOrFail_BadCondition(): void
+    public function test_lastOrFail_bad_condition(): void
     {
         $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('Failed to find matching condition.');
         $this->seq([1,2])->last(fn(int $i) => $i > 2);
     }
 
-    public function testMacro(): void
+    public function test_macro(): void
     {
         Sequence::macro('testMacro', fn($num) => $num * 100);
         $seq = $this->seq([1]);
         self::assertEquals(200, $seq->testMacro(2));
     }
 
-    public function testMacroExists(): void
+    public function test_macroExists(): void
     {
         $name = 'testMacro2'.mt_rand();
         self::assertFalse(Sequence::macroExists($name));
@@ -797,7 +797,7 @@ class SequenceTest extends TestCase
         self::assertTrue(Sequence::macroExists($name));
     }
 
-    public function testMap(): void
+    public function test_map(): void
     {
         $seq = $this->seq([1, 2, 3]);
         self::assertEquals([2, 4, 6], $seq->map(fn($i) => $i * 2)->toArray());
@@ -807,7 +807,7 @@ class SequenceTest extends TestCase
         self::assertEquals(['a' => 2, 'b' => 4, 'c' => 6], $seq->map(fn($i) => $i * 2)->toArray());
     }
 
-    public function testMax(): void
+    public function test_max(): void
     {
         $seq = $this->seq([1, 2, 3, 10, 1]);
         self::assertEquals(10, $seq->max());
@@ -819,7 +819,7 @@ class SequenceTest extends TestCase
         self::assertEquals(90, $seq->max());
     }
 
-    public function testMaxBy(): void
+    public function test_maxBy(): void
     {
         self::assertEquals(
             null,
@@ -839,7 +839,7 @@ class SequenceTest extends TestCase
         );
     }
 
-    public function testMerge(): void
+    public function test_merge(): void
     {
         $empty = $this->seq([]);
         $merged = $empty->merge([1, [2]]);
@@ -864,7 +864,7 @@ class SequenceTest extends TestCase
         self::assertSame([1, 'a' => [3], 2, 3], $merged->toArray());
     }
 
-    public function testMergeRecursive(): void
+    public function test_mergeRecursive(): void
     {
         $seq = $this->seq([])->mergeRecursive([]);
         self::assertEquals([], $seq->toArray());
@@ -891,7 +891,7 @@ class SequenceTest extends TestCase
         self::assertEquals(['a' => ['b' => 1, 'c' => 2], 'b' => 3, 'd' => 4], $seq->toArray());
     }
 
-    public function testMin(): void
+    public function test_min(): void
     {
         $seq = $this->seq([1, 2, 3, 10, -1]);
         self::assertEquals(-1, $seq->min());
@@ -903,7 +903,7 @@ class SequenceTest extends TestCase
         self::assertEquals(-100, $seq->min());
     }
 
-    public function testMinBy(): void
+    public function test_minBy(): void
     {
         self::assertEquals(
             null,
@@ -924,7 +924,7 @@ class SequenceTest extends TestCase
         );
     }
 
-    public function testMinMax(): void
+    public function test_minMax(): void
     {
         $seq = $this->seq([1]);
         self::assertEquals(['min' => 1, 'max' => 1], $seq->minMax());
@@ -933,14 +933,14 @@ class SequenceTest extends TestCase
         self::assertEquals(['min' => -100, 'max' => 10], $seq->minMax());
     }
 
-    public function testMinMax_Empty(): void
+    public function test_minMax_empty(): void
     {
         $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('Iterable must contain at least one element.');
         $this->seq([])->minMax();
     }
 
-    public function testNotContains(): void
+    public function test_notContains(): void
     {
         self::assertTrue($this->seq([])->notContains(0));
         self::assertTrue($this->seq([])->notContains(null));
@@ -953,7 +953,7 @@ class SequenceTest extends TestCase
         self::assertFalse($this->seq(['a' => 1, 0])->notContains(1));
     }
 
-    public function testNotContainsKey(): void
+    public function test_notContainsKey(): void
     {
         self::assertTrue($this->seq([])->notContainsKey(0));
         self::assertTrue($this->seq([])->notContainsKey(1));
@@ -963,7 +963,7 @@ class SequenceTest extends TestCase
         self::assertFalse($this->seq(['a' => 1, 0])->notContainsKey('a'));
     }
 
-    public function testNotEquals(): void
+    public function test_notEquals(): void
     {
         self::assertTrue($this->seq([])->notEquals($this->seq([1])));
         self::assertTrue($this->seq([])->notEquals($this->seq([null])));
@@ -971,7 +971,7 @@ class SequenceTest extends TestCase
         self::assertFalse($this->seq([1])->notEquals($this->seq([1])));
         self::assertFalse($this->seq(['a' => 1])->notEquals($this->seq(['a' => 1])));
     }
-    public function testOnly(): void
+    public function test_only(): void
     {
         // with list array
         $seq = $this->seq([1, 2, 3]);
@@ -988,14 +988,14 @@ class SequenceTest extends TestCase
         self::assertEquals(['c' => 3, 'b' => 2], $seq->only(['x' => 'c', 'b'])->toArray());
     }
 
-    public function testOnly_WithUndefinedKey(): void
+    public function test_only_WithUndefinedKey(): void
     {
         $this->expectException(ErrorException::class);
         $this->expectExceptionMessage('Undefined array key "a"');
         self::assertEquals([], $this->seq([])->only(['a'])->toArray());
     }
 
-    public function testPrioritize(): void
+    public function test_prioritize(): void
     {
         $seq = $this->seq([1, 2, 3])->prioritize(fn(int $i) => $i === 2);
         self::assertEquals([2, 1, 3], $seq->values()->toArray());
@@ -1007,7 +1007,7 @@ class SequenceTest extends TestCase
         self::assertEquals([1, 2, 3], $seq->toArray());
     }
 
-    public function testReduce(): void
+    public function test_reduce(): void
     {
         $reduced = $this->seq(['a' => 1])->reduce(fn(int $c, $i, $k) => 0);
         self::assertEquals(1, $reduced);
@@ -1019,14 +1019,14 @@ class SequenceTest extends TestCase
         self::assertEquals(6, $reduced);
     }
 
-    public function testReduce_UnableToGuessInitial(): void
+    public function test_reduce_unable_to_guess_initial(): void
     {
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Expected an array to contain at least 1 elements. Got: 0');
         $this->seq([])->reduce(fn($c, $i, $k) => $k);
     }
 
-    public function testRepeat(): void
+    public function test_repeat(): void
     {
         $seq = $this->seq([1])->repeat(3);
         self::assertEquals([1, 1, 1], $seq->toArray(), 'Repeat single 3 times');
@@ -1041,7 +1041,7 @@ class SequenceTest extends TestCase
         self::assertEquals([], $seq->toArray(), 'Repeat 0 times (does nothing)');
     }
 
-    public function testRepeat_NegativeTimes(): void
+    public function test_repeat_negative_times(): void
     {
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Expected a value greater than or equal to 0. Got: -1');
@@ -1050,7 +1050,7 @@ class SequenceTest extends TestCase
         self::assertEquals([], $seq->toArray(), 'Repeat -1 times (throws error)');
     }
 
-    public function testReverse(): void
+    public function test_reverse(): void
     {
         $seq = $this->seq([])->reverse();
         self::assertEquals([], $seq->toArray());
@@ -1068,7 +1068,7 @@ class SequenceTest extends TestCase
         self::assertEquals([2 => 4, 1 => 3, 0 => 2, 'a' => 1], $seq->toArray());
     }
 
-    public function testRotate(): void
+    public function test_rotate(): void
     {
         $seq = $this->seq(['a' => 1, 'b' => 2, 'c' => 3])->rotate(1);
         self::assertEquals(['b' => 2, 'c' => 3, 'a' => 1], $seq->toArray());
@@ -1080,26 +1080,26 @@ class SequenceTest extends TestCase
         self::assertEquals(['c' => 3, 'a' => 1, 'b' => 2], $seq->toArray());
     }
 
-    public function testSample(): void
+    public function test_sample(): void
     {
         mt_srand(100);
         self::assertEquals(8, $this->seq(range(0, 10))->sample());
     }
 
-    public function testSample_Empty(): void
+    public function test_sample_Empty(): void
     {
         $this->expectException(ValueError::class);
         $this->expectExceptionMessage('array_rand(): Argument #1 ($array) cannot be empty');
         $this->seq([])->sample();
     }
 
-    public function testSampleMany(): void
+    public function test_sampleMany(): void
     {
         mt_srand(100);
         self::assertEquals([8 => 8, 9 => 9], $this->seq(range(0, 10))->sampleMany(2)->toArray());
     }
 
-    public function testSatisfyAll(): void
+    public function test_satisfyAll(): void
     {
         $seq = $this->seq([]);
         self::assertTrue($seq->satisfyAll(static fn($v) => is_int($v)));
@@ -1114,7 +1114,7 @@ class SequenceTest extends TestCase
         self::assertFalse($seq->satisfyAll(static fn($k) => is_string($k)));
     }
 
-    public function testSatisfyAny(): void
+    public function test_satisfyAny(): void
     {
         $empty = $this->seq([]);
         self::assertFalse($empty->satisfyAny(static fn() => true));
@@ -1130,35 +1130,35 @@ class SequenceTest extends TestCase
         self::assertTrue($seq->satisfyAny(static fn($v, $k) => $k === 'b'));
     }
 
-    public function testShuffle(): void
+    public function test_shuffle(): void
     {
         mt_srand(100);
         self::assertEquals([1, 2, 4, 3, 2], $this->seq([1, 2, 2, 3, 4])->shuffle()->toArray());
         self::assertSame(['a' => 1, 'c' => 3, 'b' => 2, 'd' => 4], $this->seq(['a' => 1, 'b' => 2, 'c' => 3, 'd' => 4])->shuffle()->toArray());
     }
 
-    public function testSole(): void
+    public function test_sole(): void
     {
         self::assertEquals(1, $this->seq([1])->sole());
         self::assertEquals(1, $this->seq(['a' => 1])->sole());
         self::assertEquals(2, $this->seq([1, 2, 3])->sole(fn(int $i) => $i === 2));
     }
 
-    public function testSole_ZeroItem(): void
+    public function test_sole_zero_item(): void
     {
         $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('Expected only one element in result. 0 given.');
         $this->seq([])->sole();
     }
 
-    public function testSole_MoreThanOneItem(): void
+    public function test_sole_more_than_one_item(): void
     {
         $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('Expected only one element in result. 2 given.');
         $this->seq([1, 2])->sole();
     }
 
-    public function testSort(): void
+    public function test_sort(): void
     {
         $seq = $this->seq([4, 2, 1, 3])->sort()->values();
         self::assertEquals([1, 2, 3, 4], $seq->toArray());
@@ -1170,7 +1170,7 @@ class SequenceTest extends TestCase
         self::assertEquals(['b' => 1, 'c' => 2, 'a' => 3], $seq->toArray());
     }
 
-    public function testSortBy(): void
+    public function test_sortBy(): void
     {
         $seq = $this->seq([4, 2, 1, 3])->sortBy(fn($v) => $v)->values();
         self::assertEquals([1, 2, 3, 4], $seq->toArray());
@@ -1179,7 +1179,7 @@ class SequenceTest extends TestCase
         self::assertEquals(['a' => 1, 'b' => 0, 'c' => 2], $seq->toArray());
     }
 
-    public function testSortByDesc(): void
+    public function test_sortByDesc(): void
     {
         $seq = $this->seq([4, 2, 1, 3])->sortByDesc(fn($v) => $v)->values();
         self::assertEquals([4, 3, 2, 1], $seq->toArray());
@@ -1188,7 +1188,7 @@ class SequenceTest extends TestCase
         self::assertEquals(['c' => 2, 'b' => 0, 'a' => 1], $seq->toArray());
     }
 
-    public function testSortDesc(): void
+    public function test_sortDesc(): void
     {
         $seq = $this->seq([4, 2, 1, 3])->sortDesc()->values();
         self::assertEquals([4, 3, 2, 1], $seq->toArray());
@@ -1200,7 +1200,7 @@ class SequenceTest extends TestCase
         self::assertEquals(['a' => 3, 'c' => 2, 'b' => 1], $seq->toArray());
     }
 
-    public function testSortKeys(): void
+    public function test_sortKeys(): void
     {
         $seq = $this->seq(['b' => 0, 'a' => 1, 'c' => 2])->sortByKey();
         self::assertEquals(['a' => 1, 'b' => 0, 'c' => 2], $seq->toArray());
@@ -1209,7 +1209,7 @@ class SequenceTest extends TestCase
         self::assertEquals(['2' => 0, '30' => 2, '100' => 1], $seq->toArray());
     }
 
-    public function testSortKeysDesc(): void
+    public function test_sortKeysDesc(): void
     {
         $seq = $this->seq(['b' => 0, 'a' => 1, 'c' => 2])->sortByKeyDesc();
         self::assertEquals(['c' => 2, 'b' => 0, 'a' => 1], $seq->toArray());
@@ -1218,19 +1218,19 @@ class SequenceTest extends TestCase
         self::assertEquals(['100' => 1, '30' => 2, '2' => 0], $seq->toArray());
     }
 
-    public function testSortWith(): void
+    public function test_sortWith(): void
     {
         $seq = $this->seq(['b' => 1, 'a' => 3, 'c' => 2])->sortWith(static fn($a, $b) => ($a === $b ? 0 : (($a < $b) ? -1 : 1)));
         self::assertEquals(['b' => 1, 'c' => 2, 'a' => 3], $seq->toArray());
     }
 
-    public function testSortWithKey(): void
+    public function test_sortWithKey(): void
     {
         $seq = $this->seq([1 => 'a', 3 => 'b', 2 => 'c'])->sortWithKey(static fn($a, $b) => ($a === $b ? 0 : (($a < $b) ? -1 : 1)));
         self::assertEquals([1 => 'a', 2 => 'c', 3 => 'b'], $seq->toArray());
     }
 
-    public function testSum(): void
+    public function test_sum(): void
     {
         $sum = $this->seq(['b' => 1, 'a' => 3, 'c' => 2])->sum();
         self::assertEquals(6, $sum);
@@ -1245,14 +1245,14 @@ class SequenceTest extends TestCase
         self::assertEquals(0, $sum);
     }
 
-    public function testSum_ThrowOnSumOfString(): void
+    public function test_sum_throw_on_sum_of_string(): void
     {
         $this->expectException(TypeError::class);
         $this->expectExceptionMessage('Unsupported operand types: int + string');
         $this->seq(['a', 'b'])->sum();
     }
 
-    public function testTake(): void
+    public function test_take(): void
     {
         $seq = $this->seq([2, 3, 4])->take(2);
         self::assertEquals([2, 3], $seq->toArray());
@@ -1268,7 +1268,7 @@ class SequenceTest extends TestCase
 
     }
 
-    public function testTakeUntil(): void
+    public function test_takeUntil(): void
     {
         $seq = $this->seq(['b' => 1, 'a' => 3, 'c' => 2])->takeUntil(fn($v) => $v > 2);
         self::assertEquals(['b' => 1], $seq->toArray());
@@ -1280,7 +1280,7 @@ class SequenceTest extends TestCase
         self::assertEquals([], $seq->toArray());
     }
 
-    public function testTakeWhile(): void
+    public function test_takeWhile(): void
     {
         $seq = $this->seq(['b' => 1, 'a' => 3, 'c' => 4])->takeWhile(fn($v) => $v < 4);
         self::assertEquals(['b' => 1, 'a' => 3], $seq->toArray());
@@ -1292,7 +1292,7 @@ class SequenceTest extends TestCase
         self::assertEquals(['b' => 1, 'a' => 3, 'c' => 2], $seq->toArray());
     }
 
-    public function testTally(): void
+    public function test_tally(): void
     {
         $seq = $this->seq([1, 1, 1, 2, 3, 3])->tally();
         self::assertEquals([1 => 3, 2 => 1, 3 => 2], $seq->toArray());
@@ -1301,7 +1301,7 @@ class SequenceTest extends TestCase
         self::assertEquals([1 => 3], $seq->toArray());
     }
 
-    public function testTap(): void
+    public function test_tap(): void
     {
         $seq = $this->seq([1, 2])->tap(fn() => 100);
         self::assertEquals([1, 2], $seq->toArray());
@@ -1312,7 +1312,7 @@ class SequenceTest extends TestCase
         self::assertEquals(1, $cnt);
     }
 
-    public function testToArray(): void
+    public function test_toArray(): void
     {
         self::assertEquals([], $this->seq([])->toArray());
         self::assertEquals([1, 2], $this->seq([1, 2])->toArray());
@@ -1322,7 +1322,7 @@ class SequenceTest extends TestCase
         self::assertEquals(['a' => $inner], $this->seq(['a' => $inner])->toArray());
     }
 
-    public function testToArrayRecursive(): void
+    public function test_toArrayRecursive(): void
     {
         // no depth defined
         $inner = $this->seq([1, 2]);
@@ -1338,7 +1338,7 @@ class SequenceTest extends TestCase
         self::assertEquals(['a' => [2, 3, [1]]], $seq->toArrayRecursive(3));
     }
 
-    public function testToJson(): void
+    public function test_toJson(): void
     {
         $json = $this->seq([1, 2])->toJson();
         self::assertEquals("[1,2]", $json);
@@ -1353,7 +1353,7 @@ class SequenceTest extends TestCase
         self::assertEquals("[\n    1\n]", $json);
     }
 
-    public function testToUrlQuery(): void
+    public function test_toUrlQuery(): void
     {
         $query = $this->seq(['a' => 1])->toUrlQuery('t');
         self::assertEquals(urlencode('t[a]').'=1', $query);
@@ -1362,7 +1362,7 @@ class SequenceTest extends TestCase
         self::assertEquals("a=1&b=2", $query);
     }
 
-    public function testUnion(): void
+    public function test_union(): void
     {
         $seq = $this->seq([])->union([]);
         self::assertEquals([], $seq->toArray());
@@ -1374,7 +1374,7 @@ class SequenceTest extends TestCase
         self::assertEquals(['a' => ['b' => 1]], $seq->toArray());
     }
 
-    public function testUnionRecursive(): void
+    public function test_unionRecursive(): void
     {
         $seq = $this->seq([])->unionRecursive([]);
         self::assertEquals([], $seq->toArray());
@@ -1401,7 +1401,7 @@ class SequenceTest extends TestCase
         self::assertEquals(['a' => ['b' => 1, 'c' => 2], 'b' => 3, 'd' => 4], $seq->toArray());
     }
 
-    public function testUnique(): void
+    public function test_unique(): void
     {
         $seq = $this->seq([])->unique();
         self::assertEquals([], $seq->toArray());
@@ -1421,7 +1421,7 @@ class SequenceTest extends TestCase
         self::assertEquals($values, $seq->toArray());
     }
 
-    public function testUniqueBy(): void
+    public function test_uniqueBy(): void
     {
         $seq = $this->seq([])->uniqueBy(static fn() => 1);
         self::assertEquals([], $seq->toArray());
@@ -1437,7 +1437,7 @@ class SequenceTest extends TestCase
         self::assertEquals($values, $seq->toArray());
     }
 
-    public function testValues(): void
+    public function test_values(): void
     {
         $seq = $this->seq([])->values();
         self::assertEquals([], $seq->toArray());
