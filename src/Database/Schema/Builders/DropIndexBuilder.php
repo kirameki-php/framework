@@ -7,6 +7,9 @@ use Kirameki\Database\Schema\Statements\DropIndexStatement;
 use Kirameki\Support\Arr;
 use RuntimeException;
 
+/**
+ * @property DropIndexStatement $statement
+ */
 class DropIndexBuilder extends StatementBuilder
 {
     /**

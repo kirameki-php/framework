@@ -553,7 +553,10 @@ class SequenceTest extends TestCase
         $reduced = $this->seq(['a' => 1, 'b' => 2])->fold(new Collection(), fn(Collection $c, int $i, string $k) => $c->set($k, $i * 2));
         self::assertEquals(['a' => 2, 'b' => 4], $reduced->toArray());
 
-        $reduced = $this->seq(['a' => 1, 'b' => 2])->fold((object)[], fn($c, $i, $k) => tap($c, static fn($c) => $c->$k = 0));
+        $reduced = $this->seq(['a' => 1, 'b' => 2])->fold((object)[], static function ($c, $i, $k) {
+            $c->$k = 0;
+            return $c;
+        });
         self::assertEquals(['a' => 0, 'b' => 0], (array) $reduced);
 
         $reduced = $this->seq([1, 2, 3])->fold(0, fn(int $c, $i, $k) => $c + $i);
