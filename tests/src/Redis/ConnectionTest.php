@@ -80,6 +80,9 @@ class ConnectionTest extends TestCase
         // full scan
         self::assertEquals(['a1', 'a2', 'a4', '_a3'], $conn->scan()->toArray());
 
+        // scan with count
+        self::assertEquals(['a1', 'a2', 'a4', '_a3'], $conn->scan(count: 1)->toArray());
+
         // filtered with wild card
         self::assertEquals(['a1', 'a2', 'a4'], $conn->scan('a*')->toArray());
 

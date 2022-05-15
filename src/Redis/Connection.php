@@ -26,6 +26,7 @@ use function dump;
 use function explode;
 use function func_get_args;
 use function hrtime;
+use function is_array;
 use function iterator_to_array;
 use function str_replace;
 use function strlen;
@@ -380,19 +381,19 @@ class Connection
 
                 $iterator = null;
                 $index = 0;
-                while(true) {
+                do {
                     $keys = $client->scan($iterator, $pattern, $count);
-                    if ($keys === false) {
-                        break;
-                    }
-                    foreach ($keys as $key) {
-                        if ($removablePrefixLength > 0) {
-                            $key = substr($key, $removablePrefixLength);
+                    if ($keys !== false) {
+                        foreach ($keys as $key) {
+                            if ($removablePrefixLength > 0) {
+                                $key = substr($key, $removablePrefixLength);
+                            }
+                            yield $index => $key;
+                            ++$index;
                         }
-                        yield $index => $key;
-                        ++$index;
                     }
                 }
+                while($iterator > 0);
             };
             return new ItemIterator($iteratorCall($this->phpRedis));
         });
