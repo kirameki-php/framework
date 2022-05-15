@@ -2,11 +2,16 @@
 
 namespace Tests\Kirameki\Redis;
 
+use Kirameki\Redis\Exceptions\CommandException;
 use Kirameki\Redis\Exceptions\ConnectionException;
 use Kirameki\Testing\Concerns\UsesRedis;
+use stdClass;
 use Tests\Kirameki\TestCase;
 use Webmozart\Assert\InvalidArgumentException;
 use function array_keys;
+use function array_push;
+use function dump;
+use function iterator_to_array;
 use function mt_rand;
 
 class ConnectionTest extends TestCase
@@ -19,6 +24,8 @@ class ConnectionTest extends TestCase
         $this->expectExceptionMessage('php_network_getaddresses: getaddrinfo for redis-ng failed: Name does not resolve');
         $this->createRedisConnection('phpredis-ng')->exists('a');
     }
+
+    # region GENERIC ---------------------------------------------------------------------------------------------------
 
     public function test_del(): void
     {
@@ -38,12 +45,6 @@ class ConnectionTest extends TestCase
         $result = $conn->mGet(...$keys);
         self::assertFalse($result['a']);
         self::assertFalse($result['b']);
-    }
-
-    public function test_echo(): void
-    {
-        $conn = $this->createRedisConnection('phpredis');
-        self::assertEquals('hi', $conn->echo('hi'));
     }
 
     public function test_exists(): void
@@ -70,12 +71,123 @@ class ConnectionTest extends TestCase
         $conn->exists();
     }
 
+    public function test_scan(): void
+    {
+        $conn = $this->createRedisConnection('phpredis');
+        $data = ['a1' => 1, 'a2' => 2, '_a3' => false, 'a4' => null];
+        $conn->mSet($data);
+
+        // full scan
+        self::assertEquals(['a1', 'a2', 'a4', '_a3'], $conn->scan()->toArray());
+
+        // filtered with wild card
+        self::assertEquals(['a1', 'a2', 'a4'], $conn->scan('a*')->toArray());
+
+        // filtered with prefix
+        $conn->setPrefix('conn1:');
+        $conn->mSet(['a5' => 5]);
+        self::assertEquals(['a5'], $conn->scan('a*')->toArray());
+        self::assertEquals(['a5'], $conn->scan()->toArray());
+
+        // filtered with prefix and return prefixed
+        $conn->setPrefix('conn1:');
+        self::assertEquals(['conn1:a5'], $conn->scan('a*', prefixed: true)->toArray());
+    }
+
+    # endregion GENERIC ------------------------------------------------------------------------------------------------
+
+    # region LIST ---------------------------------------------------------------------------------------------------
+
+    public function test_list_blPop(): void
+    {
+        $conn = $this->createRedisConnection('phpredis');
+        self::assertEquals(2, $conn->lPush('l', 'abc', 1));
+        self::assertEquals(['l' => 1], $conn->blPop(['l'], 100));
+        self::assertEquals(['l' => 'abc'], $conn->blPop(['l'], 100));
+        if ($this->includeSlowTests()) {
+            self::assertEquals(null, $conn->blPop(['l'], 1));
+        }
+    }
+
+    public function test_list_blPop_key_not_a_list(): void
+    {
+        $this->expectException(CommandException::class);
+        $this->expectExceptionMessage('WRONGTYPE Operation against a key holding the wrong kind of value');
+        $conn = $this->createRedisConnection('phpredis');
+        $conn->set('l', 1);
+        $conn->blPop(['l'], 1);
+    }
+
+    public function test_list_lIndex(): void
+    {
+        $conn = $this->createRedisConnection('phpredis');
+        self::assertEquals(2, $conn->lPush('l', 'abc', 1));
+        self::assertEquals('abc', $conn->lIndex('l', 1));
+        self::assertEquals('abc', $conn->lIndex('l', -1));
+        self::assertFalse($conn->lIndex('l', 2)); // no index found
+        self::assertFalse($conn->lIndex('m', -1)); // no key found
+    }
+
+    public function test_list_lIndex_key_not_a_list(): void
+    {
+        $this->expectException(CommandException::class);
+        $this->expectExceptionMessage('WRONGTYPE Operation against a key holding the wrong kind of value');
+        $conn = $this->createRedisConnection('phpredis');
+        $conn->set('l', 1);
+        $conn->lIndex('l', 2);
+    }
+
+    public function test_list_lPush(): void
+    {
+        $conn = $this->createRedisConnection('phpredis');
+        self::assertEquals(2, $conn->lPush('l', 'abc', 1));
+        self::assertEquals(3, $conn->lPush('l', 2));
+        self::assertEquals('abc', $conn->lIndex('l', 2));
+        self::assertEquals(1, $conn->lIndex('l', 1));
+        self::assertEquals(2, $conn->lIndex('l', 0));
+    }
+
+    public function test_list_lPush_key_not_a_list(): void
+    {
+        $this->expectException(CommandException::class);
+        $this->expectExceptionMessage('WRONGTYPE Operation against a key holding the wrong kind of value');
+        $conn = $this->createRedisConnection('phpredis');
+        $conn->set('l', 1);
+        $conn->lIndex('l', 2);
+    }
+
+    # endregion LIST ---------------------------------------------------------------------------------------------------
+
+    public function test_echo(): void
+    {
+        $conn = $this->createRedisConnection('phpredis');
+        self::assertEquals('hi', $conn->echo('hi'));
+    }
+
     public function test_mGet(): void
     {
         $conn = $this->createRedisConnection('phpredis');
-        $pairs = ['a1' => mt_rand(), 'a2' => mt_rand()];
+        $pairs = ['a' => true, 'b' => mt_rand(), 'c' => 0.01, 'd' => 'abc', 'e' => null];
         $conn->mSet($pairs);
-        self::assertEquals($pairs, $conn->mGet('a1', 'a2'));
+        self::assertEquals($pairs, $conn->mGet(...array_keys($pairs)));
+    }
+
+    public function test_mGet_with_array(): void
+    {
+        $conn = $this->createRedisConnection('phpredis');
+        $pairs = ['arr' => ['a' => 1, 'b' => 2]];
+        $conn->mSet($pairs);
+        self::assertEquals($pairs, $conn->mGet('arr'));
+    }
+
+    public function test_mGet_with_object(): void
+    {
+        $conn = $this->createRedisConnection('phpredis');
+        $object = new stdClass();
+        $object->a = 1;
+        $pairs = ['o' => $object];
+        $conn->mSet($pairs);
+        self::assertEquals($object->a, $conn->mGet('o')['o']->a);
     }
 
     public function test_mGet_without_args(): void
@@ -92,6 +204,24 @@ class ConnectionTest extends TestCase
         $pairs = ['a1' => mt_rand(), 'a2' => mt_rand()];
         self::assertTrue($conn->mSet($pairs));
         self::assertEquals($pairs, $conn->mGet('a1', 'a2'));
+    }
+
+    public function test_mSet_with_array(): void
+    {
+        $conn = $this->createRedisConnection('phpredis');
+        $pairs = ['arr' => ['a' => 1, 'b' => 2]];
+        $conn->mSet($pairs);
+        self::assertEquals($pairs, $conn->mGet('arr'));
+    }
+
+    public function test_mSet_with_object(): void
+    {
+        $conn = $this->createRedisConnection('phpredis');
+        $object = new stdClass();
+        $object->a = 1;
+        $pairs = ['o' => $object];
+        $conn->mSet($pairs);
+        self::assertEquals($object->a, $conn->mGet('o')['o']->a);
     }
 
     public function test_mSet_without_args(): void

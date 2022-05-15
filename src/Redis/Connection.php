@@ -3,6 +3,7 @@
 namespace Kirameki\Redis;
 
 use Closure;
+use Generator;
 use Iterator;
 use Kirameki\Core\Config;
 use Kirameki\Event\EventManager;
@@ -12,11 +13,13 @@ use Kirameki\Redis\Exceptions\ConnectionException;
 use Kirameki\Redis\Exceptions\RedisException;
 use Kirameki\Redis\Support\SetOptions;
 use Kirameki\Redis\Support\Type;
+use Kirameki\Support\ItemIterator;
 use Kirameki\Support\Str;
 use LogicException;
 use Redis;
 use RedisException as PhpRedisException;
 use Throwable;
+use Traversable;
 use Webmozart\Assert\Assert;
 use function count;
 use function dump;
@@ -24,6 +27,10 @@ use function explode;
 use function func_get_args;
 use function hrtime;
 use function iterator_to_array;
+use function str_replace;
+use function strlen;
+use function strpos;
+use function substr;
 
 /**
  * @method bool expire(string $key, int $time)
@@ -54,13 +61,10 @@ use function iterator_to_array;
  * @method array hVals(string $key)
  *
  * LISTS ---------------------------------------------------------------------------------------------------------------
- * @method mixed  blPop(string[] $key, int $timeout)
  * @method mixed  brPop(string[] $key, int $timeout)
  * @method mixed  brpoplpush(string $source, string $destination, int $timeout)
- * @method mixed  lIndex(string $key, int $index)
  * @method mixed  lLen($key)
  * @method mixed  lPop(string $key)
- * @method mixed  lPush(string $key, $value)
  * @method mixed  lPushx(string $key, $value)
  * @method mixed  lRange(string $key, int $start, int $end)
  * @method mixed  lRem(string $key, $value, int $count)
@@ -68,7 +72,6 @@ use function iterator_to_array;
  * @method mixed  lTrim(string $key, int $start, int $end)
  * @method mixed  rPop(string $key)
  * @method mixed  rpoplpush(string $source, string $destination)
- * @method mixed  rPush(string $key, $value)
  * @method mixed  rPushx(string $key, $value)
  *
  * SORTED SETS ---------------------------------------------------------------------------------------------------------
@@ -104,6 +107,12 @@ use function iterator_to_array;
  * @method int incr(string $key)
  * @method int incrBy(string $key, int $amount)
  * @method float incrByFloat(string $key, float $amount)
+ *
+ * UNSUPPORTED COMMANDS
+ * - APPEND: does not work well with serialization
+ * - BLPOP: waiting for PhpRedis to implement it
+ * - BLMPOP: waiting for PhpRedis to implement it
+ *
  */
 class Connection
 {
@@ -253,45 +262,47 @@ class Connection
     }
 
     /**
-     * @param string $name
+     * @param string $command
      * @param mixed ...$args
      * @return mixed
      */
-    protected function command(string $name, mixed ...$args): mixed
+    public function run(string $command, mixed ...$args): mixed
     {
-        return $this->process($name, $args, function(string $name, array $args): mixed {
-            return $this->phpRedis->$name(...$args);
+        return $this->process($command, $args, static function(Redis $client, string $command, array $args): mixed {
+            return $client->$command(...$args);
         });
     }
 
     /**
-     * @param string $name
+     * @param string $command
      * @param array<mixed> $args
      * @param Closure $callback
      * @return mixed
      */
-    protected function process(string $name, array $args, Closure $callback): mixed
+    protected function process(string $command, array $args, Closure $callback): mixed
     {
         if (!$this->isConnected()) {
             $this->connect();
         }
 
+        $phpRedis = $this->phpRedis;
+
         $then = hrtime(true);
 
         try {
-            $result = $callback($name, $args);
+            $result = $callback($phpRedis, $command, $args);
         } catch (PhpRedisException $e) {
             $this->throwAs(CommandException::class, $e);
         }
 
-        if ($err = $this->phpRedis->getLastError()) {
-            $this->phpRedis->clearLastError();
+        if ($err = $phpRedis->getLastError()) {
+            $phpRedis->clearLastError();
             throw new CommandException($err);
         }
 
         $timeMs = (hrtime(true) - $then) * 1_000_000;
 
-        $this->event->dispatchClass(CommandExecuted::class, $this, $name, $args, $result, $timeMs);
+        $this->event->dispatchClass(CommandExecuted::class, $this, $command, $args, $result, $timeMs);
 
         return $result;
     }
@@ -312,6 +323,233 @@ class Connection
         throw new $exceptionClass($base->getMessage(), $base->getCode(), $root);
     }
 
+    # region GENERIC ---------------------------------------------------------------------------------------------------
+
+    /**
+     * @see https://redis.io/commands/del
+     *
+     * @param string ...$key
+     * @return int Returns the number of keys that were removed.
+     */
+    public function del(string ...$key): int
+    {
+        Assert::isNonEmptyList($key);
+        return $this->run('del', ...$key);
+    }
+
+    /**
+     * @see https://redis.io/commands/exists
+     *
+     * @param string ...$key
+     * @return int
+     */
+    public function exists(string ...$key): int
+    {
+        Assert::isNonEmptyList($key);
+        return $this->run('exists', ...$key);
+    }
+
+    /**
+     *
+     * Will iterate through the set of keys that match `$pattern` or all keys if no pattern is given.
+     * Scan has the following limitations
+     * - A given element may be returned multiple times.
+     * -
+     * @see https://redis.io/commands/scan
+     *
+     * @param string|null $pattern  Patterns to be scanned. Add '*' as suffix to match string. Returns all keys if `null`.
+     * @param int $count  Number of elements returned per iteration. This is just a hint and is not guaranteed.
+     * @param bool $prefixed  If set to `true`, result will contain the prefix set in the config. (default: `false`)
+     * @return ItemIterator<int, string>
+     */
+    public function scan(?string $pattern = null, int $count = 10_000, bool $prefixed = false): ItemIterator
+    {
+        return $this->process('scan', func_get_args(), function () use ($pattern, $count, $prefixed): ItemIterator {
+            $iteratorCall = static function (Redis $client) use ($pattern, $count, $prefixed): Generator {
+                $prefix = $client->_prefix('');
+
+                // If the prefix is defined, doing an empty scan will actually call scan with `"MATCH" "{prefix}"`
+                // which does not return the expected result. To get the expected result, '*' needs to be appended.
+                if ($pattern === null && $prefix !== '') {
+                    $pattern = '*';
+                }
+
+                // PhpRedis returns the results WITH the prefix, so we must trim it after retrieval if `$prefixed` is
+                // set to `false`. The prefix length is necessary for the `substr` used later inside the loop.
+                $removablePrefixLength = strlen($prefixed ? '' : $prefix);
+
+                $iterator = null;
+                $index = 0;
+                while(true) {
+                    $keys = $client->scan($iterator, $pattern, $count);
+                    if ($keys === false) {
+                        break;
+                    }
+                    foreach ($keys as $key) {
+                        if ($removablePrefixLength > 0) {
+                            $key = substr($key, $removablePrefixLength);
+                        }
+                        yield $index => $key;
+                        ++$index;
+                    }
+                }
+            };
+            return new ItemIterator($iteratorCall($this->phpRedis));
+        });
+    }
+
+    # endregion GENERIC ------------------------------------------------------------------------------------------------
+
+    # region LIST -----------------------------------------------------------------------------------------------------
+
+    /**
+     * @see https://redis.io/commands/blpop
+     *
+     * @param iterable<string> $keys
+     * @param int $timeout  If no timeout is set, it will be set to 0 which is infinity.
+     * @return array<string, mixed>|null  Returns null on timeout
+     */
+    public function blPop(iterable $keys, int $timeout = 0): ?array
+    {
+        if ($keys instanceof Traversable) {
+            $keys = iterator_to_array($keys);
+        }
+
+        /** @var array{ 0?: string, 1?: mixed } $result */
+        $result = $this->run('blPop', $keys, $timeout);
+
+        return (count($result) > 0)
+            ? [$result[0] => $result[1]]
+            : null;
+    }
+
+    /**
+     * @see https://redis.io/commands/lindex
+     *
+     * @param string $key
+     * @param int $index  Zero based. Use negative indices to designate elements starting at the tail of the list.
+     * @return mixed|false  The value at index or `false` if... (1) key is missing or (2) index is missing.
+     * @throws CommandException  if key set but is not a list.
+     */
+    public function lIndex(string $key, int $index): mixed
+    {
+        return $this->run('lIndex', $key, $index);
+    }
+
+    /**
+     * Each element is inserted to the head of the list, from the leftmost to the rightmost element.
+     * Ex: `$client->lPush('mylist', 'a', 'b', 'c')` will create a list `["c", "b", "a"]`
+     * @see https://redis.io/commands/lpush
+     *
+     * @param string $key
+     * @param mixed ...$value
+     * @return int  length of the list after the push operation.
+     */
+    public function lPush(string $key, mixed ...$value): int
+    {
+        return $this->run('lPush', $key, ...$value);
+    }
+
+    /**
+     * Each element is inserted to the tail of the list, from the leftmost to the rightmost element.
+     * Ex: `$client->rPush('mylist', 'a', 'b', 'c')` will create a list `["a", "b", "c"]`.
+     * @see https://redis.io/commands/rpush
+     *
+     * @param string $key
+     * @param mixed ...$value
+     * @return int  length of the list after the push operation.
+     */
+    public function rPush(string $key, mixed ...$value): int
+    {
+        return $this->run('rPush', $key, ...$value);
+    }
+
+    # endregion LIST ---------------------------------------------------------------------------------------------------
+
+
+    # region STRING ----------------------------------------------------------------------------------------------------
+
+    /**
+     * @see https://redis.io/commands/mget
+     *
+     * @param string ...$key
+     * @return array<string, mixed|false>  Returns `[{retrieved_key} => value, ...]`. `false` if key is not found.
+     */
+    public function mGet(string ...$key): array
+    {
+        Assert::isNonEmptyList($key);
+        $values = $this->run('mGet', $key);
+        $result = [];
+        $index = 0;
+        foreach ($key as $k) {
+            $result[$k] = $values[$index];
+            ++$index;
+        }
+        return $result;
+    }
+
+    /**
+     * @see https://redis.io/commands/mset
+     *
+     * @param iterable<string, mixed> $pairs
+     * @return bool
+     */
+    public function mSet(iterable $pairs): bool
+    {
+        Assert::isNonEmptyMap($pairs);
+        return $this->run('mSet', $pairs);
+    }
+
+    /**
+     * @see https://redis.io/commands/set
+     *
+     * @param string $key
+     * @param mixed $value
+     * @param SetOptions|null $options
+     * @return mixed
+     */
+    public function set(string $key, mixed $value, ?SetOptions $options = null): mixed
+    {
+        $opts = $options?->toArray() ?? [];
+        return $this->run('set', $key, $value, ...$opts);
+    }
+
+    # endregion STRING -------------------------------------------------------------------------------------------------
+
+
+    /**
+     * @return list<string>
+     */
+    public function clientList(): array
+    {
+        return $this->run('client', 'list');
+    }
+
+    /**
+     * @return array<string, ?scalar>
+     */
+    public function clientInfo(): array
+    {
+        $result = $this->run('client', 'info');
+        $formatted = [];
+        foreach (explode(' ', $result) as $item) {
+            [$key, $val] = explode('=', $item);
+            $formatted[$key] = Str::infer($val);
+        }
+        return $formatted;
+    }
+
+    /**
+     * @see https://redis.io/commands/echo
+     *
+     * @param string $message
+     * @return string
+     */
+    public function echo(string $message): string
+    {
+        return $this->run('echo', $message);
+    }
+
     /**
      * @param int $per
      * @return int
@@ -325,157 +563,46 @@ class Connection
     }
 
     /**
-     * @return list<string>
-     */
-    public function clientList(): array
-    {
-        return $this->command('client', 'list');
-    }
-
-    /**
-     * @return array<string, ?scalar>
-     */
-    public function clientInfo(): array
-    {
-        $result = $this->command('client', 'info');
-        $formatted = [];
-        foreach (explode(' ', $result) as $item) {
-            [$key, $val] = explode('=', $item);
-            $formatted[$key] = Str::infer($val);
-        }
-        return $formatted;
-    }
-
-    /**
-     * @param string ...$key
-     * @return int
-     */
-    public function del(string ...$key): int
-    {
-        Assert::isNonEmptyList($key);
-        return $this->command('del', ...$key);
-    }
-
-    /**
-     * @param string $message
-     * @return string
-     */
-    public function echo(string $message): string
-    {
-        return $this->command('echo', $message);
-    }
-
-    /**
-     * @param string ...$key
-     * @return int
-     */
-    public function exists(string ...$key): int
-    {
-        Assert::isNonEmptyList($key);
-        return $this->command('exists', ...$key);
-    }
-
-    /**
-     * Returns array of retrieved key => value.
-     * if key is not found, the value will be set to false.
-     *
-     * @param string ...$key
-     * @return array<string, mixed|false>
-     */
-    public function mGet(string ...$key): array
-    {
-        Assert::isNonEmptyList($key);
-        $values = $this->command('mGet', $key);
-        $result = [];
-        $index = 0;
-        foreach ($key as $k) {
-            $result[$k] = $values[$index];
-            ++$index;
-        }
-        return $result;
-    }
-
-    /**
-     * @param iterable<string, mixed> $pairs
-     * @return bool
-     */
-    public function mSet(iterable $pairs): bool
-    {
-        Assert::isNonEmptyMap($pairs);
-        return $this->command('mSet', $pairs);
-    }
-
-    /**
+     * @see https://redis.io/commands/ping
      * @return bool
      */
     public function ping(): bool
     {
-        return $this->command('ping');
+        return $this->run('ping');
     }
 
     /**
-     * @param string $pattern
-     * @param int $count
-     * @return Iterator<int, string>
-     */
-    public function scan(?string $pattern = null, ?int $count = null): Iterator
-    {
-        return $this->process('scan', func_get_args(), function () use ($pattern, $count): Iterator {
-            $iterator = null;
-            $index = 0;
-            $count ??= 10_000;
-            $client = $this->phpRedis;
-            while(true) {
-                $keys = $client->scan($iterator, $pattern, $count);
-                if ($keys === false) {
-                    break;
-                }
-                foreach ($keys as $key) {
-                    yield $index => $key;
-                    ++$index;
-                }
-            }
-        });
-    }
-
-    /**
+     * @see https://redis.io/commands/select
+     *
      * @param int $index
      * @return bool
      */
     public function select(int $index): bool
     {
-        return $this->command('select', $index);
+        return $this->run('select', $index);
     }
 
     /**
-     * @param string $key
-     * @param mixed $value
-     * @param SetOptions|null $options
-     * @return mixed
-     */
-    public function set(string $key, mixed $value, ?SetOptions $options = null): mixed
-    {
-        $opts = $options?->toArray() ?? [];
-        return $this->command('set', $key, $value, ...$opts);
-    }
-
-    /**
+     * @see https://redis.io/commands/time
+     *
      * @return float
      */
     public function time(): float
     {
         /** @var list<int> $time */
-        $time = $this->command('time');
+        $time = $this->run('time');
         return (float)"$time[0].$time[1]";
     }
 
     /**
+     * @see https://redis.io/commands/type
+     *
      * @param string $key
      * @return Type
      */
     public function type(string $key): Type
     {
-        $type = $this->command('type', $key);
+        $type = $this->run('type', $key);
         return match ($type) {
             Redis::REDIS_NOT_FOUND => Type::None,
             Redis::REDIS_STRING => Type::String,

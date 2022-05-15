@@ -3,7 +3,7 @@
 namespace Kirameki\Support;
 
 use Closure;
-use Iterator;
+use Generator;
 use Webmozart\Assert\Assert;
 
 /**
@@ -14,12 +14,12 @@ use Webmozart\Assert\Assert;
 class SequenceLazy extends Sequence
 {
     /**
-     * @var Closure(): Iterator<TKey, TValue>
+     * @var Closure(): Generator<TKey, TValue>
      */
     public Closure $iteratorCaller;
 
     /**
-     * @param iterable<TKey, TValue>|Closure(): Iterator<TKey, TValue> $source
+     * @param iterable<TKey, TValue>|Closure(): Generator<TKey, TValue> $source
      */
     public function __construct(iterable|Closure $source)
     {
@@ -30,7 +30,7 @@ class SequenceLazy extends Sequence
     /**
      * @inheritDoc
      */
-    public function getIterator(): Iterator
+    public function getIterator(): Generator
     {
         return ($this->iteratorCaller)();
     }
@@ -250,7 +250,7 @@ class SequenceLazy extends Sequence
     }
 
     /**
-     * @param iterable<TKey, TValue>|Closure(): Iterator<TKey, TValue> $iterable
+     * @param iterable<TKey, TValue>|Closure(): Generator<TKey, TValue> $iterable
      * @return Closure
      */
     protected function toIteratorCaller(iterable|Closure $iterable): Closure

@@ -19,6 +19,8 @@ trait UsesRedis
 
         $this->runAfterTearDown(static function () use ($connection): void {
             if ($connection->isConnected()) {
+                // Prefix must be cleared before flushing, otherwise it will only flush ones with prefixed keys.
+                $connection->setPrefix('');
                 $connection->flush();
                 $connection->select(0);
             }

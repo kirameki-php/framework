@@ -4,8 +4,7 @@ namespace Kirameki\Support;
 
 use Closure;
 use Countable;
-use Iterator;
-use IteratorAggregate;
+use Generator;
 use JsonSerializable;
 use Symfony\Component\VarDumper\VarDumper;
 use Webmozart\Assert\Assert;
@@ -14,24 +13,19 @@ use function is_iterable;
 /**
  * @template TKey of array-key|class-string
  * @template TValue
- * @implements IteratorAggregate<TKey, TValue>
+ * @extends ItemIterator<TKey, TValue>
  */
-class Sequence implements Countable, IteratorAggregate, JsonSerializable
+class Sequence extends ItemIterator implements Countable, JsonSerializable
 {
     use Concerns\Macroable;
     use Concerns\Tappable;
-
-    /**
-     * @var iterable<TKey, TValue>
-     */
-    protected iterable $items;
 
     /**
      * @param iterable<TKey, TValue>|null $items
      */
     public function __construct(iterable|null $items = null)
     {
-        $this->items = $items ?? [];
+        parent::__construct($items ?? []);
     }
 
     /**
@@ -55,14 +49,6 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
             $values[$key] = ($item instanceof JsonSerializable) ? $item->jsonSerialize() : $item;
         }
         return $values;
-    }
-
-    /**
-     * @return Iterator<TKey, TValue>
-     */
-    public function getIterator(): Iterator
-    {
-        yield from $this->items;
     }
 
     /**
@@ -808,14 +794,6 @@ class Sequence implements Countable, IteratorAggregate, JsonSerializable
     public function tally(): Collection
     {
         return new Collection(Arr::tally($this));
-    }
-
-    /**
-     * @return array<TKey, TValue>
-     */
-    public function toArray(): array
-    {
-        return Arr::from($this);
     }
 
     /**
