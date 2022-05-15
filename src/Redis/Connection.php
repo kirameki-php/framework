@@ -379,10 +379,10 @@ class Connection
                 // set to `false`. The prefix length is necessary for the `substr` used later inside the loop.
                 $removablePrefixLength = strlen($prefixed ? '' : $prefix);
 
-                $iterator = null;
+                $cursor = null;
                 $index = 0;
                 do {
-                    $keys = $client->scan($iterator, $pattern, $count);
+                    $keys = $client->scan($cursor, $pattern, $count);
                     if ($keys !== false) {
                         foreach ($keys as $key) {
                             if ($removablePrefixLength > 0) {
@@ -393,7 +393,7 @@ class Connection
                         }
                     }
                 }
-                while($iterator > 0);
+                while($cursor > 0);
             };
             return new ItemIterator($iteratorCall($this->phpRedis));
         });
