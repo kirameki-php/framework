@@ -255,6 +255,13 @@ class ConnectionTest extends TestCase
         $conn = $this->createRedisConnection('phpredis');
         $conn->set('test', 1);
         self::assertTrue($conn->rename('test', 'renamed'));
+    }
+
+    public function test_string_rename_key_not_exists(): void
+    {
+        $this->expectException(CommandException::class);
+        $this->expectExceptionMessage('ERR no such key');
+        $conn = $this->createRedisConnection('phpredis');
         self::assertFalse($conn->rename('miss', 'renamed'));
     }
 
@@ -317,7 +324,26 @@ class ConnectionTest extends TestCase
         $this->expectExceptionMessage('WRONGTYPE Operation against a key holding the wrong kind of value');
         $conn = $this->createRedisConnection('phpredis');
         $conn->set('l', 1);
-        $conn->lIndex('l', 2);
+        $conn->lPush('l', 2);
+    }
+
+    public function test_list_rPush(): void
+    {
+        $conn = $this->createRedisConnection('phpredis');
+        self::assertEquals(2, $conn->rPush('l', 'abc', 1));
+        self::assertEquals(3, $conn->rPush('l', 2));
+        self::assertEquals('abc', $conn->lIndex('l', 0));
+        self::assertEquals(1, $conn->lIndex('l', 1));
+        self::assertEquals(2, $conn->lIndex('l', 2));
+    }
+
+    public function test_list_rPush_key_not_a_list(): void
+    {
+        $this->expectException(CommandException::class);
+        $this->expectExceptionMessage('WRONGTYPE Operation against a key holding the wrong kind of value');
+        $conn = $this->createRedisConnection('phpredis');
+        $conn->set('l', 1);
+        $conn->rPush('l', 2);
     }
 
     # endregion LIST ---------------------------------------------------------------------------------------------------
