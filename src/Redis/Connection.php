@@ -273,18 +273,18 @@ class Connection
             $this->connect();
         }
 
-        $phpRedis = $this->phpRedis;
+        $client = $this->getClient();
 
         $then = hrtime(true);
 
         try {
-            $result = $callback($phpRedis, $command, $args);
+            $result = $callback($client, $command, $args);
         } catch (PhpRedisException $e) {
             $this->throwAs(CommandException::class, $e);
         }
 
-        if ($err = $phpRedis->getLastError()) {
-            $phpRedis->clearLastError();
+        if ($err = $client->getLastError()) {
+            $client->clearLastError();
             throw new CommandException($err);
         }
 
@@ -315,7 +315,6 @@ class Connection
 
     /**
      * @link https://redis.io/commands/client-list
-     *
      * @return list<string>
      */
     public function clientList(): array
@@ -325,7 +324,6 @@ class Connection
 
     /**
      * @link https://redis.io/commands/client-info
-     *
      * @return array<string, ?scalar>
      */
     public function clientInfo(): array
@@ -341,7 +339,6 @@ class Connection
 
     /**
      * @link https://redis.io/commands/echo
-     *
      * @param string $message
      * @return string
      */
@@ -361,7 +358,6 @@ class Connection
 
     /**
      * @link https://redis.io/commands/select
-     *
      * @param int $index
      * @return bool
      */
@@ -376,7 +372,6 @@ class Connection
 
     /**
      * @link https://redis.io/commands/dbsize
-     *
      * @return int
      */
     public function dbSize(): int
@@ -385,8 +380,8 @@ class Connection
     }
 
     /**
-     * @param int $per
-     * @return int
+     * @param int $per  Suggest number of keys to get per scan.
+     * @return int  Returns the number of keys deleted.
      */
     public function flushKeys(int $per = 100_000): int
     {
@@ -398,8 +393,7 @@ class Connection
 
     /**
      * @link https://redis.io/commands/time
-     *
-     * @return float
+     * @return float  Redis server time in unix timestamp
      */
     public function time(): float
     {
@@ -413,6 +407,8 @@ class Connection
     # region STRING ----------------------------------------------------------------------------------------------------
 
     /**
+     * @link https://redis.io/commands/decr
+     * @link https://redis.io/commands/decrby
      * @param string $key
      * @param int $by
      * @return int  the decremented value
@@ -425,6 +421,7 @@ class Connection
     }
 
     /**
+     * @link https://redis.io/commands/decrbyfloat
      * @param string $key
      * @param float $by
      * @return float  the decremented value
@@ -436,7 +433,6 @@ class Connection
 
     /**
      * @link https://redis.io/commands/get
-     *
      * @param string $key
      * @return mixed|false  `false` if key does not exist.
      */
@@ -446,6 +442,8 @@ class Connection
     }
 
     /**
+     * @link https://redis.io/commands/incr
+     * @link https://redis.io/commands/incrby
      * @param string $key
      * @param int $by
      * @return int  the incremented value
@@ -458,6 +456,7 @@ class Connection
     }
 
     /**
+     * @link https://redis.io/commands/incrbyfloat
      * @param string $key
      * @param float $by
      * @return float  the incremented value
@@ -469,7 +468,6 @@ class Connection
 
     /**
      * @link https://redis.io/commands/mget
-     *
      * @param string ...$key
      * @return array<string, mixed|false>  Returns `[{retrieved_key} => value, ...]`. `false` if key is not found.
      */
@@ -488,7 +486,6 @@ class Connection
 
     /**
      * @link https://redis.io/commands/mset
-     *
      * @param iterable<string, mixed> $pairs
      * @return bool
      */
@@ -499,8 +496,28 @@ class Connection
     }
 
     /**
+     * @link https://redis.io/commands/randomkey
+     * @return string|false  Returns random key existing in server. Returns `false` if no key exists.
+     */
+    public function randomKey(): string|false
+    {
+        return $this->run('randomKey');
+    }
+
+    /**
+     * @link https://redis.io/commands/rename
+     * @param string $srcKey
+     * @param string $dstKey
+     * @return bool  `true` in case of success, `false` in case of failure
+     * @throws CommandException  "ERR no such key" is thrown if no key exists.
+     */
+    public function rename(string $srcKey, string $dstKey): bool
+    {
+        return $this->run('rename', $srcKey, $dstKey);
+    }
+
+    /**
      * @link https://redis.io/commands/set
-     *
      * @param string $key
      * @param mixed $value
      * @param SetOptions|null $options
@@ -517,8 +534,7 @@ class Connection
     # region KEY -------------------------------------------------------------------------------------------------------
 
     /**
-     * @see https://redis.io/commands/del
-     *
+     * @link https://redis.io/commands/del
      * @param string ...$key
      * @return int Returns the number of keys that were removed.
      */
@@ -529,8 +545,7 @@ class Connection
     }
 
     /**
-     * @see https://redis.io/commands/exists
-     *
+     * @link https://redis.io/commands/exists
      * @param string ...$key
      * @return int
      */
@@ -542,7 +557,6 @@ class Connection
 
     /**
      * @link https://redis.io/commands/type
-     *
      * @param string $key
      * @return Type
      */
@@ -566,9 +580,8 @@ class Connection
      * Will iterate through the set of keys that match `$pattern` or all keys if no pattern is given.
      * Scan has the following limitations
      * - A given element may be returned multiple times.
-     * -
-     * @see https://redis.io/commands/scan
      *
+     * @link https://redis.io/commands/scan
      * @param string|null $pattern  Patterns to be scanned. Add '*' as suffix to match string. Returns all keys if `null`.
      * @param int $count  Number of elements returned per iteration. This is just a hint and is not guaranteed.
      * @param bool $prefixed  If set to `true`, result will contain the prefix set in the config. (default: `false`)
@@ -613,8 +626,7 @@ class Connection
     # region LIST ------------------------------------------------------------------------------------------------------
 
     /**
-     * @see https://redis.io/commands/blpop
-     *
+     * @link https://redis.io/commands/blpop
      * @param iterable<string> $keys
      * @param int $timeout  If no timeout is set, it will be set to 0 which is infinity.
      * @return array<string, mixed>|null  Returns null on timeout
@@ -634,8 +646,7 @@ class Connection
     }
 
     /**
-     * @see https://redis.io/commands/lindex
-     *
+     * @link https://redis.io/commands/lindex
      * @param string $key
      * @param int $index  Zero based. Use negative indices to designate elements starting at the tail of the list.
      * @return mixed|false  The value at index or `false` if... (1) key is missing or (2) index is missing.
@@ -649,8 +660,8 @@ class Connection
     /**
      * Each element is inserted to the head of the list, from the leftmost to the rightmost element.
      * Ex: `$client->lPush('mylist', 'a', 'b', 'c')` will create a list `["c", "b", "a"]`
-     * @see https://redis.io/commands/lpush
      *
+     * @link https://redis.io/commands/lpush
      * @param string $key
      * @param mixed ...$value
      * @return int  length of the list after the push operation.
@@ -663,8 +674,8 @@ class Connection
     /**
      * Each element is inserted to the tail of the list, from the leftmost to the rightmost element.
      * Ex: `$client->rPush('mylist', 'a', 'b', 'c')` will create a list `["a", "b", "c"]`.
-     * @see https://redis.io/commands/rpush
      *
+     * @link https://redis.io/commands/rpush
      * @param string $key
      * @param mixed ...$value
      * @return int  length of the list after the push operation.

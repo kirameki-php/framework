@@ -45,6 +45,18 @@ class ConnectionTest extends TestCase
 
     # endregion CONNECTION ---------------------------------------------------------------------------------------------
 
+    # region SERVER ----------------------------------------------------------------------------------------------------
+
+    public function test_server_dbSize(): void
+    {
+        $conn = $this->createRedisConnection('phpredis');
+        self::assertEquals(0, $conn->dbSize());
+        $conn->mSet(['a' => 1, 'b' => 2]);
+        self::assertEquals(2, $conn->dbSize());
+    }
+
+    # endregion SERVER -------------------------------------------------------------------------------------------------
+
     # region KEY -------------------------------------------------------------------------------------------------------
 
     public function test_del(): void
@@ -228,6 +240,22 @@ class ConnectionTest extends TestCase
         $this->expectExceptionMessage('Expected a non-empty value. Got: array');
         $conn = $this->createRedisConnection('phpredis');
         $conn->mSet([]);
+    }
+
+    public function test_string_randomKey(): void
+    {
+        $conn = $this->createRedisConnection('phpredis');
+        self::assertEquals(null, $conn->randomKey());
+        $conn->set('test', 1);
+        self::assertEquals('test', $conn->randomKey());
+    }
+
+    public function test_string_rename(): void
+    {
+        $conn = $this->createRedisConnection('phpredis');
+        $conn->set('test', 1);
+        self::assertTrue($conn->rename('test', 'renamed'));
+        self::assertFalse($conn->rename('miss', 'renamed'));
     }
 
     # endregion STRING -------------------------------------------------------------------------------------------------
