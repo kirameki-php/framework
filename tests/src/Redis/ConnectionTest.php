@@ -9,9 +9,6 @@ use stdClass;
 use Tests\Kirameki\TestCase;
 use Webmozart\Assert\InvalidArgumentException;
 use function array_keys;
-use function array_push;
-use function dump;
-use function iterator_to_array;
 use function mt_rand;
 
 class ConnectionTest extends TestCase
@@ -25,7 +22,30 @@ class ConnectionTest extends TestCase
         $this->createRedisConnection('phpredis-ng')->exists('a');
     }
 
-    # region GENERIC ---------------------------------------------------------------------------------------------------
+    # region CONNECTION ------------------------------------------------------------------------------------------------
+
+    public function test_string_echo(): void
+    {
+        $conn = $this->createRedisConnection('phpredis');
+        self::assertEquals('hi', $conn->echo('hi'));
+    }
+
+    public function test_ping(): void
+    {
+        $conn = $this->createRedisConnection('phpredis');
+        self::assertTrue($conn->ping());
+    }
+
+    public function test_select(): void
+    {
+        $conn = $this->createRedisConnection('phpredis');
+        self::assertTrue($conn->select(1));
+        self::assertEquals(1, $conn->clientInfo()['db']);
+    }
+
+    # endregion CONNECTION ---------------------------------------------------------------------------------------------
+
+    # region KEY -------------------------------------------------------------------------------------------------------
 
     public function test_del(): void
     {
@@ -97,9 +117,122 @@ class ConnectionTest extends TestCase
         self::assertEquals(['conn1:a5'], $conn->scan('a*', prefixed: true)->toArray());
     }
 
-    # endregion GENERIC ------------------------------------------------------------------------------------------------
+    # endregion KEY ----------------------------------------------------------------------------------------------------
 
-    # region LIST ---------------------------------------------------------------------------------------------------
+    # region STRING ----------------------------------------------------------------------------------------------------
+
+    public function test_string_decr(): void
+    {
+        $conn = $this->createRedisConnection('phpredis');
+        self::assertEquals(-1, $conn->decr('d'));
+        self::assertEquals(-3, $conn->decr('d', 2));
+        self::assertEquals(-1, $conn->decr('d', -2));
+    }
+
+    public function test_string_decrByFloat(): void
+    {
+        $conn = $this->createRedisConnection('phpredis');
+        self::assertEquals(-1, $conn->decrByFloat('d', 1));
+        self::assertEquals(-3.2, $conn->decrByFloat('d', 2.2));
+        self::assertEquals(-1, $conn->decrByFloat('d', -2.2));
+    }
+
+    public function test_string_get(): void
+    {
+        $conn = $this->createRedisConnection('phpredis');
+        $conn->mSet(['d' => 'abc', 'e' => null]);
+        self::assertEquals('abc', $conn->get('d'));
+        self::assertEquals(null, $conn->get('e'));
+        self::assertEquals(false, $conn->get('f'));
+    }
+
+    public function test_string_incr(): void
+    {
+        $conn = $this->createRedisConnection('phpredis');
+        self::assertEquals(1, $conn->incr('d'));
+        self::assertEquals(3, $conn->incr('d', 2));
+        self::assertEquals(1, $conn->incr('d', -2));
+    }
+
+    public function test_string_incrByFloat(): void
+    {
+        $conn = $this->createRedisConnection('phpredis');
+        self::assertEquals(1, $conn->incrByFloat('d', 1));
+        self::assertEquals(3.2, $conn->incrByFloat('d', 2.2));
+        self::assertEquals(1, $conn->incrByFloat('d', -2.2));
+    }
+
+    public function test_string_mGet(): void
+    {
+        $conn = $this->createRedisConnection('phpredis');
+        $pairs = ['a' => true, 'b' => mt_rand(), 'c' => 0.01, 'd' => 'abc', 'e' => null];
+        $conn->mSet($pairs);
+        self::assertEquals($pairs, $conn->mGet(...array_keys($pairs)));
+    }
+
+    public function test_string_mGet_with_array(): void
+    {
+        $conn = $this->createRedisConnection('phpredis');
+        $pairs = ['arr' => ['a' => 1, 'b' => 2]];
+        $conn->mSet($pairs);
+        self::assertEquals($pairs, $conn->mGet('arr'));
+    }
+
+    public function test_string_mGet_with_object(): void
+    {
+        $conn = $this->createRedisConnection('phpredis');
+        $object = new stdClass();
+        $object->a = 1;
+        $pairs = ['o' => $object];
+        $conn->mSet($pairs);
+        self::assertEquals($object->a, $conn->mGet('o')['o']->a);
+    }
+
+    public function test_string_mGet_without_args(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Expected a non-empty value. Got: array');
+        $conn = $this->createRedisConnection('phpredis');
+        $conn->mGet();
+    }
+
+    public function test_string_mSet(): void
+    {
+        $conn = $this->createRedisConnection('phpredis');
+        $pairs = ['a1' => mt_rand(), 'a2' => mt_rand()];
+        self::assertTrue($conn->mSet($pairs));
+        self::assertEquals($pairs, $conn->mGet('a1', 'a2'));
+    }
+
+    public function test_string_mSet_with_array(): void
+    {
+        $conn = $this->createRedisConnection('phpredis');
+        $pairs = ['arr' => ['a' => 1, 'b' => 2]];
+        $conn->mSet($pairs);
+        self::assertEquals($pairs, $conn->mGet('arr'));
+    }
+
+    public function test_string_mSet_with_object(): void
+    {
+        $conn = $this->createRedisConnection('phpredis');
+        $object = new stdClass();
+        $object->a = 1;
+        $pairs = ['o' => $object];
+        $conn->mSet($pairs);
+        self::assertEquals($object->a, $conn->mGet('o')['o']->a);
+    }
+
+    public function test_string_mSet_without_args(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Expected a non-empty value. Got: array');
+        $conn = $this->createRedisConnection('phpredis');
+        $conn->mSet([]);
+    }
+
+    # endregion STRING -------------------------------------------------------------------------------------------------
+
+    # region LIST ------------------------------------------------------------------------------------------------------
 
     public function test_list_blPop(): void
     {
@@ -160,91 +293,4 @@ class ConnectionTest extends TestCase
     }
 
     # endregion LIST ---------------------------------------------------------------------------------------------------
-
-    public function test_echo(): void
-    {
-        $conn = $this->createRedisConnection('phpredis');
-        self::assertEquals('hi', $conn->echo('hi'));
-    }
-
-    public function test_mGet(): void
-    {
-        $conn = $this->createRedisConnection('phpredis');
-        $pairs = ['a' => true, 'b' => mt_rand(), 'c' => 0.01, 'd' => 'abc', 'e' => null];
-        $conn->mSet($pairs);
-        self::assertEquals($pairs, $conn->mGet(...array_keys($pairs)));
-    }
-
-    public function test_mGet_with_array(): void
-    {
-        $conn = $this->createRedisConnection('phpredis');
-        $pairs = ['arr' => ['a' => 1, 'b' => 2]];
-        $conn->mSet($pairs);
-        self::assertEquals($pairs, $conn->mGet('arr'));
-    }
-
-    public function test_mGet_with_object(): void
-    {
-        $conn = $this->createRedisConnection('phpredis');
-        $object = new stdClass();
-        $object->a = 1;
-        $pairs = ['o' => $object];
-        $conn->mSet($pairs);
-        self::assertEquals($object->a, $conn->mGet('o')['o']->a);
-    }
-
-    public function test_mGet_without_args(): void
-    {
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Expected a non-empty value. Got: array');
-        $conn = $this->createRedisConnection('phpredis');
-        $conn->mGet();
-    }
-
-    public function test_mSet(): void
-    {
-        $conn = $this->createRedisConnection('phpredis');
-        $pairs = ['a1' => mt_rand(), 'a2' => mt_rand()];
-        self::assertTrue($conn->mSet($pairs));
-        self::assertEquals($pairs, $conn->mGet('a1', 'a2'));
-    }
-
-    public function test_mSet_with_array(): void
-    {
-        $conn = $this->createRedisConnection('phpredis');
-        $pairs = ['arr' => ['a' => 1, 'b' => 2]];
-        $conn->mSet($pairs);
-        self::assertEquals($pairs, $conn->mGet('arr'));
-    }
-
-    public function test_mSet_with_object(): void
-    {
-        $conn = $this->createRedisConnection('phpredis');
-        $object = new stdClass();
-        $object->a = 1;
-        $pairs = ['o' => $object];
-        $conn->mSet($pairs);
-        self::assertEquals($object->a, $conn->mGet('o')['o']->a);
-    }
-
-    public function test_mSet_without_args(): void
-    {
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Expected a non-empty value. Got: array');
-        $conn = $this->createRedisConnection('phpredis');
-        $conn->mSet([]);
-    }
-
-    public function test_ping(): void
-    {
-        $conn = $this->createRedisConnection('phpredis');
-        self::assertTrue($conn->ping());
-    }
-
-    public function test_select(): void
-    {
-        $conn = $this->createRedisConnection('phpredis');
-        self::assertTrue($conn->select(1));
-        self::assertEquals(1, $conn->clientInfo()['db']);
-    }
 }

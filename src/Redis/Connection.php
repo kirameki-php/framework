@@ -4,7 +4,6 @@ namespace Kirameki\Redis;
 
 use Closure;
 use Generator;
-use Iterator;
 use Kirameki\Core\Config;
 use Kirameki\Event\EventManager;
 use Kirameki\Redis\Events\CommandExecuted;
@@ -22,15 +21,12 @@ use Throwable;
 use Traversable;
 use Webmozart\Assert\Assert;
 use function count;
-use function dump;
 use function explode;
 use function func_get_args;
 use function hrtime;
-use function is_array;
+use function is_float;
 use function iterator_to_array;
-use function str_replace;
 use function strlen;
-use function strpos;
 use function substr;
 
 /**
@@ -101,19 +97,10 @@ use function substr;
  * @method bool|int zUnionStore(string $output, array $zSetKeys, array $weights = null, string $aggregateFunction = 'SUM')
  *
  * STRING --------------------------------------------------------------------------------------------------------------
- * @method int decr(string $key)
- * @method int decrBy(string $key, int $amount)
- * @method mixed get(string $key)
- * @method mixed getSet(string $key, $value)
- * @method int incr(string $key)
- * @method int incrBy(string $key, int $amount)
- * @method float incrByFloat(string $key, float $amount)
- *
  * UNSUPPORTED COMMANDS
  * - APPEND: does not work well with serialization
  * - BLPOP: waiting for PhpRedis to implement it
  * - BLMPOP: waiting for PhpRedis to implement it
- *
  */
 class Connection
 {
@@ -324,7 +311,210 @@ class Connection
         throw new $exceptionClass($base->getMessage(), $base->getCode(), $root);
     }
 
-    # region GENERIC ---------------------------------------------------------------------------------------------------
+    # region CONNECTION ------------------------------------------------------------------------------------------------
+
+    /**
+     * @link https://redis.io/commands/client-list
+     *
+     * @return list<string>
+     */
+    public function clientList(): array
+    {
+        return $this->run('client', 'list');
+    }
+
+    /**
+     * @link https://redis.io/commands/client-info
+     *
+     * @return array<string, ?scalar>
+     */
+    public function clientInfo(): array
+    {
+        $result = $this->run('client', 'info');
+        $formatted = [];
+        foreach (explode(' ', $result) as $item) {
+            [$key, $val] = explode('=', $item);
+            $formatted[$key] = Str::infer($val);
+        }
+        return $formatted;
+    }
+
+    /**
+     * @link https://redis.io/commands/echo
+     *
+     * @param string $message
+     * @return string
+     */
+    public function echo(string $message): string
+    {
+        return $this->run('echo', $message);
+    }
+
+    /**
+     * @link https://redis.io/commands/ping
+     * @return bool
+     */
+    public function ping(): bool
+    {
+        return $this->run('ping');
+    }
+
+    /**
+     * @link https://redis.io/commands/select
+     *
+     * @param int $index
+     * @return bool
+     */
+    public function select(int $index): bool
+    {
+        return $this->run('select', $index);
+    }
+
+    # endregion CONNECTION ---------------------------------------------------------------------------------------------
+
+    # region SERVER ----------------------------------------------------------------------------------------------------
+
+    /**
+     * @link https://redis.io/commands/dbsize
+     *
+     * @return int
+     */
+    public function dbSize(): int
+    {
+        return $this->run('dbSize');
+    }
+
+    /**
+     * @param int $per
+     * @return int
+     */
+    public function flushKeys(int $per = 100_000): int
+    {
+        $keys = $this->scan(null, $per)->toArray();
+        return count($keys) > 0
+            ? $this->del(...$keys)
+            : 0;
+    }
+
+    /**
+     * @link https://redis.io/commands/time
+     *
+     * @return float
+     */
+    public function time(): float
+    {
+        /** @var list<int> $time */
+        $time = $this->run('time');
+        return (float)"$time[0].$time[1]";
+    }
+
+    # endregion SERVER -------------------------------------------------------------------------------------------------
+
+    # region STRING ----------------------------------------------------------------------------------------------------
+
+    /**
+     * @param string $key
+     * @param int $by
+     * @return int  the decremented value
+     */
+    public function decr(string $key, int $by = 1): int
+    {
+        return $by === 1
+            ? $this->run('decr', $key)
+            : $this->run('decrBy', $key, $by);
+    }
+
+    /**
+     * @param string $key
+     * @param float $by
+     * @return float  the decremented value
+     */
+    public function decrByFloat(string $key, float $by): float
+    {
+        return $this->run('incrByFloat', $key, -$by);
+    }
+
+    /**
+     * @link https://redis.io/commands/get
+     *
+     * @param string $key
+     * @return mixed|false  `false` if key does not exist.
+     */
+    public function get(string $key): mixed
+    {
+        return $this->run('get', $key);
+    }
+
+    /**
+     * @param string $key
+     * @param int $by
+     * @return int  the incremented value
+     */
+    public function incr(string $key, int $by = 1): int
+    {
+        return $by === 1
+            ? $this->run('incr', $key)
+            : $this->run('incrBy', $key, $by);
+    }
+
+    /**
+     * @param string $key
+     * @param float $by
+     * @return float  the incremented value
+     */
+    public function incrByFloat(string $key, float $by): float
+    {
+        return $this->run('incrByFloat', $key, $by);
+    }
+
+    /**
+     * @link https://redis.io/commands/mget
+     *
+     * @param string ...$key
+     * @return array<string, mixed|false>  Returns `[{retrieved_key} => value, ...]`. `false` if key is not found.
+     */
+    public function mGet(string ...$key): array
+    {
+        Assert::isNonEmptyList($key);
+        $values = $this->run('mGet', $key);
+        $result = [];
+        $index = 0;
+        foreach ($key as $k) {
+            $result[$k] = $values[$index];
+            ++$index;
+        }
+        return $result;
+    }
+
+    /**
+     * @link https://redis.io/commands/mset
+     *
+     * @param iterable<string, mixed> $pairs
+     * @return bool
+     */
+    public function mSet(iterable $pairs): bool
+    {
+        Assert::isNonEmptyMap($pairs);
+        return $this->run('mSet', $pairs);
+    }
+
+    /**
+     * @link https://redis.io/commands/set
+     *
+     * @param string $key
+     * @param mixed $value
+     * @param SetOptions|null $options
+     * @return mixed
+     */
+    public function set(string $key, mixed $value, ?SetOptions $options = null): mixed
+    {
+        $opts = $options?->toArray() ?? [];
+        return $this->run('set', $key, $value, ...$opts);
+    }
+
+    # endregion STRING -------------------------------------------------------------------------------------------------
+
+    # region KEY -------------------------------------------------------------------------------------------------------
 
     /**
      * @see https://redis.io/commands/del
@@ -351,6 +541,27 @@ class Connection
     }
 
     /**
+     * @link https://redis.io/commands/type
+     *
+     * @param string $key
+     * @return Type
+     */
+    public function type(string $key): Type
+    {
+        $type = $this->run('type', $key);
+        return match ($type) {
+            Redis::REDIS_NOT_FOUND => Type::None,
+            Redis::REDIS_STRING => Type::String,
+            Redis::REDIS_LIST => Type::List,
+            Redis::REDIS_SET => Type::Set,
+            Redis::REDIS_ZSET => Type::ZSet,
+            Redis::REDIS_HASH => Type::Hash,
+            Redis::REDIS_STREAM => Type::Stream,
+            default => throw new LogicException("Unknown Type: $type"),
+        };
+    }
+
+    /**
      *
      * Will iterate through the set of keys that match `$pattern` or all keys if no pattern is given.
      * Scan has the following limitations
@@ -365,43 +576,41 @@ class Connection
      */
     public function scan(?string $pattern = null, int $count = 10_000, bool $prefixed = false): ItemIterator
     {
-        return $this->process('scan', func_get_args(), function () use ($pattern, $count, $prefixed): ItemIterator {
-            $iteratorCall = static function (Redis $client) use ($pattern, $count, $prefixed): Generator {
-                $prefix = $client->_prefix('');
+        $args = func_get_args();
+        $generatorCall = static function (Redis $client) use ($pattern, $count, $prefixed): Generator {
+            $prefix = $client->_prefix('');
 
-                // If the prefix is defined, doing an empty scan will actually call scan with `"MATCH" "{prefix}"`
-                // which does not return the expected result. To get the expected result, '*' needs to be appended.
-                if ($pattern === null && $prefix !== '') {
-                    $pattern = '*';
-                }
+            // If the prefix is defined, doing an empty scan will actually call scan with `"MATCH" "{prefix}"`
+            // which does not return the expected result. To get the expected result, '*' needs to be appended.
+            if ($pattern === null && $prefix !== '') {
+                $pattern = '*';
+            }
 
-                // PhpRedis returns the results WITH the prefix, so we must trim it after retrieval if `$prefixed` is
-                // set to `false`. The prefix length is necessary for the `substr` used later inside the loop.
-                $removablePrefixLength = strlen($prefixed ? '' : $prefix);
+            // PhpRedis returns the results WITH the prefix, so we must trim it after retrieval if `$prefixed` is
+            // set to `false`. The prefix length is necessary for the `substr` used later inside the loop.
+            $removablePrefixLength = strlen($prefixed ? '' : $prefix);
 
-                $cursor = null;
-                $index = 0;
-                do {
-                    $keys = $client->scan($cursor, $pattern, $count);
-                    if ($keys !== false) {
-                        foreach ($keys as $key) {
-                            if ($removablePrefixLength > 0) {
-                                $key = substr($key, $removablePrefixLength);
-                            }
-                            yield $index => $key;
-                            ++$index;
+            $cursor = null;
+            do {
+                $keys = $client->scan($cursor, $pattern, $count);
+                if ($keys !== false) {
+                    foreach ($keys as $key) {
+                        if ($removablePrefixLength > 0) {
+                            $key = substr($key, $removablePrefixLength);
                         }
+                        yield $key;
                     }
                 }
-                while($cursor > 0);
-            };
-            return new ItemIterator($iteratorCall($this->phpRedis));
-        });
+            }
+            while($cursor > 0);
+        };
+
+        return $this->process('scan', $args, fn () => new ItemIterator($generatorCall($this->phpRedis)));
     }
 
-    # endregion GENERIC ------------------------------------------------------------------------------------------------
+    # endregion KEY ----------------------------------------------------------------------------------------------------
 
-    # region LIST -----------------------------------------------------------------------------------------------------
+    # region LIST ------------------------------------------------------------------------------------------------------
 
     /**
      * @see https://redis.io/commands/blpop
@@ -466,153 +675,4 @@ class Connection
     }
 
     # endregion LIST ---------------------------------------------------------------------------------------------------
-
-
-    # region STRING ----------------------------------------------------------------------------------------------------
-
-    /**
-     * @see https://redis.io/commands/mget
-     *
-     * @param string ...$key
-     * @return array<string, mixed|false>  Returns `[{retrieved_key} => value, ...]`. `false` if key is not found.
-     */
-    public function mGet(string ...$key): array
-    {
-        Assert::isNonEmptyList($key);
-        $values = $this->run('mGet', $key);
-        $result = [];
-        $index = 0;
-        foreach ($key as $k) {
-            $result[$k] = $values[$index];
-            ++$index;
-        }
-        return $result;
-    }
-
-    /**
-     * @see https://redis.io/commands/mset
-     *
-     * @param iterable<string, mixed> $pairs
-     * @return bool
-     */
-    public function mSet(iterable $pairs): bool
-    {
-        Assert::isNonEmptyMap($pairs);
-        return $this->run('mSet', $pairs);
-    }
-
-    /**
-     * @see https://redis.io/commands/set
-     *
-     * @param string $key
-     * @param mixed $value
-     * @param SetOptions|null $options
-     * @return mixed
-     */
-    public function set(string $key, mixed $value, ?SetOptions $options = null): mixed
-    {
-        $opts = $options?->toArray() ?? [];
-        return $this->run('set', $key, $value, ...$opts);
-    }
-
-    # endregion STRING -------------------------------------------------------------------------------------------------
-
-
-    /**
-     * @return list<string>
-     */
-    public function clientList(): array
-    {
-        return $this->run('client', 'list');
-    }
-
-    /**
-     * @return array<string, ?scalar>
-     */
-    public function clientInfo(): array
-    {
-        $result = $this->run('client', 'info');
-        $formatted = [];
-        foreach (explode(' ', $result) as $item) {
-            [$key, $val] = explode('=', $item);
-            $formatted[$key] = Str::infer($val);
-        }
-        return $formatted;
-    }
-
-    /**
-     * @see https://redis.io/commands/echo
-     *
-     * @param string $message
-     * @return string
-     */
-    public function echo(string $message): string
-    {
-        return $this->run('echo', $message);
-    }
-
-    /**
-     * @param int $per
-     * @return int
-     */
-    public function flush(int $per = 100_000): int
-    {
-        $keys = iterator_to_array($this->scan(null, $per));
-        return count($keys) > 0
-            ? $this->del(...$keys)
-            : 0;
-    }
-
-    /**
-     * @see https://redis.io/commands/ping
-     * @return bool
-     */
-    public function ping(): bool
-    {
-        return $this->run('ping');
-    }
-
-    /**
-     * @see https://redis.io/commands/select
-     *
-     * @param int $index
-     * @return bool
-     */
-    public function select(int $index): bool
-    {
-        return $this->run('select', $index);
-    }
-
-    /**
-     * @see https://redis.io/commands/time
-     *
-     * @return float
-     */
-    public function time(): float
-    {
-        /** @var list<int> $time */
-        $time = $this->run('time');
-        return (float)"$time[0].$time[1]";
-    }
-
-    /**
-     * @see https://redis.io/commands/type
-     *
-     * @param string $key
-     * @return Type
-     */
-    public function type(string $key): Type
-    {
-        $type = $this->run('type', $key);
-        return match ($type) {
-            Redis::REDIS_NOT_FOUND => Type::None,
-            Redis::REDIS_STRING => Type::String,
-            Redis::REDIS_LIST => Type::List,
-            Redis::REDIS_SET => Type::Set,
-            Redis::REDIS_ZSET => Type::ZSet,
-            Redis::REDIS_HASH => Type::Hash,
-            Redis::REDIS_STREAM => Type::Stream,
-            default => throw new LogicException("Unknown Type: $type"),
-        };
-    }
 }

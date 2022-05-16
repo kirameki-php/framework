@@ -21,7 +21,7 @@ trait UsesRedis
             if ($connection->isConnected()) {
                 // Prefix must be cleared before flushing, otherwise it will only flush ones with prefixed keys.
                 $connection->setPrefix('');
-                $connection->flush();
+                $connection->flushKeys();
                 $connection->select(0);
             }
         });
