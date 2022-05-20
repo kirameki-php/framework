@@ -263,6 +263,14 @@ class StrTest extends TestCase
         self::assertFalse(Str::isBlank(' '));
     }
 
+    public function test_isNotBlank(): void
+    {
+        self::assertFalse(Str::isNotBlank(null));
+        self::assertFalse(Str::isNotBlank(''));
+        self::assertTrue(Str::isNotBlank('0'));
+        self::assertTrue(Str::isNotBlank(' '));
+    }
+
     public function testKebabCase(): void
     {
         self::assertEquals('test', Str::kebabCase('test'));

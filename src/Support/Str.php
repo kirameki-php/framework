@@ -293,6 +293,15 @@ class Str
     }
 
     /**
+     * @param string|null $string
+     * @return bool
+     */
+    public static function isNotBlank(?string $string): bool
+    {
+        return !static::isBlank($string);
+    }
+
+    /**
      * @param string $string
      * @return string
      */
