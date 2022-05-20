@@ -104,7 +104,7 @@ class Config implements ArrayAccess
      * @param string $key
      * @return int|null
      */
-    public function getIntOrNull(string $key): int|null
+    public function getIntOrNull(string $key): ?int
     {
         return $this->getInternal($key, false);
     }
@@ -132,7 +132,7 @@ class Config implements ArrayAccess
      * @param string $key
      * @return float|null
      */
-    public function getFloatOrNull(string $key): float|null
+    public function getFloatOrNull(string $key): ?float
     {
         return $this->getInternal($key, false);
     }
@@ -160,7 +160,36 @@ class Config implements ArrayAccess
      * @param string $key
      * @return string|null
      */
-    public function getStringOrNull(string $key): string|null
+    public function getStringOrNull(string $key): ?string
+    {
+        return $this->getInternal($key, false);
+    }
+
+    /**
+     * @param string $key
+     * @return array<mixed>
+     */
+    public function getArray(string $key): array
+    {
+        return $this->getInternal($key, false);
+    }
+
+    /**
+     * @template T
+     * @param string $key
+     * @param array<T> $default
+     * @return array<T>
+     */
+    public function getArrayOr(string $key, array $default): ?array
+    {
+        return $this->getInternal($key, false) ?? $default;
+    }
+
+    /**
+     * @param string $key
+     * @return array<mixed>|null
+     */
+    public function getArrayOrNull(string $key): ?array
     {
         return $this->getInternal($key, false);
     }

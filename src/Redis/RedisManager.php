@@ -2,9 +2,14 @@
 
 namespace Kirameki\Redis;
 
+use Closure;
 use Kirameki\Core\Config;
 use Kirameki\Event\EventManager;
+use Kirameki\Redis\Adapters\Adapter;
+use Kirameki\Redis\Adapters\RedisAdapter;
 use Kirameki\Support\Collection;
+use LogicException;
+use function array_key_exists;
 
 class RedisManager
 {
@@ -19,9 +24,19 @@ class RedisManager
     protected EventManager $events;
 
     /**
-     * @var array<Connection>
+     * @var array<string, Connection>
      */
     protected array $connections;
+
+    /**
+     * @var array<string, Closure>
+     */
+    protected array $adapters;
+
+    /**
+     * @var string
+     */
+    protected string $defaultAdapter = 'redis';
 
     /**
      * @param Config $config
@@ -32,6 +47,7 @@ class RedisManager
         $this->config = $config;
         $this->events = $events;
         $this->connections = [];
+        $this->adapters = [];
     }
 
     /**
@@ -40,7 +56,7 @@ class RedisManager
      */
     public function using(string $name): Connection
     {
-        return $this->connections[$name] ??= $this->createConnection($name, $this->getConfig($name));
+        return $this->connections[$name] ??= $this->createConnection($name);
     }
 
     /**
@@ -65,12 +81,26 @@ class RedisManager
 
     /**
      * @param string $name
-     * @param Config $config
+     * @param callable(Config): Adapter $deferred
+     * @return $this
+     */
+    public function addAdapter(string $name, callable $deferred): static
+    {
+        $this->adapters[$name] = $deferred(...);
+        return $this;
+    }
+
+    /**
+     * @param string $name
      * @return Connection
      */
-    protected function createConnection(string $name, Config $config): Connection
+    protected function createConnection(string $name): Connection
     {
-        return new Connection($name, $config, $this->events);
+        $config = $this->getConfig($name);
+        $adapterName = $config->getStringOrNull('adapter') ?? $this->defaultAdapter;
+        $adapterResolver = $this->getAdapterResolver($adapterName);
+        $adapter = $adapterResolver($config);
+        return new Connection($name, $adapter, $this->events);
     }
 
     /**
@@ -88,5 +118,30 @@ class RedisManager
     public function getConfig(string $name): Config
     {
         return $this->config->for('connections.'.$name);
+    }
+
+    /**
+     * @param string $adapter
+     * @return Closure(Config): Adapter
+     */
+    protected function getAdapterResolver(string $adapter): Closure
+    {
+        if (!array_key_exists($adapter, $this->adapters)) {
+            $this->addAdapter($adapter, $this->getDefaultAdapterResolver($adapter));
+        }
+        return $this->adapters[$adapter];
+    }
+
+    /**
+     * @param string $name
+     * @return Closure(Config): Adapter
+     */
+    protected function getDefaultAdapterResolver(string $name): Closure
+    {
+        return match ($name) {
+            'redis' => static fn(Config $config) => new RedisAdapter($config),
+            'redis-cluster' => static fn(Config $config) => new RedisAdapter($config),
+            default => throw new LogicException("Adapter: $name does not exist"),
+        };
     }
 }

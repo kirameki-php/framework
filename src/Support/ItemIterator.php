@@ -37,4 +37,12 @@ class ItemIterator implements IteratorAggregate
     {
         return Arr::from($this);
     }
+
+    /**
+     * @return Sequence<TKey, TValue>
+     */
+    public function toSequence(): Sequence
+    {
+        return new Sequence($this);
+    }
 }

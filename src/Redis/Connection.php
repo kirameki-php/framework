@@ -3,31 +3,23 @@
 namespace Kirameki\Redis;
 
 use Closure;
-use Generator;
-use Kirameki\Core\Config;
 use Kirameki\Event\EventManager;
+use Kirameki\Redis\Adapters\Adapter;
 use Kirameki\Redis\Events\CommandExecuted;
 use Kirameki\Redis\Exceptions\CommandException;
-use Kirameki\Redis\Exceptions\ConnectionException;
-use Kirameki\Redis\Exceptions\RedisException;
 use Kirameki\Redis\Support\SetOptions;
 use Kirameki\Redis\Support\Type;
 use Kirameki\Support\ItemIterator;
 use Kirameki\Support\Str;
 use LogicException;
 use Redis;
-use RedisException as PhpRedisException;
-use Throwable;
 use Traversable;
 use Webmozart\Assert\Assert;
 use function count;
 use function explode;
 use function func_get_args;
 use function hrtime;
-use function is_float;
 use function iterator_to_array;
-use function strlen;
-use function substr;
 
 /**
  * @method bool expire(string $key, int $time)
@@ -105,44 +97,16 @@ use function substr;
 class Connection
 {
     /**
-     * @var Redis
-     */
-    protected Redis $phpRedis;
-
-    /**
-     * @var string
-     */
-    protected string $name;
-
-    /**
-     * @var Config
-     */
-    protected Config $config;
-
-    /**
-     * @var EventManager
-     */
-    protected EventManager $event;
-
-    /**
      * @param string $name
-     * @param Config $config
+     * @param Adapter $adapter
      * @param EventManager $event
      */
-    public function __construct(string $name, Config $config, EventManager $event)
+    public function __construct(
+        protected string $name,
+        protected Adapter $adapter,
+        protected EventManager $event,
+    )
     {
-        $this->phpRedis = new Redis();
-        $this->name = $name;
-        $this->config = $config;
-        $this->event = $event;
-    }
-
-    /**
-     * @return Redis
-     */
-    public function getClient(): Redis
-    {
-        return $this->phpRedis;
     }
 
     /**
@@ -154,11 +118,11 @@ class Connection
     }
 
     /**
-     * @return Config
+     * @return Adapter
      */
-    public function getConfig(): Config
+    public function getAdapter(): Adapter
     {
-        return $this->config;
+        return $this->adapter;
     }
 
     /**
@@ -166,7 +130,7 @@ class Connection
      */
     public function getPrefix(): string
     {
-        return $this->config->getStringOr('prefix', '');
+        return $this->adapter->getPrefix();
     }
 
     /**
@@ -175,12 +139,7 @@ class Connection
      */
     public function setPrefix(string $prefix): static
     {
-        $this->config->set('prefix', $prefix);
-
-        if ($this->isConnected()) {
-            $this->phpRedis->setOption(Redis::OPT_PREFIX, $prefix);
-        }
-
+        $this->adapter->setPrefix($prefix);
         return $this;
     }
 
@@ -189,38 +148,7 @@ class Connection
      */
     public function connect(): static
     {
-        $config = $this->config;
-        $redis = $this->phpRedis;
-
-        $host = $config->getStringOr('host', default: 'localhost');
-        $port = $config->getIntOr('port', default: 6379);
-        $timeout = $config->getFloatOr('timeout', default: 0.0);
-        $prefix = $config->getStringOr('prefix', default: '');
-        $password = $config->getStringOrNull('password');
-        $database = $config->getIntOrNull('database');
-
-        try {
-            $config->getBoolOr('persistent', default: false)
-                ? $redis->pconnect($host, $port, $timeout)
-                : $redis->connect($host, $port, $timeout);
-        } catch (PhpRedisException $e) {
-            $this->throwAs(ConnectionException::class, $e);
-        }
-
-        $redis->setOption(Redis::OPT_PREFIX, $prefix);
-        $redis->setOption(Redis::OPT_TCP_KEEPALIVE, true);
-        $redis->setOption(Redis::OPT_SCAN, Redis::SCAN_PREFIX);
-        $redis->setOption(Redis::OPT_SCAN, Redis::SCAN_RETRY);
-        $redis->setOption(Redis::OPT_SERIALIZER, Redis::SERIALIZER_IGBINARY);
-
-        if ($password !== null && $password !== '') {
-            $redis->auth($password);
-        }
-
-        if ($database !== null) {
-            $redis->select($database);
-        }
-
+        $this->adapter->connect();
         return $this;
     }
 
@@ -229,7 +157,7 @@ class Connection
      */
     public function disconnect(): bool
     {
-        return $this->phpRedis->close();
+        return $this->adapter->disconnect();
     }
 
     /**
@@ -246,7 +174,7 @@ class Connection
      */
     public function isConnected(): bool
     {
-        return $this->phpRedis->isConnected();
+        return $this->adapter->isConnected();
     }
 
     /**
@@ -256,59 +184,24 @@ class Connection
      */
     public function run(string $command, mixed ...$args): mixed
     {
-        return $this->process($command, $args, static function(Redis $client, string $command, array $args): mixed {
-            return $client->$command(...$args);
+        return $this->process($command, $args, static function(Adapter $adapter, string $command, array $args): mixed {
+            return $adapter->command($command, ...$args);
         });
     }
 
     /**
      * @param string $command
      * @param array<mixed> $args
-     * @param Closure $callback
+     * @param Closure(Adapter, string, array<int, mixed>): mixed $callback
      * @return mixed
      */
     protected function process(string $command, array $args, Closure $callback): mixed
     {
-        if (!$this->isConnected()) {
-            $this->connect();
-        }
-
-        $client = $this->getClient();
-
         $then = hrtime(true);
-
-        try {
-            $result = $callback($client, $command, $args);
-        } catch (PhpRedisException $e) {
-            $this->throwAs(CommandException::class, $e);
-        }
-
-        if ($err = $client->getLastError()) {
-            $client->clearLastError();
-            throw new CommandException($err);
-        }
-
+        $result = $callback($this->adapter, $command, $args);
         $timeMs = (hrtime(true) - $then) * 1_000_000;
-
         $this->event->dispatchClass(CommandExecuted::class, $this, $command, $args, $result, $timeMs);
-
         return $result;
-    }
-
-    /**
-     * @param class-string<RedisException> $exceptionClass
-     * @param Throwable $base
-     * @return no-return
-     */
-    protected function throwAs(string $exceptionClass, Throwable $base): never
-    {
-        // Dig through exceptions to get to the root one that is not wrapped in RedisException
-        // since wrapping it twice is pointless.
-        $root = $base;
-        while ($last = $root->getPrevious()) {
-            $root = $last;
-        }
-        throw new $exceptionClass($base->getMessage(), $base->getCode(), $root);
     }
 
     # region CONNECTION ------------------------------------------------------------------------------------------------
@@ -589,36 +482,11 @@ class Connection
      */
     public function scan(?string $pattern = null, int $count = 10_000, bool $prefixed = false): ItemIterator
     {
-        $args = func_get_args();
-        $generatorCall = static function (Redis $client) use ($pattern, $count, $prefixed): Generator {
-            $prefix = $client->_prefix('');
-
-            // If the prefix is defined, doing an empty scan will actually call scan with `"MATCH" "{prefix}"`
-            // which does not return the expected result. To get the expected result, '*' needs to be appended.
-            if ($pattern === null && $prefix !== '') {
-                $pattern = '*';
-            }
-
-            // PhpRedis returns the results WITH the prefix, so we must trim it after retrieval if `$prefixed` is
-            // set to `false`. The prefix length is necessary for the `substr` used later inside the loop.
-            $removablePrefixLength = strlen($prefixed ? '' : $prefix);
-
-            $cursor = null;
-            do {
-                $keys = $client->scan($cursor, $pattern, $count);
-                if ($keys !== false) {
-                    foreach ($keys as $key) {
-                        if ($removablePrefixLength > 0) {
-                            $key = substr($key, $removablePrefixLength);
-                        }
-                        yield $key;
-                    }
-                }
-            }
-            while($cursor > 0);
-        };
-
-        return $this->process('scan', $args, fn () => new ItemIterator($generatorCall($this->phpRedis)));
+        return $this->process(
+            'scan',
+            func_get_args(),
+            static fn(Adapter $adapter) => new ItemIterator($adapter->scan($pattern, $count, $prefixed))
+        );
     }
 
     # endregion KEY ----------------------------------------------------------------------------------------------------
