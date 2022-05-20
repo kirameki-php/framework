@@ -1366,7 +1366,7 @@ class Arr
      * @param bool &$result
      * @return void
      */
-    public static function setIfNotExists(array &$array, int|string $key, mixed $value, bool &$result = null): void
+    public static function setIfNotExists(array &$array, int|string $key, mixed $value, ?bool &$result = null): void
     {
         $result = false;
         if (static::notContainsKey($array, $key)) {
@@ -1383,7 +1383,7 @@ class Arr
      * @param bool &$result
      * @return void
      */
-    public static function setIfExists(array &$array, int|string $key, mixed $value, bool &$result = null): void
+    public static function setIfExists(array &$array, int|string $key, mixed $value, ?bool &$result = null): void
     {
         $result = false;
         if (static::containsKey($array, $key)) {

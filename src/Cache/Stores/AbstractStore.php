@@ -80,7 +80,7 @@ abstract class AbstractStore implements Store
      * @param string|null $key
      * @return string
      */
-    public function formatKey(string $key = null): string
+    public function formatKey(?string $key = null): string
     {
         return static::$prefix.$this->namespace.static::$delimiter.$key;
     }
@@ -232,7 +232,7 @@ abstract class AbstractStore implements Store
      * @param int|null $now
      * @return int|float|null
      */
-    protected function formatTtl(DateTimeInterface|DateInterval|int|float|null $ttl = null, int $now = null): int|float|null
+    protected function formatTtl(DateTimeInterface|DateInterval|int|float|null $ttl = null, ?int $now = null): int|float|null
     {
         if ($ttl instanceof DateTimeInterface) {
             return $ttl->getTimestamp() - ($now ?? time());

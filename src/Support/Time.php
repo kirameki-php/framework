@@ -48,7 +48,7 @@ class Time extends DateTimeImmutable implements JsonSerializable, Stringable
      * @param DateTimeZone|null $timezone
      * @return static
      */
-    public static function createFromFormat(string $format, string $datetime, DateTimeZone $timezone = null): static
+    public static function createFromFormat(string $format, string $datetime, ?DateTimeZone $timezone = null): static
     {
         /** @var DateTime $base */
         $base = DateTime::createFromFormat($format, $datetime);
@@ -323,7 +323,7 @@ class Time extends DateTimeImmutable implements JsonSerializable, Stringable
      * @param DateTimeInterface|null $context
      * @return bool
      */
-    public function isPast(DateTimeInterface $context = null): bool
+    public function isPast(?DateTimeInterface $context = null): bool
     {
         return $this < ($context ?? static::now());
     }
@@ -332,7 +332,7 @@ class Time extends DateTimeImmutable implements JsonSerializable, Stringable
      * @param DateTimeInterface|null $context
      * @return bool
      */
-    public function isFuture(DateTimeInterface $context = null): bool
+    public function isFuture(?DateTimeInterface $context = null): bool
     {
         return $this > ($context ?? static::now());
     }

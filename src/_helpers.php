@@ -60,7 +60,7 @@ function logger(): LogManager
  * @param string|null $relPath
  * @return string
  */
-function storage_path(string $relPath = null): string
+function storage_path(?string $relPath = null): string
 {
     return app()->getBasePath('storage/'.$relPath);
 }

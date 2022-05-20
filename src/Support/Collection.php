@@ -205,7 +205,7 @@ class Collection extends Sequence implements ArrayAccess
      * @param bool|null $result
      * @return $this
      */
-    public function setIfExists(int|string $key, mixed $value, bool &$result = null): static
+    public function setIfExists(int|string $key, mixed $value, ?bool &$result = null): static
     {
         $result !== null
             ? Arr::setIfExists($this->items, $key, $value, $result)
@@ -219,7 +219,7 @@ class Collection extends Sequence implements ArrayAccess
      * @param bool|null $result
      * @return $this
      */
-    public function setIfNotExists(int|string $key, mixed $value, bool &$result = null): static
+    public function setIfNotExists(int|string $key, mixed $value, ?bool &$result = null): static
     {
         $result !== null
             ? Arr::setIfNotExists($this->items, $key, $value, $result)

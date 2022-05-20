@@ -85,7 +85,7 @@ class SelectBuilder extends ConditionsBuilder
      * @param LockOption|null $option
      * @return $this
      */
-    public function forUpdate(LockOption $option = null): static
+    public function forUpdate(?LockOption $option = null): static
     {
         $this->statement->lockType = LockType::Exclusive;
         $this->statement->lockOption = $option;

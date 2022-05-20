@@ -262,7 +262,7 @@ class Sequence extends ItemIterator implements Countable, JsonSerializable
      * @param callable(TValue, TKey): bool|null $condition
      * @return TValue
      */
-    public function first(callable $condition = null): mixed
+    public function first(?callable $condition = null): mixed
     {
         return Arr::first($this, $condition);
     }
@@ -280,7 +280,7 @@ class Sequence extends ItemIterator implements Countable, JsonSerializable
      * @param callable(TValue, TKey): bool|null $condition
      * @return TKey|null
      */
-    public function firstKey(callable $condition = null): mixed
+    public function firstKey(?callable $condition = null): mixed
     {
         return Arr::firstKey($this, $condition);
     }
@@ -289,7 +289,7 @@ class Sequence extends ItemIterator implements Countable, JsonSerializable
      * @param callable(TValue, TKey): bool|null $condition
      * @return TValue|null
      */
-    public function firstOrNull(callable $condition = null): mixed
+    public function firstOrNull(?callable $condition = null): mixed
     {
         return Arr::firstOrNull($this, $condition);
     }
@@ -428,7 +428,7 @@ class Sequence extends ItemIterator implements Countable, JsonSerializable
      * @param callable(TValue, TKey): bool|null $condition
      * @return TValue
      */
-    public function last(callable $condition = null): mixed
+    public function last(?callable $condition = null): mixed
     {
         return Arr::last($this, $condition);
     }
@@ -446,7 +446,7 @@ class Sequence extends ItemIterator implements Countable, JsonSerializable
      * @param callable(TValue, TKey): bool|null $condition
      * @return mixed
      */
-    public function lastKey(callable $condition = null): mixed
+    public function lastKey(?callable $condition = null): mixed
     {
         return Arr::lastKey($this, $condition);
     }
@@ -455,7 +455,7 @@ class Sequence extends ItemIterator implements Countable, JsonSerializable
      * @param callable(TValue, TKey): bool|null $condition
      * @return TValue|null
      */
-    public function lastOrNull(callable $condition = null): mixed
+    public function lastOrNull(?callable $condition = null): mixed
     {
         return Arr::lastOrNull($this, $condition);
     }
@@ -665,7 +665,7 @@ class Sequence extends ItemIterator implements Countable, JsonSerializable
      * @param int|null $length
      * @return static
      */
-    public function slice(int $offset, int $length = null): static
+    public function slice(int $offset, ?int $length = null): static
     {
         return $this->newInstance(Arr::slice($this, $offset, $length));
     }
@@ -674,7 +674,7 @@ class Sequence extends ItemIterator implements Countable, JsonSerializable
      * @param callable(TValue, TKey): bool|null $condition
      * @return TValue
      */
-    public function sole(callable $condition = null): mixed
+    public function sole(?callable $condition = null): mixed
     {
         return Arr::sole($this, $condition);
     }

@@ -186,7 +186,7 @@ class StringBuilder implements Stringable
      * @param int|null $limit
      * @return static
      */
-    public function delete(string $search, int $limit = null): static
+    public function delete(string $search, ?int $limit = null): static
     {
         $this->value = Str::delete($this->value, $search, $limit ?? -1);
         return $this;
@@ -350,7 +350,7 @@ class StringBuilder implements Stringable
      * @param int $limit
      * @return $this
      */
-    public function replaceMatch(string $pattern, string $replace, int $limit = null): static
+    public function replaceMatch(string $pattern, string $replace, ?int $limit = null): static
     {
         $this->value = Str::replaceMatch($this->value, $pattern, $replace, $limit ?? -1);
         return $this;
@@ -379,7 +379,7 @@ class StringBuilder implements Stringable
      * @param int|null $limit
      * @return array<int, string>
      */
-    public function split(string $separator, int $limit = null): array
+    public function split(string $separator, ?int $limit = null): array
     {
         return Str::split($this->value, $separator, $limit);
     }

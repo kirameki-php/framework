@@ -162,7 +162,7 @@ trait Properties
      * @param string|null $name
      * @return bool
      */
-    public function isResolved(string $name = null): bool
+    public function isResolved(?string $name = null): bool
     {
         return $name !== null
             ? array_key_exists($name, $this->_resolvedProperties)
@@ -210,7 +210,7 @@ trait Properties
      * @param string|null $name
      * @return bool
      */
-    public function isDirty(string $name = null): bool
+    public function isDirty(?string $name = null): bool
     {
         return $name !== null
             ? array_key_exists($name, $this->_previousProperties)
@@ -269,7 +269,7 @@ trait Properties
      * @param string|null $name
      * @return bool
      */
-    public function wasChanged(string $name = null): bool
+    public function wasChanged(?string $name = null): bool
     {
         return $name !== null
             ? array_key_exists($name, $this->_changedProperties)

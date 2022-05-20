@@ -174,7 +174,7 @@ class Application extends Container
      * @param string|null $relPath
      * @return string
      */
-    public function getBasePath(string $relPath = null): string
+    public function getBasePath(?string $relPath = null): string
     {
         $path = $this->basePath;
         if ($relPath !== null) {
@@ -187,7 +187,7 @@ class Application extends Container
      * @param string|null $relPath
      * @return string
      */
-    public function getStoragePath(string $relPath = null): string
+    public function getStoragePath(?string $relPath = null): string
     {
         if ($relPath !== null) {
             $relPath.= '/'.ltrim($relPath, '/');
@@ -207,7 +207,7 @@ class Application extends Container
      * @param string|null $for
      * @return Config
      */
-    public function config(string $for = null): Config
+    public function config(?string $for = null): Config
     {
         return $for !== null
             ? $this->config->for($for)

@@ -265,7 +265,7 @@ class ApcuStore extends AbstractStore
      * @param Closure|null $filter
      * @return array<int, string>
      */
-    protected function scan(string $search, int $format = APC_ITER_KEY, Closure $filter = null): array
+    protected function scan(string $search, int $format = APC_ITER_KEY, ?Closure $filter = null): array
     {
         $keys = [];
         $search = $this->formatKey($search);
@@ -282,7 +282,7 @@ class ApcuStore extends AbstractStore
      * @param int|null $now
      * @return int
      */
-    protected function formatTtl(DateTimeInterface|DateInterval|int|float|null $ttl = null, int $now = null): int
+    protected function formatTtl(DateTimeInterface|DateInterval|int|float|null $ttl = null, ?int $now = null): int
     {
         // for APCu, 0 === persist
         if ($ttl === null || $ttl === INF) {
