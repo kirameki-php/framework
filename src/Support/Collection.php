@@ -170,6 +170,15 @@ class Collection extends Sequence implements ArrayAccess
     }
 
     /**
+     * @param int|string ...$key
+     * @return static
+     */
+    public function pullMany(int|string ...$key): static
+    {
+        return $this->newInstance(Arr::pullMany($this->items, ...$key));
+    }
+
+    /**
      * @param TValue $value
      * @param int|null $limit
      * @return array<int, array-key>

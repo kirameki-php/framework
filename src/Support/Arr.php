@@ -1174,12 +1174,46 @@ class Arr
      */
     public static function pullOrNull(array &$array, int|string $key): mixed
     {
+        $isList = array_is_list($array);
+
         if (array_key_exists($key, $array)) {
             $value = $array[$key];
             unset($array[$key]);
             return $value;
         }
+
+        if ($isList) {
+            static::reIndex($array);
+        }
+
         return null;
+    }
+
+    /**
+     * @template TKey as array-key
+     * @template TValue
+     * @param array<TKey, TValue> $array
+     * @param int|string ...$key
+     * @return array<TKey, TValue>
+     */
+    public static function pullMany(array &$array, int|string ...$key): array
+    {
+        $pulled = [];
+        $isList = array_is_list($array);
+        foreach ($key as $k) {
+            if (array_key_exists($k, $array)) {
+                $value = $array[$k];
+                unset($array[$k]);
+                $pulled[$k] = $value;
+            }
+        }
+
+        if ($isList) {
+            static::reIndex($array);
+        }
+
+        /** @var array<TKey, TValue> $pulled */
+        return $pulled;
     }
 
     /**
@@ -1236,7 +1270,7 @@ class Arr
 
         // if the list is an array, use array_splice to re-index
         if ($count > 0 && $isList) {
-            array_splice($array, count($array));
+            static::reIndex($array);
         }
 
         return $removed;
@@ -1819,6 +1853,18 @@ class Arr
             return $value;
         }
         return [$value];
+    }
+
+    /**
+     * @param array<int, mixed> $array
+     * @return void
+     */
+    protected static function reIndex(array &$array): void
+    {
+        $size = count($array);
+        if ($size > 0) {
+            array_splice($array, $size);
+        }
     }
 
     /**

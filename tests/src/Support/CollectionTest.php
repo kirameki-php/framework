@@ -2,17 +2,12 @@
 
 namespace Tests\Kirameki\Support;
 
-use DivisionByZeroError;
 use ErrorException;
 use InvalidArgumentException;
-use Kirameki\Exception\DuplicateKeyException;
-use Kirameki\Exception\InvalidKeyException;
-use Kirameki\Exception\InvalidValueException;
 use Kirameki\Support\Collection;
 use RuntimeException;
 use Tests\Kirameki\TestCase;
 use TypeError;
-use ValueError;
 use function collect;
 
 class CollectionTest extends TestCase
@@ -295,6 +290,24 @@ class CollectionTest extends TestCase
         $collect = collect(['a' => 1, 'b' => 2]);
         self::assertEquals(2, $collect->pullOrNull('b'));
         self::assertEquals(['a' => 1], $collect->toArray());
+    }
+
+    public function test_pullMany(): void
+    {
+        $collect = collect([1, 2, 3]);
+        $pulled = $collect->pullMany(0, 1);
+        self::assertEquals([3], $collect->toArray());
+        self::assertEquals([1, 2], $pulled->toArray());
+
+        $collect = collect(['a' => 1, 'b' => 2, 'c' => 3]);
+        $pulled = $collect->pullMany('a', 'c');
+        self::assertEquals(['b' => 2], $collect->toArray());
+        self::assertEquals(['a' => 1, 'c' => 3], $pulled->toArray());
+
+        $collect = collect(['a' => 1]);
+        $pulled = $collect->pullMany('a', 'c');
+        self::assertEquals([], $collect->toArray());
+        self::assertEquals(['a' => 1], $pulled->toArray());
     }
 
     public function test_remove(): void
