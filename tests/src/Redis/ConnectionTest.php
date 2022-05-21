@@ -110,13 +110,13 @@ class ConnectionTest extends TestCase
         $conn->mSet($data);
 
         // full scan
-        self::assertEquals(['_a3', 'a1', 'a2', 'a4'], $conn->scan()->toSequence()->sort()->values()->toArray());
+        self::assertEquals(['_a3', 'a1', 'a2', 'a4'], $conn->scan()->toSequence()->sort()->toArray());
 
         // scan with count
-        self::assertEquals(['_a3', 'a1', 'a2', 'a4'], $conn->scan(count: 1)->toSequence()->sort()->values()->toArray());
+        self::assertEquals(['_a3', 'a1', 'a2', 'a4'], $conn->scan(count: 1)->toSequence()->sort()->toArray());
 
         // filtered with wild card
-        self::assertEquals(['a1', 'a2', 'a4'], $conn->scan('a*')->toSequence()->sort()->values()->toArray());
+        self::assertEquals(['a1', 'a2', 'a4'], $conn->scan('a*')->toSequence()->sort()->toArray());
 
         // filtered with prefix
         $conn->setPrefix('conn1:');

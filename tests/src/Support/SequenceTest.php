@@ -1168,10 +1168,10 @@ class SequenceTest extends TestCase
 
     public function test_sort(): void
     {
-        $seq = $this->seq([4, 2, 1, 3])->sort()->values();
+        $seq = $this->seq([4, 2, 1, 3])->sort();
         self::assertEquals([1, 2, 3, 4], $seq->toArray());
 
-        $seq = $this->seq(['30', '2', '100'])->sort(SORT_NATURAL)->values();
+        $seq = $this->seq(['30', '2', '100'])->sort(SORT_NATURAL);
         self::assertEquals(['2', '30', '100'], $seq->toArray());
 
         $seq = $this->seq(['a' => 3, 'b' => 1, 'c' => 2])->sort();
@@ -1180,7 +1180,7 @@ class SequenceTest extends TestCase
 
     public function test_sortBy(): void
     {
-        $seq = $this->seq([4, 2, 1, 3])->sortBy(fn($v) => $v)->values();
+        $seq = $this->seq([4, 2, 1, 3])->sortBy(fn($v) => $v);
         self::assertEquals([1, 2, 3, 4], $seq->toArray());
 
         $seq = $this->seq(['b' => 0, 'a' => 1, 'c' => 2])->sortBy(fn($v, $k) => $k);
@@ -1189,7 +1189,7 @@ class SequenceTest extends TestCase
 
     public function test_sortByDesc(): void
     {
-        $seq = $this->seq([4, 2, 1, 3])->sortByDesc(fn($v) => $v)->values();
+        $seq = $this->seq([4, 2, 1, 3])->sortByDesc(fn($v) => $v);
         self::assertEquals([4, 3, 2, 1], $seq->toArray());
 
         $seq = $this->seq(['b' => 0, 'a' => 1, 'c' => 2])->sortBy(fn($v, $k) => $k);
@@ -1198,10 +1198,10 @@ class SequenceTest extends TestCase
 
     public function test_sortDesc(): void
     {
-        $seq = $this->seq([4, 2, 1, 3])->sortDesc()->values();
+        $seq = $this->seq([4, 2, 1, 3])->sortDesc();
         self::assertEquals([4, 3, 2, 1], $seq->toArray());
 
-        $seq = $this->seq(['30', '100', '2'])->sortDesc(SORT_NATURAL)->values();
+        $seq = $this->seq(['30', '100', '2'])->sortDesc(SORT_NATURAL);
         self::assertEquals(['100', '30', '2'], $seq->toArray());
 
         $seq = $this->seq(['a' => 3, 'b' => 1, 'c' => 2])->sortDesc();
@@ -1228,6 +1228,9 @@ class SequenceTest extends TestCase
 
     public function test_sortWith(): void
     {
+        $seq = $this->seq([1, 3, 2])->sortWith(static fn($a, $b) => ($a === $b ? 0 : (($a < $b) ? -1 : 1)));
+        self::assertEquals([1, 2, 3], $seq->toArray());
+
         $seq = $this->seq(['b' => 1, 'a' => 3, 'c' => 2])->sortWith(static fn($a, $b) => ($a === $b ? 0 : (($a < $b) ? -1 : 1)));
         self::assertEquals(['b' => 1, 'c' => 2, 'a' => 3], $seq->toArray());
     }

@@ -126,13 +126,13 @@ class Arr
     {
         Assert::positiveInteger($size);
 
-        $retainKey = static::isAssoc($iterable);
+        $retainKeys = static::isAssoc($iterable);
         $remaining = $size;
 
         $chunks = [];
         $block = [];
         foreach ($iterable as $key => $val) {
-            $retainKey
+            $retainKeys
                 ? $block[$key] = $val
                 : $block[] = $val;
 
@@ -295,9 +295,11 @@ class Arr
      */
     public static function drop(iterable $iterable, int $amount): array
     {
+        $copy = static::from($iterable);
+        $retainKeys = static::isAssoc($copy);
         return $amount >= 0
-            ? array_slice(static::from($iterable), $amount)
-            : array_slice(static::from($iterable), 0, -$amount);
+            ? array_slice($copy, $amount, null, $retainKeys)
+            : array_slice($copy, 0, -$amount, $retainKeys);
     }
 
     /**
@@ -366,10 +368,10 @@ class Arr
     public static function filter(iterable $iterable, callable $condition): array
     {
         $filtered = [];
-        $isAssoc = static::isAssoc($iterable);
+        $retainKeys = static::isAssoc($iterable);
         foreach ($iterable as $key => $val) {
             if (static::verify($condition, $key, $val)) {
-                $isAssoc
+                $retainKeys
                     ? $filtered[$key] = $val
                     : $filtered[] = $val;
             }
@@ -1183,19 +1185,19 @@ class Arr
      */
     public static function pullOrNull(array &$array, int|string $key): mixed
     {
-        $isList = array_is_list($array);
+        $reIndex = array_is_list($array);
 
+        $value = null;
         if (array_key_exists($key, $array)) {
             $value = $array[$key];
             unset($array[$key]);
-            return $value;
         }
 
-        if ($isList) {
+        if ($reIndex) {
             static::reIndex($array);
         }
 
-        return null;
+        return $value;
     }
 
     /**
@@ -1207,8 +1209,9 @@ class Arr
      */
     public static function pullMany(array &$array, int|string ...$key): array
     {
+        $reIndex = array_is_list($array);
+
         $pulled = [];
-        $isList = array_is_list($array);
         foreach ($key as $k) {
             if (array_key_exists($k, $array)) {
                 $value = $array[$k];
@@ -1217,7 +1220,7 @@ class Arr
             }
         }
 
-        if ($isList) {
+        if ($reIndex) {
             static::reIndex($array);
         }
 
@@ -1267,7 +1270,7 @@ class Arr
         $removed = [];
 
         // Must check before processing, since unset converts lists to assoc array.
-        $isList = array_is_list($array);
+        $reIndex = array_is_list($array);
 
         foreach ($array as $key => $val) {
             if ($count < $limit && $val === $value) {
@@ -1278,7 +1281,7 @@ class Arr
         }
 
         // if the list is an array, use array_splice to re-index
-        if ($count > 0 && $isList) {
+        if ($count > 0 && $reIndex) {
             static::reIndex($array);
         }
 
@@ -1484,11 +1487,11 @@ class Arr
     {
         $copy = static::from($iterable);
         $size = count($copy);
-        $isList = static::isList($copy);
+        $reIndex = static::isList($copy);
         $array = [];
         while ($size > 0) {
             $key = array_rand($copy);
-            $isList
+            $reIndex
                 ? $array[] = $copy[$key]
                 : $array[$key] = $copy[$key];
             unset($copy[$key]);
@@ -1545,7 +1548,14 @@ class Arr
     public static function sort(iterable $iterable, int $flag = SORT_REGULAR): array
     {
         $copy = static::from($iterable);
+        $reIndex = array_is_list($copy);
+
         asort($copy, $flag);
+
+        if ($reIndex) {
+            static::reIndex($copy);
+        }
+
         return $copy;
     }
 
@@ -1615,6 +1625,7 @@ class Arr
     protected static function sortByInternal(iterable $iterable, callable $callback, int $flag, bool $ascending): array
     {
         $copy = static::from($iterable);
+        $reIndex = array_is_list($copy);
 
         $refs = [];
         foreach ($copy as $key => $item) {
@@ -1630,6 +1641,10 @@ class Arr
             $sorted[$key] = $copy[$key];
         }
 
+        if ($reIndex) {
+            static::reIndex($sorted);
+        }
+
         return $sorted;
     }
 
@@ -1643,7 +1658,14 @@ class Arr
     public static function sortDesc(iterable $iterable, int $flag = SORT_REGULAR): array
     {
         $copy = static::from($iterable);
+        $reIndex = array_is_list($copy);
+
         arsort($copy, $flag);
+
+        if ($reIndex) {
+            static::reIndex($copy);
+        }
+
         return $copy;
     }
 
@@ -1657,7 +1679,14 @@ class Arr
     public static function sortWith(iterable $iterable, callable $comparison): array
     {
         $copy = static::from($iterable);
+        $reIndex = array_is_list($copy);
+
         uasort($copy, $comparison);
+
+        if ($reIndex) {
+            static::reIndex($copy);
+        }
+
         return $copy;
     }
 
@@ -1699,9 +1728,11 @@ class Arr
      */
     public static function take(iterable $iterable, int $amount): array
     {
+        $copy = static::from($iterable);
+        $retainKeys = static::isAssoc($copy);
         return $amount > 0
-            ? array_slice(static::from($iterable), 0, $amount)
-            : array_slice(static::from($iterable), $amount, -$amount);
+            ? array_slice($copy, 0, $amount, $retainKeys)
+            : array_slice($copy, $amount, -$amount, $retainKeys);
     }
 
     /**

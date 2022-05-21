@@ -255,9 +255,9 @@ class CollectionTest extends TestCase
 
     public function test_pull(): void
     {
-        $collect = collect([1, 2]);
+        $collect = collect([1, 2, 3]);
         self::assertEquals(2, $collect->pull(1));
-        self::assertEquals([1], $collect->toArray());
+        self::assertEquals([1, 3], $collect->toArray());
 
         $collect = collect(['a' => 1, 'b' => 2]);
         self::assertEquals(2, $collect->pull('b'));
@@ -283,9 +283,9 @@ class CollectionTest extends TestCase
         $collect = collect([]);
         self::assertEquals(null, $collect->pullOrNull(1));
 
-        $collect = collect([1, 2]);
+        $collect = collect([1, 2, 3]);
         self::assertEquals(2, $collect->pullOrNull(1));
-        self::assertEquals([1], $collect->toArray());
+        self::assertEquals([1, 3], $collect->toArray());
 
         $collect = collect(['a' => 1, 'b' => 2]);
         self::assertEquals(2, $collect->pullOrNull('b'));
