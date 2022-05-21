@@ -354,6 +354,9 @@ class SequenceTest extends TestCase
 
     public function test_drop(): void
     {
+        $seq = $this->seq([1, 1, 2]);
+        self::assertEquals([1, 2], $seq->drop(1)->toArray());
+
         $seq = $this->seq(['a' => 1, 'b' => 2, 'c' => 3]);
         self::assertEquals(['b' => 2, 'c' => 3], $seq->drop(1)->toArray());
 
@@ -372,6 +375,9 @@ class SequenceTest extends TestCase
 
     public function test_dropUntil(): void
     {
+        $seq = $this->seq([1, 2, 3]);
+        self::assertEquals([3], $seq->dropUntil(fn($v) => $v >= 3)->toArray());
+
         // look at value
         $seq = $this->seq(['a' => 1, 'b' => 2, 'c' => 3]);
         self::assertEquals(['c' => 3], $seq->dropUntil(fn($v) => $v >= 3)->toArray());
@@ -387,6 +393,9 @@ class SequenceTest extends TestCase
 
     public function test_dropWhile(): void
     {
+        $seq = $this->seq([1, 2, 3]);
+        self::assertEquals([3], $seq->dropWhile(fn($v) => $v < 3)->toArray());
+
         // look at value
         $seq = $this->seq(['a' => 1, 'b' => 2, 'c' => 3]);
         self::assertEquals(['c' => 3], $seq->dropWhile(fn($v) => $v < 3)->toArray());
@@ -1281,6 +1290,9 @@ class SequenceTest extends TestCase
 
     public function test_takeUntil(): void
     {
+        $seq = $this->seq([1, 1, 3, 2])->takeUntil(fn($v) => $v > 2);
+        self::assertEquals([1, 1], $seq->toArray());
+
         $seq = $this->seq(['b' => 1, 'a' => 3, 'c' => 2])->takeUntil(fn($v) => $v > 2);
         self::assertEquals(['b' => 1], $seq->toArray());
 
@@ -1293,6 +1305,9 @@ class SequenceTest extends TestCase
 
     public function test_takeWhile(): void
     {
+        $seq = $this->seq([1, 1, 3, 2])->takeWhile(fn($v) => $v <= 2);
+        self::assertEquals([1, 1], $seq->toArray());
+
         $seq = $this->seq(['b' => 1, 'a' => 3, 'c' => 4])->takeWhile(fn($v) => $v < 4);
         self::assertEquals(['b' => 1, 'a' => 3], $seq->toArray());
 
