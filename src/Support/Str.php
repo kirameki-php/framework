@@ -686,48 +686,48 @@ class Str
     }
 
     /**
-     * @param mixed $var
+     * @param mixed $value
      * @return string
      */
-    public static function typeOf(mixed $var): string
+    public static function typeOf(mixed $value): string
     {
-        if (is_null($var)) {
+        if (is_null($value)) {
             return 'null';
         }
 
-        if (is_bool($var)) {
+        if (is_bool($value)) {
             return 'bool';
         }
 
-        if (is_int($var)) {
+        if (is_int($value)) {
             return 'int';
         }
 
-        if (is_float($var)) {
+        if (is_float($value)) {
             return 'float';
         }
 
-        if (is_string($var)) {
+        if (is_string($value)) {
             return 'string';
         }
 
-        if (is_array($var)) {
+        if (is_array($value)) {
             return 'array';
         }
 
-        if ($var instanceof DateTimeInterface) {
+        if ($value instanceof DateTimeInterface) {
             return 'datetime';
         }
 
-        if ($var instanceof UnitEnum) {
+        if ($value instanceof UnitEnum) {
             return 'enum';
         }
 
-        if (is_object($var)) {
+        if (is_object($value)) {
             return 'object';
         }
 
-        if (is_resource($var)) {
+        if (is_resource($value)) {
             return "resource";
         }
 
@@ -743,59 +743,64 @@ class Str
     }
 
     /**
-     * @param mixed $var
+     * @param mixed $value
      * @return string
      */
-    public static function valueOf(mixed $var): string
+    public static function valueOf(mixed $value): string
     {
-        if (is_null($var)) {
+        if (is_null($value)) {
             return 'null';
         }
 
-        if (is_bool($var)) {
-            return $var ? 'true' : 'false';
+        if (is_bool($value)) {
+            return $value ? 'true' : 'false';
         }
 
-        if (is_int($var)) {
-            return (string) $var;
+        if (is_int($value)) {
+            return (string) $value;
         }
 
-        if (is_float($var)) {
-            return (string) $var;
+        if (is_float($value)) {
+            $str = (string) $value;
+            return str_contains($str, '.')
+                ? $str
+                : $str . '.0';
         }
 
-        if (is_string($var)) {
-            return $var;
+        if (is_string($value)) {
+            return $value;
         }
 
-        if (is_array($var)) {
-            return Json::encode($var);
+        if (is_array($value)) {
+            return Json::encode($value);
         }
 
-        if ($var instanceof Traversable) {
-            return Json::encode(iterator_to_array($var));
+        if ($value instanceof Traversable) {
+            return Json::encode(iterator_to_array($value));
         }
 
-        if ($var instanceof DateTimeInterface) {
-            return $var->format(DATE_RFC3339_EXTENDED);
+        if ($value instanceof DateTimeInterface) {
+            return $value->format(DATE_RFC3339_EXTENDED);
         }
 
-        if ($var instanceof UnitEnum) {
-            return $var->name;
+        if ($value instanceof UnitEnum) {
+            return $value->name;
         }
 
-        if (is_object($var)) {
-            return $var::class . ':' . spl_object_hash($var);
+        if (is_object($value)) {
+            return $value::class . ':' . spl_object_hash($value);
         }
 
-        if (is_resource($var)) {
-            return get_resource_type($var);
+        if (is_resource($value)) {
+            return get_resource_type($value);
         }
 
-        throw new LogicException('Unknown type: ' . $var);
+        throw new LogicException('Unknown type: ' . $value);
     }
 
     /**
+     * Cast string to a more fitting type.
+     *
      * @param string $string
      * @return ?scalar
      */
