@@ -1256,6 +1256,18 @@ class Arr
     }
 
     /**
+     * @param array<int, mixed> $array
+     * @return void
+     */
+    public static function reIndex(array &$array): void
+    {
+        $size = count($array);
+        if ($size > 0) {
+            array_splice($array, $size);
+        }
+    }
+
+    /**
      * @template TKey of array-key
      * @template TValue
      * @param array<TKey, TValue> $array
@@ -1908,18 +1920,6 @@ class Arr
             return $value;
         }
         return [$value];
-    }
-
-    /**
-     * @param array<int, mixed> $array
-     * @return void
-     */
-    protected static function reIndex(array &$array): void
-    {
-        $size = count($array);
-        if ($size > 0) {
-            array_splice($array, $size);
-        }
     }
 
     /**
