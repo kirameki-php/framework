@@ -190,19 +190,19 @@ class SequenceTest extends TestCase
         $empty = $this->seq();
         self::assertNotSame($empty, $empty->compact());
 
-        // sequence: removes nulls
+        // list: removes nulls
         $compacted = $this->seq([1, null, null, 2])->compact();
         self::assertCount(2, $compacted);
-        self::assertEquals([0 => 1, 3 => 2], $compacted->toArray());
+        self::assertEquals([1, 2], $compacted->toArray());
 
-        // sequence: no nulls
+        // list: no nulls
         $seq = $this->seq([1, 2]);
         $compacted = $seq->compact();
         self::assertNotSame($seq, $compacted);
         self::assertCount(2, $compacted);
-        self::assertEquals([0 => 1, 1 => 2], $compacted->toArray());
+        self::assertEquals([1, 2], $compacted->toArray());
 
-        // sequence: all nulls
+        // list: all nulls
         $compacted = $this->seq([null, null])->compact();
         self::assertEmpty($compacted->toArray());
         self::assertEquals([], $compacted->toArray());
@@ -545,12 +545,18 @@ class SequenceTest extends TestCase
         self::assertEquals(['b' => 'a', 'd' => 'c'], $seq->flip()->toArray());
     }
 
+    public function test_flip_invalid_key_type(): void
+    {
+        $this->expectException(InvalidKeyException::class);
+        $this->seq([true, false])->flip();
+    }
+
     public function test_fold(): void
     {
         $reduced = $this->seq([])->fold(0, fn(int $i) => $i + 1);
         self::assertEquals(0, $reduced);
 
-        $reduced = $this->seq(['a' => 1, 'b' => 2])->fold(new Collection(), fn(Collection $c, int $i, string $k) => $c->set($k, $i * 2));
+        $reduced = $this->seq(['a' => 1, 'b' => 2])->fold(new Collection(), static fn(Collection $c, int $i, string $k) => $c->set($k, $i * 2));
         self::assertEquals(['a' => 2, 'b' => 4], $reduced->toArray());
 
         $reduced = $this->seq(['a' => 1, 'b' => 2])->fold((object)[], static function ($c, $i, $k) {

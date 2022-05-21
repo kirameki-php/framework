@@ -4,7 +4,6 @@ namespace Kirameki\Support;
 
 use Closure;
 use Countable;
-use Generator;
 use JsonSerializable;
 use Symfony\Component\VarDumper\VarDumper;
 use Webmozart\Assert\Assert;

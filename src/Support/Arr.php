@@ -187,7 +187,9 @@ class Arr
                 $val = static::compact($val, $depth - 1); /** @phpstan-ignore-line */
             }
             if ($val !== null) {
-                $result[$key] = $val;
+                is_int($key)
+                    ? $result[] = $val
+                    : $result[$key] = $val;
             }
         }
         return $result; /* @phpstan-ignore-line */
