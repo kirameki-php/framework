@@ -312,7 +312,7 @@ class CollectionTest extends TestCase
 
         $collect = collect([1, 1]);
         self::assertEquals([0], $collect->remove(1, 1));
-        self::assertEquals([1 => 1], $collect->toArray());
+        self::assertEquals([1], $collect->toArray());
 
         $collect = collect(['a' => 1]);
         self::assertEquals(['a'], $collect->remove(1));

@@ -239,7 +239,7 @@ class SequenceTest extends TestCase
         $empty = $this->seq();
         self::assertFalse($empty->contains(null));
 
-        // sequence: compared with value
+        // list: compared with value
         $seq = $this->seq([1, null, 2, [3], false]);
         self::assertTrue($seq->contains(1));
         self::assertTrue($seq->contains(null));
@@ -427,9 +427,9 @@ class SequenceTest extends TestCase
 
     public function test_filter(): void
     {
-        // sequence: remove ones with empty value
+        // list: remove ones with empty value
         $seq = $this->seq([0, 1, '', '0', null]);
-        self::assertEquals([1 => 1], $seq->filter(fn($item) => !empty($item))->toArray());
+        self::assertEquals([1], $seq->filter(fn($item) => !empty($item))->toArray());
 
         // assoc: removes null / false / 0 / empty string / empty array
         $seq = $this->seq(['a' => null, 'b' => false, 'c' => 0, 'd' => '', 'e' => '0', 'f' => []]);
@@ -725,7 +725,7 @@ class SequenceTest extends TestCase
         self::assertEquals(['b' => ['id' => 'b', 2]], $seq->toArray());
 
         $this->expectException(DuplicateKeyException::class);
-        $this->seq([['id' => 'b', 1], ['id' => 'b', 2]])->keyBy(fn($v) => $v['id'], false);
+        $this->seq([['id' => 'b', 1], ['id' => 'b', 2]])->keyBy(fn($v) => $v['id']);
     }
 
     public function test_keyBy_with_invalid_key(): void
@@ -793,7 +793,7 @@ class SequenceTest extends TestCase
 
     public function test_macro(): void
     {
-        Sequence::macro('testMacro', fn($num) => $num * 100);
+        Sequence::macro('testMacro', static fn($num) => $num * 100);
         $seq = $this->seq([1]);
         self::assertEquals(200, $seq->testMacro(2));
     }
@@ -802,7 +802,7 @@ class SequenceTest extends TestCase
     {
         $name = 'testMacro2'.mt_rand();
         self::assertFalse(Sequence::macroExists($name));
-        Sequence::macro($name, fn() => 1);
+        Sequence::macro($name, static fn() => 1);
         self::assertTrue(Sequence::macroExists($name));
     }
 
@@ -1425,7 +1425,6 @@ class SequenceTest extends TestCase
         $seq = $this->seq([])->merge($values)->merge($values)->unique();
         self::assertEquals($values, $seq->toArray());
 
-        $values = ['3', 3, null, '', 0, true, false];
         $seq = $this->seq($values)->repeat(2)->unique();
         self::assertEquals($values, $seq->toArray());
     }

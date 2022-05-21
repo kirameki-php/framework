@@ -357,9 +357,12 @@ class Arr
     public static function filter(iterable $iterable, callable $condition): array
     {
         $filtered = [];
+        $isAssoc = static::isAssoc($iterable);
         foreach ($iterable as $key => $val) {
             if (static::verify($condition, $key, $val)) {
-                $filtered[$key] = $val;
+                $isAssoc
+                    ? $filtered[$key] = $val
+                    : $filtered[] = $val;
             }
         }
         return $filtered;
@@ -1219,6 +1222,10 @@ class Arr
         $count = 0;
         $limit ??= PHP_INT_MAX;
         $removed = [];
+
+        // Must check before processing, since unset converts lists to assoc array.
+        $isList = array_is_list($array);
+
         foreach ($array as $key => $val) {
             if ($count < $limit && $val === $value) {
                 unset($array[$key]);
@@ -1226,6 +1233,12 @@ class Arr
                 ++$count;
             }
         }
+
+        // if the list is an array, use array_splice to re-index
+        if ($count > 0 && $isList) {
+            array_splice($array, count($array));
+        }
+
         return $removed;
     }
 
@@ -1243,7 +1256,7 @@ class Arr
      * @template T
      * @param iterable<T> $iterable
      * @param int $times
-     * @return array<T>
+     * @return array<int, T>
      */
     public static function repeat(iterable $iterable, int $times): array
     {
