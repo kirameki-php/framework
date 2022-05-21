@@ -14,7 +14,6 @@ use RuntimeException;
 use Tests\Kirameki\TestCase;
 use TypeError;
 use ValueError;
-use function collect;
 
 class SequenceTest extends TestCase
 {

@@ -6,6 +6,7 @@ use Closure;
 use Kirameki\Exception\DuplicateKeyException;
 use Kirameki\Exception\InvalidKeyException;
 use Kirameki\Exception\InvalidValueException;
+use LogicException;
 use RuntimeException;
 use Webmozart\Assert\Assert;
 use function array_column;
@@ -15,6 +16,7 @@ use function array_intersect;
 use function array_intersect_key;
 use function array_is_list;
 use function array_key_exists;
+use function array_map;
 use function array_pad;
 use function array_pop;
 use function array_push;
@@ -29,20 +31,27 @@ use function asort;
 use function count;
 use function current;
 use function end;
+use function get_resource_id;
 use function http_build_query;
 use function implode;
-use function in_array;
 use function is_array;
+use function is_bool;
+use function is_float;
 use function is_int;
 use function is_iterable;
+use function is_null;
+use function is_object;
+use function is_resource;
 use function is_string;
 use function iterator_to_array;
+use function json_encode;
 use function key;
 use function krsort;
 use function ksort;
 use function max;
 use function min;
 use function prev;
+use function spl_object_id;
 use function uasort;
 use function uksort;
 
@@ -1812,12 +1821,27 @@ class Arr
      */
     public static function uniqueBy(iterable $iterable, callable $callback): array
     {
-        $ukeys = [];
+        $refs = [];
         $preserved = [];
+
+        $toStr = static function(mixed $v) use (&$toStr): string {
+            return match(true) {
+                is_null($v) => '',
+                is_int($v) => "i:$v",
+                is_float($v) => "f:$v",
+                is_bool($v) => "b:$v",
+                is_string($v) => "s:$v",
+                is_array($v) => 'a:'.json_encode(array_map($toStr, $v), JSON_THROW_ON_ERROR),
+                is_object($v) => 'o:' . spl_object_id($v),
+                is_resource($v) => 'r:' . get_resource_id($v),
+                default => throw new LogicException('Invalid Type: ' . Str::typeOf($v)),
+            };
+        };
+
         foreach ($iterable as $key => $val) {
-            $ukey = $callback($val, $key);
-            if (! in_array($ukey, $ukeys, true)) {
-                $ukeys[] = $ukey;
+            $ref = $toStr($callback($val, $key));
+            if (!array_key_exists($ref, $refs)) {
+                $refs[$ref] = null;
                 $preserved[$key] = $val;
             }
         }
