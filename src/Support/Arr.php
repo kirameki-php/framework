@@ -1511,8 +1511,8 @@ class Arr
     public static function slice(iterable $iterable, int $offset, ?int $length = null): array
     {
         $array = static::from($iterable);
-        $preserveKeys = static::isAssoc($array);
-        return array_slice($array, $offset, $length, $preserveKeys);
+        $retainKeys = static::isAssoc($array);
+        return array_slice($array, $offset, $length, $retainKeys);
     }
 
     /**
