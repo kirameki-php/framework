@@ -1727,7 +1727,6 @@ class Arr
     {
         $union = static::from($iterable1);
         foreach ($iterable2 as $key => $val) {
-            $key = static::ensureKey($key);
             if (is_int($key)) {
                 $union[] = $val;
             } else if (!array_key_exists($key, $union)) {
