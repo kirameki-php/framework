@@ -61,11 +61,6 @@ class SequenceTest extends TestCase
 
     public function test_at(): void
     {
-        self::assertEquals(null, $this->seq()->at(0));
-        self::assertEquals(null, $this->seq([1, 2, 3])->at(5));
-        self::assertEquals(null, $this->seq([1, 2, 3])->at(PHP_INT_MIN));
-        self::assertEquals(null, $this->seq([1, 2, 3])->at(PHP_INT_MAX));
-
         self::assertEquals(1, $this->seq([1, 2, 3])->at(0));
         self::assertEquals(2, $this->seq([1, 2, 3])->at(1));
         self::assertEquals(3, $this->seq([1, 2, 3])->at(-1));
@@ -73,6 +68,25 @@ class SequenceTest extends TestCase
         self::assertEquals(1, $this->seq(['a' => 1, 'b' => 2, 'c' => 3])->at(0));
         self::assertEquals(2, $this->seq(['a' => 1, 'b' => 2, 'c' => 3])->at(1));
         self::assertEquals(3, $this->seq(['a' => 1, 'b' => 2, 'c' => 3])->at(-1));
+    }
+
+    public function test_at_on_empty(): void
+    {
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('Index out of bounds. position: 0');
+        self::assertEquals(null, $this->seq()->at(0));
+    }
+
+    public function test_at_missing_index(): void
+    {
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('Index out of bounds. position: 5');
+        self::assertEquals(null, $this->seq([1, 2, 3])->at(5));
+    }
+
+    public function test_atOr(): void
+    {
+        self::assertEquals(null, $this->seq([1, 2, 3])->atOr(5, null));
     }
 
     public function test_average(): void

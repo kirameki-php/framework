@@ -5,10 +5,8 @@ namespace Kirameki\Support;
 use Closure;
 use Kirameki\Exception\DuplicateKeyException;
 use Kirameki\Exception\InvalidKeyException;
-use Kirameki\Exception\InvalidValueException;
 use LogicException;
 use RuntimeException;
-use stdClass;
 use Webmozart\Assert\Assert;
 use function array_column;
 use function array_diff;
@@ -90,17 +88,14 @@ class Arr
      * @template TValue
      * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
      * @param int $position Position of array starting with 0. Negative position will traverse from tail.
-     * @return TValue|null
+     * @return TValue
      */
     public static function at(iterable $iterable, int $position): mixed
     {
-        $array = static::from($iterable);
-        $size = count($array);
-
-        $result = static::atOrNull($iterable, $position);
+        $result = static::atOr($iterable, $position, null);
 
         if ($result === null) {
-            throw new InvalidValueException('not null', null);
+            throw new RuntimeException("Index out of bounds. position: $position");
         }
 
         return $result;
@@ -115,11 +110,13 @@ class Arr
      *
      * @template TKey of array-key
      * @template TValue
+     * @template TDefault
      * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
      * @param int $position Position of array starting with 0. Negative position will traverse from tail.
-     * @return TValue|null
+     * @param TDefault $default
+     * @return TValue|TDefault
      */
-    public static function atOrNull(iterable $iterable, int $position): mixed
+    public static function atOr(iterable $iterable, int $position, mixed $default): mixed
     {
         $array = static::from($iterable);
         $offset = $position >= 0 ? $position : count($array) + $position;
@@ -132,7 +129,7 @@ class Arr
             ++$count;
         }
 
-        return null;
+        return $default;
     }
 
     /**
@@ -542,7 +539,7 @@ class Arr
     /**
      * @template TKey of array-key
      * @param iterable<TKey, mixed> $iterable Iterable to be traversed.
-     * @param int<1, max> $depth
+     * @param int $depth Depth must be >= 1. Default: 1.
      * @return array<int, mixed>
      */
     public static function flatten(iterable $iterable, int $depth = 1): array

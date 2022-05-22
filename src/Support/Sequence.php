@@ -52,11 +52,22 @@ class Sequence extends ItemIterator implements Countable, JsonSerializable
 
     /**
      * @param int $position
-     * @return TValue|null
+     * @return TValue
      */
     public function at(int $position)
     {
         return Arr::at($this, $position);
+    }
+
+    /**
+     * @template TDefault
+     * @param int $position
+     * @param TDefault $default
+     * @return TValue|TDefault
+     */
+    public function atOr(int $position, mixed $default)
+    {
+        return Arr::atOr($this, $position, $default);
     }
 
     /**
