@@ -354,6 +354,7 @@ class Arr
      * @template TKey of array-key
      * @template TValue
      * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
+     * @param callable(TValue, TKey): bool $condition
      * @return array<TKey, TValue>
      */
     public static function dropUntil(iterable $iterable, callable $condition): array
@@ -366,6 +367,7 @@ class Arr
      * @template TKey of array-key
      * @template TValue
      * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
+     * @param callable(TValue, TKey): bool $condition
      * @return array<TKey, TValue>
      */
     public static function dropWhile(iterable $iterable, callable $condition): array
@@ -787,7 +789,13 @@ class Arr
      */
     public static function join(iterable $iterable, string $glue, ?string $prefix = null, ?string $suffix = null): string
     {
-        return $prefix . implode($glue, static::from($iterable)) . $suffix;
+        $str = null;
+        foreach ($iterable as $value) {
+            $str.= $str !== null
+                ? $glue . $value
+                : $value;
+        }
+        return $prefix . $str . $suffix;
     }
 
     /**
