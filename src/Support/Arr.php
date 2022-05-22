@@ -61,11 +61,6 @@ class Arr
     use Concerns\Macroable;
 
     /**
-     * @var object|null
-     */
-    protected static ?object $nullObject = null;
-
-    /**
      * `$array = [1, 2]; Arr::append($array, 3); // [1, 2, 3]`
      *
      * `$array = [1, 2]; Arr::append($array, 3, 4); // [1, 2, 3, 4]`
@@ -442,18 +437,18 @@ class Arr
      */
     public static function first(iterable $iterable, ?callable $condition = null): mixed
     {
-        $nullObject = static::nullObject();
+        $notFound = NotFound::instance();
 
-        $result = static::firstOr($iterable, $nullObject, $condition);
+        $result = static::firstOr($iterable, $notFound, $condition);
 
-        if ($result === $nullObject) {
+        if ($result instanceof NotFound) {
             $message = ($condition !== null)
                 ? 'Failed to find matching condition.'
                 : 'Iterable must contain at least one element.';
             throw new RuntimeException($message);
         }
 
-        return $result; /** @phpstan-ignore-line */
+        return $result;
     }
 
     /**
@@ -625,20 +620,28 @@ class Arr
      */
     public static function get(iterable $iterable, int|string $key): mixed
     {
-        $result = static::getOrNull($iterable, $key);
-        return $result ?? throw new RuntimeException("Undefined array key $key");
+        $notFound = NotFound::instance();
+        $result = static::getOr($iterable, $key, $notFound);
+
+        if ($result instanceof NotFound) {
+            throw new RuntimeException("Undefined array key $key");
+        }
+
+        return $result;
     }
 
     /**
      * @template TKey of array-key
      * @template TValue
+     * @template TDefault
      * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
      * @param int|string $key
-     * @return TValue|null
+     * @param TDefault $default
+     * @return TValue|TDefault
      */
-    public static function getOrNull(iterable $iterable, int|string $key): mixed
+    public static function getOr(iterable $iterable, int|string $key, mixed $default): mixed
     {
-        return static::from($iterable)[$key] ?? null;
+        return static::from($iterable)[$key] ?? $default;
     }
 
     /**
@@ -853,9 +856,11 @@ class Arr
      */
     public static function last(iterable $iterable, ?callable $condition = null): mixed
     {
-        $result = static::lastOrNull($iterable, $condition);
+        $notFound = NotFound::instance();
 
-        if ($result === null) {
+        $result = static::lastOr($iterable, $notFound, $condition);
+
+        if ($result instanceof NotFound) {
             $message = ($condition !== null)
                 ? 'Failed to find matching condition.'
                 : 'Iterable must contain at least one element.';
@@ -923,11 +928,13 @@ class Arr
     /**
      * @template TKey of array-key
      * @template TValue
+     * @template TDefault
      * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
      * @param callable(TValue, TKey): bool|null $condition
-     * @return TValue|null
+     * @param TDefault $default
+     * @return TValue|TDefault
      */
-    public static function lastOrNull(iterable $iterable, ?callable $condition = null): mixed
+    public static function lastOr(iterable $iterable, mixed $default, ?callable $condition = null): mixed
     {
         $copy = static::from($iterable);
         end($copy);
@@ -944,7 +951,7 @@ class Arr
             prev($copy);
         }
 
-        return null;
+        return $default;
     }
 
     /**
@@ -2003,13 +2010,5 @@ class Arr
             return $key;
         }
         throw new InvalidKeyException($key);
-    }
-
-    /**
-     * @return object
-     */
-    protected static function nullObject(): object
-    {
-        return static::$nullObject ??= new stdClass();
     }
 }

@@ -779,10 +779,10 @@ class SequenceTest extends TestCase
     public function test_lastOrNull(): void
     {
         $seq = $this->seq([10, 20]);
-        self::assertEquals(20, $seq->lastOrNull());
-        self::assertEquals(20, $seq->lastOrNull(fn($v, $k) => $k === 1));
-        self::assertEquals(20, $seq->lastOrNull(fn($v, $k) => $v === 20));
-        self::assertEquals(null, $seq->lastOrNull(fn() => false));
+        self::assertEquals(20, $seq->lastOr(null));
+        self::assertEquals(20, $seq->lastOr(null, fn($v, $k) => $k === 1));
+        self::assertEquals(20, $seq->lastOr(null, fn($v, $k) => $v === 20));
+        self::assertEquals(null, $seq->lastOr(null, fn() => false));
     }
 
     public function test_lastOrFail_empty(): void

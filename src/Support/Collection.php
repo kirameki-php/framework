@@ -44,12 +44,14 @@ class Collection extends Sequence implements ArrayAccess
     }
 
     /**
+     * @template TDefault
      * @param int|string $key
-     * @return TValue|null
+     * @param TDefault $default
+     * @return TValue|TDefault
      */
-    public function getOrNull(int|string $key): mixed
+    public function getOr(int|string $key, mixed $default): mixed
     {
-        return Arr::getOrNull($this, $key);
+        return Arr::getOr($this, $key, $default);
     }
 
     /**

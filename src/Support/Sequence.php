@@ -453,12 +453,14 @@ class Sequence extends ItemIterator implements Countable, JsonSerializable
     }
 
     /**
+     * @template TDefault
      * @param callable(TValue, TKey): bool|null $condition
-     * @return TValue|null
+     * @param TDefault $default
+     * @return TValue|TDefault
      */
-    public function lastOrNull(?callable $condition = null): mixed
+    public function lastOr(mixed $default, ?callable $condition = null): mixed
     {
-        return Arr::lastOrNull($this, $condition);
+        return Arr::lastOr($this, $default, $condition);
     }
 
     /**

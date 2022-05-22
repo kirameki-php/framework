@@ -9,6 +9,7 @@ use RuntimeException;
 use Tests\Kirameki\TestCase;
 use TypeError;
 use function collect;
+use function dd;
 
 class CollectionTest extends TestCase
 {
@@ -102,8 +103,8 @@ class CollectionTest extends TestCase
         $collect = collect(['a' => [1, 'b' => 2, 'c' => ['d' => 3]], 'c' => 'd', 'e' => []]);
         // get existing data
         self::assertEquals([1, 'b' => 2, 'c' => ['d' => 3]], $collect->get('a'));
-        self::assertEquals('d', $collect->getOrNull('c'));
-        self::assertEquals(null, $collect->getOrNull(0));
+        self::assertEquals('d', $collect->getOr('c', null));
+        self::assertEquals(null, $collect->getOr(0, null));
     }
 
     public function test_insertAt(): void
