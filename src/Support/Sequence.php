@@ -71,10 +71,10 @@ class Sequence extends ItemIterator implements Countable, JsonSerializable
     }
 
     /**
-     * @param bool|null $allowEmpty
+     * @param bool $allowEmpty
      * @return float|int
      */
-    public function average(?bool $allowEmpty = true): float|int
+    public function average(bool $allowEmpty = true): float|int
     {
         return Arr::average($this, $allowEmpty);
     }
