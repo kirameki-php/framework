@@ -22,13 +22,13 @@ use function array_push;
 use function array_rand;
 use function array_reverse;
 use function array_shift;
-use function array_slice;
 use function array_splice;
 use function array_unshift;
 use function arsort;
 use function asort;
 use function count;
 use function current;
+use function dump;
 use function end;
 use function get_resource_id;
 use function http_build_query;
@@ -136,10 +136,10 @@ class Arr
      * @template TKey of array-key
      * @template TValue of float|int
      * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
-     * @param bool|null $allowEmpty Allow iterable to be empty. In which case it will return 0.
+     * @param bool $allowEmpty Allow iterable to be empty. In which case it will return 0.
      * @return float|int
      */
-    public static function average(iterable $iterable, ?bool $allowEmpty = true): float|int
+    public static function average(iterable $iterable, bool $allowEmpty = true): float|int
     {
         $size = 0;
         $sum = 0;
@@ -345,11 +345,9 @@ class Arr
      */
     public static function drop(iterable $iterable, int $amount): array
     {
-        $copy = static::from($iterable);
-        $retainKeys = static::isAssoc($copy);
         return $amount >= 0
-            ? array_slice($copy, $amount, null, $retainKeys)
-            : array_slice($copy, 0, -$amount, $retainKeys);
+            ? static::slice($iterable, $amount)
+            : static::slice($iterable, 0, -$amount);
     }
 
     /**
@@ -1592,14 +1590,42 @@ class Arr
      * @template TValue
      * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
      * @param int $offset
-     * @param int|null $length
+     * @param int $length
      * @return array<TKey, TValue>
      */
-    public static function slice(iterable $iterable, int $offset, ?int $length = null): array
+    public static function slice(iterable $iterable, int $offset, int $length = PHP_INT_MAX): array
     {
-        $array = static::from($iterable);
-        $retainKeys = static::isAssoc($array);
-        return array_slice($array, $offset, $length, $retainKeys);
+        $isNegativeOffset = $offset < 0;
+        $isNegativeLength = $length < 0;
+
+        if ($isNegativeOffset || $isNegativeLength) {
+            $size = static::count($iterable);
+            if ($isNegativeOffset) {
+                $offset = $size + $offset;
+            }
+            if ($isNegativeLength) {
+                $length = $size + $length;
+            }
+        }
+
+        /** @var array<TKey, TValue> $array */
+        $array = [];
+        $i = 0;
+        foreach ($iterable as $key => $value) {
+            if ($i++ < $offset) {
+                continue;
+            }
+
+            if ($i > $offset + $length) {
+                break;
+            }
+
+            is_int($key)
+                ? $array[] = $value
+                : $array[$key] = $value;
+        }
+
+        return $array;
     }
 
     /**
@@ -1815,11 +1841,9 @@ class Arr
      */
     public static function take(iterable $iterable, int $amount): array
     {
-        $copy = static::from($iterable);
-        $retainKeys = static::isAssoc($copy);
-        return $amount > 0
-            ? array_slice($copy, 0, $amount, $retainKeys)
-            : array_slice($copy, $amount, -$amount, $retainKeys);
+        return $amount >= 0
+            ? static::slice($iterable, 0, $amount)
+            : static::slice($iterable, $amount, -$amount);
     }
 
     /**

@@ -464,13 +464,4 @@ class CollectionTest extends TestCase
         self::assertEquals(['a' => 1], $collect->shiftMany(1)->toArray());
         self::assertEquals(['b' => 2], $collect->toArray());
     }
-
-    public function test_slice(): void
-    {
-        $collect = collect([1, 2, 3])->slice(1);
-        self::assertEquals([2, 3], $collect->toArray());
-
-        $collect = collect([1, 2, 3])->slice(0, -1);
-        self::assertEquals([1, 2], $collect->toArray());
-    }
 }

@@ -678,10 +678,10 @@ class Sequence extends ItemIterator implements Countable, JsonSerializable
 
     /**
      * @param int $offset
-     * @param int|null $length
+     * @param int $length
      * @return static
      */
-    public function slice(int $offset, ?int $length = null): static
+    public function slice(int $offset, int $length = PHP_INT_MAX): static
     {
         return $this->newInstance(Arr::slice($this, $offset, $length));
     }

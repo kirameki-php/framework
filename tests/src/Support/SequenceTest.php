@@ -1168,6 +1168,15 @@ class SequenceTest extends TestCase
         self::assertSame(['a' => 1, 'c' => 3, 'b' => 2, 'd' => 4], $this->seq(['a' => 1, 'b' => 2, 'c' => 3, 'd' => 4])->shuffle()->toArray());
     }
 
+    public function test_slice(): void
+    {
+        $collect = $this->seq([1, 2, 3])->slice(1);
+        self::assertEquals([2, 3], $collect->toArray());
+
+        $collect = $this->seq([1, 2, 3])->slice(0, -1);
+        self::assertEquals([1, 2], $collect->toArray());
+    }
+
     public function test_sole(): void
     {
         self::assertEquals(1, $this->seq([1])->sole());
