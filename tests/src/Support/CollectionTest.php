@@ -98,7 +98,7 @@ class CollectionTest extends TestCase
         collect([1, 2])->get(2);
     }
 
-    public function test_getOrNull(): void
+    public function test_getOr(): void
     {
         $collect = collect(['a' => [1, 'b' => 2, 'c' => ['d' => 3]], 'c' => 'd', 'e' => []]);
         // get existing data
@@ -279,17 +279,17 @@ class CollectionTest extends TestCase
         collect(['a' => 1, 'b' => 2])->pull('c');
     }
 
-    public function test_pullOrNull(): void
+    public function test_pullOr(): void
     {
         $collect = collect([]);
-        self::assertEquals(null, $collect->pullOrNull(1));
+        self::assertEquals(null, $collect->pullOr(1, null));
 
         $collect = collect([1, 2, 3]);
-        self::assertEquals(2, $collect->pullOrNull(1));
+        self::assertEquals(2, $collect->pullOr(1, null));
         self::assertEquals([1, 3], $collect->toArray());
 
         $collect = collect(['a' => 1, 'b' => 2]);
-        self::assertEquals(2, $collect->pullOrNull('b'));
+        self::assertEquals(2, $collect->pullOr('b', null));
         self::assertEquals(['a' => 1], $collect->toArray());
     }
 

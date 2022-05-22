@@ -77,11 +77,13 @@ class Sequence extends ItemIterator implements Countable, JsonSerializable
     }
 
     /**
-     * @return TValue|null
+     * @template TDefault
+     * @param TDefault $default
+     * @return TValue|TDefault
      */
-    public function coalesceOrNull(): mixed
+    public function coalesceOr(mixed $default): mixed
     {
-        return Arr::coalesceOrNull($this);
+        return Arr::coalesceOr($this, $default);
     }
 
     /**

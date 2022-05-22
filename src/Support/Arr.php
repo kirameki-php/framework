@@ -199,29 +199,33 @@ class Arr
      */
     public static function coalesce(iterable $iterable): mixed
     {
-        $result = static::coalesceOrNull($iterable);
+        $notFound = NotFound::instance();
 
-        if ($result !== null) {
-            return $result;
+        $result = static::coalesceOr($iterable, $notFound);
+
+        if ($result instanceof NotFound) {
+            throw new RuntimeException('Non-null value could not be found.');
         }
 
-        throw new InvalidValueException('not null', null);
+        return $result;
     }
 
     /**
      * @template TKey
      * @template TValue
+     * @template TDefault
      * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
-     * @return TValue|null
+     * @param TDefault $default
+     * @return TValue|TDefault
      */
-    public static function coalesceOrNull(iterable $iterable): mixed
+    public static function coalesceOr(iterable $iterable, mixed $default): mixed
     {
         foreach ($iterable as $val) {
             if ($val !== null) {
                 return $val;
             }
         }
-        return null;
+        return $default;
     }
 
     /**
@@ -1238,21 +1242,30 @@ class Arr
      */
     public static function pull(array &$array, int|string $key): mixed
     {
-        $result = static::pullOrNull($array, $key);
-        return $result ?? throw new RuntimeException("Tried to pull undefined array key \"$key\"");
+        $notFound = NotFound::instance();
+
+        $result = static::pullOr($array, $key, $notFound);
+
+        if ($result instanceof NotFound) {
+            throw new RuntimeException("Tried to pull undefined array key \"$key\"");
+        }
+
+        return $result;
     }
 
     /**
      * @template T
+     * @template TDefault
      * @param array<T> $array
      * @param array-key $key
-     * @return T|null
+     * @param TDefault $default
+     * @return T|TDefault
      */
-    public static function pullOrNull(array &$array, int|string $key): mixed
+    public static function pullOr(array &$array, int|string $key, mixed $default): mixed
     {
         $reIndex = array_is_list($array);
 
-        $value = null;
+        $value = $default;
         if (array_key_exists($key, $array)) {
             $value = $array[$key];
             unset($array[$key]);
@@ -1372,7 +1385,7 @@ class Arr
      */
     public static function removeKey(array &$array, int|string $key): bool
     {
-        return static::pullOrNull($array, $key) !== null;
+        return static::pullOr($array, $key, null) !== null;
     }
 
     /**

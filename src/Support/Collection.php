@@ -163,12 +163,14 @@ class Collection extends Sequence implements ArrayAccess
     }
 
     /**
+     * @template TDefault
      * @param TKey $key
-     * @return TValue|null
+     * @param TDefault $default
+     * @return TValue|TDefault
      */
-    public function pullOrNull(int|string $key): mixed
+    public function pullOr(int|string $key, mixed $default): mixed
     {
-        return Arr::pullOrNull($this->items, $key);
+        return Arr::pullOr($this->items, $key, $default);
     }
 
     /**

@@ -144,42 +144,42 @@ class SequenceTest extends TestCase
 
     public function test_coalesce_empty(): void
     {
-        $this->expectException(InvalidValueException::class);
-        $this->expectExceptionMessage('Expected value to be not null. null given.');
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('Non-null value could not be found.');
         $this->seq([])->coalesce();
     }
 
     public function test_coalesce_only_null(): void
     {
-        $this->expectException(InvalidValueException::class);
-        $this->expectExceptionMessage('Expected value to be not null. null given.');
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('Non-null value could not be found.');
         $this->seq([null])->coalesce();
     }
 
-    public function test_coalesceOrNull(): void
+    public function test_coalesceOr(): void
     {
-        $result = $this->seq()->coalesceOrNull();
+        $result = $this->seq()->coalesceOr(null);
         self::assertNull($result);
 
-        $result = $this->seq([null, 0, 1])->coalesceOrNull();
+        $result = $this->seq([null, 0, 1])->coalesceOr(null);
         self::assertEquals(0, $result);
 
-        $result = $this->seq([0, null, 1])->coalesceOrNull();
+        $result = $this->seq([0, null, 1])->coalesceOr(null);
         self::assertEquals(0, $result);
 
-        $result = $this->seq(['', null, 1])->coalesceOrNull();
+        $result = $this->seq(['', null, 1])->coalesceOr(null);
         self::assertEquals('', $result);
 
-        $result = $this->seq(['', null, 1])->coalesceOrNull();
+        $result = $this->seq(['', null, 1])->coalesceOr(null);
         self::assertEquals('', $result);
 
-        $result = $this->seq([[], null, 1])->coalesceOrNull();
+        $result = $this->seq([[], null, 1])->coalesceOr(null);
         self::assertEquals([], $result);
 
-        $result = $this->seq([null, [], 1])->coalesceOrNull();
+        $result = $this->seq([null, [], 1])->coalesceOr(null);
         self::assertEquals([], $result);
 
-        $result = $this->seq([null, null, 1])->coalesceOrNull();
+        $result = $this->seq([null, null, 1])->coalesceOr(null);
         self::assertEquals(1, $result);
     }
 
@@ -488,7 +488,7 @@ class SequenceTest extends TestCase
         self::assertEquals('c', $seq->firstKey(fn($v, $k) => $k === 'c'));
     }
 
-    public function test_firstOrNull(): void
+    public function test_firstOr(): void
     {
         $seq = $this->seq([10, 20]);
         self::assertEquals(10, $seq->firstOr(null));
@@ -776,7 +776,7 @@ class SequenceTest extends TestCase
         self::assertEquals(null, $seq->lastKey(fn() => false));
     }
 
-    public function test_lastOrNull(): void
+    public function test_lastOr(): void
     {
         $seq = $this->seq([10, 20]);
         self::assertEquals(20, $seq->lastOr(null));

@@ -14,6 +14,6 @@ final class NotFound
      */
     public static function instance(): self
     {
-        return static::$instance ??= new self();
+        return self::$instance ??= new self();
     }
 }

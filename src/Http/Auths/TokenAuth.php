@@ -91,11 +91,14 @@ class TokenAuth implements Auth
     }
 
     /**
-     * @return string
+     * @return string|null
      */
-    protected function extractBearerToken(): string
+    protected function extractBearerToken(): ?string
     {
         $value = $this->request->headers->get('Authorization');
-        return preg_replace('/^Bearer: /', '', $value, 1);
+        if ($value !== null) {
+            return preg_replace('/^Bearer: /', '', $value, 1);
+        }
+        return null;
     }
 }
