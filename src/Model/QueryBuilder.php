@@ -57,7 +57,7 @@ class QueryBuilder extends SelectBuilder
      */
     public function firstOrNull(): ?Model
     {
-        $result = $this->copy()->limit(1)->execute()->firstOrNull();
+        $result = $this->copy()->limit(1)->execute()->firstOr(null);
         return $result !== null
             ? $this->reflection->makeModel($result, true)
             : null;

@@ -491,10 +491,10 @@ class SequenceTest extends TestCase
     public function test_firstOrNull(): void
     {
         $seq = $this->seq([10, 20]);
-        self::assertEquals(10, $seq->firstOrNull());
-        self::assertEquals(20, $seq->firstOrNull(fn($v, $k) => $k === 1));
-        self::assertEquals(20, $seq->firstOrNull(fn($v, $k) => $v === 20));
-        self::assertEquals(null, $seq->firstOrNull(fn() => false));
+        self::assertEquals(10, $seq->firstOr(null));
+        self::assertEquals(20, $seq->firstOr(null, fn($v, $k) => $k === 1));
+        self::assertEquals(20, $seq->firstOr(null, fn($v, $k) => $v === 20));
+        self::assertEquals(null, $seq->firstOr(null, fn() => false));
     }
 
     public function test_flatMap(): void

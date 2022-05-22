@@ -8,6 +8,7 @@ use Kirameki\Exception\InvalidKeyException;
 use Kirameki\Exception\InvalidValueException;
 use LogicException;
 use RuntimeException;
+use stdClass;
 use Webmozart\Assert\Assert;
 use function array_column;
 use function array_diff;
@@ -60,9 +61,20 @@ class Arr
     use Concerns\Macroable;
 
     /**
+     * @var object|null
+     */
+    protected static ?object $nullObject = null;
+
+    /**
+     * `$array = [1, 2]; Arr::append($array, 3); // [1, 2, 3]`
+     *
+     * `$array = [1, 2]; Arr::append($array, 3, 4); // [1, 2, 3, 4]`
+     *
+     * `$array = ['a' => 1]; Arr::append($array, 1); // ['a' => 1, 0 => 2]`
+     *
      * @template T
-     * @param array<T> $array
-     * @param T ...$value
+     * @param array<T> &$array Array reference which the value is getting appended.
+     * @param T ...$value Value(s) to be appended to the array.
      * @return void
      */
     public static function append(array &$array, mixed ...$value): void
@@ -71,13 +83,48 @@ class Arr
     }
 
     /**
+     * `Arr::at([6, 7], 1); // 7`
+     *
+     * `Arr::at([6, 7], -1); // 7`
+     *
+     * `Arr::at(['a' => 1, 'b' => 2], 0); // 1`
+     *
+     * `Arr::at([6], 1); // InvalidValueException`
+     *
      * @template TKey of array-key
      * @template TValue
-     * @param iterable<TKey, TValue> $iterable
-     * @param int $position
+     * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
+     * @param int $position Position of array starting with 0. Negative position will traverse from tail.
      * @return TValue|null
      */
     public static function at(iterable $iterable, int $position): mixed
+    {
+        $array = static::from($iterable);
+        $size = count($array);
+
+        $result = static::atOrNull($iterable, $position);
+
+        if ($result === null) {
+            throw new InvalidValueException('not null', null);
+        }
+
+        return $result;
+    }
+
+    /**
+     * `Arr::at([6, 7], 1); // 7`
+     *
+     * `Arr::at([6, 7], -1); // 7`
+     *
+     * `Arr::at(['a' => 1, 'b' => 2], 0); // 1`
+     *
+     * @template TKey of array-key
+     * @template TValue
+     * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
+     * @param int $position Position of array starting with 0. Negative position will traverse from tail.
+     * @return TValue|null
+     */
+    public static function atOrNull(iterable $iterable, int $position): mixed
     {
         $array = static::from($iterable);
         $offset = $position >= 0 ? $position : count($array) + $position;
@@ -95,8 +142,9 @@ class Arr
 
     /**
      * @template TKey of array-key
-     * @param iterable<TKey, mixed> $iterable
-     * @param bool|null $allowEmpty
+     * @template TValue of float|int
+     * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
+     * @param bool|null $allowEmpty Allow iterable to be empty. In which case it will return 0.
      * @return float|int
      */
     public static function average(iterable $iterable, ?bool $allowEmpty = true): float|int
@@ -118,7 +166,7 @@ class Arr
     /**
      * @template TKey of array-key
      * @template TValue
-     * @param iterable<TKey, TValue> $iterable
+     * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
      * @param int $size
      * @return array<int, array<TKey, TValue>>
      */
@@ -151,7 +199,7 @@ class Arr
     /**
      * @template TKey
      * @template TValue
-     * @param iterable<TKey, TValue> $iterable
+     * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
      * @return TValue
      */
     public static function coalesce(iterable $iterable): mixed
@@ -168,7 +216,7 @@ class Arr
     /**
      * @template TKey
      * @template TValue
-     * @param iterable<TKey, TValue> $iterable
+     * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
      * @return TValue|null
      */
     public static function coalesceOrNull(iterable $iterable): mixed
@@ -182,10 +230,16 @@ class Arr
     }
 
     /**
+     * `Arr::compact([null, 0, false]); // [0, false]`
+     *
+     * `Arr::compact([[null]]); // [[null]]` Doesn't remove inner null since default depth is 1.
+     *
+     * `Arr::compact([[null]], 2); // [[]]` Removes inner null since depth is set to 2.
+     *
      * @template TKey of array-key
      * @template TValue
-     * @param iterable<TKey, TValue> $iterable
-     * @param int<1, max> $depth
+     * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
+     * @param int $depth Optional. Must be >= 1. Default is 1.
      * @return array<TKey, TValue>
      */
     public static function compact(iterable $iterable, int $depth = 1): array
@@ -207,7 +261,7 @@ class Arr
     /**
      * @template TKey of array-key
      * @template TValue
-     * @param iterable<TKey, TValue> $iterable
+     * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
      * @param mixed $value
      * @return bool
      */
@@ -223,7 +277,7 @@ class Arr
 
     /**
      * @template TKey of array-key
-     * @param iterable<TKey, mixed> $iterable
+     * @param iterable<TKey, mixed> $iterable Iterable to be traversed.
      * @param int|string $key
      * @return bool
      */
@@ -235,7 +289,7 @@ class Arr
 
     /**
      * @template TKey of array-key
-     * @param iterable<TKey, mixed> $iterable
+     * @param iterable<TKey, mixed> $iterable Iterable to be traversed.
      * @return int
      */
     public static function count(iterable $iterable): int
@@ -247,7 +301,7 @@ class Arr
     /**
      * @template TKey of array-key
      * @template TValue
-     * @param iterable<TKey, TValue> $iterable
+     * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
      * @param callable(TValue, TKey): bool $condition
      * @return int
      */
@@ -265,7 +319,7 @@ class Arr
     /**
      * @template TKey of array-key
      * @template TValue
-     * @param iterable<TKey, TValue> $iterable
+     * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
      * @param iterable<TKey, TValue> $items
      * @return array<TKey, TValue>
      */
@@ -277,7 +331,7 @@ class Arr
     /**
      * @template TKey of array-key
      * @template TValue
-     * @param iterable<TKey, TValue> $iterable
+     * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
      * @param iterable<TKey, TValue> $items
      * @return array<TKey, TValue>
      */
@@ -289,7 +343,7 @@ class Arr
     /**
      * @template TKey of array-key
      * @template TValue
-     * @param iterable<TKey, TValue> $iterable
+     * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
      * @param int $amount
      * @return array<TKey, TValue>
      */
@@ -305,7 +359,7 @@ class Arr
     /**
      * @template TKey of array-key
      * @template TValue
-     * @param iterable<TKey, TValue> $iterable
+     * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
      * @return array<TKey, TValue>
      */
     public static function dropUntil(iterable $iterable, callable $condition): array
@@ -317,7 +371,7 @@ class Arr
     /**
      * @template TKey of array-key
      * @template TValue
-     * @param iterable<TKey, TValue> $iterable
+     * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
      * @return array<TKey, TValue>
      */
     public static function dropWhile(iterable $iterable, callable $condition): array
@@ -331,7 +385,7 @@ class Arr
     /**
      * @template TKey of array-key
      * @template TValue
-     * @param iterable<TKey, TValue> $iterable
+     * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
      * @param callable(TValue, TKey): void $callback
      * @return void
      */
@@ -345,7 +399,7 @@ class Arr
     /**
      * @template TKey of array-key
      * @template TValue
-     * @param iterable<TKey, TValue> $iterable
+     * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
      * @param array<int|string> $keys
      * @return array<TKey, TValue>
      */
@@ -361,7 +415,7 @@ class Arr
     /**
      * @template TKey of array-key
      * @template TValue
-     * @param iterable<TKey, TValue> $iterable
+     * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
      * @param callable(TValue, TKey): bool $condition
      * @return array<TKey, TValue>
      */
@@ -382,28 +436,30 @@ class Arr
     /**
      * @template TKey of array-key
      * @template TValue
-     * @param iterable<TKey, TValue> $iterable
+     * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
      * @param callable(TValue, TKey): bool $condition
      * @return TValue
      */
     public static function first(iterable $iterable, ?callable $condition = null): mixed
     {
-        $result = static::firstOrNull($iterable, $condition);
+        $nullObject = static::nullObject();
 
-        if ($result === null) {
+        $result = static::firstOr($iterable, $nullObject, $condition);
+
+        if ($result === $nullObject) {
             $message = ($condition !== null)
                 ? 'Failed to find matching condition.'
                 : 'Iterable must contain at least one element.';
             throw new RuntimeException($message);
         }
 
-        return $result;
+        return $result; /** @phpstan-ignore-line */
     }
 
     /**
      * @template TKey of array-key
      * @template TValue
-     * @param iterable<TKey, TValue> $iterable
+     * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
      * @param callable(TValue, TKey): bool $condition
      * @return int|null
      */
@@ -422,7 +478,7 @@ class Arr
     /**
      * @template TKey of array-key
      * @template TValue
-     * @param iterable<TKey, TValue> $iterable
+     * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
      * @param callable(TValue, TKey): bool | null $condition
      * @return TKey|null
      */
@@ -442,11 +498,13 @@ class Arr
     /**
      * @template TKey of array-key
      * @template TValue
-     * @param iterable<TKey, TValue> $iterable
+     * @template TDefault
+     * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
      * @param callable(TValue, TKey): bool $condition
-     * @return TValue|null
+     * @param TDefault $default
+     * @return TValue|TDefault
      */
-    public static function firstOrNull(iterable $iterable, ?callable $condition = null): mixed
+    public static function firstOr(iterable $iterable, mixed $default, ?callable $condition = null): mixed
     {
         $condition ??= static fn() => true;
 
@@ -456,13 +514,13 @@ class Arr
             }
         }
 
-        return null;
+        return $default;
     }
 
     /**
      * @template TKey of array-key
      * @template TValue
-     * @param iterable<TKey, TValue> $iterable
+     * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
      * @param callable(TValue, TKey): mixed $callback
      * @return array<int, mixed>
      */
@@ -484,7 +542,7 @@ class Arr
 
     /**
      * @template TKey of array-key
-     * @param iterable<TKey, mixed> $iterable
+     * @param iterable<TKey, mixed> $iterable Iterable to be traversed.
      * @param int<1, max> $depth
      * @return array<int, mixed>
      */
@@ -509,7 +567,7 @@ class Arr
     /**
      * @template TKey of array-key
      * @template TValue
-     * @param iterable<TKey, TValue> $iterable
+     * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
      * @param bool $overwrite
      * @return array<array-key, TKey>
      */
@@ -530,7 +588,7 @@ class Arr
      * @template TKey of array-key
      * @template TValue
      * @template U
-     * @param iterable<TKey, TValue> $iterable
+     * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
      * @param U $initial
      * @param callable(U, TValue, TKey): U $callback
      * @return U
@@ -547,21 +605,21 @@ class Arr
     /**
      * @template TKey of array-key
      * @template TValue
-     * @param iterable<TKey, TValue> $iterator
+     * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
      * @return array<TKey, TValue>
      */
-    public static function from(iterable $iterator): array
+    public static function from(iterable $iterable): array
     {
-        if (is_array($iterator)) {
-            return $iterator;
+        if (is_array($iterable)) {
+            return $iterable;
         }
-        return iterator_to_array($iterator);
+        return iterator_to_array($iterable);
     }
 
     /**
      * @template TKey of array-key
      * @template TValue
-     * @param iterable<TKey, TValue> $iterable
+     * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
      * @param int|string $key
      * @return TValue
      */
@@ -574,7 +632,7 @@ class Arr
     /**
      * @template TKey of array-key
      * @template TValue
-     * @param iterable<TKey, TValue> $iterable
+     * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
      * @param int|string $key
      * @return TValue|null
      */
@@ -587,7 +645,7 @@ class Arr
      * @template TGroupKey as array-key
      * @template TKey
      * @template TValue
-     * @param iterable<TKey, TValue> $iterable
+     * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
      * @param TGroupKey|Closure(TValue, TKey): TGroupKey $key
      * @return array<TGroupKey, array<TKey, TValue>>
      */
@@ -653,7 +711,7 @@ class Arr
     /**
      * @template TKey of array-key
      * @template TValue
-     * @param iterable<TKey, TValue> $iterable
+     * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
      * @param iterable<TKey, TValue> $items
      * @return array<TKey, TValue>
      */
@@ -665,7 +723,7 @@ class Arr
     /**
      * @template TKey of array-key
      * @template TValue
-     * @param iterable<TKey, TValue> $iterable
+     * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
      * @param iterable<TKey, TValue> $items
      * @return array<TKey, TValue>
      */
@@ -677,7 +735,7 @@ class Arr
     /**
      * @template TKey of array-key
      * @template TValue
-     * @param iterable<TKey, TValue> $iterable
+     * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
      * @return bool
      */
     public static function isAssoc(iterable $iterable): bool
@@ -689,7 +747,7 @@ class Arr
     }
 
     /**
-     * @param iterable<mixed> $iterable
+     * @param iterable<array-key, mixed> $iterable Iterable to be traversed.
      * @return bool
      */
     public static function isEmpty(iterable $iterable): bool
@@ -701,7 +759,7 @@ class Arr
     }
 
     /**
-     * @param iterable<array-key, mixed> $iterable
+     * @param iterable<array-key, mixed> $iterable Iterable to be traversed.
      * @return bool
      */
     public static function isList(iterable $iterable): bool
@@ -710,7 +768,7 @@ class Arr
     }
 
     /**
-     * @param iterable<mixed> $iterable
+     * @param iterable<array-key, mixed> $iterable Iterable to be traversed.
      * @return bool
      */
     public static function isNotEmpty(iterable $iterable): bool
@@ -719,7 +777,7 @@ class Arr
     }
 
     /**
-     * @param iterable<array-key, mixed> $iterable
+     * @param iterable<array-key, mixed> $iterable Iterable to be traversed.
      * @param string $glue
      * @param string|null $prefix
      * @param string|null $suffix
@@ -732,7 +790,7 @@ class Arr
 
     /**
      * @template T
-     * @param iterable<T> $iterable
+     * @param iterable<array-key, T> $iterable Iterable to be traversed.
      * @param string|Closure(T, mixed): array-key $key
      * @param bool $overwrite
      * @return array<T>
@@ -744,7 +802,7 @@ class Arr
 
     /**
      * @template TKey of array-key
-     * @param iterable<TKey, mixed> $iterable
+     * @param iterable<TKey, mixed> $iterable Iterable to be traversed.
      * @return array<int, TKey>
      */
     public static function keys(iterable $iterable): array
@@ -758,7 +816,7 @@ class Arr
 
     /**
      * @template T
-     * @param iterable<T> $iterable
+     * @param iterable<array-key, T> $iterable Iterable to be traversed.
      * @param string|Closure(T, mixed): array-key $key
      * @param bool $overwrite
      * @param int<1, max> $depth
@@ -789,7 +847,7 @@ class Arr
     /**
      * @template TKey of array-key
      * @template TValue
-     * @param iterable<TKey, TValue> $iterable
+     * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
      * @param callable(TValue, TKey): bool $condition
      * @return TValue
      */
@@ -810,7 +868,7 @@ class Arr
     /**
      * @template TKey of array-key
      * @template TValue
-     * @param iterable<TKey, TValue> $iterable
+     * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
      * @param callable(TValue, TKey): bool $condition
      * @return int|null
      */
@@ -838,7 +896,7 @@ class Arr
     /**
      * @template TKey of array-key
      * @template TValue
-     * @param iterable<TKey, TValue> $iterable
+     * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
      * @param callable(TValue, TKey): bool $condition
      * @return TKey|null
      */
@@ -865,7 +923,7 @@ class Arr
     /**
      * @template TKey of array-key
      * @template TValue
-     * @param iterable<TKey, TValue> $iterable
+     * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
      * @param callable(TValue, TKey): bool|null $condition
      * @return TValue|null
      */
@@ -893,7 +951,7 @@ class Arr
      * @template TKey
      * @template TValue
      * @template TMapValue
-     * @param iterable<TKey, TValue> $iterable
+     * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
      * @param callable(TValue, TKey): TMapValue $callback
      * @return array<TKey, TMapValue>
      */
@@ -908,7 +966,7 @@ class Arr
 
     /**
      * @template T
-     * @param iterable<T> $iterable
+     * @param iterable<array-key, T> $iterable Iterable to be traversed.
      * @return T
      */
     public static function max(iterable $iterable): mixed
@@ -919,7 +977,7 @@ class Arr
     /**
      * @template TKey
      * @template TValue
-     * @param iterable<TKey, TValue> $iterable
+     * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
      * @param callable(TValue, TKey): mixed $callback
      * @return TValue|null
      */
@@ -947,7 +1005,7 @@ class Arr
     /**
      * @template TKey of array-key
      * @template TValue
-     * @param iterable<TKey, TValue> $iterable1
+     * @param iterable<TKey, TValue> $iterable1 Iterable to be traversed.
      * @param iterable<TKey, TValue> $iterable2
      * @return array<TKey, TValue>
      */
@@ -959,7 +1017,7 @@ class Arr
     /**
      * @template TKey of array-key
      * @template TValue
-     * @param iterable<TKey, TValue> $iterable1
+     * @param iterable<TKey, TValue> $iterable1 Iterable to be traversed.
      * @param iterable<TKey, TValue> $iterable2
      * @param int<1, max> $depth
      * @return array<TKey, TValue>
@@ -993,7 +1051,7 @@ class Arr
     /**
      * @template TKey of array-key
      * @template TValue
-     * @param iterable<TKey, TValue> $iterable
+     * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
      * @param callable(TValue, TKey): mixed $callback
      * @return TValue|null
      */
@@ -1020,7 +1078,7 @@ class Arr
 
     /**
      * @template T
-     * @param iterable<T> $iterable
+     * @param iterable<array-key, T> $iterable Iterable to be traversed.
      * @return array{ min: T, max: T }
      */
     public static function minMax(iterable $iterable): array
@@ -1049,7 +1107,7 @@ class Arr
     /**
      * @template TKey of array-key
      * @template TValue
-     * @param iterable<TKey, TValue> $iterable
+     * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
      * @param mixed $value
      * @return bool
      */
@@ -1060,7 +1118,7 @@ class Arr
 
     /**
      * @template TKey of array-key
-     * @param iterable<TKey, mixed> $iterable
+     * @param iterable<TKey, mixed> $iterable Iterable to be traversed.
      * @param int|string $key
      * @return bool
      */
@@ -1072,7 +1130,7 @@ class Arr
     /**
      * @template TKey of array-key
      * @template TValue
-     * @param iterable<TKey, TValue> $iterable
+     * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
      * @param iterable<TKey> $keys
      * @return array<TKey, TValue>
      */
@@ -1089,7 +1147,7 @@ class Arr
     /**
      * @template TKey of array-key
      * @template TValue
-     * @param iterable<TKey, TValue> $iterable
+     * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
      * @param int $size
      * @param TValue $value
      * @return array<TKey, TValue>
@@ -1101,7 +1159,7 @@ class Arr
 
     /**
      * @template TKey of array-key
-     * @param iterable<array-key, mixed> $iterable
+     * @param iterable<TKey, mixed> $iterable Iterable to be traversed.
      * @param TKey $key
      * @return array<int, mixed>
      */
@@ -1231,7 +1289,7 @@ class Arr
     /**
      * @template TKey of array-key
      * @template TValue
-     * @param iterable<TKey, TValue> $iterable
+     * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
      * @param callable(TValue, TValue, TKey): TValue $callback
      * @return TValue
      */
@@ -1312,7 +1370,7 @@ class Arr
 
     /**
      * @template T
-     * @param iterable<T> $iterable
+     * @param iterable<array-key, T> $iterable Iterable to be traversed.
      * @param int $times
      * @return array<int, T>
      */
@@ -1332,7 +1390,7 @@ class Arr
     /**
      * @template TKey of array-key
      * @template TValue
-     * @param iterable<TKey, TValue> $iterable
+     * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
      * @return array<TKey, TValue>
      */
     public static function reverse(iterable $iterable): array
@@ -1344,7 +1402,7 @@ class Arr
     /**
      * @template TKey of array-key
      * @template TValue
-     * @param iterable<TKey, TValue> $iterable
+     * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
      * @param int $count
      * @return array<TKey, TValue>
      */
@@ -1361,7 +1419,7 @@ class Arr
     /**
      * @template TKey of array-key
      * @template TValue
-     * @param iterable<TKey, TValue> $iterable
+     * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
      * @return TValue
      */
     public static function sample(iterable $iterable): mixed
@@ -1373,7 +1431,7 @@ class Arr
     /**
      * @template TKey of array-key
      * @template TValue
-     * @param iterable<TKey, TValue> $iterable
+     * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
      * @param int $amount
      * @return array<TKey, TValue>
      */
@@ -1388,7 +1446,7 @@ class Arr
     /**
      * @template TKey of array-key
      * @template TValue
-     * @param iterable<TKey, TValue> $iterable
+     * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
      * @param callable(TValue, TKey): bool $condition
      * @return bool
      */
@@ -1405,7 +1463,7 @@ class Arr
     /**
      * @template TKey of array-key
      * @template TValue
-     * @param iterable<TKey, TValue> $iterable
+     * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
      * @param callable(TValue, TKey): bool $condition
      * @return bool
      */
@@ -1492,7 +1550,7 @@ class Arr
     /**
      * @template TKey of array-key
      * @template TValue
-     * @param iterable<TKey, TValue> $iterable
+     * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
      * @return array<array-key, TValue>
      */
     public static function shuffle(iterable $iterable): array
@@ -1515,7 +1573,7 @@ class Arr
     /**
      * @template TKey of array-key
      * @template TValue
-     * @param iterable<TKey, TValue> $iterable
+     * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
      * @param int $offset
      * @param int|null $length
      * @return array<TKey, TValue>
@@ -1530,7 +1588,7 @@ class Arr
     /**
      * @template TKey of array-key
      * @template TValue
-     * @param iterable<TKey, TValue> $iterable
+     * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
      * @param callable(TValue, TKey): bool | null $condition
      * @return TValue
      */
@@ -1553,7 +1611,7 @@ class Arr
     /**
      * @template TKey of array-key
      * @template TValue
-     * @param iterable<TKey, TValue> $iterable
+     * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
      * @param int $flag
      * @return array<TKey, TValue>
      */
@@ -1574,7 +1632,7 @@ class Arr
     /**
      * @template TKey of array-key
      * @template TValue
-     * @param iterable<TKey, TValue> $iterable
+     * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
      * @param callable(TValue, TKey): mixed $callback
      * @param int $flag
      * @return array<TKey, TValue>
@@ -1587,7 +1645,7 @@ class Arr
     /**
      * @template TKey of array-key
      * @template TValue
-     * @param iterable<TKey, TValue> $iterable
+     * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
      * @param callable(TValue, TKey): mixed $callback
      * @param int $flag
      * @return array<TKey, TValue>
@@ -1600,7 +1658,7 @@ class Arr
     /**
      * @template TKey of array-key
      * @template TValue
-     * @param iterable<TKey, TValue> $iterable
+     * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
      * @param int $flag
      * @return array<TKey, TValue>
      */
@@ -1614,7 +1672,7 @@ class Arr
     /**
      * @template TKey of array-key
      * @template TValue
-     * @param iterable<TKey, TValue> $iterable
+     * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
      * @param int $flag
      * @return array<TKey, TValue>
      */
@@ -1628,7 +1686,7 @@ class Arr
     /**
      * @template TKey of array-key
      * @template TValue
-     * @param iterable<TKey, TValue> $iterable
+     * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
      * @param callable(TValue, TKey): mixed $callback
      * @param int $flag
      * @param bool $ascending
@@ -1663,7 +1721,7 @@ class Arr
     /**
      * @template TKey of array-key
      * @template TValue
-     * @param iterable<TKey, TValue> $iterable
+     * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
      * @param int $flag
      * @return array<TKey, TValue>
      */
@@ -1684,7 +1742,7 @@ class Arr
     /**
      * @template TKey of array-key
      * @template TValue
-     * @param iterable<TKey, TValue> $iterable
+     * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
      * @param callable(TValue, TValue): int $comparison
      * @return array<TKey, TValue>
      */
@@ -1705,7 +1763,7 @@ class Arr
     /**
      * @template TKey of array-key
      * @template TValue
-     * @param iterable<TKey, TValue> $iterable
+     * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
      * @param callable(TKey, TKey): int $comparison
      * @return array<TKey, TValue>
      */
@@ -1719,7 +1777,7 @@ class Arr
     /**
      * @template TKey of array-key
      * @template TValue of float|int
-     * @param iterable<TKey, TValue> $iterable
+     * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
      * @return float|int
      */
     public static function sum(iterable $iterable): float|int
@@ -1734,7 +1792,7 @@ class Arr
     /**
      * @template TKey of array-key
      * @template TValue
-     * @param iterable<TKey, TValue> $iterable
+     * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
      * @param int $amount
      * @return array<TKey, TValue>
      */
@@ -1750,7 +1808,7 @@ class Arr
     /**
      * @template TKey of array-key
      * @template TValue
-     * @param iterable<TKey, TValue> $iterable
+     * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
      * @param callable(TValue, TKey): bool $condition
      * @return array<TKey, TValue>
      */
@@ -1763,7 +1821,7 @@ class Arr
     /**
      * @template TKey of array-key
      * @template TValue
-     * @param iterable<TKey, TValue> $iterable
+     * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
      * @param callable(TValue, TKey): bool $condition
      * @return array<TKey, TValue>
      */
@@ -1776,7 +1834,7 @@ class Arr
     /**
      * @template TKey of array-key
      * @template TValue
-     * @param iterable<TKey, TValue> $iterable
+     * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
      * @return array<array-key, int>
      */
     public static function tally(iterable $iterable): array
@@ -1793,7 +1851,7 @@ class Arr
     /**
      * @template TKey of array-key
      * @template TValue
-     * @param iterable<TKey, TValue> $iterable
+     * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
      * @param string|null $namespace
      * @return string
      */
@@ -1807,7 +1865,7 @@ class Arr
     /**
      * @template TKey of array-key
      * @template TValue
-     * @param iterable<TKey, TValue> $iterable1
+     * @param iterable<TKey, TValue> $iterable1 Iterable to be traversed.
      * @param iterable<TKey, TValue> $iterable2
      * @return array<TKey, TValue>
      */
@@ -1819,7 +1877,7 @@ class Arr
     /**
      * @template TKey of array-key
      * @template TValue
-     * @param iterable<TKey, TValue> $iterable1
+     * @param iterable<TKey, TValue> $iterable1 Iterable to be traversed.
      * @param iterable<TKey, TValue> $iterable2
      * @param int<1, max> $depth
      * @return array<TKey, TValue>
@@ -1844,7 +1902,7 @@ class Arr
      *
      * @template TKey of array-key
      * @template TValue
-     * @param iterable<TKey, TValue> $iterable
+     * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
      * @return array<TKey, TValue>
      */
     public static function unique(iterable $iterable): array
@@ -1858,7 +1916,7 @@ class Arr
      *
      * @template TKey of array-key
      * @template TValue
-     * @param iterable<TKey, TValue> $iterable
+     * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
      * @param callable(TValue, TKey): bool $callback
      * @return array<TKey, TValue>
      */
@@ -1894,7 +1952,7 @@ class Arr
     /**
      * @template TKey of array-key
      * @template TValue
-     * @param iterable<TKey, TValue> $iterable
+     * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
      * @return array<int, TValue>
      */
     public static function values(iterable $iterable): array
@@ -1909,7 +1967,7 @@ class Arr
     /**
      * @template T
      * @param T|iterable<array-key, T> $value
-     * @return array<array-key, T>
+     * @return array<T>
      */
     public static function wrap(mixed $value): array
     {
@@ -1945,5 +2003,13 @@ class Arr
             return $key;
         }
         throw new InvalidKeyException($key);
+    }
+
+    /**
+     * @return object
+     */
+    protected static function nullObject(): object
+    {
+        return static::$nullObject ??= new stdClass();
     }
 }

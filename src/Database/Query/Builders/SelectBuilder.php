@@ -322,7 +322,7 @@ class SelectBuilder extends ConditionsBuilder
             return 0;
         }
 
-        return (int) $results->firstOrNull()['total'];
+        return (int) $results->first()['total'];
     }
 
     /**
