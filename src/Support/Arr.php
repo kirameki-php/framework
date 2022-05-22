@@ -35,6 +35,7 @@ use function http_build_query;
 use function implode;
 use function is_array;
 use function is_bool;
+use function is_countable;
 use function is_float;
 use function is_int;
 use function is_iterable;
@@ -290,8 +291,14 @@ class Arr
      */
     public static function count(iterable $iterable): int
     {
-        $countable = is_countable($iterable) ? $iterable : static::from($iterable);
-        return count($countable);
+        if (is_countable($iterable)) {
+            return count($iterable);
+        }
+        $count = 0;
+        foreach ($iterable as $_) {
+            ++$count;
+        }
+        return $count;
     }
 
     /**
@@ -811,20 +818,6 @@ class Arr
     }
 
     /**
-     * @template TKey of array-key
-     * @param iterable<TKey, mixed> $iterable Iterable to be traversed.
-     * @return array<int, TKey>
-     */
-    public static function keys(iterable $iterable): array
-    {
-        $keys = [];
-        foreach ($iterable as $key => $_) {
-            $keys[] = $key;
-        }
-        return $keys;
-    }
-
-    /**
      * @template T
      * @param iterable<array-key, T> $iterable Iterable to be traversed.
      * @param string|Closure(T, mixed): array-key $key
@@ -852,6 +845,20 @@ class Arr
         }
 
         return $result; /* @phpstan-ignore-line */
+    }
+
+    /**
+     * @template TKey of array-key
+     * @param iterable<TKey, mixed> $iterable Iterable to be traversed.
+     * @return array<int, TKey>
+     */
+    public static function keys(iterable $iterable): array
+    {
+        $keys = [];
+        foreach ($iterable as $key => $_) {
+            $keys[] = $key;
+        }
+        return $keys;
     }
 
     /**
@@ -985,7 +992,11 @@ class Arr
      */
     public static function max(iterable $iterable): mixed
     {
-        return max(static::from($iterable)); /** @phpstan-ignore-line */
+        $result = static::maxBy($iterable, static fn(mixed $val): mixed => $val);
+        if ($result === null) {
+            throw new RuntimeException('$iterable must contain at least one value');
+        }
+        return $result;
     }
 
     /**
@@ -1059,7 +1070,11 @@ class Arr
      */
     public static function min(iterable $iterable): mixed
     {
-        return min(static::from($iterable)); /** @phpstan-ignore-line */
+        $result = static::minBy($iterable, static fn(mixed $val): mixed => $val);
+        if ($result === null) {
+            throw new RuntimeException('$iterable must contain at least one value');
+        }
+        return $result;
     }
 
     /**
@@ -1431,11 +1446,35 @@ class Arr
      */
     public static function rotate(iterable $iterable, int $count): array
     {
-        $array = static::from($iterable);
-        $rotates = array_splice($array, 0, $count);
-        foreach ($rotates as $key => $val) {
-            $array[$key] = $val;
+        $ptr = 0;
+        $array = [];
+        $rotated = [];
+        $isList = null;
+
+        if ($count < 0) {
+            $count = static::count($iterable) + $count;
         }
+
+        foreach ($iterable as $key => $val) {
+            $isList ??= $key === 0;
+            if ($ptr < $count) {
+                $isList
+                    ? $rotated[] = $val
+                    : $rotated[$key] = $val;
+            } else {
+                $isList
+                    ? $array[] = $val
+                    : $array[$key] = $val;
+            }
+            ++$ptr;
+        }
+
+        foreach ($rotated as $key => $val) {
+            $isList
+                ? $array[] = $val
+                : $array[$key] = $val;
+        }
+
         return $array;
     }
 
@@ -1618,13 +1657,13 @@ class Arr
 
         /** @var array<TKey, TValue> $array */
         $array = [];
-        $i = 0;
+        $ptr = 0;
         foreach ($iterable as $key => $value) {
-            if ($i++ < $offset) {
+            if ($ptr++ < $offset) {
                 continue;
             }
 
-            if ($i > $offset + $length) {
+            if ($ptr > $offset + $length) {
                 break;
             }
 

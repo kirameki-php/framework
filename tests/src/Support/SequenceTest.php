@@ -14,6 +14,9 @@ use RuntimeException;
 use Tests\Kirameki\TestCase;
 use TypeError;
 use ValueError;
+use function dd;
+use function dump;
+use function max;
 
 class SequenceTest extends TestCase
 {
@@ -1102,13 +1105,16 @@ class SequenceTest extends TestCase
     public function test_rotate(): void
     {
         $seq = $this->seq(['a' => 1, 'b' => 2, 'c' => 3])->rotate(1);
-        self::assertEquals(['b' => 2, 'c' => 3, 'a' => 1], $seq->toArray());
+        self::assertEquals(['b', 'c', 'a'], $seq->keys()->toArray());
 
         $seq = $this->seq(['a' => 1, 'b' => 2, 'c' => 3])->rotate(2);
         self::assertEquals(['c' => 3, 'a' => 1, 'b' => 2], $seq->toArray());
 
         $seq = $this->seq(['a' => 1, 'b' => 2, 'c' => 3])->rotate(-1);
-        self::assertEquals(['c' => 3, 'a' => 1, 'b' => 2], $seq->toArray());
+        self::assertEquals(['c', 'a', 'b'], $seq->keys()->toArray());
+
+        $seq = $this->seq(['a' => 1, 'b' => 2, 'c' => 3])->rotate(-2);
+        self::assertEquals(['b', 'c', 'a'], $seq->keys()->toArray());
     }
 
     public function test_sample(): void
