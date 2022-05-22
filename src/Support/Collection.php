@@ -121,7 +121,7 @@ class Collection extends Sequence implements ArrayAccess
      */
     public function pad(int $size, mixed $value): static
     {
-        return $this->newInstance(Arr::pad($this->items, $size, $value));
+        return $this->newInstance(Arr::pad($this, $size, $value));
     }
 
     /**
@@ -136,7 +136,7 @@ class Collection extends Sequence implements ArrayAccess
      * @param int $amount
      * @return static
      */
-    public function popMany(int $amount): Collection
+    public function popMany(int $amount): static
     {
         return $this->newInstance(Arr::popMany($this->items, $amount));
     }
@@ -248,7 +248,7 @@ class Collection extends Sequence implements ArrayAccess
      * @param int $amount
      * @return static
      */
-    public function shiftMany(int $amount): Collection
+    public function shiftMany(int $amount): static
     {
         return $this->newInstance(Arr::shiftMany($this->items, $amount));
     }
