@@ -8,6 +8,7 @@ use Kirameki\Exception\InvalidKeyException;
 use LogicException;
 use RuntimeException;
 use Webmozart\Assert\Assert;
+use function abs;
 use function array_column;
 use function array_diff;
 use function array_diff_key;
@@ -241,18 +242,7 @@ class Arr
      */
     public static function compact(iterable $iterable, int $depth = 1): array
     {
-        $result = [];
-        foreach ($iterable as $key => $val) {
-            if (is_iterable($val) && $depth > 1) {
-                $val = static::compact($val, $depth - 1); /** @phpstan-ignore-line */
-            }
-            if ($val !== null) {
-                is_int($key)
-                    ? $result[] = $val
-                    : $result[$key] = $val;
-            }
-        }
-        return $result; /* @phpstan-ignore-line */
+        return iterator_to_array(Iter::compact($iterable, $depth));
     }
 
     /**
@@ -280,8 +270,7 @@ class Arr
      */
     public static function containsKey(iterable $iterable, int|string $key): bool
     {
-        $array = static::from($iterable);
-        return array_key_exists($key, $array);
+        return array_key_exists($key, static::from($iterable));
     }
 
     /**
@@ -352,9 +341,7 @@ class Arr
      */
     public static function drop(iterable $iterable, int $amount): array
     {
-        return $amount >= 0
-            ? static::slice($iterable, $amount)
-            : static::slice($iterable, 0, -$amount);
+        return iterator_to_array(Iter::drop($iterable, $amount));
     }
 
     /**
@@ -366,8 +353,7 @@ class Arr
      */
     public static function dropUntil(iterable $iterable, callable $condition): array
     {
-        $index = static::firstIndex($iterable, $condition) ?? PHP_INT_MAX;
-        return static::drop($iterable, $index);
+        return iterator_to_array(Iter::dropUntil($iterable, $condition));
     }
 
     /**
@@ -379,10 +365,7 @@ class Arr
      */
     public static function dropWhile(iterable $iterable, callable $condition): array
     {
-        $index = static::lastIndex($iterable, static fn($val, $key) => !static::verify($condition, $key, $val));
-        return ($index !== null)
-            ? static::drop($iterable, $index)
-            : [];
+        return iterator_to_array(Iter::dropWhile($iterable, $condition));
     }
 
     /**
@@ -424,16 +407,7 @@ class Arr
      */
     public static function filter(iterable $iterable, callable $condition): array
     {
-        $filtered = [];
-        $retainKeys = static::isAssoc($iterable);
-        foreach ($iterable as $key => $val) {
-            if (static::verify($condition, $key, $val)) {
-                $retainKeys
-                    ? $filtered[$key] = $val
-                    : $filtered[] = $val;
-            }
-        }
-        return $filtered;
+        return iterator_to_array(Iter::filter($iterable, $condition));
     }
 
     /**
@@ -551,20 +525,11 @@ class Arr
      */
     public static function flatten(iterable $iterable, int $depth = 1): array
     {
-        Assert::positiveInteger($depth);
-
-        $results = [];
-        $func = static function($_iterable, int $depth) use (&$func, &$results) {
-            foreach ($_iterable as $val) {
-                if (is_iterable($val) && $depth > 0) {
-                    $func($val, $depth - 1);
-                } else {
-                    $results[] = $val;
-                }
-            }
-        };
-        $func($iterable, $depth);
-        return $results;
+        $result = [];
+        foreach (Iter::flatten($iterable, $depth) as $val) {
+            $result[] = $val;
+        }
+        return $result;
     }
 
     /**
@@ -577,12 +542,15 @@ class Arr
     public static function flip(iterable $iterable, bool $overwrite = false): array
     {
         $flipped = [];
-        foreach ($iterable as $key => $val) {
-            $val = static::ensureKey($val);
-            if (!$overwrite && array_key_exists($val, $flipped)) {
-                throw new DuplicateKeyException($val, $key);
+        foreach (Iter::flip($iterable) as $key => $val) {
+            if (is_int($key) || is_string($key)) {
+                if (!$overwrite && array_key_exists($key, $flipped)) {
+                    throw new DuplicateKeyException($key, $val);
+                }
+                $flipped[$key] = $val;
+            } else {
+                throw new InvalidKeyException($key);
             }
-            $flipped[$val] = $key;
         }
         return $flipped;
     }
@@ -854,11 +822,7 @@ class Arr
      */
     public static function keys(iterable $iterable): array
     {
-        $keys = [];
-        foreach ($iterable as $key => $_) {
-            $keys[] = $key;
-        }
-        return $keys;
+        return iterator_to_array(Iter::keys($iterable));
     }
 
     /**
@@ -1174,16 +1138,24 @@ class Arr
     }
 
     /**
-     * @template TKey of array-key
      * @template TValue
-     * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
+     * @param iterable<int, TValue> $iterable Iterable to be traversed.
      * @param int $size
      * @param TValue $value
-     * @return array<TKey, TValue>
+     * @return array<int, TValue>
      */
     public static function pad(iterable $iterable, int $size, mixed $value): array
     {
-        return array_pad(static::from($iterable), $size, $value); /** @phpstan-ignore-line */
+        $array = static::from($iterable);
+        $arrSize = count($array);
+        $absSize = abs($size);
+        if ($arrSize <= $absSize) {
+            $repeated = array_fill(0, $absSize - $arrSize, $value);
+            return $size > 0
+                ? static::merge($array, $repeated)
+                : static::merge($repeated, $array);
+        }
+        return $array;
     }
 
     /**
@@ -1414,15 +1386,7 @@ class Arr
      */
     public static function repeat(iterable $iterable, int $times): array
     {
-        Assert::greaterThanEq($times, 0);
-
-        $array = [];
-        for ($i = 0; $i < $times; $i++) {
-            foreach ($iterable as $val) {
-                $array[] = $val;
-            }
-        }
-        return $array;
+        return iterator_to_array(Iter::repeat($iterable, $times));
     }
 
     /**
@@ -2045,11 +2009,7 @@ class Arr
      */
     public static function values(iterable $iterable): array
     {
-        $values = [];
-        foreach ($iterable as $val) {
-            $values[] = $val;
-        }
-        return $values;
+        return iterator_to_array(Iter::values($iterable));
     }
 
     /**

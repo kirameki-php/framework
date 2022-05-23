@@ -404,7 +404,7 @@ class SequenceTest extends TestCase
 
         // drop until null does not work
         $this->expectException(TypeError::class);
-        $this->expectExceptionMessage('Kirameki\Support\Arr::verify(): Return value must be of type bool, null returned');
+        $this->expectExceptionMessage('Kirameki\Support\Iter::verify(): Return value must be of type bool, null returned');
         $seq->dropUntil(fn($v, $k) => null)->toArray();
     }
 
@@ -422,7 +422,7 @@ class SequenceTest extends TestCase
 
         // drop until null does not work
         $this->expectException(TypeError::class);
-        $this->expectExceptionMessage('Kirameki\Support\Arr::verify(): Return value must be of type bool, null returned');
+        $this->expectExceptionMessage('Kirameki\Support\Iter::verify(): Return value must be of type bool, null returned');
         $seq->dropWhile(fn($v, $k) => null)->toArray();
     }
 

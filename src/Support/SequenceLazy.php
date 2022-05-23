@@ -2,10 +2,6 @@
 
 namespace Kirameki\Support;
 
-use Closure;
-use Generator;
-use Webmozart\Assert\Assert;
-
 /**
  * @template TKey of array-key
  * @template TValue
@@ -14,25 +10,17 @@ use Webmozart\Assert\Assert;
 class SequenceLazy extends Sequence
 {
     /**
-     * @var Closure(): Generator<TKey, TValue>
+     * @var iterable<TKey, TValue>
      */
-    public Closure $iteratorCaller;
+    public iterable $source;
 
     /**
-     * @param iterable<TKey, TValue>|Closure(): Generator<TKey, TValue> $source
+     * @param iterable<TKey, TValue> $source
      */
-    public function __construct(iterable|Closure $source)
+    public function __construct(iterable $source)
     {
-        $this->iteratorCaller = $this->toIteratorCaller($source);
+        $this->source = $source;
         parent::__construct();
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getIterator(): Generator
-    {
-        return ($this->iteratorCaller)();
     }
 
     /**
@@ -40,24 +28,7 @@ class SequenceLazy extends Sequence
      */
     public function chunk(int $size): static
     {
-        Assert::positiveInteger($size);
-
-        return new static(function () use ($size) {
-            $remaining = $size;
-            $chunk = [];
-            foreach ($this as $key => $val) {
-                $chunk[$key] = $val;
-                $remaining--;
-                if ($remaining === 0) {
-                    yield $chunk;
-                    $remaining = $size;
-                    $chunk = [];
-                }
-            }
-            if (count($chunk) > 0) {
-                yield $chunk;
-            }
-        });
+        return new static(Iter::chunk($this, $size));
     }
 
     /**
@@ -65,19 +36,7 @@ class SequenceLazy extends Sequence
      */
     public function compact(int $depth = 1): static
     {
-        return new static(function() use ($depth) {
-            $result = [];
-            foreach ($this as $key => $val) {
-                if (is_iterable($val) && $depth > 1) {
-                    $val = Arr::compact($val, $depth - 1); /** @phpstan-ignore-line */
-                }
-                if ($val !== null) {
-                    $result[$key] = $val;
-                    yield $key => $val;
-                }
-            }
-            return $result;
-        });
+        return new static(Iter::compact($this, $depth));
     }
 
     /**
@@ -85,19 +44,7 @@ class SequenceLazy extends Sequence
      */
     public function drop(int $amount): static
     {
-        if ($amount < 0) {
-            return parent::drop($amount);
-        }
-
-        return new static(function () use ($amount) {
-            $count = 0;
-            foreach ($this as $key => $item) {
-                if ($count > $amount) {
-                    yield $key => $item;
-                }
-                ++$count;
-            }
-        });
+        return new static(Iter::drop($this, $amount));
     }
 
     /**
@@ -105,16 +52,7 @@ class SequenceLazy extends Sequence
      */
     public function dropUntil(callable $condition): static
     {
-        return new static(function () use ($condition) {
-            $drop = true;
-            foreach ($this as $key => $item) {
-                if ($drop && $condition($item, $key)) {
-                    $drop = false;
-                } else {
-                    yield $key => $item;
-                }
-            }
-        });
+        return new static(Iter::dropUntil($this, $condition));
     }
 
     /**
@@ -122,16 +60,7 @@ class SequenceLazy extends Sequence
      */
     public function dropWhile(callable $condition): static
     {
-        return new static(function () use ($condition) {
-            $drop = true;
-            foreach ($this as $key => $item) {
-                if ($drop && !$condition($item, $key)) {
-                    $drop = false;
-                } else {
-                    yield $key => $item;
-                }
-            }
-        });
+        return new static(Iter::dropWhile($this, $condition));
     }
 
     /**
@@ -152,13 +81,7 @@ class SequenceLazy extends Sequence
      */
     public function filter(callable $condition): static
     {
-        return new static(function () use ($condition) {
-            foreach ($this as $key => $item) {
-                if ($condition($item, $key)) {
-                    yield $key => $item;
-                }
-            }
-        });
+        return new static(Iter::filter($this, $condition));
     }
 
     /**
@@ -166,11 +89,7 @@ class SequenceLazy extends Sequence
      */
     public function keys(): static
     {
-        return new static(function () {
-            foreach ($this as $key => $item) {
-                yield $key;
-            }
-        });
+        return new static(Iter::keys($this));
     }
 
     /**
@@ -179,13 +98,9 @@ class SequenceLazy extends Sequence
      * @param callable(TValue, TKey): TMapValue $callback
      * @return static<TKey, TMapValue>
      */
-    public function map(callable $callback): static /** @phpstan-ignore-line */
+    public function map(callable $callback): static
     {
-        return new static(function () use ($callback) {
-            foreach ($this as $key => $item) {
-                yield $key => $callback($item, $key);
-            }
-        });
+        return new static(Iter::map($this, $callback));
     }
 
     /**
@@ -193,20 +108,7 @@ class SequenceLazy extends Sequence
      */
     public function take(int $amount): static
     {
-        if ($amount < 0) {
-            return parent::take($amount);
-        }
-
-        return new static(function () use ($amount) {
-            $count = 0;
-            foreach ($this as $key => $item) {
-                if ($count > $amount) {
-                    break;
-                }
-                yield $key => $item;
-                ++$count;
-            }
-        });
+        return new static(Iter::take($this, $amount));
     }
 
     /**
@@ -214,15 +116,7 @@ class SequenceLazy extends Sequence
      */
     public function takeUntil(callable $condition): static
     {
-        return new static(function () use ($condition) {
-            foreach ($this as $key => $item) {
-                if (!$condition($item, $key)) {
-                    yield $key => $item;
-                } else {
-                    break;
-                }
-            }
-        });
+        return new static(Iter::takeUntil($this, $condition));
     }
 
     /**
@@ -230,15 +124,15 @@ class SequenceLazy extends Sequence
      */
     public function takeWhile(callable $condition): static
     {
-        return new static(function () use ($condition) {
-            foreach ($this as $key => $item) {
-                if ($condition($item, $key)) {
-                    yield $key => $item;
-                } else {
-                    break;
-                }
-            }
-        });
+        return new static(Iter::takeWhile($this, $condition));
+    }
+
+    /**
+     * @return static
+     */
+    public function values(): static
+    {
+        return new static(Iter::values($this));
     }
 
     /**
@@ -247,20 +141,5 @@ class SequenceLazy extends Sequence
     public function eager(): Sequence
     {
         return new Sequence($this->toArray());
-    }
-
-    /**
-     * @param iterable<TKey, TValue>|Closure(): Generator<TKey, TValue> $iterable
-     * @return Closure
-     */
-    protected function toIteratorCaller(iterable|Closure $iterable): Closure
-    {
-        if ($iterable instanceof Closure) {
-            return $iterable;
-        }
-
-        return static function () use ($iterable) {
-            yield from $iterable;
-        };
     }
 }
