@@ -10,20 +10,6 @@ namespace Kirameki\Support;
 class SequenceLazy extends Sequence
 {
     /**
-     * @var iterable<TKey, TValue>
-     */
-    public iterable $source;
-
-    /**
-     * @param iterable<TKey, TValue> $source
-     */
-    public function __construct(iterable $source)
-    {
-        $this->source = $source;
-        parent::__construct();
-    }
-
-    /**
      * @inheritDoc
      */
     public function chunk(int $size): static
