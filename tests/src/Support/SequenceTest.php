@@ -564,7 +564,8 @@ class SequenceTest extends TestCase
     public function test_flip(): void
     {
         $seq = $this->seq([1, 2]);
-        self::assertEquals([1 => 0, 2 => 1], $seq->flip()->toArray());
+        self::assertEquals([1, 2], $seq->flip()->keys()->toArray());
+        self::assertEquals([0, 1], $seq->flip()->values()->toArray());
 
         $seq = $this->seq(['a' => 'b', 'c' => 'd']);
         self::assertEquals(['b' => 'a', 'd' => 'c'], $seq->flip()->toArray());

@@ -24,6 +24,6 @@ class DuplicateKeyException extends LogicException
     {
         $this->key = $key;
         $this->value = $value;
-        parent::__construct("Tried to overwrite existing key: ".$key);
+        parent::__construct("Tried to overwrite existing key: " . $key);
     }
 }
