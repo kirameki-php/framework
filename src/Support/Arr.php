@@ -17,7 +17,6 @@ use function array_intersect_key;
 use function array_is_list;
 use function array_key_exists;
 use function array_map;
-use function array_pad;
 use function array_pop;
 use function array_push;
 use function array_rand;
@@ -29,11 +28,9 @@ use function arsort;
 use function asort;
 use function count;
 use function current;
-use function dump;
 use function end;
 use function get_resource_id;
 use function http_build_query;
-use function implode;
 use function is_array;
 use function is_bool;
 use function is_countable;
@@ -49,8 +46,6 @@ use function json_encode;
 use function key;
 use function krsort;
 use function ksort;
-use function max;
-use function min;
 use function prev;
 use function spl_object_id;
 use function uasort;
@@ -166,28 +161,7 @@ class Arr
      */
     public static function chunk(iterable $iterable, int $size): array
     {
-        Assert::positiveInteger($size);
-
-        $retainKeys = static::isAssoc($iterable);
-        $remaining = $size;
-
-        $chunks = [];
-        $block = [];
-        foreach ($iterable as $key => $val) {
-            $retainKeys
-                ? $block[$key] = $val
-                : $block[] = $val;
-
-            if ((--$remaining) === 0) {
-                $remaining = $size;
-                $chunks[] = $block;
-                $block = [];
-            }
-        }
-        if (count($block) > 0) {
-            $chunks[] = $block;
-        }
-        return $chunks;
+        return iterator_to_array(Iter::chunk($iterable, $size));
     }
 
     /**
@@ -503,18 +477,7 @@ class Arr
      */
     public static function flatMap(iterable $iterable, callable $callback): array
     {
-        $results = [];
-        foreach ($iterable as $key => $val) {
-            $result = $callback($val, $key);
-            if (is_iterable($result)) {
-                foreach ($result as $each) {
-                    $results[] = $each;
-                }
-            } else {
-                $results[] = $result;
-            }
-        }
-        return $results;
+        return iterator_to_array(Iter::flatMap($iterable, $callback));
     }
 
     /**

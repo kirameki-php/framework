@@ -58,7 +58,7 @@ class SequenceTest extends TestCase
     public function test___construct_bad_argument(): void
     {
         $this->expectException(TypeError::class);
-        $this->expectExceptionMessage('Argument #1 ($items) must be of type ?iterable, int given');
+        $this->expectExceptionMessage('Argument #1 ($items) must be of type iterable, int given');
         new Sequence(1);
     }
 
