@@ -2,10 +2,8 @@
 
 namespace Kirameki\Support;
 
-use Generator;
+use Traversable;
 use IteratorAggregate;
-use function is_array;
-use function iterator_to_array;
 
 /**
  * @template TKey of array-key
@@ -24,9 +22,9 @@ class Iterator implements IteratorAggregate
     }
 
     /**
-     * @return Generator<TKey, TValue>
+     * @return Traversable<TKey, TValue>
      */
-    public function getIterator(): Generator
+    public function getIterator(): Traversable
     {
         yield from $this->items;
     }
