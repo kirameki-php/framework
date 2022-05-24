@@ -9,7 +9,7 @@ use Kirameki\Redis\Events\CommandExecuted;
 use Kirameki\Redis\Exceptions\CommandException;
 use Kirameki\Redis\Support\SetOptions;
 use Kirameki\Redis\Support\Type;
-use Kirameki\Support\ItemIterator;
+use Kirameki\Support\Iterator;
 use Kirameki\Support\Str;
 use LogicException;
 use Redis;
@@ -478,14 +478,14 @@ class Connection
      * @param string|null $pattern  Patterns to be scanned. Add '*' as suffix to match string. Returns all keys if `null`.
      * @param int $count  Number of elements returned per iteration. This is just a hint and is not guaranteed.
      * @param bool $prefixed  If set to `true`, result will contain the prefix set in the config. (default: `false`)
-     * @return ItemIterator<int, string>
+     * @return Iterator<int, string>
      */
-    public function scan(?string $pattern = null, int $count = 10_000, bool $prefixed = false): ItemIterator
+    public function scan(?string $pattern = null, int $count = 10_000, bool $prefixed = false): Iterator
     {
         return $this->process(
             'scan',
             func_get_args(),
-            static fn(Adapter $adapter) => new ItemIterator($adapter->scan($pattern, $count, $prefixed))
+            static fn(Adapter $adapter) => new Iterator($adapter->scan($pattern, $count, $prefixed))
         );
     }
 

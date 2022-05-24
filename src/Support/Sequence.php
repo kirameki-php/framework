@@ -12,20 +12,12 @@ use function is_iterable;
 /**
  * @template TKey of array-key|class-string
  * @template TValue
- * @extends ItemIterator<TKey, TValue>
+ * @extends Iterator<TKey, TValue>
  */
-class Sequence extends ItemIterator implements Countable, JsonSerializable
+class Sequence extends Iterator implements Countable, JsonSerializable
 {
     use Concerns\Macroable;
     use Concerns\Tappable;
-
-    /**
-     * @param iterable<TKey, TValue>|null $items
-     */
-    public function __construct(iterable|null $items = null)
-    {
-        parent::__construct($items ?? []);
-    }
 
     /**
      * @template TNewKey of array-key

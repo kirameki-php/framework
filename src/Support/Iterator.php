@@ -12,14 +12,15 @@ use function iterator_to_array;
  * @template TValue
  * @implements IteratorAggregate<TKey, TValue>
  */
-class ItemIterator implements IteratorAggregate
+class Iterator implements IteratorAggregate
 {
     /**
      * @param iterable<TKey, TValue> $items
      */
     public function __construct(
-        protected iterable $items
-    ) {
+        protected iterable $items = []
+    )
+    {
     }
 
     /**
