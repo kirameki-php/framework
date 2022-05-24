@@ -12,8 +12,6 @@ use function is_string;
 
 class Iter
 {
-    use Concerns\Macroable;
-
     /**
      * @template TKey of array-key
      * @template TValue

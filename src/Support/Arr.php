@@ -53,8 +53,6 @@ use function uksort;
 
 class Arr
 {
-    use Concerns\Macroable;
-
     /**
      * `$array = [1, 2]; Arr::append($array, 3); // [1, 2, 3]`
      *
