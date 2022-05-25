@@ -16,6 +16,7 @@ use Kirameki\Cache\Events\CacheStored;
 use Kirameki\Event\Event;
 use Kirameki\Event\EventManager;
 use Kirameki\Support\Arr;
+use function array_map;
 use function preg_replace;
 use function time;
 
@@ -91,7 +92,7 @@ abstract class AbstractStore implements Store
      */
     public function formatKeys(array $keys): array
     {
-        return Arr::map($keys, fn($key) => $this->formatKey($key));
+        return array_map(fn(string $key): string => $this->formatKey($key), $keys);
     }
 
     /**

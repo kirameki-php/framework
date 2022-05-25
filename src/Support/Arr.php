@@ -246,6 +246,16 @@ class Arr
 
     /**
      * @template TKey of array-key
+     * @param iterable<TKey, mixed> $iterable Iterable to be traversed.
+     * @return int
+     */
+    public static function count(iterable $iterable): int
+    {
+        return Iter::count($iterable);
+    }
+
+    /**
+     * @template TKey of array-key
      * @template TValue
      * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
      * @param callable(TValue, TKey): bool $condition
@@ -885,11 +895,7 @@ class Arr
      */
     public static function map(iterable $iterable, callable $callback): array
     {
-        $mapped = [];
-        foreach ($iterable as $key => $val) {
-            $mapped[$key] = $callback($val, $key);
-        }
-        return $mapped;
+        return iterator_to_array(Iter::map($iterable, $callback));
     }
 
     /**

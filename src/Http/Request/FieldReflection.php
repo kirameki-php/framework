@@ -10,6 +10,7 @@ use Kirameki\Support\Str;
 use ReflectionAttribute;
 use ReflectionProperty;
 use function array_key_exists;
+use function array_map;
 use function class_exists;
 use function filter_var;
 use function is_array;
@@ -51,9 +52,10 @@ class FieldReflection
 
         $attributes = $this->property->getAttributes(Validation::class);
 
-        $validations = Arr::map($attributes, function(ReflectionAttribute $attribute) {
-            return $attribute->newInstance();
-        });
+        $validations = array_map(
+            static fn(ReflectionAttribute $attribute): Validation => $attribute->newInstance(),
+            $attributes
+        );
 
         Arr::each($validations, function(Validation $validation) use ($inputs) {
             $validation->validate($this->definition->name, $inputs);
