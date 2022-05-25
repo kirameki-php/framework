@@ -144,7 +144,7 @@ class Sequence extends Iterator implements Countable, JsonSerializable
      */
     public function count(): int
     {
-        return Arr::count($this->toArray());
+        return Iter::count($this->toArray());
     }
 
     /**
