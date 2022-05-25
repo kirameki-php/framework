@@ -21,7 +21,9 @@
     "ramsey/uuid": "^4.1"
   },
   "require-dev": {
+    "phpstan/extension-installer": "^1.1",
     "phpstan/phpstan": "^1.6",
+    "phpstan/phpstan-webmozart-assert": "^1.1",
     "phpunit/phpunit": "~9.0",
     "symfony/var-dumper": "^6"
   },
@@ -53,7 +55,10 @@
   "config": {
     "discard-changes": true,
     "preferred-install": "dist",
-    "sort-packages": true
+    "sort-packages": true,
+    "allow-plugins": {
+      "phpstan/extension-installer": true
+    }
   },
   "minimum-stability": "dev",
   "prefer-stable": true,

@@ -772,8 +772,8 @@ class Arr
                 ? static::keyByRecursive($val, $callable, $overwrite, $depth - 1)
                 : $val;
         }
-
-        return $result; /* @phpstan-ignore-line */
+        /** @var array<T> $result */
+        return $result;
     }
 
     /**
@@ -980,7 +980,8 @@ class Arr
                 $merged[$key] = $val;
             }
         }
-        return $merged; /* @phpstan-ignore-line */
+        /** @var array<TKey, TValue> $merged */
+        return $merged;
     }
 
     /**
@@ -1268,11 +1269,9 @@ class Arr
             }
         }
 
-        if ($result === null) {
-            Assert::minCount([], 1);
-        }
+        Assert::notNull($result);
 
-        return $result; /** @phpstan-ignore-line */
+        return $result;
     }
 
     /**
@@ -1864,7 +1863,8 @@ class Arr
                 $union[$key] = static::unionRecursive($union[$key], $val, $depth - 1);
             }
         }
-        return $union; /** @phpstan-ignore-line */
+        /** @var array<TKey, TValue> $union */
+        return $union;
     }
 
     /**

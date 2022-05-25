@@ -56,13 +56,14 @@ class Iter
         foreach ($iterable as $key => $val) {
             $isList ??= $key === 0;
             if (is_iterable($val) && $depth > 1) {
+                /** @var TValue $val */
                 $val = Arr::compact($val, $depth - 1); /** @phpstan-ignore-line */
             }
             if ($val !== null) {
                 if ($isList) {
-                    yield $val; /** @phpstan-ignore-line */
+                    yield $val;
                 } else {
-                    yield $key => $val; /** @phpstan-ignore-line */
+                    yield $key => $val;
                 }
             }
         }
