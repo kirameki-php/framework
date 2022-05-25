@@ -33,7 +33,6 @@ use function get_resource_id;
 use function http_build_query;
 use function is_array;
 use function is_bool;
-use function is_countable;
 use function is_float;
 use function is_int;
 use function is_iterable;
@@ -170,11 +169,11 @@ class Arr
      */
     public static function coalesce(iterable $iterable): mixed
     {
-        $notFound = NotFound::instance();
+        $miss = Miss::instance();
 
-        $result = static::coalesceOr($iterable, $notFound);
+        $result = static::coalesceOr($iterable, $miss);
 
-        if ($result instanceof NotFound) {
+        if ($result instanceof Miss) {
             throw new RuntimeException('Non-null value could not be found.');
         }
 
@@ -252,14 +251,7 @@ class Arr
      */
     public static function count(iterable $iterable): int
     {
-        if (is_countable($iterable)) {
-            return count($iterable);
-        }
-        $count = 0;
-        foreach ($iterable as $_) {
-            ++$count;
-        }
-        return $count;
+        return Iter::count($iterable);
     }
 
     /**
@@ -391,11 +383,11 @@ class Arr
      */
     public static function first(iterable $iterable, ?callable $condition = null): mixed
     {
-        $notFound = NotFound::instance();
+        $miss = Miss::instance();
 
-        $result = static::firstOr($iterable, $notFound, $condition);
+        $result = static::firstOr($iterable, $miss, $condition);
 
-        if ($result instanceof NotFound) {
+        if ($result instanceof Miss) {
             $message = ($condition !== null)
                 ? 'Failed to find matching condition.'
                 : 'Iterable must contain at least one element.';
@@ -557,10 +549,10 @@ class Arr
      */
     public static function get(iterable $iterable, int|string $key): mixed
     {
-        $notFound = NotFound::instance();
-        $result = static::getOr($iterable, $key, $notFound);
+        $miss = Miss::instance();
+        $result = static::getOr($iterable, $key, $miss);
 
-        if ($result instanceof NotFound) {
+        if ($result instanceof Miss) {
             throw new RuntimeException("Undefined array key $key");
         }
 
@@ -795,11 +787,11 @@ class Arr
      */
     public static function last(iterable $iterable, ?callable $condition = null): mixed
     {
-        $notFound = NotFound::instance();
+        $miss = Miss::instance();
 
-        $result = static::lastOr($iterable, $notFound, $condition);
+        $result = static::lastOr($iterable, $miss, $condition);
 
-        if ($result instanceof NotFound) {
+        if ($result instanceof Miss) {
             $message = ($condition !== null)
                 ? 'Failed to find matching condition.'
                 : 'Iterable must contain at least one element.';
@@ -1193,11 +1185,11 @@ class Arr
      */
     public static function pull(array &$array, int|string $key): mixed
     {
-        $notFound = NotFound::instance();
+        $miss = Miss::instance();
 
-        $result = static::pullOr($array, $key, $notFound);
+        $result = static::pullOr($array, $key, $miss);
 
-        if ($result instanceof NotFound) {
+        if ($result instanceof Miss) {
             throw new RuntimeException("Tried to pull undefined array key \"$key\"");
         }
 
@@ -1567,37 +1559,7 @@ class Arr
      */
     public static function slice(iterable $iterable, int $offset, int $length = PHP_INT_MAX): array
     {
-        $isNegativeOffset = $offset < 0;
-        $isNegativeLength = $length < 0;
-
-        if ($isNegativeOffset || $isNegativeLength) {
-            $size = static::count($iterable);
-            if ($isNegativeOffset) {
-                $offset = $size + $offset;
-            }
-            if ($isNegativeLength) {
-                $length = $size + $length;
-            }
-        }
-
-        /** @var array<TKey, TValue> $array */
-        $array = [];
-        $ptr = 0;
-        foreach ($iterable as $key => $value) {
-            if ($ptr++ < $offset) {
-                continue;
-            }
-
-            if ($ptr > $offset + $length) {
-                break;
-            }
-
-            is_int($key)
-                ? $array[] = $value
-                : $array[$key] = $value;
-        }
-
-        return $array;
+        return iterator_to_array(Iter::slice($iterable, $offset, $length));
     }
 
     /**
@@ -1813,9 +1775,7 @@ class Arr
      */
     public static function take(iterable $iterable, int $amount): array
     {
-        return $amount >= 0
-            ? static::slice($iterable, 0, $amount)
-            : static::slice($iterable, $amount, -$amount);
+        return iterator_to_array(Iter::take($iterable, $amount));
     }
 
     /**
@@ -1827,8 +1787,7 @@ class Arr
      */
     public static function takeUntil(iterable $iterable, callable $condition): array
     {
-        $index = static::firstIndex($iterable, $condition) ?? PHP_INT_MAX;
-        return static::take($iterable, $index);
+        return iterator_to_array(Iter::takeUntil($iterable, $condition));
     }
 
     /**
@@ -1840,8 +1799,7 @@ class Arr
      */
     public static function takeWhile(iterable $iterable, callable $condition): array
     {
-        $index = static::firstIndex($iterable, static fn($val, $key) => !$condition($val, $key)) ?? PHP_INT_MAX;
-        return static::take($iterable, $index);
+        return iterator_to_array(Iter::takeWhile($iterable, $condition));
     }
 
     /**

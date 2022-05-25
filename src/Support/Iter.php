@@ -6,6 +6,7 @@ use Generator;
 use Kirameki\Exception\InvalidKeyException;
 use Webmozart\Assert\Assert;
 use function count;
+use function is_countable;
 use function is_int;
 use function is_iterable;
 use function is_string;
@@ -16,7 +17,7 @@ class Iter
      * @template TKey of array-key
      * @template TValue
      * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
-     * @param int $size
+     * @param int $size Size of each chunk. Must be >= 1.
      * @return Generator<int, array<TKey, TValue>>
      */
     public static function chunk(iterable $iterable, int $size): Generator
@@ -70,16 +71,32 @@ class Iter
 
     /**
      * @template TKey of array-key
+     * @param iterable<TKey, mixed> $iterable Iterable to be traversed.
+     * @return int
+     */
+    public static function count(iterable $iterable): int
+    {
+        if (is_countable($iterable)) {
+            return count($iterable);
+        }
+        $count = 0;
+        foreach ($iterable as $_) {
+            ++$count;
+        }
+        return $count;
+    }
+
+    /**
+     * @template TKey of array-key
      * @template TValue
      * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
-     * @param int $amount
+     * @param int $amount Amount of elements to drop. Must be >= 0.
      * @return Generator<TKey, TValue>
      */
     public static function drop(iterable $iterable, int $amount): Generator
     {
-        return $amount >= 0
-            ? static::slice($iterable, $amount)
-            : static::slice($iterable, 0, -$amount);
+        Assert::greaterThanEq($amount, 0);
+        return static::slice($iterable, $amount);
     }
 
     /**
@@ -323,9 +340,8 @@ class Iter
      */
     public static function take(iterable $iterable, int $amount): Generator
     {
-        return $amount >= 0
-            ? static::slice($iterable, 0, $amount)
-            : static::slice($iterable, $amount, -$amount);
+        Assert::greaterThanEq($amount, 0);
+        return static::slice($iterable, 0, $amount);
     }
 
     /**

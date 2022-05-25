@@ -2,7 +2,7 @@
 
 namespace Kirameki\Support;
 
-final class NotFound
+final class Miss
 {
     /**
      * @var self|null

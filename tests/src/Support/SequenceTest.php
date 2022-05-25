@@ -375,19 +375,22 @@ class SequenceTest extends TestCase
         self::assertEquals([1, 2], $seq->drop(1)->toArray());
 
         $seq = $this->seq(['a' => 1, 'b' => 2, 'c' => 3]);
-        self::assertEquals(['b' => 2, 'c' => 3], $seq->drop(1)->toArray());
+        self::assertEquals(['c' => 3], $seq->drop(2)->toArray());
 
         // over value
         $seq = $this->seq(['a' => 1]);
         self::assertEquals([], $seq->drop(2)->toArray());
 
-        // negative
-        $seq = $this->seq(['a' => 1, 'b' => 1]);
-        self::assertEquals(['a' => 1], $seq->drop(-1)->toArray());
-
         // zero
         $seq = $this->seq(['a' => 1]);
         self::assertEquals(['a' => 1], $seq->drop(0)->toArray());
+    }
+
+    public function test_drop_fail_on_negative_amount(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Expected a value greater than or equal to 0. Got: -1');
+        $this->seq(['a' => 1])->drop(-1);
     }
 
     public function test_dropUntil(): void
@@ -1307,15 +1310,18 @@ class SequenceTest extends TestCase
         $seq = $this->seq([2, 3, 4])->take(2);
         self::assertEquals([2, 3], $seq->toArray());
 
-        $seq = $this->seq([2, 3, 4])->take(-1);
-        self::assertEquals([4], $seq->toArray());
-
         $seq = $this->seq([2, 3, 4])->take(0);
         self::assertEquals([], $seq->toArray());
 
         $seq = $this->seq(['b' => 1, 'a' => 3, 'c' => 2])->take(1);
         self::assertEquals(['b' => 1], $seq->toArray());
+    }
 
+    public function test_take_fail_on_negative_amount(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Expected a value greater than or equal to 0. Got: -1');
+        $this->seq(['a' => 1])->take(-1);
     }
 
     public function test_takeUntil(): void
