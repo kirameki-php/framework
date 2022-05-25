@@ -159,45 +159,57 @@ class SequenceTest extends TestCase
         $this->seq([1])->chunk(0);
     }
 
-    public function test_coalesce_empty(): void
+    public function test_coalesce(): void
     {
-        $this->expectException(RuntimeException::class);
-        $this->expectExceptionMessage('Non-null value could not be found.');
-        $this->seq([])->coalesce();
-    }
-
-    public function test_coalesce_only_null(): void
-    {
-        $this->expectException(RuntimeException::class);
-        $this->expectExceptionMessage('Non-null value could not be found.');
-        $this->seq([null])->coalesce();
-    }
-
-    public function test_coalesceOr(): void
-    {
-        $result = $this->seq()->coalesceOr(null);
+        $result = $this->seq()->coalesce();
         self::assertNull($result);
 
-        $result = $this->seq([null, 0, 1])->coalesceOr(null);
+        $result = $this->seq([null, 0, 1])->coalesce();
         self::assertEquals(0, $result);
 
-        $result = $this->seq([0, null, 1])->coalesceOr(null);
+        $result = $this->seq([0, null, 1])->coalesce();
         self::assertEquals(0, $result);
 
-        $result = $this->seq(['', null, 1])->coalesceOr(null);
+        $result = $this->seq(['', null, 1])->coalesce();
         self::assertEquals('', $result);
 
-        $result = $this->seq(['', null, 1])->coalesceOr(null);
+        $result = $this->seq(['', null, 1])->coalesce();
         self::assertEquals('', $result);
 
-        $result = $this->seq([[], null, 1])->coalesceOr(null);
+        $result = $this->seq([[], null, 1])->coalesce();
         self::assertEquals([], $result);
 
-        $result = $this->seq([null, [], 1])->coalesceOr(null);
+        $result = $this->seq([null, [], 1])->coalesce();
         self::assertEquals([], $result);
 
-        $result = $this->seq([null, null, 1])->coalesceOr(null);
+        $result = $this->seq([null, null, 1])->coalesce();
         self::assertEquals(1, $result);
+    }
+
+    public function test_coalesceOrFail(): void
+    {
+        $result = $this->seq([null, 0, 1])->coalesceOrFail();
+        self::assertEquals(0, $result);
+
+        $result = $this->seq([0, null, 1])->coalesceOrFail();
+        self::assertEquals(0, $result);
+
+        $result = $this->seq([null, null, 1])->coalesceOrFail();
+        self::assertEquals(1, $result);
+    }
+
+    public function test_coalesceOrFail_empty(): void
+    {
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('Non-null value could not be found.');
+        $this->seq([])->coalesceOrFail();
+    }
+
+    public function test_coalesceOrFail_only_null(): void
+    {
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('Non-null value could not be found.');
+        $this->seq([null])->coalesceOrFail();
     }
 
     public function test_compact(): void
@@ -1060,7 +1072,7 @@ class SequenceTest extends TestCase
     public function test_reduce_unable_to_guess_initial(): void
     {
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Expected an array to contain at least 1 elements. Got: 0');
+        $this->expectExceptionMessage('Expected a value other than null.');
         $this->seq([])->reduce(fn($c, $i, $k) => $k);
     }
 

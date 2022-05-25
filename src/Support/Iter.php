@@ -48,17 +48,12 @@ class Iter
      * @template TKey of array-key
      * @template TValue
      * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
-     * @param int $depth Optional. Must be >= 1. Default is 1.
      * @return Iterator<TKey, TValue>
      */
-    public static function compact(iterable $iterable, int $depth = 1): Iterator
+    public static function compact(iterable $iterable): Iterator
     {
         foreach ($iterable as $key => $val) {
             $isList ??= $key === 0;
-            if (is_iterable($val) && $depth > 1) {
-                /** @var TValue $val */
-                $val = static::compact($val, $depth - 1); /** @phpstan-ignore-line */
-            }
             if ($val !== null) {
                 if ($isList) {
                     yield $val;

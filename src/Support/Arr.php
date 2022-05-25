@@ -166,37 +166,33 @@ class Arr
      * @template TKey
      * @template TValue
      * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
-     * @return TValue
+     * @return TValue|null
      */
     public static function coalesce(iterable $iterable): mixed
-    {
-        $miss = Miss::instance();
-
-        $result = static::coalesceOr($iterable, $miss);
-
-        if ($result instanceof Miss) {
-            throw new RuntimeException('Non-null value could not be found.');
-        }
-
-        return $result;
-    }
-
-    /**
-     * @template TKey
-     * @template TValue
-     * @template TDefault
-     * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
-     * @param TDefault $default
-     * @return TValue|TDefault
-     */
-    public static function coalesceOr(iterable $iterable, mixed $default): mixed
     {
         foreach ($iterable as $val) {
             if ($val !== null) {
                 return $val;
             }
         }
-        return $default;
+        return null;
+    }
+
+    /**
+     * @template TKey
+     * @template TValue
+     * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
+     * @return TValue
+     */
+    public static function coalesceOrFail(iterable $iterable): mixed
+    {
+        $result = static::coalesce($iterable);
+
+        if ($result === null) {
+            throw new RuntimeException('Non-null value could not be found.');
+        }
+
+        return $result;
     }
 
     /**
@@ -214,7 +210,22 @@ class Arr
      */
     public static function compact(iterable $iterable, int $depth = 1): array
     {
-        return iterator_to_array(Iter::compact($iterable, $depth));
+        $result = [];
+        foreach (Iter::compact($iterable) as $key => $val) {
+            $isList ??= $key === 0;
+            if (is_iterable($val) && $depth > 1) {
+                /** @var TValue $val */
+                $val = static::compact($val, $depth - 1); /** @phpstan-ignore-line */
+            }
+            if ($val !== null) {
+                if ($isList) {
+                    $result[] = $val;
+                } else {
+                    $result[$key] = $val;
+                }
+            }
+        }
+        return $result;
     }
 
     /**

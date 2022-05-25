@@ -72,7 +72,7 @@ class Sequence extends Iterator implements Countable, JsonSerializable
     }
 
     /**
-     * @return TValue
+     * @return TValue|null
      */
     public function coalesce(): mixed
     {
@@ -80,13 +80,11 @@ class Sequence extends Iterator implements Countable, JsonSerializable
     }
 
     /**
-     * @template TDefault
-     * @param TDefault $default
-     * @return TValue|TDefault
+     * @return TValue
      */
-    public function coalesceOr(mixed $default): mixed
+    public function coalesceOrFail(): mixed
     {
-        return Arr::coalesceOr($this, $default);
+        return Arr::coalesceOrFail($this);
     }
 
     /**
@@ -144,7 +142,7 @@ class Sequence extends Iterator implements Countable, JsonSerializable
      */
     public function count(): int
     {
-        return Iter::count($this->toArray());
+        return Arr::count($this->toArray());
     }
 
     /**
