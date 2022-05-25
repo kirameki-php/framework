@@ -57,7 +57,7 @@ class Iter
             $isList ??= $key === 0;
             if (is_iterable($val) && $depth > 1) {
                 /** @var TValue $val */
-                $val = Arr::compact($val, $depth - 1); /** @phpstan-ignore-line */
+                $val = static::compact($val, $depth - 1); /** @phpstan-ignore-line */
             }
             if ($val !== null) {
                 if ($isList) {
