@@ -155,7 +155,7 @@ class Collection extends Sequence implements ArrayAccess
 
     /**
      * @param TKey $key
-     * @return TValue
+     * @return TValue|null
      */
     public function pull(int|string $key): mixed
     {
@@ -163,14 +163,12 @@ class Collection extends Sequence implements ArrayAccess
     }
 
     /**
-     * @template TDefault
      * @param TKey $key
-     * @param TDefault $default
-     * @return TValue|TDefault
+     * @return TValue
      */
-    public function pullOr(int|string $key, mixed $default): mixed
+    public function pullOrFail(int|string $key): mixed
     {
-        return Arr::pullOr($this->items, $key, $default);
+        return Arr::pullOrFail($this->items, $key);
     }
 
     /**

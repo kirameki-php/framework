@@ -256,6 +256,13 @@ class CollectionTest extends TestCase
 
     public function test_pull(): void
     {
+        $collect = collect([]);
+        self::assertEquals(null, $collect->pull(1));
+
+        $collect = collect([1, 2, 3]);
+        self::assertEquals(2, $collect->pull(1));
+        self::assertEquals([1, 3], $collect->toArray());
+
         $collect = collect([1, 2, 3]);
         self::assertEquals(2, $collect->pull(1));
         self::assertEquals([1, 3], $collect->toArray());
@@ -265,32 +272,25 @@ class CollectionTest extends TestCase
         self::assertEquals(['a' => 1], $collect->toArray());
     }
 
-    public function test_pull_pull_on_empty(): void
+    public function test_pullOr(): void
+    {
+        $collect = collect(['a' => 1, 'b' => 2]);
+        self::assertEquals(2, $collect->pullOrFail('b'));
+        self::assertEquals(['a' => 1], $collect->toArray());
+    }
+
+    public function test_pullOrFail_pull_on_empty(): void
     {
         $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('Tried to pull undefined array key "1"');
-        collect([])->pull(1);
+        collect([])->pullOrFail(1);
     }
 
-    public function test_pull_pull_undefined_key(): void
+    public function test_pullOrFail_pull_undefined_key(): void
     {
         $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('Tried to pull undefined array key "c"');
-        collect(['a' => 1, 'b' => 2])->pull('c');
-    }
-
-    public function test_pullOr(): void
-    {
-        $collect = collect([]);
-        self::assertEquals(null, $collect->pullOr(1, null));
-
-        $collect = collect([1, 2, 3]);
-        self::assertEquals(2, $collect->pullOr(1, null));
-        self::assertEquals([1, 3], $collect->toArray());
-
-        $collect = collect(['a' => 1, 'b' => 2]);
-        self::assertEquals(2, $collect->pullOr('b', null));
-        self::assertEquals(['a' => 1], $collect->toArray());
+        collect(['a' => 1, 'b' => 2])->pullOrFail('c');
     }
 
     public function test_pullMany(): void

@@ -1181,34 +1181,14 @@ class Arr
      * @template T
      * @param array<T> $array
      * @param array-key $key
-     * @return T
+     * @return T|null
      */
     public static function pull(array &$array, int|string $key): mixed
     {
-        $miss = Miss::instance();
-
-        $result = static::pullOr($array, $key, $miss);
-
-        if ($result instanceof Miss) {
-            throw new RuntimeException("Tried to pull undefined array key \"$key\"");
-        }
-
-        return $result;
-    }
-
-    /**
-     * @template T
-     * @template TDefault
-     * @param array<T> $array
-     * @param array-key $key
-     * @param TDefault $default
-     * @return T|TDefault
-     */
-    public static function pullOr(array &$array, int|string $key, mixed $default): mixed
-    {
         $reIndex = array_is_list($array);
 
-        $value = $default;
+        $value = null;
+
         if (array_key_exists($key, $array)) {
             $value = $array[$key];
             unset($array[$key]);
@@ -1219,6 +1199,21 @@ class Arr
         }
 
         return $value;
+    }
+
+    /**
+     * @template T
+     * @param array<T> $array
+     * @param array-key $key
+     * @return T
+     */
+    public static function pullOrFail(array &$array, int|string $key): mixed
+    {
+        $result = static::pull($array, $key);
+        if ($result === null) {
+            throw new RuntimeException("Tried to pull undefined array key \"$key\"");
+        }
+        return $result;
     }
 
     /**
@@ -1328,7 +1323,7 @@ class Arr
      */
     public static function removeKey(array &$array, int|string $key): bool
     {
-        return static::pullOr($array, $key, null) !== null;
+        return static::pull($array, $key) !== null;
     }
 
     /**
