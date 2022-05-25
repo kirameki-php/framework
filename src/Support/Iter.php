@@ -2,11 +2,10 @@
 
 namespace Kirameki\Support;
 
-use Generator;
+use Iterator;
 use Kirameki\Exception\InvalidKeyException;
 use Webmozart\Assert\Assert;
 use function count;
-use function is_countable;
 use function is_int;
 use function is_iterable;
 use function is_string;
@@ -18,9 +17,9 @@ class Iter
      * @template TValue
      * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
      * @param int $size Size of each chunk. Must be >= 1.
-     * @return Generator<int, array<TKey, TValue>>
+     * @return Iterator<int, array<TKey, TValue>>
      */
-    public static function chunk(iterable $iterable, int $size): Generator
+    public static function chunk(iterable $iterable, int $size): Iterator
     {
         Assert::positiveInteger($size);
 
@@ -50,9 +49,9 @@ class Iter
      * @template TValue
      * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
      * @param int $depth Optional. Must be >= 1. Default is 1.
-     * @return Generator<TKey, TValue>
+     * @return Iterator<TKey, TValue>
      */
-    public static function compact(iterable $iterable, int $depth = 1): Generator
+    public static function compact(iterable $iterable, int $depth = 1): Iterator
     {
         foreach ($iterable as $key => $val) {
             $isList ??= $key === 0;
@@ -74,9 +73,9 @@ class Iter
      * @template TValue
      * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
      * @param int $amount Amount of elements to drop. Must be >= 0.
-     * @return Generator<TKey, TValue>
+     * @return Iterator<TKey, TValue>
      */
-    public static function drop(iterable $iterable, int $amount): Generator
+    public static function drop(iterable $iterable, int $amount): Iterator
     {
         Assert::greaterThanEq($amount, 0);
         return static::slice($iterable, $amount);
@@ -87,9 +86,9 @@ class Iter
      * @template TValue
      * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
      * @param callable(TValue, TKey): bool $condition
-     * @return Generator<TKey, TValue>
+     * @return Iterator<TKey, TValue>
      */
-    public static function dropUntil(iterable $iterable, callable $condition): Generator
+    public static function dropUntil(iterable $iterable, callable $condition): Iterator
     {
         $drop = true;
         foreach ($iterable as $key => $item) {
@@ -114,9 +113,9 @@ class Iter
      * @template TValue
      * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
      * @param callable(TValue, TKey): bool $condition
-     * @return Generator<TKey, TValue>
+     * @return Iterator<TKey, TValue>
      */
-    public static function dropWhile(iterable $iterable, callable $condition): Generator
+    public static function dropWhile(iterable $iterable, callable $condition): Iterator
     {
         $drop = true;
         foreach ($iterable as $key => $item) {
@@ -141,9 +140,9 @@ class Iter
      * @template TValue
      * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
      * @param callable(TValue, TKey): bool $condition
-     * @return Generator<TKey, TValue>
+     * @return Iterator<TKey, TValue>
      */
-    public static function filter(iterable $iterable, callable $condition): Generator
+    public static function filter(iterable $iterable, callable $condition): Iterator
     {
         foreach ($iterable as $key => $val) {
             $isList ??= $key === 0;
@@ -162,9 +161,9 @@ class Iter
      * @template TValue
      * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
      * @param callable(TValue, TKey): mixed $callback
-     * @return Generator<int, mixed>
+     * @return Iterator<int, mixed>
      */
-    public static function flatMap(iterable $iterable, callable $callback): Generator
+    public static function flatMap(iterable $iterable, callable $callback): Iterator
     {
         foreach ($iterable as $key => $val) {
             $result = $callback($val, $key);
@@ -182,9 +181,9 @@ class Iter
      * @template TKey of array-key
      * @param iterable<TKey, mixed> $iterable Iterable to be traversed.
      * @param int $depth Depth must be >= 1. Default: 1.
-     * @return Generator<mixed, mixed>
+     * @return Iterator<mixed, mixed>
      */
-    public static function flatten(iterable $iterable, int $depth = 1): Generator
+    public static function flatten(iterable $iterable, int $depth = 1): Iterator
     {
         Assert::positiveInteger($depth);
         return static::flattenImpl($iterable, $depth);
@@ -194,9 +193,9 @@ class Iter
      * @template TKey of array-key
      * @param iterable<TKey, mixed> $iterable Iterable to be traversed.
      * @param int $depth Depth must be >= 1. Default: 1.
-     * @return Generator<mixed, mixed>
+     * @return Iterator<mixed, mixed>
      */
-    protected static function flattenImpl(iterable $iterable, int $depth = 1): Generator
+    protected static function flattenImpl(iterable $iterable, int $depth = 1): Iterator
     {
         foreach ($iterable as $key => $val) {
             if (is_iterable($val) && $depth > 0) {
@@ -213,9 +212,9 @@ class Iter
      * @template TKey of array-key
      * @template TValue
      * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
-     * @return Generator<TValue, TKey>
+     * @return Iterator<TValue, TKey>
      */
-    public static function flip(iterable $iterable): Generator
+    public static function flip(iterable $iterable): Iterator
     {
         foreach ($iterable as $key => $val) {
             if (is_int($val) || is_string($val)) {
@@ -229,9 +228,9 @@ class Iter
     /**
      * @template TKey
      * @param iterable<TKey, mixed> $iterable Iterable to be traversed.
-     * @return Generator<TKey>
+     * @return Iterator<int, TKey>
      */
-    public static function keys(iterable $iterable): Generator
+    public static function keys(iterable $iterable): Iterator
     {
         foreach ($iterable as $key => $item) {
             yield $key;
@@ -244,9 +243,9 @@ class Iter
      * @template TMapValue
      * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
      * @param callable(TValue, TKey): TMapValue $callback
-     * @return Generator<TKey, TMapValue>
+     * @return Iterator<TKey, TMapValue>
      */
-    public static function map(iterable $iterable, callable $callback): Generator
+    public static function map(iterable $iterable, callable $callback): Iterator
     {
         foreach ($iterable as $key => $val) {
             yield $key => $callback($val, $key);
@@ -257,9 +256,9 @@ class Iter
      * @template T
      * @param iterable<array-key, T> $iterable Iterable to be traversed.
      * @param int $times
-     * @return Generator<int, T>
+     * @return Iterator<int, T>
      */
-    public static function repeat(iterable $iterable, int $times): Generator
+    public static function repeat(iterable $iterable, int $times): Iterator
     {
         Assert::greaterThanEq($times, 0);
 
@@ -276,9 +275,9 @@ class Iter
      * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
      * @param int $offset
      * @param int $length
-     * @return Generator<TKey, TValue>
+     * @return Iterator<TKey, TValue>
      */
-    public static function slice(iterable $iterable, int $offset, int $length = PHP_INT_MAX): Generator
+    public static function slice(iterable $iterable, int $offset, int $length = PHP_INT_MAX): Iterator
     {
         $isNegativeOffset = $offset < 0;
         $isNegativeLength = $length < 0;
@@ -319,9 +318,9 @@ class Iter
      * @template TValue
      * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
      * @param int $amount
-     * @return Generator<TKey, TValue>
+     * @return Iterator<TKey, TValue>
      */
-    public static function take(iterable $iterable, int $amount): Generator
+    public static function take(iterable $iterable, int $amount): Iterator
     {
         Assert::greaterThanEq($amount, 0);
         return static::slice($iterable, 0, $amount);
@@ -332,9 +331,9 @@ class Iter
      * @template TValue
      * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
      * @param callable(TValue, TKey): bool $condition
-     * @return Generator<TKey, TValue>
+     * @return Iterator<TKey, TValue>
      */
-    public static function takeUntil(iterable $iterable, callable $condition): Generator
+    public static function takeUntil(iterable $iterable, callable $condition): Iterator
     {
         foreach ($iterable as $key => $item) {
             if (!$condition($item, $key)) {
@@ -350,9 +349,9 @@ class Iter
      * @template TValue
      * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
      * @param callable(TValue, TKey): bool $condition
-     * @return Generator<TKey, TValue>
+     * @return Iterator<TKey, TValue>
      */
-    public static function takeWhile(iterable $iterable, callable $condition): Generator
+    public static function takeWhile(iterable $iterable, callable $condition): Iterator
     {
         foreach ($iterable as $key => $item) {
             if ($condition($item, $key)) {
@@ -367,9 +366,9 @@ class Iter
      * @template TKey of array-key
      * @template TValue
      * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
-     * @return Generator<int, TValue>
+     * @return Iterator<int, TValue>
      */
-    public static function values(iterable $iterable): Generator
+    public static function values(iterable $iterable): Iterator
     {
         foreach ($iterable as $val) {
             yield $val;
