@@ -71,23 +71,6 @@ class Iter
 
     /**
      * @template TKey of array-key
-     * @param iterable<TKey, mixed> $iterable Iterable to be traversed.
-     * @return int
-     */
-    public static function count(iterable $iterable): int
-    {
-        if (is_countable($iterable)) {
-            return count($iterable);
-        }
-        $count = 0;
-        foreach ($iterable as $_) {
-            ++$count;
-        }
-        return $count;
-    }
-
-    /**
-     * @template TKey of array-key
      * @template TValue
      * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
      * @param int $amount Amount of elements to drop. Must be >= 0.

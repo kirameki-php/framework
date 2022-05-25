@@ -33,6 +33,7 @@ use function get_resource_id;
 use function http_build_query;
 use function is_array;
 use function is_bool;
+use function is_countable;
 use function is_float;
 use function is_int;
 use function is_iterable;
@@ -251,7 +252,14 @@ class Arr
      */
     public static function count(iterable $iterable): int
     {
-        return Iter::count($iterable);
+        if (is_countable($iterable)) {
+            return count($iterable);
+        }
+        $count = 0;
+        foreach ($iterable as $_) {
+            ++$count;
+        }
+        return $count;
     }
 
     /**
