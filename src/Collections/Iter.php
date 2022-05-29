@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Kirameki\Support;
+namespace Kirameki\Collections;
 
 use Iterator;
 use Kirameki\Exception\InvalidKeyException;

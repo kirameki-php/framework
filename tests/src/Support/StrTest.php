@@ -215,9 +215,9 @@ class StrTest extends TestCase
         self::assertTrue(Str::containsPattern('abc', '/abc/'));
         self::assertTrue(Str::containsPattern('ABC', '/abc/i'));
         self::assertTrue(Str::containsPattern('aaaz', '/a{3}/'));
-        self::assertTrue(Str::containsPattern('ABC1', '/[A-z0-9]+/'));
-        self::assertTrue(Str::containsPattern('ABC1', '/[0-9]$/'));
-        self::assertFalse(Str::containsPattern('AB1C', '/[0-9]$/'));
+        self::assertTrue(Str::containsPattern('ABC1', '/[A-z\d]+/'));
+        self::assertTrue(Str::containsPattern('ABC1', '/\d]$/'));
+        self::assertFalse(Str::containsPattern('AB1C', '/\d]$/'));
     }
 
     public function testDelete(): void

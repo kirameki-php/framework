@@ -3,11 +3,11 @@
 namespace Kirameki\Redis\Adapters;
 
 use Generator;
+use Kirameki\Collections\Arr;
 use Kirameki\Core\Config;
 use Kirameki\Redis\Exceptions\CommandException;
 use Kirameki\Redis\Exceptions\ConnectionException;
 use Kirameki\Redis\Exceptions\RedisException;
-use Kirameki\Support\Arr;
 use Redis;
 use RedisCluster;
 use RedisException as PhpRedisException;

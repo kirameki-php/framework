@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Tests\Kirameki\Support;
+namespace Tests\Kirameki\Collections;
 
 use ErrorException;
 use InvalidArgumentException;
@@ -9,7 +9,6 @@ use RuntimeException;
 use Tests\Kirameki\TestCase;
 use TypeError;
 use function collect;
-use function dd;
 
 class CollectionTest extends TestCase
 {
@@ -84,18 +83,12 @@ class CollectionTest extends TestCase
     {
         $collect = collect([1, 2]);
         self::assertEquals(2, $collect->get(1));
+        self::assertEquals(null, $collect->get(2));
 
         $collect = collect(['a' => [1, 'b' => 2, 'c' => ['d' => 3]], 'c' => 'd', 'e' => []]);
         // get existing data
         self::assertEquals([1, 'b' => 2, 'c' => ['d' => 3]], $collect->get('a'));
         self::assertEquals('d', $collect->get('c'));
-    }
-
-    public function test_get_invalid_key_exception(): void
-    {
-        $this->expectException(RuntimeException::class);
-        $this->expectExceptionMessage('Undefined array key 2');
-        collect([1, 2])->get(2);
     }
 
     public function test_getOr(): void
@@ -105,6 +98,24 @@ class CollectionTest extends TestCase
         self::assertEquals([1, 'b' => 2, 'c' => ['d' => 3]], $collect->get('a'));
         self::assertEquals('d', $collect->getOr('c', null));
         self::assertEquals(null, $collect->getOr(0, null));
+    }
+
+    public function test_getOrFail(): void
+    {
+        $collect = collect([1, 2]);
+        self::assertEquals(2, $collect->getOrFail(1));
+
+        $collect = collect(['a' => [1, 'b' => 2, 'c' => ['d' => 3]], 'c' => 'd', 'e' => []]);
+        // get existing data
+        self::assertEquals([1, 'b' => 2, 'c' => ['d' => 3]], $collect->getOrFail('a'));
+        self::assertEquals('d', $collect->getOrFail('c'));
+    }
+
+    public function test_getOrFail_invalid_key_exception(): void
+    {
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('Undefined array key 2');
+        collect([1, 2])->getOrFail(2);
     }
 
     public function test_insertAt(): void
@@ -273,6 +284,27 @@ class CollectionTest extends TestCase
     }
 
     public function test_pullOr(): void
+    {
+        $collect = collect([]);
+        self::assertEquals('_test_', $collect->pullOr(1, '_test_'));
+
+        $collect = collect(['a' => null]);
+        self::assertEquals(null, $collect->pullOr('a', '_test_'));
+
+        $collect = collect([1, 2, 3]);
+        self::assertEquals(2, $collect->pullOr(1, null));
+        self::assertEquals([1, 3], $collect->toArray());
+
+        $collect = collect([1, 2, 3]);
+        self::assertEquals(2, $collect->pullOr(1, null));
+        self::assertEquals([1, 3], $collect->toArray());
+
+        $collect = collect(['a' => 1, 'b' => 2]);
+        self::assertEquals(2, $collect->pullOr('b', null));
+        self::assertEquals(['a' => 1], $collect->toArray());
+    }
+
+    public function test_pullOrFail(): void
     {
         $collect = collect(['a' => 1, 'b' => 2]);
         self::assertEquals(2, $collect->pullOrFail('b'));

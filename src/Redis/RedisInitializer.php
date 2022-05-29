@@ -2,11 +2,11 @@
 
 namespace Kirameki\Redis;
 
+use Kirameki\Collections\Arr;
 use Kirameki\Core\Application;
 use Kirameki\Core\Initializer;
 use Kirameki\Event\EventManager;
 use Kirameki\Redis\Events\CommandExecuted;
-use Kirameki\Support\Arr;
 use Kirameki\Support\Str;
 use function implode;
 use function sprintf;

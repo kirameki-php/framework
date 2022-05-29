@@ -5,6 +5,9 @@ namespace Kirameki\Support;
 use Closure;
 use Countable;
 use JsonSerializable;
+use Kirameki\Collections\Arr;
+use Kirameki\Collections\Iter;
+use Kirameki\Collections\Iterator;
 use Symfony\Component\VarDumper\VarDumper;
 use Webmozart\Assert\Assert;
 use function is_iterable;
@@ -16,7 +19,6 @@ use function is_iterable;
  */
 class Sequence extends Iterator implements Countable, JsonSerializable
 {
-    use Concerns\Macroable;
     use Concerns\Tappable;
 
     /**
@@ -44,7 +46,7 @@ class Sequence extends Iterator implements Countable, JsonSerializable
 
     /**
      * @param int $position
-     * @return TValue
+     * @return TValue|null
      */
     public function at(int $position)
     {

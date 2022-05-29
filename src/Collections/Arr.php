@@ -1,10 +1,11 @@
 <?php declare(strict_types=1);
 
-namespace Kirameki\Support;
+namespace Kirameki\Collections;
 
 use Closure;
 use Kirameki\Exception\DuplicateKeyException;
 use Kirameki\Exception\InvalidKeyException;
+use Kirameki\Support\Str;
 use LogicException;
 use RuntimeException;
 use Webmozart\Assert\Assert;
@@ -77,23 +78,17 @@ class Arr
      *
      * `Arr::at(['a' => 1, 'b' => 2], 0); // 1`
      *
-     * `Arr::at([6], 1); // InvalidValueException`
+     * `Arr::at([6], 1); // null
      *
      * @template TKey of array-key
      * @template TValue
      * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
      * @param int $position Position of array starting with 0. Negative position will traverse from tail.
-     * @return TValue
+     * @return TValue|null
      */
     public static function at(iterable $iterable, int $position): mixed
     {
-        $result = static::atOr($iterable, $position, null);
-
-        if ($result === null) {
-            throw new RuntimeException("Index out of bounds. position: $position");
-        }
-
-        return $result;
+        return static::atOr($iterable, $position, null);
     }
 
     /**
@@ -125,6 +120,34 @@ class Arr
         }
 
         return $default;
+    }
+
+    /**
+     * `Arr::at([6, 7], 1); // 7`
+     *
+     * `Arr::at([6, 7], -1); // 7`
+     *
+     * `Arr::at(['a' => 1, 'b' => 2], 0); // 1`
+     *
+     * `Arr::at([6], 1); // InvalidValueException`
+     *
+     * @template TKey of array-key
+     * @template TValue
+     * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
+     * @param int $position Position of array starting with 0. Negative position will traverse from tail.
+     * @return TValue
+     */
+    public static function atOrFail(iterable $iterable, int $position): mixed
+    {
+        $miss = Miss::instance();
+
+        $result = static::atOr($iterable, $position, $miss);
+
+        if ($result instanceof Miss) {
+            throw new RuntimeException("Index out of bounds. position: $position");
+        }
+
+        return $result;
     }
 
     /**
@@ -564,18 +587,11 @@ class Arr
      * @template TValue
      * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
      * @param int|string $key
-     * @return TValue
+     * @return TValue|null
      */
     public static function get(iterable $iterable, int|string $key): mixed
     {
-        $miss = Miss::instance();
-        $result = static::getOr($iterable, $key, $miss);
-
-        if ($result instanceof Miss) {
-            throw new RuntimeException("Undefined array key $key");
-        }
-
-        return $result;
+        return static::getOr($iterable, $key, null);
     }
 
     /**
@@ -590,6 +606,25 @@ class Arr
     public static function getOr(iterable $iterable, int|string $key, mixed $default): mixed
     {
         return static::from($iterable)[$key] ?? $default;
+    }
+
+    /**
+     * @template TKey of array-key
+     * @template TValue
+     * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
+     * @param int|string $key
+     * @return TValue
+     */
+    public static function getOrFail(iterable $iterable, int|string $key)
+    {
+        $miss = Miss::instance();
+        $result = static::getOr($iterable, $key, $miss);
+
+        if ($result instanceof Miss) {
+            throw new RuntimeException("Undefined array key $key");
+        }
+
+        return $result;
     }
 
     /**
@@ -1201,14 +1236,28 @@ class Arr
      */
     public static function pull(array &$array, int|string $key): mixed
     {
+        return static::pullOr($array, $key, null);
+    }
+
+    /**
+     * @template TKey of array-key
+     * @template TValue
+     * @template TDefault
+     * @param array<TValue> $array
+     * @param TKey $key
+     * @param TDefault $default
+     * @return TValue|TDefault
+     */
+    public static function pullOr(array &$array, int|string $key, mixed $default): mixed
+    {
+        if (!array_key_exists($key, $array)) {
+            return $default;
+        }
+
         $reIndex = array_is_list($array);
 
-        $value = null;
-
-        if (array_key_exists($key, $array)) {
-            $value = $array[$key];
-            unset($array[$key]);
-        }
+        $value = $array[$key];
+        unset($array[$key]);
 
         if ($reIndex) {
             static::reIndex($array);
@@ -1218,15 +1267,17 @@ class Arr
     }
 
     /**
-     * @template T
-     * @param array<T> $array
-     * @param array-key $key
-     * @return T
+     * @template TKey of array-key
+     * @template TValue
+     * @param array<TKey, TValue> $array
+     * @param TKey $key
+     * @return TValue
      */
     public static function pullOrFail(array &$array, int|string $key): mixed
     {
-        $result = static::pull($array, $key);
-        if ($result === null) {
+        $miss = Miss::instance();
+        $result = static::pullOr($array, $key, $miss);
+        if ($result instanceof Miss) {
             throw new RuntimeException("Tried to pull undefined array key \"$key\"");
         }
         return $result;

@@ -2,10 +2,10 @@
 
 namespace Kirameki\Model\Concerns;
 
+use Kirameki\Collections\Arr;
 use Kirameki\Model\Model;
 use Kirameki\Model\ModelCollection;
 use Kirameki\Model\Relations\RelationCollection;
-use Kirameki\Support\Arr;
 
 /**
  * @mixin Model

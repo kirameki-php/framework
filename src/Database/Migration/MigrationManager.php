@@ -3,7 +3,7 @@
 namespace Kirameki\Database\Migration;
 
 use DateTime;
-use Kirameki\Support\Arr;
+use Kirameki\Collections\Arr;
 
 class MigrationManager
 {

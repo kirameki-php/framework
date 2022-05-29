@@ -3,6 +3,7 @@
 namespace Kirameki\Support;
 
 use ArrayAccess;
+use Kirameki\Collections\Arr;
 use Webmozart\Assert\Assert;
 
 /**
@@ -36,7 +37,7 @@ class Collection extends Sequence implements ArrayAccess
 
     /**
      * @param int|string $key
-     * @return TValue
+     * @return TValue|null
      */
     public function get(int|string $key): mixed
     {
@@ -52,6 +53,15 @@ class Collection extends Sequence implements ArrayAccess
     public function getOr(int|string $key, mixed $default): mixed
     {
         return Arr::getOr($this, $key, $default);
+    }
+
+    /**
+     * @param int|string $key
+     * @return TValue
+     */
+    public function getOrFail(int|string $key): mixed
+    {
+        return Arr::getOrFail($this, $key);
     }
 
     /**
@@ -160,6 +170,17 @@ class Collection extends Sequence implements ArrayAccess
     public function pull(int|string $key): mixed
     {
         return Arr::pull($this->items, $key);
+    }
+
+    /**
+     * @template TDefault
+     * @param TKey $key
+     * @param TDefault $default
+     * @return TValue|TDefault
+     */
+    public function pullOr(int|string $key, mixed $default): mixed
+    {
+        return Arr::pullOr($this->items, $key, $default);
     }
 
     /**

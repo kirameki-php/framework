@@ -2,11 +2,11 @@
 
 namespace Kirameki\Http\Codecs;
 
+use Kirameki\Collections\Arr;
 use Kirameki\Http\Codecs\Decoders\Decoder;
 use Kirameki\Http\Codecs\Encoders\Encoder;
 use Kirameki\Http\Exceptions\BadRequestException;
 use Kirameki\Http\Exceptions\UnsupportedMediaTypeException;
-use Kirameki\Support\Arr;
 use function array_shift;
 use function explode;
 use function implode;

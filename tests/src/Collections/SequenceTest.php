@@ -1,22 +1,18 @@
 <?php declare(strict_types=1);
 
-namespace Tests\Kirameki\Support;
+namespace Tests\Kirameki\Collections;
 
 use DivisionByZeroError;
 use ErrorException;
 use InvalidArgumentException;
 use Kirameki\Exception\DuplicateKeyException;
 use Kirameki\Exception\InvalidKeyException;
-use Kirameki\Exception\InvalidValueException;
 use Kirameki\Support\Collection;
 use Kirameki\Support\Sequence;
 use RuntimeException;
 use Tests\Kirameki\TestCase;
 use TypeError;
 use ValueError;
-use function dd;
-use function dump;
-use function max;
 
 class SequenceTest extends TestCase
 {

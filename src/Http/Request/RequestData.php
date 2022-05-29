@@ -7,7 +7,7 @@ use ArrayIterator;
 use Countable;
 use IteratorAggregate;
 use JsonSerializable;
-use Kirameki\Support\Arr;
+use Kirameki\Collections\Arr;
 
 class RequestData implements ArrayAccess, Countable, IteratorAggregate, JsonSerializable
 {

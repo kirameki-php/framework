@@ -2,9 +2,9 @@
 
 namespace Tests\Kirameki\Database;
 
+use Kirameki\Collections\Arr;
 use Kirameki\Database\Connection;
 use Kirameki\Database\Schema\Builders\CreateTableBuilder;
-use Kirameki\Support\Arr;
 use Kirameki\Testing\Concerns\UsesDatabases;
 use Tests\Kirameki\TestCase;
 

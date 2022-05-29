@@ -3,13 +3,13 @@
 namespace Kirameki\Redis;
 
 use Closure;
+use Kirameki\Collections\Iterator;
 use Kirameki\Event\EventManager;
 use Kirameki\Redis\Adapters\Adapter;
 use Kirameki\Redis\Events\CommandExecuted;
 use Kirameki\Redis\Exceptions\CommandException;
 use Kirameki\Redis\Support\SetOptions;
 use Kirameki\Redis\Support\Type;
-use Kirameki\Support\Iterator;
 use Kirameki\Support\Str;
 use LogicException;
 use Redis;

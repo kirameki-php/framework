@@ -2,7 +2,7 @@
 
 namespace Kirameki\Http\Routing;
 
-use Kirameki\Support\Arr;
+use Kirameki\Collections\Arr;
 use Kirameki\Support\Collection;
 use Kirameki\Support\File;
 use Kirameki\Support\FileInfo;

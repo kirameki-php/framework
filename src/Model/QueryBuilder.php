@@ -7,7 +7,6 @@ use Kirameki\Database\Query\Builders\SelectBuilder;
 use Kirameki\Database\Query\Support\SortOrder;
 use Kirameki\Model\Paginators\CursorPaginator;
 use Kirameki\Model\Paginators\OffsetPaginator;
-use Kirameki\Support\Arr;
 use RuntimeException;
 
 /**

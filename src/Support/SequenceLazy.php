@@ -2,6 +2,9 @@
 
 namespace Kirameki\Support;
 
+use Kirameki\Collections\Arr;
+use Kirameki\Collections\Iter;
+
 /**
  * @template TKey of array-key
  * @template TValue
@@ -22,7 +25,7 @@ class SequenceLazy extends Sequence
      */
     public function compact(int $depth = 1): static
     {
-        return new static(Iter::compact($this, $depth));
+        return new static(Arr::compact($this, $depth));
     }
 
     /**

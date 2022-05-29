@@ -2,12 +2,12 @@
 
 namespace Kirameki\Database\Schema\Builders;
 
+use Kirameki\Collections\Arr;
 use Kirameki\Database\Connection;
 use Kirameki\Database\Schema\Statements\ColumnDefinition;
 use Kirameki\Database\Schema\Statements\CreateIndexStatement;
 use Kirameki\Database\Schema\Statements\CreateTableStatement;
 use Kirameki\Database\Schema\Statements\PrimaryKeyConstraint;
-use Kirameki\Support\Arr;
 use RuntimeException;
 
 /**

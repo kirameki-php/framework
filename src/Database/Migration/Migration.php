@@ -3,17 +3,17 @@
 namespace Kirameki\Database\Migration;
 
 use DateTime;
+use Kirameki\Collections\Arr;
 use Kirameki\Database\Connection;
 use Kirameki\Database\Schema\Builders\AlterTableBuilder;
+use Kirameki\Database\Schema\Builders\CreateIndexBuilder;
+use Kirameki\Database\Schema\Builders\CreateTableBuilder;
 use Kirameki\Database\Schema\Builders\DropIndexBuilder;
 use Kirameki\Database\Schema\Builders\DropTableBuilder;
 use Kirameki\Database\Schema\Builders\RenameTableBuilder;
 use Kirameki\Database\Schema\Builders\StatementBuilder;
-use Kirameki\Database\Schema\Builders\CreateIndexBuilder;
-use Kirameki\Database\Schema\Builders\CreateTableBuilder;
 use Kirameki\Database\Schema\Statements\CreateIndexStatement;
 use Kirameki\Database\Schema\Statements\DropIndexStatement;
-use Kirameki\Support\Arr;
 use Kirameki\Support\Concerns\Tappable;
 
 abstract class Migration

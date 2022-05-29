@@ -2,17 +2,17 @@
 
 namespace Kirameki\Database\Schema\Formatters;
 
+use Kirameki\Collections\Arr;
+use Kirameki\Database\Schema\Expressions\CurrentTimestamp;
+use Kirameki\Database\Schema\Expressions\Expr;
 use Kirameki\Database\Schema\Statements\AlterColumnAction;
 use Kirameki\Database\Schema\Statements\AlterDropColumnAction;
 use Kirameki\Database\Schema\Statements\AlterRenameColumnAction;
-use Kirameki\Database\Schema\Statements\CreateIndexStatement;
 use Kirameki\Database\Schema\Statements\BaseStatement;
-use Kirameki\Database\Schema\Statements\DropIndexStatement;
-use Kirameki\Database\Schema\Expressions\CurrentTimestamp;
-use Kirameki\Database\Schema\Expressions\Expr;
 use Kirameki\Database\Schema\Statements\ColumnDefinition;
+use Kirameki\Database\Schema\Statements\CreateIndexStatement;
 use Kirameki\Database\Schema\Statements\CreateTableStatement;
-use Kirameki\Support\Arr;
+use Kirameki\Database\Schema\Statements\DropIndexStatement;
 use Kirameki\Support\Str;
 use RuntimeException;
 use function array_filter;

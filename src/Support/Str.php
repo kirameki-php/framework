@@ -3,7 +3,6 @@
 namespace Kirameki\Support;
 
 use DateTimeInterface;
-use Kirameki\Support\Concerns;
 use LogicException;
 use Ramsey\Uuid\Uuid;
 use RuntimeException;
@@ -14,6 +13,11 @@ use function array_map;
 use function ceil;
 use function explode;
 use function floor;
+use function get_resource_type;
+use function grapheme_strlen;
+use function grapheme_strpos;
+use function grapheme_strrpos;
+use function grapheme_substr;
 use function implode;
 use function in_array;
 use function is_array;
@@ -25,11 +29,7 @@ use function is_numeric;
 use function is_object;
 use function is_resource;
 use function is_string;
-use function get_resource_type;
-use function grapheme_strlen;
-use function grapheme_strpos;
-use function grapheme_strrpos;
-use function grapheme_substr;
+use function iterator_to_array;
 use function lcfirst;
 use function ltrim;
 use function mb_strcut;
@@ -54,8 +54,6 @@ use function ucwords;
 
 class Str
 {
-    use Concerns\Macroable;
-
     public const Encoding = 'UTF-8';
 
     /**
@@ -202,7 +200,7 @@ class Str
      */
     public static function containsAll(string $haystack, iterable $needles): bool
     {
-        $needles = Arr::from($needles);
+        $needles = is_array($needles) ? $needles : iterator_to_array($needles);
 
         Assert::minCount($needles, 1);
 
@@ -221,7 +219,7 @@ class Str
      */
     public static function containsAny(string $haystack, iterable $needles): bool
     {
-        $needles = Arr::from($needles);
+        $needles = is_array($needles) ? $needles : iterator_to_array($needles);
 
         Assert::minCount($needles, 1);
 
@@ -261,7 +259,8 @@ class Str
      */
     public static function endsWith(string $haystack, string|array $needle): bool
     {
-        foreach (Arr::wrap($needle) as $each) {
+        $needles = is_array($needle) ? $needle : [$needle];
+        foreach ($needles as $each) {
             if (str_ends_with($haystack, $each)) {
                 return true;
             }
@@ -565,7 +564,8 @@ class Str
      */
     public static function startsWith(string $haystack, string|array $needle): bool
     {
-        foreach (Arr::wrap($needle) as $each) {
+        $needles = is_array($needle) ? $needle : [$needle];
+        foreach ($needles as $each) {
             if (str_starts_with($haystack, $each)) {
                 return true;
             }

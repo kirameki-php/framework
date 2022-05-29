@@ -2,7 +2,7 @@
 
 namespace Kirameki\Http\Request;
 
-use Kirameki\Support\Arr;
+use Kirameki\Collections\Arr;
 use ReflectionClass;
 use function array_key_exists;
 

@@ -2,9 +2,9 @@
 
 namespace Kirameki\Database\Schema\Builders;
 
+use Kirameki\Collections\Arr;
 use Kirameki\Database\Connection;
 use Kirameki\Database\Schema\Statements\CreateIndexStatement;
-use Kirameki\Support\Arr;
 use RuntimeException;
 
 /**
