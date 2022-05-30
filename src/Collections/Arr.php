@@ -421,22 +421,11 @@ class Arr
      * @template TValue
      * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
      * @param callable(TValue, TKey): bool $condition
-     * @return TValue
+     * @return TValue|null
      */
     public static function first(iterable $iterable, ?callable $condition = null): mixed
     {
-        $miss = Miss::instance();
-
-        $result = static::firstOr($iterable, $miss, $condition);
-
-        if ($result instanceof Miss) {
-            $message = ($condition !== null)
-                ? 'Failed to find matching condition.'
-                : 'Iterable must contain at least one element.';
-            throw new RuntimeException($message);
-        }
-
-        return $result;
+        return static::firstOr($iterable, null, $condition);
     }
 
     /**
@@ -498,6 +487,29 @@ class Arr
         }
 
         return $default;
+    }
+
+    /**
+     * @template TKey of array-key
+     * @template TValue
+     * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
+     * @param callable(TValue, TKey): bool $condition
+     * @return TValue
+     */
+    public static function firstOrFail(iterable $iterable, ?callable $condition = null): mixed
+    {
+        $miss = Miss::instance();
+
+        $result = static::firstOr($iterable, $miss, $condition);
+
+        if ($result instanceof Miss) {
+            $message = ($condition !== null)
+                ? 'Failed to find matching condition.'
+                : 'Iterable must contain at least one element.';
+            throw new RuntimeException($message);
+        }
+
+        return $result;
     }
 
     /**
@@ -971,7 +983,7 @@ class Arr
      * @template TValue
      * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
      * @param callable(TValue, TKey): mixed $callback
-     * @return TValue|null
+     * @return TValue
      */
     public static function maxBy(iterable $iterable, callable $callback)
     {
@@ -989,6 +1001,10 @@ class Arr
                 $maxResult = $result;
                 $maxValue = $val;
             }
+        }
+
+        if ($maxValue === null) {
+            throw new RuntimeException('$iterable must contain at least one value');
         }
 
         return $maxValue;

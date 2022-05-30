@@ -8,6 +8,7 @@ use JsonSerializable;
 use Kirameki\Collections\Arr;
 use Kirameki\Collections\Iter;
 use Kirameki\Collections\Iterator;
+use Kirameki\Collections\Miss;
 use Symfony\Component\VarDumper\VarDumper;
 use Webmozart\Assert\Assert;
 use function is_iterable;
@@ -62,6 +63,15 @@ class Sequence extends Iterator implements Countable, JsonSerializable
     public function atOr(int $position, mixed $default)
     {
         return Arr::atOr($this, $position, $default);
+    }
+
+    /**
+     * @param int $position
+     * @return TValue
+     */
+    public function atOrFail(int $position)
+    {
+        return Arr::atOrFail($this, $position);
     }
 
     /**
@@ -264,7 +274,7 @@ class Sequence extends Iterator implements Countable, JsonSerializable
 
     /**
      * @param callable(TValue, TKey): bool|null $condition
-     * @return TValue
+     * @return TValue|null
      */
     public function first(?callable $condition = null): mixed
     {
@@ -298,6 +308,15 @@ class Sequence extends Iterator implements Countable, JsonSerializable
     public function firstOr(mixed $default, ?callable $condition = null): mixed
     {
         return Arr::firstOr($this, $default, $condition);
+    }
+
+    /**
+     * @param callable(TValue, TKey): bool|null $condition
+     * @return TValue
+     */
+    public function firstOrFail(?callable $condition = null): mixed
+    {
+        return Arr::firstOrFail($this, $condition);
     }
 
     /**
@@ -488,7 +507,7 @@ class Sequence extends Iterator implements Countable, JsonSerializable
 
     /**
      * @param callable(TValue, TKey): mixed $callback
-     * @return TValue|null
+     * @return TValue
      */
     public function maxBy(callable $callback): mixed
     {

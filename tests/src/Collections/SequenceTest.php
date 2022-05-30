@@ -69,23 +69,23 @@ class SequenceTest extends TestCase
         self::assertEquals(3, $this->seq(['a' => 1, 'b' => 2, 'c' => 3])->at(-1));
     }
 
-    public function test_at_on_empty(): void
-    {
-        $this->expectException(RuntimeException::class);
-        $this->expectExceptionMessage('Index out of bounds. position: 0');
-        self::assertEquals(null, $this->seq()->at(0));
-    }
-
-    public function test_at_missing_index(): void
-    {
-        $this->expectException(RuntimeException::class);
-        $this->expectExceptionMessage('Index out of bounds. position: 5');
-        self::assertEquals(null, $this->seq([1, 2, 3])->at(5));
-    }
-
     public function test_atOr(): void
     {
         self::assertEquals(null, $this->seq([1, 2, 3])->atOr(5, null));
+    }
+
+    public function test_atOrFail_on_empty(): void
+    {
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('Index out of bounds. position: 0');
+        self::assertEquals(null, $this->seq()->atOrFail(0));
+    }
+
+    public function test_atOrFail_missing_index(): void
+    {
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('Index out of bounds. position: 5');
+        self::assertEquals(null, $this->seq([1, 2, 3])->atOrFail(5));
     }
 
     public function test_average(): void
@@ -124,7 +124,7 @@ class SequenceTest extends TestCase
 
         $chunked = $seq->chunk(2);
         self::assertCount(2, $chunked);
-        self::assertEquals([1, 2], $chunked->first()->toArray());
+        self::assertEquals([1, 2], $chunked->firstOrFail()->toArray());
         self::assertEquals([3], $chunked->last()->toArray());
 
         // size larger than items -> returns everything
@@ -415,7 +415,7 @@ class SequenceTest extends TestCase
 
         // drop until null does not work
         $this->expectException(TypeError::class);
-        $this->expectExceptionMessage('Kirameki\Support\Iter::verify(): Return value must be of type bool, null returned');
+        $this->expectExceptionMessage('Kirameki\Collections\Iter::verify(): Return value must be of type bool, null returned');
         $seq->dropUntil(fn($v, $k) => null)->toArray();
     }
 
@@ -433,7 +433,7 @@ class SequenceTest extends TestCase
 
         // drop until null does not work
         $this->expectException(TypeError::class);
-        $this->expectExceptionMessage('Kirameki\Support\Iter::verify(): Return value must be of type bool, null returned');
+        $this->expectExceptionMessage('Kirameki\Collections\Iter::verify(): Return value must be of type bool, null returned');
         $seq->dropWhile(fn($v, $k) => null)->toArray();
     }
 
@@ -477,24 +477,16 @@ class SequenceTest extends TestCase
 
     public function test_first(): void
     {
+        $seq = $this->seq([]);
+        self::assertEquals(null, $seq->first());
+
+        $seq = $this->seq([1,2]);
+        self::assertEquals(null, $seq->first(fn(int $i) => $i > 2));
+
         $seq = $this->seq([10, 20]);
         self::assertEquals(10, $seq->first());
         self::assertEquals(20, $seq->first(fn($v, $k) => $k === 1));
         self::assertEquals(20, $seq->first(fn($v, $k) => $v === 20));
-    }
-
-    public function test_first_empty(): void
-    {
-        $this->expectException(RuntimeException::class);
-        $this->expectExceptionMessage('Iterable must contain at least one element.');
-        $this->seq([])->first();
-    }
-
-    public function test_first_bad_condition(): void
-    {
-        $this->expectException(RuntimeException::class);
-        $this->expectExceptionMessage('Failed to find matching condition.');
-        $this->seq([1,2])->first(fn(int $i) => $i > 2);
     }
 
     public function test_firstIndex(): void
@@ -523,6 +515,28 @@ class SequenceTest extends TestCase
         self::assertEquals(20, $seq->firstOr(null, fn($v, $k) => $k === 1));
         self::assertEquals(20, $seq->firstOr(null, fn($v, $k) => $v === 20));
         self::assertEquals(null, $seq->firstOr(null, fn() => false));
+    }
+
+    public function test_firstOrFail(): void
+    {
+        $seq = $this->seq([10, 20]);
+        self::assertEquals(10, $seq->firstOrFail());
+        self::assertEquals(20, $seq->firstOrFail(fn($v, $k) => $k === 1));
+        self::assertEquals(20, $seq->firstOrFail(fn($v, $k) => $v === 20));
+    }
+
+    public function test_firstOrFail_empty(): void
+    {
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('Iterable must contain at least one element.');
+        $this->seq([])->firstOrFail();
+    }
+
+    public function test_firstOrFail_bad_condition(): void
+    {
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('Failed to find matching condition.');
+        $this->seq([1,2])->firstOrFail(fn(int $i) => $i > 2);
     }
 
     public function test_flatMap(): void
@@ -828,21 +842,6 @@ class SequenceTest extends TestCase
         $this->seq([1,2])->last(fn(int $i) => $i > 2);
     }
 
-    public function test_macro(): void
-    {
-        Sequence::macro('testMacro', static fn($num) => $num * 100);
-        $seq = $this->seq([1]);
-        self::assertEquals(200, $seq->testMacro(2));
-    }
-
-    public function test_macroExists(): void
-    {
-        $name = 'testMacro2'.mt_rand();
-        self::assertFalse(Sequence::macroExists($name));
-        Sequence::macro($name, static fn() => 1);
-        self::assertTrue(Sequence::macroExists($name));
-    }
-
     public function test_map(): void
     {
         $seq = $this->seq([1, 2, 3]);
@@ -868,12 +867,6 @@ class SequenceTest extends TestCase
     public function test_maxBy(): void
     {
         self::assertEquals(
-            null,
-            $this->seq([])->maxBy(fn(array $arr) => 1),
-            'maxBy with empty array'
-        );
-
-        self::assertEquals(
             2,
             $this->seq(['a' => 2, 'b' => 1])->maxBy(fn($v, $k) => $v),
             'maxBy using value'
@@ -883,6 +876,13 @@ class SequenceTest extends TestCase
             $this->seq(['a' => 2, 'b' => 1])->maxBy(fn($v, $k) => $k),
             'maxBy using key'
         );
+    }
+
+    public function test_maxBy_with_empty(): void
+    {
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('$iterable must contain at least one value');
+        $this->seq([])->maxBy(fn(array $arr) => 1);
     }
 
     public function test_merge(): void
