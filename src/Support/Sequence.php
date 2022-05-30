@@ -488,6 +488,15 @@ class Sequence extends Iterator implements Countable, JsonSerializable
     }
 
     /**
+     * @param callable(TValue, TKey): bool|null $condition
+     * @return TValue
+     */
+    public function lastOrFail(?callable $condition = null): mixed
+    {
+        return Arr::lastOrFail($this, $condition);
+    }
+
+    /**
      * @template TMapValue
      * @param callable(TValue, TKey): TMapValue $callback
      * @return static<TKey, TMapValue>

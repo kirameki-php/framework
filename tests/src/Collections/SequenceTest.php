@@ -796,6 +796,15 @@ class SequenceTest extends TestCase
 
     public function test_last(): void
     {
+        $seq = $this->seq([]);
+        self::assertEquals(null, $seq->last());
+
+        $seq = $this->seq([1, 2]);
+        self::assertEquals(null, $seq->last(fn(int $i) => $i > 2));
+
+        $seq = $this->seq([10, 20]);
+        self::assertEquals(20, $seq->last());
+
         $seq = $this->seq([10, 20]);
         self::assertEquals(20, $seq->last());
         self::assertEquals(20, $seq->last(fn($v, $k) => $k === 1));
@@ -832,14 +841,14 @@ class SequenceTest extends TestCase
     {
         $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('Iterable must contain at least one element.');
-        $this->seq([])->last();
+        $this->seq([])->lastOrFail();
     }
 
     public function test_lastOrFail_bad_condition(): void
     {
         $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('Failed to find matching condition.');
-        $this->seq([1,2])->last(fn(int $i) => $i > 2);
+        $this->seq([1,2])->lastOrFail(fn(int $i) => $i > 2);
     }
 
     public function test_map(): void

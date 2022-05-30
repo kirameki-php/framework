@@ -849,22 +849,11 @@ class Arr
      * @template TValue
      * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
      * @param callable(TValue, TKey): bool $condition
-     * @return TValue
+     * @return TValue|null
      */
     public static function last(iterable $iterable, ?callable $condition = null): mixed
     {
-        $miss = Miss::instance();
-
-        $result = static::lastOr($iterable, $miss, $condition);
-
-        if ($result instanceof Miss) {
-            $message = ($condition !== null)
-                ? 'Failed to find matching condition.'
-                : 'Iterable must contain at least one element.';
-            throw new RuntimeException($message);
-        }
-
-        return $result;
+        return static::lastOr($iterable, null, $condition);
     }
 
     /**
@@ -949,6 +938,29 @@ class Arr
         }
 
         return $default;
+    }
+
+    /**
+     * @template TKey of array-key
+     * @template TValue
+     * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
+     * @param callable(TValue, TKey): bool $condition
+     * @return TValue
+     */
+    public static function lastOrFail(iterable $iterable, ?callable $condition = null): mixed
+    {
+        $miss = Miss::instance();
+
+        $result = static::lastOr($iterable, $miss, $condition);
+
+        if ($result instanceof Miss) {
+            $message = ($condition !== null)
+                ? 'Failed to find matching condition.'
+                : 'Iterable must contain at least one element.';
+            throw new RuntimeException($message);
+        }
+
+        return $result;
     }
 
     /**
