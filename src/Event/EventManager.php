@@ -8,22 +8,22 @@ use function get_class;
 class EventManager
 {
     /**
-     * @var Listener[][]
+     * @var array<string, list<Listener>>
      */
     protected array $events = [];
 
     /**
-     * @var callable[]
+     * @var list<Closure>
      */
     protected array $onAdded = [];
 
     /**
-     * @var callable[]
+     * @var list<Closure>
      */
     protected array $onRemoved = [];
 
     /**
-     * @var callable[]
+     * @var list<Closure>
      */
     protected array $onDispatched = [];
 
@@ -132,39 +132,39 @@ class EventManager
      */
     public function removeListeners(string $name): void
     {
-        $this->events[$name] = null;
+        unset($this->events[$name]);
         $this->invokeCallbacks($this->onRemoved, $name, null);
     }
 
     /**
-     * @param callable $callback
+     * @param Closure $callback
      * @return void
      */
-    public function onListenerAdded(callable $callback): void
+    public function onListenerAdded(Closure $callback): void
     {
         $this->onAdded[] = $callback;
     }
 
     /**
-     * @param callable $callback
+     * @param Closure $callback
      * @return void
      */
-    public function onListenerRemoved(callable $callback): void
+    public function onListenerRemoved(Closure $callback): void
     {
         $this->onRemoved[] = $callback;
     }
 
     /**
-     * @param callable $callback
+     * @param Closure $callback
      * @return void
      */
-    public function onDispatched(callable $callback): void
+    public function onDispatched(Closure $callback): void
     {
         $this->onDispatched[] = $callback;
     }
 
     /**
-     * @param array $callbacks
+     * @param array<int, Closure> $callbacks
      * @param mixed ...$args
      * @return void
      */

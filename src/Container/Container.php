@@ -49,7 +49,7 @@ class Container
     /**
      * @template TEntry
      * @param class-string<TEntry> $id
-     * @param TEntry|callable(static): TEntry $entry
+     * @param TEntry|Closure(static): TEntry $entry
      * @return void
      */
     public function singleton(string $id, mixed $entry): void

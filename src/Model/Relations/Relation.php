@@ -2,6 +2,7 @@
 
 namespace Kirameki\Model\Relations;
 
+use Closure;
 use Kirameki\Model\Model;
 use Kirameki\Model\ModelCollection;
 use Kirameki\Model\QueryBuilder;
@@ -51,7 +52,7 @@ abstract class Relation
     protected ?string $inverse;
 
     /**
-     * @var array<int, callable>
+     * @var array<int, Closure>
      */
     protected array $scopes;
 
@@ -154,10 +155,10 @@ abstract class Relation
     }
 
     /**
-     * @param string|callable(QueryBuilder<TDst>, ModelCollection<int, TSrc>): QueryBuilder<TDst> $scope
+     * @param string|Closure(QueryBuilder<TDst>, ModelCollection<int, TSrc>): QueryBuilder<TDst> $scope
      * @return $this
      */
-    public function scope(string|callable $scope): static
+    public function scope(string|Closure $scope): static
     {
         $this->scopes[] = is_string($scope)
             ? $this->getDstReflection()->scopes[$scope]

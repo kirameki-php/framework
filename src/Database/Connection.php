@@ -2,6 +2,7 @@
 
 namespace Kirameki\Database;
 
+use Closure;
 use Kirameki\Database\Adapters\Adapter;
 use Kirameki\Database\Events\QueryExecuted;
 use Kirameki\Database\Events\SchemaExecuted;
@@ -15,6 +16,7 @@ use Kirameki\Database\Query\Formatters\Formatter as QueryFormatter;
 use Kirameki\Database\Query\Result;
 use Kirameki\Database\Query\ResultLazy;
 use Kirameki\Database\Schema\Formatters\Formatter as SchemaFormatter;
+use Kirameki\Database\Transaction\Transaction;
 use Kirameki\Database\Transaction\TransactionHandler;
 use Kirameki\Event\EventManager;
 use Kirameki\Support\Concerns\Tappable;
@@ -203,11 +205,11 @@ class Connection
     }
 
     /**
-     * @param callable $callback
+     * @param Closure(Transaction): mixed $callback
      * @param bool $useSavepoint
      * @return mixed
      */
-    public function transaction(callable $callback, bool $useSavepoint = false): mixed
+    public function transaction(Closure $callback, bool $useSavepoint = false): mixed
     {
         return $this->getTransactionHandler()->run($callback, $useSavepoint);
     }

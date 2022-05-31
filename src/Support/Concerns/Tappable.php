@@ -2,13 +2,15 @@
 
 namespace Kirameki\Support\Concerns;
 
+use Closure;
+
 trait Tappable
 {
     /**
-     * @param callable($this): mixed $callback
+     * @param Closure($this): mixed $callback
      * @return $this
      */
-    public function tap(callable $callback): static
+    public function tap(Closure $callback): static
     {
         $callback($this);
         return $this;

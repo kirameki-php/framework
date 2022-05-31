@@ -2,6 +2,7 @@
 
 namespace Kirameki\Collections;
 
+use Closure;
 use Iterator;
 use Kirameki\Exception\InvalidKeyException;
 use Webmozart\Assert\Assert;
@@ -81,10 +82,10 @@ class Iter
      * @template TKey of array-key
      * @template TValue
      * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
-     * @param callable(TValue, TKey): bool $condition
+     * @param Closure(TValue, TKey): bool $condition
      * @return Iterator<TKey, TValue>
      */
-    public static function dropUntil(iterable $iterable, callable $condition): Iterator
+    public static function dropUntil(iterable $iterable, Closure $condition): Iterator
     {
         $drop = true;
         foreach ($iterable as $key => $item) {
@@ -108,10 +109,10 @@ class Iter
      * @template TKey of array-key
      * @template TValue
      * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
-     * @param callable(TValue, TKey): bool $condition
+     * @param Closure(TValue, TKey): bool $condition
      * @return Iterator<TKey, TValue>
      */
-    public static function dropWhile(iterable $iterable, callable $condition): Iterator
+    public static function dropWhile(iterable $iterable, Closure $condition): Iterator
     {
         $drop = true;
         foreach ($iterable as $key => $item) {
@@ -135,10 +136,10 @@ class Iter
      * @template TKey of array-key
      * @template TValue
      * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
-     * @param callable(TValue, TKey): bool $condition
+     * @param Closure(TValue, TKey): bool $condition
      * @return Iterator<TKey, TValue>
      */
-    public static function filter(iterable $iterable, callable $condition): Iterator
+    public static function filter(iterable $iterable, Closure $condition): Iterator
     {
         foreach ($iterable as $key => $val) {
             $isList ??= $key === 0;
@@ -156,10 +157,10 @@ class Iter
      * @template TKey of array-key
      * @template TValue
      * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
-     * @param callable(TValue, TKey): mixed $callback
+     * @param Closure(TValue, TKey): mixed $callback
      * @return Iterator<int, mixed>
      */
-    public static function flatMap(iterable $iterable, callable $callback): Iterator
+    public static function flatMap(iterable $iterable, Closure $callback): Iterator
     {
         foreach ($iterable as $key => $val) {
             $result = $callback($val, $key);
@@ -238,10 +239,10 @@ class Iter
      * @template TValue
      * @template TMapValue
      * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
-     * @param callable(TValue, TKey): TMapValue $callback
+     * @param Closure(TValue, TKey): TMapValue $callback
      * @return Iterator<TKey, TMapValue>
      */
-    public static function map(iterable $iterable, callable $callback): Iterator
+    public static function map(iterable $iterable, Closure $callback): Iterator
     {
         foreach ($iterable as $key => $val) {
             yield $key => $callback($val, $key);
@@ -326,10 +327,10 @@ class Iter
      * @template TKey of array-key
      * @template TValue
      * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
-     * @param callable(TValue, TKey): bool $condition
+     * @param Closure(TValue, TKey): bool $condition
      * @return Iterator<TKey, TValue>
      */
-    public static function takeUntil(iterable $iterable, callable $condition): Iterator
+    public static function takeUntil(iterable $iterable, Closure $condition): Iterator
     {
         foreach ($iterable as $key => $item) {
             if (!$condition($item, $key)) {
@@ -344,10 +345,10 @@ class Iter
      * @template TKey of array-key
      * @template TValue
      * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
-     * @param callable(TValue, TKey): bool $condition
+     * @param Closure(TValue, TKey): bool $condition
      * @return Iterator<TKey, TValue>
      */
-    public static function takeWhile(iterable $iterable, callable $condition): Iterator
+    public static function takeWhile(iterable $iterable, Closure $condition): Iterator
     {
         foreach ($iterable as $key => $item) {
             if ($condition($item, $key)) {
@@ -374,12 +375,12 @@ class Iter
     /**
      * @template TKey of array-key
      * @template TValue
-     * @param callable(TValue, TKey): bool $condition
+     * @param Closure(TValue, TKey): bool $condition
      * @param TKey $key
      * @param TValue $val
      * @return bool
      */
-    protected static function verify(callable $condition, mixed $key, mixed $val): bool
+    protected static function verify(Closure $condition, mixed $key, mixed $val): bool
     {
         return $condition($val, $key);
     }

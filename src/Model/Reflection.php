@@ -2,6 +2,7 @@
 
 namespace Kirameki\Model;
 
+use Closure;
 use Kirameki\Model\Relations\Relation;
 
 /**
@@ -40,7 +41,7 @@ class Reflection
     public array $relations;
 
     /**
-     * @var array<callable>
+     * @var array<Closure>
      */
     public array $scopes;
 

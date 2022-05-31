@@ -25,7 +25,7 @@ class ModelManager
     protected array $casts = [];
 
     /**
-     * @var array<string, callable(string): Cast>
+     * @var array<string, Closure(string): Cast>
      */
     protected array $deferredCasts = [];
 

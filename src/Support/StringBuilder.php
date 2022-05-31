@@ -2,6 +2,7 @@
 
 namespace Kirameki\Support;
 
+use Closure;
 use Kirameki\Support\Concerns;
 use Stringable;
 use Symfony\Component\VarDumper\VarDumper;
@@ -431,10 +432,10 @@ class StringBuilder implements Stringable
     }
 
     /**
-     * @param callable $callback
+     * @param Closure(string): static $callback
      * @return $this
      */
-    public function transform(callable $callback): static
+    public function transform(Closure $callback): static
     {
         $this->value = (string) $callback($this->value);
         return $this;

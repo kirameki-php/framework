@@ -2,6 +2,7 @@
 
 namespace Kirameki\Database\Transaction;
 
+use Closure;
 use Kirameki\Database\Adapters\Adapter;
 use Kirameki\Database\Events\TransactionBegan;
 use Kirameki\Database\Events\TransactionCommitted;
@@ -28,11 +29,11 @@ class TransactionHandler
     }
 
     /**
-     * @param callable(Transaction): mixed $callback
+     * @param Closure(Transaction): mixed $callback
      * @param bool $useSavepoint
      * @return mixed
      */
-    public function run(callable $callback, bool $useSavepoint = false): mixed
+    public function run(Closure $callback, bool $useSavepoint = false): mixed
     {
         try {
             // Actual transaction
@@ -71,10 +72,10 @@ class TransactionHandler
     }
 
     /**
-     * @param callable(Transaction): mixed $callback
+     * @param Closure(Transaction): mixed $callback
      * @return mixed
      */
-    protected function runInTransaction(callable $callback): mixed
+    protected function runInTransaction(Closure $callback): mixed
     {
         $tx = $this->txStack[] = new Transaction();
 
@@ -92,10 +93,10 @@ class TransactionHandler
     }
 
     /**
-     * @param callable(Transaction): mixed $callback
+     * @param Closure(Transaction): mixed $callback
      * @return mixed
      */
-    protected function runInSavepoint(callable $callback): mixed
+    protected function runInSavepoint(Closure $callback): mixed
     {
         $savepointId = (string)(count($this->txStack) + 1);
 

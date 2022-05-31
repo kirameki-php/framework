@@ -85,10 +85,10 @@ class DatabaseManager
 
     /**
      * @param string $name
-     * @param callable(Config): Adapter $deferred
+     * @param Closure(Config): Adapter $deferred
      * @return $this
      */
-    public function addAdapter(string $name, callable $deferred): static
+    public function addAdapter(string $name, Closure $deferred): static
     {
         $this->adapters[$name] = $deferred(...);
         return $this;

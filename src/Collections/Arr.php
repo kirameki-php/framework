@@ -300,10 +300,10 @@ class Arr
      * @template TKey of array-key
      * @template TValue
      * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
-     * @param callable(TValue, TKey): bool $condition
+     * @param Closure(TValue, TKey): bool $condition
      * @return int
      */
-    public static function countBy(iterable $iterable, callable $condition): int
+    public static function countBy(iterable $iterable, Closure $condition): int
     {
         $count = 0;
         foreach ($iterable as $key => $val) {
@@ -354,10 +354,10 @@ class Arr
      * @template TKey of array-key
      * @template TValue
      * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
-     * @param callable(TValue, TKey): bool $condition
+     * @param Closure(TValue, TKey): bool $condition
      * @return array<TKey, TValue>
      */
-    public static function dropUntil(iterable $iterable, callable $condition): array
+    public static function dropUntil(iterable $iterable, Closure $condition): array
     {
         return iterator_to_array(Iter::dropUntil($iterable, $condition));
     }
@@ -366,10 +366,10 @@ class Arr
      * @template TKey of array-key
      * @template TValue
      * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
-     * @param callable(TValue, TKey): bool $condition
+     * @param Closure(TValue, TKey): bool $condition
      * @return array<TKey, TValue>
      */
-    public static function dropWhile(iterable $iterable, callable $condition): array
+    public static function dropWhile(iterable $iterable, Closure $condition): array
     {
         return iterator_to_array(Iter::dropWhile($iterable, $condition));
     }
@@ -378,10 +378,36 @@ class Arr
      * @template TKey of array-key
      * @template TValue
      * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
-     * @param callable(TValue, TKey): void $callback
+     * @return array<TKey, TValue>
+     */
+    public static function duplicates(iterable $iterable): array
+    {
+        $array = [];
+        $refs = [];
+        foreach ($iterable as $key => $val) {
+            $ref = static::valueToKey($val);
+            $refs[$ref][] = $key;
+            $array[$key] = $val;
+        }
+
+        $duplicates = [];
+        foreach ($refs as $keys) {
+            if (count($keys) > 1) {
+                $duplicates[] = $array[$keys[0]];
+            }
+        }
+
+        return $duplicates;
+    }
+
+    /**
+     * @template TKey of array-key
+     * @template TValue
+     * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
+     * @param Closure(TValue, TKey): void $callback
      * @return void
      */
-    public static function each(iterable $iterable, callable $callback): void
+    public static function each(iterable $iterable, Closure $callback): void
     {
         foreach ($iterable as $key => $val) {
             $callback($val, $key);
@@ -408,10 +434,10 @@ class Arr
      * @template TKey of array-key
      * @template TValue
      * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
-     * @param callable(TValue, TKey): bool $condition
+     * @param Closure(TValue, TKey): bool $condition
      * @return array<TKey, TValue>
      */
-    public static function filter(iterable $iterable, callable $condition): array
+    public static function filter(iterable $iterable, Closure $condition): array
     {
         return iterator_to_array(Iter::filter($iterable, $condition));
     }
@@ -420,10 +446,10 @@ class Arr
      * @template TKey of array-key
      * @template TValue
      * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
-     * @param callable(TValue, TKey): bool $condition
+     * @param Closure(TValue, TKey): bool|null $condition
      * @return TValue|null
      */
-    public static function first(iterable $iterable, ?callable $condition = null): mixed
+    public static function first(iterable $iterable, ?Closure $condition = null): mixed
     {
         return static::firstOr($iterable, null, $condition);
     }
@@ -432,10 +458,10 @@ class Arr
      * @template TKey of array-key
      * @template TValue
      * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
-     * @param callable(TValue, TKey): bool $condition
+     * @param Closure(TValue, TKey): bool $condition
      * @return int|null
      */
-    public static function firstIndex(iterable $iterable, callable $condition): ?int
+    public static function firstIndex(iterable $iterable, Closure $condition): ?int
     {
         $count = 0;
         foreach ($iterable as $key => $val) {
@@ -451,10 +477,10 @@ class Arr
      * @template TKey of array-key
      * @template TValue
      * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
-     * @param callable(TValue, TKey): bool | null $condition
+     * @param Closure(TValue, TKey): bool|null $condition
      * @return TKey|null
      */
-    public static function firstKey(iterable $iterable, ?callable $condition = null): string|int|null
+    public static function firstKey(iterable $iterable, ?Closure $condition = null): string|int|null
     {
         $condition ??= static fn() => true;
 
@@ -472,11 +498,11 @@ class Arr
      * @template TValue
      * @template TDefault
      * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
-     * @param callable(TValue, TKey): bool $condition
+     * @param Closure(TValue, TKey): bool|null $condition
      * @param TDefault $default
      * @return TValue|TDefault
      */
-    public static function firstOr(iterable $iterable, mixed $default, ?callable $condition = null): mixed
+    public static function firstOr(iterable $iterable, mixed $default, ?Closure $condition = null): mixed
     {
         $condition ??= static fn() => true;
 
@@ -493,10 +519,10 @@ class Arr
      * @template TKey of array-key
      * @template TValue
      * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
-     * @param callable(TValue, TKey): bool $condition
+     * @param Closure(TValue, TKey): bool|null $condition
      * @return TValue
      */
-    public static function firstOrFail(iterable $iterable, ?callable $condition = null): mixed
+    public static function firstOrFail(iterable $iterable, ?Closure $condition = null): mixed
     {
         $miss = Miss::instance();
 
@@ -516,10 +542,10 @@ class Arr
      * @template TKey of array-key
      * @template TValue
      * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
-     * @param callable(TValue, TKey): mixed $callback
+     * @param Closure(TValue, TKey): mixed $callback
      * @return array<int, mixed>
      */
-    public static function flatMap(iterable $iterable, callable $callback): array
+    public static function flatMap(iterable $iterable, Closure $callback): array
     {
         return iterator_to_array(Iter::flatMap($iterable, $callback));
     }
@@ -568,10 +594,10 @@ class Arr
      * @template U
      * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
      * @param U $initial
-     * @param callable(U, TValue, TKey): U $callback
+     * @param Closure(U, TValue, TKey): U $callback
      * @return U
      */
-    public static function fold(iterable $iterable, mixed $initial, callable $callback): mixed
+    public static function fold(iterable $iterable, mixed $initial, Closure $callback): mixed
     {
         $result = $initial;
         foreach ($iterable as $key => $val) {
@@ -649,7 +675,7 @@ class Arr
      */
     public static function groupBy(iterable $iterable, int|string|Closure $key): array
     {
-        $callable = (is_string($key) || is_int($key))
+        $callback = (is_string($key) || is_int($key))
             ? static fn(array $val, $_key) => $val[$key]
             : $key;
 
@@ -657,7 +683,7 @@ class Arr
 
         foreach ($iterable as $_key => $val) {
             /** @var TGroupKey $groupKey */
-            $groupKey = $callable($val, $_key);
+            $groupKey = $callback($val, $_key);
             if ($groupKey !== null) {
                 Assert::validArrayKey($groupKey);
                 $map[$groupKey] ??= [];
@@ -814,20 +840,20 @@ class Arr
      */
     public static function keyByRecursive(iterable $iterable, string|Closure $key, bool $overwrite = false, int $depth = PHP_INT_MAX): array
     {
-        $callable = is_string($key)
+        $callback = is_string($key)
             ? static fn (): string => $key
             : $key;
 
         $result = [];
         foreach ($iterable as $oldKey => $val) {
-            $newKey = static::ensureKey($callable($val, $oldKey));
+            $newKey = static::ensureKey($callback($val, $oldKey));
 
             if (!$overwrite && array_key_exists($newKey, $result)) {
                 throw new DuplicateKeyException($newKey, $val);
             }
 
             $result[$newKey] = ($depth > 1 && is_iterable($val))
-                ? static::keyByRecursive($val, $callable, $overwrite, $depth - 1)
+                ? static::keyByRecursive($val, $callback, $overwrite, $depth - 1)
                 : $val;
         }
         /** @var array<T> $result */
@@ -848,10 +874,10 @@ class Arr
      * @template TKey of array-key
      * @template TValue
      * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
-     * @param callable(TValue, TKey): bool $condition
+     * @param Closure(TValue, TKey): bool|null $condition
      * @return TValue|null
      */
-    public static function last(iterable $iterable, ?callable $condition = null): mixed
+    public static function last(iterable $iterable, ?Closure $condition = null): mixed
     {
         return static::lastOr($iterable, null, $condition);
     }
@@ -860,10 +886,10 @@ class Arr
      * @template TKey of array-key
      * @template TValue
      * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
-     * @param callable(TValue, TKey): bool $condition
+     * @param Closure(TValue, TKey): bool $condition
      * @return int|null
      */
-    public static function lastIndex(iterable $iterable, callable $condition): ?int
+    public static function lastIndex(iterable $iterable, Closure $condition): ?int
     {
         $copy = static::from($iterable);
         end($copy);
@@ -888,10 +914,10 @@ class Arr
      * @template TKey of array-key
      * @template TValue
      * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
-     * @param callable(TValue, TKey): bool $condition
+     * @param Closure(TValue, TKey): bool|null $condition
      * @return TKey|null
      */
-    public static function lastKey(iterable $iterable, ?callable $condition = null): mixed
+    public static function lastKey(iterable $iterable, ?Closure $condition = null): mixed
     {
         $copy = static::from($iterable);
         end($copy);
@@ -916,11 +942,11 @@ class Arr
      * @template TValue
      * @template TDefault
      * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
-     * @param callable(TValue, TKey): bool|null $condition
+     * @param Closure(TValue, TKey): bool|null $condition
      * @param TDefault $default
      * @return TValue|TDefault
      */
-    public static function lastOr(iterable $iterable, mixed $default, ?callable $condition = null): mixed
+    public static function lastOr(iterable $iterable, mixed $default, ?Closure $condition = null): mixed
     {
         $copy = static::from($iterable);
         end($copy);
@@ -944,10 +970,10 @@ class Arr
      * @template TKey of array-key
      * @template TValue
      * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
-     * @param callable(TValue, TKey): bool $condition
+     * @param Closure(TValue, TKey): bool|null $condition
      * @return TValue
      */
-    public static function lastOrFail(iterable $iterable, ?callable $condition = null): mixed
+    public static function lastOrFail(iterable $iterable, ?Closure $condition = null): mixed
     {
         $miss = Miss::instance();
 
@@ -968,10 +994,10 @@ class Arr
      * @template TValue
      * @template TMapValue
      * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
-     * @param callable(TValue, TKey): TMapValue $callback
+     * @param Closure(TValue, TKey): TMapValue $callback
      * @return array<TKey, TMapValue>
      */
-    public static function map(iterable $iterable, callable $callback): array
+    public static function map(iterable $iterable, Closure $callback): array
     {
         return iterator_to_array(Iter::map($iterable, $callback));
     }
@@ -994,10 +1020,10 @@ class Arr
      * @template TKey
      * @template TValue
      * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
-     * @param callable(TValue, TKey): mixed $callback
+     * @param Closure(TValue, TKey): mixed $callback
      * @return TValue
      */
-    public static function maxBy(iterable $iterable, callable $callback)
+    public static function maxBy(iterable $iterable, Closure $callback)
     {
         $maxResult = null;
         $maxValue = null;
@@ -1077,10 +1103,10 @@ class Arr
      * @template TKey of array-key
      * @template TValue
      * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
-     * @param callable(TValue, TKey): mixed $callback
+     * @param Closure(TValue, TKey): mixed $callback
      * @return TValue|null
      */
-    public static function minBy(iterable $iterable, callable $callback)
+    public static function minBy(iterable $iterable, Closure $callback)
     {
         $minResult = null;
         $minVal = null;
@@ -1241,10 +1267,10 @@ class Arr
      * @template TKey of array-key
      * @template TValue
      * @param iterable<TKey, TValue> $iterable
-     * @param callable(TValue, TKey): bool $condition
+     * @param Closure(TValue, TKey): bool $condition
      * @return array<TKey, TValue>
      */
-    public static function prioritize(iterable $iterable, callable $condition): array
+    public static function prioritize(iterable $iterable, Closure $condition): array
     {
         $prioritized = [];
         $remains = [];
@@ -1343,10 +1369,10 @@ class Arr
      * @template TKey of array-key
      * @template TValue
      * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
-     * @param callable(TValue, TValue, TKey): TValue $callback
+     * @param Closure(TValue, TValue, TKey): TValue $callback
      * @return TValue
      */
-    public static function reduce(iterable $iterable, callable $callback): mixed
+    public static function reduce(iterable $iterable, Closure $callback): mixed
     {
         $result = null;
         $initialized = false;
@@ -1514,10 +1540,10 @@ class Arr
      * @template TKey of array-key
      * @template TValue
      * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
-     * @param callable(TValue, TKey): bool $condition
+     * @param Closure(TValue, TKey): bool $condition
      * @return bool
      */
-    public static function satisfyAll(iterable $iterable, callable $condition): bool
+    public static function satisfyAll(iterable $iterable, Closure $condition): bool
     {
         foreach ($iterable as $key => $val) {
             if (static::verify($condition, $key, $val) === false) {
@@ -1531,10 +1557,10 @@ class Arr
      * @template TKey of array-key
      * @template TValue
      * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
-     * @param callable(TValue, TKey): bool $condition
+     * @param Closure(TValue, TKey): bool $condition
      * @return bool
      */
-    public static function satisfyAny(iterable $iterable, callable $condition): bool
+    public static function satisfyAny(iterable $iterable, Closure $condition): bool
     {
         foreach ($iterable as $key => $val) {
             if (static::verify($condition, $key, $val)) {
@@ -1654,10 +1680,10 @@ class Arr
      * @template TKey of array-key
      * @template TValue
      * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
-     * @param callable(TValue, TKey): bool | null $condition
+     * @param Closure(TValue, TKey): bool|null $condition
      * @return TValue
      */
-    public static function sole(iterable $iterable, ?callable $condition = null): mixed
+    public static function sole(iterable $iterable, ?Closure $condition = null): mixed
     {
         $array = ($condition !== null)
             ? static::filter($iterable, $condition)
@@ -1698,11 +1724,11 @@ class Arr
      * @template TKey of array-key
      * @template TValue
      * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
-     * @param callable(TValue, TKey): mixed $callback
+     * @param Closure(TValue, TKey): mixed $callback
      * @param int $flag
      * @return array<TKey, TValue>
      */
-    public static function sortBy(iterable $iterable, callable $callback, int $flag = SORT_REGULAR): array
+    public static function sortBy(iterable $iterable, Closure $callback, int $flag = SORT_REGULAR): array
     {
         return static::sortByInternal($iterable, $callback, $flag, true);
     }
@@ -1711,11 +1737,11 @@ class Arr
      * @template TKey of array-key
      * @template TValue
      * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
-     * @param callable(TValue, TKey): mixed $callback
+     * @param Closure(TValue, TKey): mixed $callback
      * @param int $flag
      * @return array<TKey, TValue>
      */
-    public static function sortByDesc(iterable $iterable, callable $callback, int $flag = SORT_REGULAR): array
+    public static function sortByDesc(iterable $iterable, Closure $callback, int $flag = SORT_REGULAR): array
     {
         return static::sortByInternal($iterable, $callback, $flag, false);
     }
@@ -1752,12 +1778,12 @@ class Arr
      * @template TKey of array-key
      * @template TValue
      * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
-     * @param callable(TValue, TKey): mixed $callback
+     * @param Closure(TValue, TKey): mixed $callback
      * @param int $flag
      * @param bool $ascending
      * @return array<TKey, TValue>
      */
-    protected static function sortByInternal(iterable $iterable, callable $callback, int $flag, bool $ascending): array
+    protected static function sortByInternal(iterable $iterable, Closure $callback, int $flag, bool $ascending): array
     {
         $copy = static::from($iterable);
         $reIndex = array_is_list($copy);
@@ -1808,10 +1834,10 @@ class Arr
      * @template TKey of array-key
      * @template TValue
      * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
-     * @param callable(TValue, TValue): int $comparison
+     * @param Closure(TValue, TValue): int $comparison
      * @return array<TKey, TValue>
      */
-    public static function sortWith(iterable $iterable, callable $comparison): array
+    public static function sortWith(iterable $iterable, Closure $comparison): array
     {
         $copy = static::from($iterable);
         $reIndex = array_is_list($copy);
@@ -1829,10 +1855,10 @@ class Arr
      * @template TKey of array-key
      * @template TValue
      * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
-     * @param callable(TKey, TKey): int $comparison
+     * @param Closure(TKey, TKey): int $comparison
      * @return array<TKey, TValue>
      */
-    public static function sortWithKey(iterable $iterable, callable $comparison): array
+    public static function sortWithKey(iterable $iterable, Closure $comparison): array
     {
         $copy = static::from($iterable);
         uksort($copy, $comparison);
@@ -1870,10 +1896,10 @@ class Arr
      * @template TKey of array-key
      * @template TValue
      * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
-     * @param callable(TValue, TKey): bool $condition
+     * @param Closure(TValue, TKey): bool $condition
      * @return array<TKey, TValue>
      */
-    public static function takeUntil(iterable $iterable, callable $condition): array
+    public static function takeUntil(iterable $iterable, Closure $condition): array
     {
         return iterator_to_array(Iter::takeUntil($iterable, $condition));
     }
@@ -1882,10 +1908,10 @@ class Arr
      * @template TKey of array-key
      * @template TValue
      * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
-     * @param callable(TValue, TKey): bool $condition
+     * @param Closure(TValue, TKey): bool $condition
      * @return array<TKey, TValue>
      */
-    public static function takeWhile(iterable $iterable, callable $condition): array
+    public static function takeWhile(iterable $iterable, Closure $condition): array
     {
         return iterator_to_array(Iter::takeWhile($iterable, $condition));
     }
@@ -1977,30 +2003,16 @@ class Arr
      * @template TKey of array-key
      * @template TValue
      * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
-     * @param callable(TValue, TKey): bool $callback
+     * @param Closure(TValue, TKey): bool $callback
      * @return array<TKey, TValue>
      */
-    public static function uniqueBy(iterable $iterable, callable $callback): array
+    public static function uniqueBy(iterable $iterable, Closure $callback): array
     {
         $refs = [];
         $preserved = [];
 
-        $toStr = static function(mixed $v) use (&$toStr): string {
-            return match(true) {
-                is_null($v) => '',
-                is_int($v) => "i:$v",
-                is_float($v) => "f:$v",
-                is_bool($v) => "b:$v",
-                is_string($v) => "s:$v",
-                is_array($v) => 'a:'.json_encode(array_map($toStr, $v), JSON_THROW_ON_ERROR),
-                is_object($v) => 'o:' . spl_object_id($v),
-                is_resource($v) => 'r:' . get_resource_id($v),
-                default => throw new LogicException('Invalid Type: ' . Str::typeOf($v)),
-            };
-        };
-
         foreach ($iterable as $key => $val) {
-            $ref = $toStr($callback($val, $key));
+            $ref = static::valueToKey($callback($val, $key));
             if (!array_key_exists($ref, $refs)) {
                 $refs[$ref] = null;
                 $preserved[$key] = $val;
@@ -2039,12 +2051,12 @@ class Arr
     /**
      * @template TKey of array-key
      * @template TValue
-     * @param callable(TValue, TKey): bool $condition
+     * @param Closure(TValue, TKey): bool $condition
      * @param TKey $key
      * @param TValue $val
      * @return bool
      */
-    protected static function verify(callable $condition, mixed $key, mixed $val): bool
+    protected static function verify(Closure $condition, mixed $key, mixed $val): bool
     {
         return $condition($val, $key);
     }
@@ -2059,5 +2071,24 @@ class Arr
             return $key;
         }
         throw new InvalidKeyException($key);
+    }
+
+    /**
+     * @param mixed $val
+     * @return string
+     */
+    protected static function valueToKey(mixed $val): string
+    {
+        return match(true) {
+            is_null($val) => '',
+            is_int($val) => "i:$val",
+            is_float($val) => "f:$val",
+            is_bool($val) => "b:$val",
+            is_string($val) => "s:$val",
+            is_array($val) => 'a:'.json_encode(array_map(static::valueToKey(...), $val), JSON_THROW_ON_ERROR),
+            is_object($val) => 'o:' . spl_object_id($val),
+            is_resource($val) => 'r:' . get_resource_id($val),
+            default => throw new LogicException('Invalid Type: ' . Str::typeOf($val)),
+        };
     }
 }

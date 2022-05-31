@@ -2,6 +2,7 @@
 
 namespace Kirameki\Cache\Stores;
 
+use Closure;
 use DateInterval;
 use DateTimeInterface;
 use Kirameki\Support\Time;
@@ -30,7 +31,7 @@ class DeferrableStore extends AbstractStore
     protected array $queue = [];
 
     /**
-     * @var array<callable>
+     * @var array<Closure>
      */
     protected array $afterCommitCallbacks;
 
@@ -304,10 +305,10 @@ class DeferrableStore extends AbstractStore
     }
 
     /**
-     * @param callable $callback
+     * @param Closure $callback
      * @return void
      */
-    public function afterCommit(callable $callback): void
+    public function afterCommit(Closure $callback): void
     {
         $this->afterCommitCallbacks[] = $callback;
     }

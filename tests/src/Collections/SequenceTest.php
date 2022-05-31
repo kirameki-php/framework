@@ -437,6 +437,18 @@ class SequenceTest extends TestCase
         $seq->dropWhile(fn($v, $k) => null)->toArray();
     }
 
+    public function test_duplicates(): void
+    {
+        $seq = $this->seq(['a' => 1, 'b' => 2]);
+        self::assertEquals([], $seq->duplicates()->toArray());
+
+        $seq = $this->seq(['a' => 1, 'b' => 1, 'c' => 1, 'd' => 2]);
+        self::assertEquals(['a' => 1], $seq->duplicates()->toArray());
+
+        $seq = $this->seq([5, 6, 4, 4, 'a', 'a', 'b']);
+        self::assertEquals([4, 'a'], $seq->duplicates()->toArray());
+    }
+
     public function test_each(): void
     {
         $seq = $this->seq(['a' => 1, 'b' => 2]);

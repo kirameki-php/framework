@@ -2,6 +2,7 @@
 
 namespace Kirameki\Support;
 
+use Closure;
 use Kirameki\Collections\Arr;
 use Kirameki\Collections\Iter;
 
@@ -39,7 +40,7 @@ class SequenceLazy extends Sequence
     /**
      * @inheritDoc
      */
-    public function dropUntil(callable $condition): static
+    public function dropUntil(Closure $condition): static
     {
         return new static(Iter::dropUntil($this, $condition));
     }
@@ -47,7 +48,7 @@ class SequenceLazy extends Sequence
     /**
      * @inheritDoc
      */
-    public function dropWhile(callable $condition): static
+    public function dropWhile(Closure $condition): static
     {
         return new static(Iter::dropWhile($this, $condition));
     }
@@ -55,7 +56,7 @@ class SequenceLazy extends Sequence
     /**
      * @inheritDoc
      */
-    public function each(callable $callback): static
+    public function each(Closure $callback): static
     {
         return new static(function () use ($callback) {
             foreach ($this as $key => $item) {
@@ -68,7 +69,7 @@ class SequenceLazy extends Sequence
     /**
      * @inheritDoc
      */
-    public function filter(callable $condition): static
+    public function filter(Closure $condition): static
     {
         return new static(Iter::filter($this, $condition));
     }
@@ -84,10 +85,10 @@ class SequenceLazy extends Sequence
     /**
      * @inheritDoc
      * @template TMapValue
-     * @param callable(TValue, TKey): TMapValue $callback
+     * @param Closure(TValue, TKey): TMapValue $callback
      * @return static<TKey, TMapValue>
      */
-    public function map(callable $callback): static
+    public function map(Closure $callback): static
     {
         return new static(Iter::map($this, $callback));
     }
@@ -103,7 +104,7 @@ class SequenceLazy extends Sequence
     /**
      * @inheritDoc
      */
-    public function takeUntil(callable $condition): static
+    public function takeUntil(Closure $condition): static
     {
         return new static(Iter::takeUntil($this, $condition));
     }
@@ -111,7 +112,7 @@ class SequenceLazy extends Sequence
     /**
      * @inheritDoc
      */
-    public function takeWhile(callable $condition): static
+    public function takeWhile(Closure $condition): static
     {
         return new static(Iter::takeWhile($this, $condition));
     }

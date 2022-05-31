@@ -2,6 +2,7 @@
 
 namespace Kirameki\Http\Codecs;
 
+use Closure;
 use Kirameki\Collections\Arr;
 use Kirameki\Http\Codecs\Decoders\Decoder;
 use Kirameki\Http\Codecs\Encoders\Encoder;
@@ -38,10 +39,10 @@ class Codecs
 
     /**
      * @param string|array $mediaType
-     * @param callable $resolver
+     * @param Closure $resolver
      * @return void
      */
-    public function registerDecoder(string|array $mediaType, callable $resolver): void
+    public function registerDecoder(string|array $mediaType, Closure $resolver): void
     {
         foreach (Arr::wrap($mediaType) as $type) {
             $this->decoderResolvers[$type] = $resolver;
@@ -74,10 +75,10 @@ class Codecs
     }
 
     /**
-     * @param string|array $mediaType
-     * @param callable $resolver
+     * @param string|list<string> $mediaType
+     * @param Closure $resolver
      */
-    public function registerEncoder(string|array $mediaType, callable $resolver): void
+    public function registerEncoder(string|array $mediaType, Closure $resolver): void
     {
         foreach (Arr::wrap($mediaType) as $type) {
             $this->encoderResolvers[$type] = $resolver;

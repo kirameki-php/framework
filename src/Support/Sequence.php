@@ -8,7 +8,6 @@ use JsonSerializable;
 use Kirameki\Collections\Arr;
 use Kirameki\Collections\Iter;
 use Kirameki\Collections\Iterator;
-use Kirameki\Collections\Miss;
 use Symfony\Component\VarDumper\VarDumper;
 use Webmozart\Assert\Assert;
 use function is_iterable;
@@ -124,7 +123,7 @@ class Sequence extends Iterator implements Countable, JsonSerializable
     }
 
     /**
-     * @param mixed|callable(TValue, TKey): bool $value
+     * @param mixed|Closure(TValue, TKey): bool $value
      * @return bool
      */
     public function contains(mixed $value): bool
@@ -158,10 +157,10 @@ class Sequence extends Iterator implements Countable, JsonSerializable
     }
 
     /**
-     * @param callable(TValue, TKey): bool $condition
+     * @param Closure(TValue, TKey): bool $condition
      * @return int
      */
-    public function countBy(callable $condition): int
+    public function countBy(Closure $condition): int
     {
         return Arr::countBy($this, $condition);
     }
@@ -204,19 +203,19 @@ class Sequence extends Iterator implements Countable, JsonSerializable
     }
 
     /**
-     * @param callable(TValue, TKey): bool $condition
+     * @param Closure(TValue, TKey): bool $condition
      * @return static
      */
-    public function dropUntil(callable $condition): static
+    public function dropUntil(Closure $condition): static
     {
         return $this->newInstance(Iter::dropUntil($this, $condition));
     }
 
     /**
-     * @param callable(TValue, TKey): bool $condition
+     * @param Closure(TValue, TKey): bool $condition
      * @return static
      */
-    public function dropWhile(callable $condition): static
+    public function dropWhile(Closure $condition): static
     {
         return $this->newInstance(Iter::dropWhile($this, $condition));
     }
@@ -232,10 +231,18 @@ class Sequence extends Iterator implements Countable, JsonSerializable
     }
 
     /**
-     * @param callable(TValue, TKey): void $callback
+     * @return static
+     */
+    public function duplicates(): static
+    {
+        return $this->newInstance(Arr::duplicates($this));
+    }
+
+    /**
+     * @param Closure(TValue, TKey): void $callback
      * @return $this
      */
-    public function each(callable $callback): static
+    public function each(Closure $callback): static
     {
         Arr::each($this, $callback);
         return $this;
@@ -264,37 +271,37 @@ class Sequence extends Iterator implements Countable, JsonSerializable
     }
 
     /**
-     * @param callable(TValue, TKey): bool $condition
+     * @param Closure(TValue, TKey): bool $condition
      * @return static
      */
-    public function filter(callable $condition): static
+    public function filter(Closure $condition): static
     {
         return $this->newInstance(Arr::filter($this, $condition));
     }
 
     /**
-     * @param callable(TValue, TKey): bool|null $condition
+     * @param Closure(TValue, TKey): bool|null $condition
      * @return TValue|null
      */
-    public function first(?callable $condition = null): mixed
+    public function first(?Closure $condition = null): mixed
     {
         return Arr::first($this, $condition);
     }
 
     /**
-     * @param callable(TValue, TKey):bool $condition
+     * @param Closure(TValue, TKey):bool $condition
      * @return int|null
      */
-    public function firstIndex(callable $condition): ?int
+    public function firstIndex(Closure $condition): ?int
     {
         return Arr::firstIndex($this, $condition);
     }
 
     /**
-     * @param callable(TValue, TKey): bool|null $condition
+     * @param Closure(TValue, TKey): bool|null $condition
      * @return TKey|null
      */
-    public function firstKey(?callable $condition = null): mixed
+    public function firstKey(?Closure $condition = null): mixed
     {
         return Arr::firstKey($this, $condition);
     }
@@ -302,30 +309,30 @@ class Sequence extends Iterator implements Countable, JsonSerializable
     /**
      * @template TDefault
      * @param TDefault $default
-     * @param callable(TValue, TKey): bool|null $condition
+     * @param Closure(TValue, TKey): bool|null $condition
      * @return TValue|null
      */
-    public function firstOr(mixed $default, ?callable $condition = null): mixed
+    public function firstOr(mixed $default, ?Closure $condition = null): mixed
     {
         return Arr::firstOr($this, $default, $condition);
     }
 
     /**
-     * @param callable(TValue, TKey): bool|null $condition
+     * @param Closure(TValue, TKey): bool|null $condition
      * @return TValue
      */
-    public function firstOrFail(?callable $condition = null): mixed
+    public function firstOrFail(?Closure $condition = null): mixed
     {
         return Arr::firstOrFail($this, $condition);
     }
 
     /**
-     * @param callable(TValue, TKey): mixed $callable
+     * @param Closure(TValue, TKey): mixed $callback
      * @return static<int, mixed>
      */
-    public function flatMap(callable $callable): static
+    public function flatMap(Closure $callback): static
     {
-        return $this->newInstance(Arr::flatMap($this, $callable));
+        return $this->newInstance(Arr::flatMap($this, $callback));
     }
 
     /**
@@ -349,10 +356,10 @@ class Sequence extends Iterator implements Countable, JsonSerializable
     /**
      * @template U
      * @param U $initial
-     * @param callable(U, TValue, TKey): U $callback
+     * @param Closure(U, TValue, TKey): U $callback
      * @return U
      */
-    public function fold(mixed $initial, callable $callback): mixed
+    public function fold(mixed $initial, Closure $callback): mixed
     {
         return Arr::fold($this, $initial, $callback);
     }
@@ -450,58 +457,58 @@ class Sequence extends Iterator implements Countable, JsonSerializable
     }
 
     /**
-     * @param callable(TValue, TKey): bool|null $condition
-     * @return TValue
+     * @param Closure(TValue, TKey): bool|null $condition
+     * @return TValue|null
      */
-    public function last(?callable $condition = null): mixed
+    public function last(?Closure $condition = null): mixed
     {
         return Arr::last($this, $condition);
     }
 
     /**
-     * @param callable(TValue, TKey): bool $condition
+     * @param Closure(TValue, TKey): bool $condition
      * @return int|null
      */
-    public function lastIndex(callable $condition): ?int
+    public function lastIndex(Closure $condition): ?int
     {
         return Arr::lastIndex($this, $condition);
     }
 
     /**
-     * @param callable(TValue, TKey): bool|null $condition
+     * @param Closure(TValue, TKey): bool|null $condition
      * @return mixed
      */
-    public function lastKey(?callable $condition = null): mixed
+    public function lastKey(?Closure $condition = null): mixed
     {
         return Arr::lastKey($this, $condition);
     }
 
     /**
      * @template TDefault
-     * @param callable(TValue, TKey): bool|null $condition
+     * @param Closure(TValue, TKey): bool|null $condition
      * @param TDefault $default
      * @return TValue|TDefault
      */
-    public function lastOr(mixed $default, ?callable $condition = null): mixed
+    public function lastOr(mixed $default, ?Closure $condition = null): mixed
     {
         return Arr::lastOr($this, $default, $condition);
     }
 
     /**
-     * @param callable(TValue, TKey): bool|null $condition
+     * @param Closure(TValue, TKey): bool|null $condition
      * @return TValue
      */
-    public function lastOrFail(?callable $condition = null): mixed
+    public function lastOrFail(?Closure $condition = null): mixed
     {
         return Arr::lastOrFail($this, $condition);
     }
 
     /**
      * @template TMapValue
-     * @param callable(TValue, TKey): TMapValue $callback
+     * @param Closure(TValue, TKey): TMapValue $callback
      * @return static<TKey, TMapValue>
      */
-    public function map(callable $callback): static
+    public function map(Closure $callback): static
     {
         return $this->newInstance(Arr::map($this, $callback));
     }
@@ -515,10 +522,10 @@ class Sequence extends Iterator implements Countable, JsonSerializable
     }
 
     /**
-     * @param callable(TValue, TKey): mixed $callback
+     * @param Closure(TValue, TKey): mixed $callback
      * @return TValue
      */
-    public function maxBy(callable $callback): mixed
+    public function maxBy(Closure $callback): mixed
     {
         return Arr::maxBy($this, $callback);
     }
@@ -555,10 +562,10 @@ class Sequence extends Iterator implements Countable, JsonSerializable
     /**
      * Returns the minimum element in the sequence using the given predicate as the comparison between elements.
      *
-     * @param callable(TValue, TKey): mixed $callback
+     * @param Closure(TValue, TKey): mixed $callback
      * @return TValue|null
      */
-    public function minBy(callable $callback): mixed
+    public function minBy(Closure $callback): mixed
     {
         return Arr::minBy($this, $callback);
     }
@@ -610,19 +617,19 @@ class Sequence extends Iterator implements Countable, JsonSerializable
     /**
      * Move items that match condition to the top of the array.
      *
-     * @param callable(TValue, TKey): bool $condition
+     * @param Closure(TValue, TKey): bool $condition
      * @return static
      */
-    public function prioritize(callable $condition): static
+    public function prioritize(Closure $condition): static
     {
         return $this->newInstance(Arr::prioritize($this, $condition));
     }
 
     /**
-     * @param callable(TValue, TValue, TKey): TValue $callback
+     * @param Closure(TValue, TValue, TKey): TValue $callback
      * @return TValue
      */
-    public function reduce(callable $callback): mixed
+    public function reduce(Closure $callback): mixed
     {
         return Arr::reduce($this, $callback);
     }
@@ -671,19 +678,19 @@ class Sequence extends Iterator implements Countable, JsonSerializable
     }
 
     /**
-     * @param callable(TValue, TKey): bool $condition
+     * @param Closure(TValue, TKey): bool $condition
      * @return bool
      */
-    public function satisfyAll(callable $condition): bool
+    public function satisfyAll(Closure $condition): bool
     {
         return Arr::satisfyAll($this, $condition);
     }
 
     /**
-     * @param callable(TValue, TKey): bool $condition
+     * @param Closure(TValue, TKey): bool $condition
      * @return bool
      */
-    public function satisfyAny(callable $condition): bool
+    public function satisfyAny(Closure $condition): bool
     {
         return Arr::satisfyAny($this, $condition);
     }
@@ -707,10 +714,10 @@ class Sequence extends Iterator implements Countable, JsonSerializable
     }
 
     /**
-     * @param callable(TValue, TKey): bool|null $condition
+     * @param Closure(TValue, TKey): bool|null $condition
      * @return TValue
      */
-    public function sole(?callable $condition = null): mixed
+    public function sole(?Closure $condition = null): mixed
     {
         return Arr::sole($this, $condition);
     }
@@ -725,21 +732,21 @@ class Sequence extends Iterator implements Countable, JsonSerializable
     }
 
     /**
-     * @param callable(TValue, TKey): mixed $callback
+     * @param Closure(TValue, TKey): mixed $callback
      * @param int $flag
      * @return static
      */
-    public function sortBy(callable $callback, int $flag = SORT_REGULAR): static
+    public function sortBy(Closure $callback, int $flag = SORT_REGULAR): static
     {
         return $this->newInstance(Arr::sortBy($this, $callback, $flag));
     }
 
     /**
-     * @param callable(TValue, TKey): mixed $callback
+     * @param Closure(TValue, TKey): mixed $callback
      * @param int $flag
      * @return static
      */
-    public function sortByDesc(callable $callback, int $flag = SORT_REGULAR): static
+    public function sortByDesc(Closure $callback, int $flag = SORT_REGULAR): static
     {
         return $this->newInstance(Arr::sortByDesc($this, $callback, $flag));
     }
@@ -772,19 +779,19 @@ class Sequence extends Iterator implements Countable, JsonSerializable
     }
 
     /**
-     * @param callable(TValue, TValue): int $comparison
+     * @param Closure(TValue, TValue): int $comparison
      * @return static
      */
-    public function sortWith(callable $comparison): static
+    public function sortWith(Closure $comparison): static
     {
         return $this->newInstance(Arr::sortWith($this, $comparison));
     }
 
     /**
-     * @param callable(TKey, TKey): int $comparison
+     * @param Closure(TKey, TKey): int $comparison
      * @return static
      */
-    public function sortWithKey(callable $comparison): static
+    public function sortWithKey(Closure $comparison): static
     {
         return $this->newInstance(Arr::sortWithKey($this, $comparison));
     }
@@ -807,19 +814,19 @@ class Sequence extends Iterator implements Countable, JsonSerializable
     }
 
     /**
-     * @param callable(TValue, TKey): bool $condition
+     * @param Closure(TValue, TKey): bool $condition
      * @return static
      */
-    public function takeUntil(callable $condition): static
+    public function takeUntil(Closure $condition): static
     {
         return $this->newInstance(Iter::takeUntil($this, $condition));
     }
 
     /**
-     * @param callable(TValue, TKey): bool $condition
+     * @param Closure(TValue, TKey): bool $condition
      * @return static
      */
-    public function takeWhile(callable $condition): static
+    public function takeWhile(Closure $condition): static
     {
         return $this->newInstance(Iter::takeWhile($this, $condition));
     }
@@ -887,10 +894,10 @@ class Sequence extends Iterator implements Countable, JsonSerializable
     }
 
     /**
-     * @param callable(TValue, TKey): bool $callback
+     * @param Closure(TValue, TKey): bool $callback
      * @return static
      */
-    public function uniqueBy(callable $callback): static
+    public function uniqueBy(Closure $callback): static
     {
         return $this->newInstance(Arr::uniqueBy($this, $callback));
     }

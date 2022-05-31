@@ -2,6 +2,7 @@
 
 namespace Kirameki\Testing;
 
+use Closure;
 use Kirameki\Core\Application;
 use PHPUnit\Framework\TestCase as BaseTestCase;
 
@@ -10,22 +11,22 @@ abstract class TestCase extends BaseTestCase
     protected Application $app;
 
     /**
-     * @var array<callable>
+     * @var array<Closure>
      */
     private array $beforeSetupCallbacks = [];
 
     /**
-     * @var array<callable>
+     * @var array<Closure>
      */
     private array $afterSetupCallbacks = [];
 
     /**
-     * @var array<callable>
+     * @var array<Closure>
      */
     private array $beforeTearDownCallbacks = [];
 
     /**
-     * @var array<callable>
+     * @var array<Closure>
      */
     private array $afterTearDownCallbacks = [];
 
@@ -38,37 +39,37 @@ abstract class TestCase extends BaseTestCase
         $this->app = new Application(__DIR__ . '/../../tests');
     }
 
-    protected function runBeforeSetup(callable $callback): void
+    protected function runBeforeSetup(Closure $callback): void
     {
         $this->beforeSetupCallbacks[] = $callback;
     }
 
-    protected function runAfterSetup(callable $callback): void
+    protected function runAfterSetup(Closure $callback): void
     {
         $this->afterSetupCallbacks[] = $callback;
     }
 
-    protected function runBeforeTearDown(callable $callback): void
+    protected function runBeforeTearDown(Closure $callback): void
     {
         $this->beforeTearDownCallbacks[]= $callback;
     }
 
-    protected function runAfterTearDown(callable $callback): void
+    protected function runAfterTearDown(Closure $callback): void
     {
         $this->afterTearDownCallbacks[]= $callback;
     }
 
     protected function setUp(): void
     {
-        array_map(static fn($callback) => $callback(), $this->beforeSetupCallbacks);
+        array_map(static fn(Closure $callback) => $callback(), $this->beforeSetupCallbacks);
         parent::setUp();
-        array_map(static fn($callback) => $callback(), $this->afterSetupCallbacks);
+        array_map(static fn(Closure $callback) => $callback(), $this->afterSetupCallbacks);
     }
 
     protected function tearDown(): void
     {
-        array_map(static fn($callback) => $callback(), $this->beforeTearDownCallbacks);
+        array_map(static fn(Closure $callback) => $callback(), $this->beforeTearDownCallbacks);
         parent::tearDown();
-        array_map(static fn($callback) => $callback(), $this->afterTearDownCallbacks);
+        array_map(static fn(Closure $callback) => $callback(), $this->afterTearDownCallbacks);
     }
 }

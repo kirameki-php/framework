@@ -2,6 +2,7 @@
 
 namespace Kirameki\Model;
 
+use Closure;
 use Kirameki\Model\Relations\BelongsTo;
 use Kirameki\Model\Relations\HasMany;
 use Kirameki\Model\Relations\Relation;
@@ -96,9 +97,9 @@ class ReflectionBuilder
 
     /**
      * @param string $name
-     * @param callable(QueryBuilder<TModel>):void $callback
+     * @param Closure(QueryBuilder<TModel>):void $callback
      */
-    public function scope(string $name, callable $callback): void
+    public function scope(string $name, Closure $callback): void
     {
         $this->reflection->scopes[$name] = $callback;
     }
