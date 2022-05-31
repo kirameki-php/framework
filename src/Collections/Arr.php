@@ -480,7 +480,7 @@ class Arr
      * @param Closure(TValue, TKey): bool|null $condition
      * @return TKey|null
      */
-    public static function firstKey(iterable $iterable, ?Closure $condition = null): string|int|null
+    public static function firstKey(iterable $iterable, ?Closure $condition = null): mixed
     {
         $condition ??= static fn() => true;
 
@@ -1308,13 +1308,13 @@ class Arr
             return $default;
         }
 
-        $reIndex = array_is_list($array);
+        $reindex = array_is_list($array);
 
         $value = $array[$key];
         unset($array[$key]);
 
-        if ($reIndex) {
-            static::reIndex($array);
+        if ($reindex) {
+            static::reindex($array);
         }
 
         return $value;
@@ -1346,7 +1346,7 @@ class Arr
      */
     public static function pullMany(array &$array, int|string ...$key): array
     {
-        $reIndex = array_is_list($array);
+        $reindex = array_is_list($array);
 
         $pulled = [];
         foreach ($key as $k) {
@@ -1357,8 +1357,8 @@ class Arr
             }
         }
 
-        if ($reIndex) {
-            static::reIndex($array);
+        if ($reindex) {
+            static::reindex($array);
         }
 
         /** @var array<TKey, TValue> $pulled */
@@ -1394,7 +1394,7 @@ class Arr
      * @param array<int, mixed> $array
      * @return void
      */
-    public static function reIndex(array &$array): void
+    public static function reindex(array &$array): void
     {
         $size = count($array);
         if ($size > 0) {
@@ -1417,7 +1417,7 @@ class Arr
         $removed = [];
 
         // Must check before processing, since unset converts lists to assoc array.
-        $reIndex = array_is_list($array);
+        $reindex = array_is_list($array);
 
         foreach ($array as $key => $val) {
             if ($count < $limit && $val === $value) {
@@ -1428,8 +1428,8 @@ class Arr
         }
 
         // if the list is an array, use array_splice to re-index
-        if ($count > 0 && $reIndex) {
-            static::reIndex($array);
+        if ($count > 0 && $reindex) {
+            static::reindex($array);
         }
 
         return $removed;
@@ -1650,11 +1650,11 @@ class Arr
     {
         $copy = static::from($iterable);
         $size = count($copy);
-        $reIndex = static::isList($copy);
+        $reindex = static::isList($copy);
         $array = [];
         while ($size > 0) {
             $key = array_rand($copy);
-            $reIndex
+            $reindex
                 ? $array[] = $copy[$key]
                 : $array[$key] = $copy[$key];
             unset($copy[$key]);
@@ -1709,12 +1709,12 @@ class Arr
     public static function sort(iterable $iterable, int $flag = SORT_REGULAR): array
     {
         $copy = static::from($iterable);
-        $reIndex = array_is_list($copy);
+        $reindex = array_is_list($copy);
 
         asort($copy, $flag);
 
-        if ($reIndex) {
-            static::reIndex($copy);
+        if ($reindex) {
+            static::reindex($copy);
         }
 
         return $copy;
@@ -1786,7 +1786,7 @@ class Arr
     protected static function sortByInternal(iterable $iterable, Closure $callback, int $flag, bool $ascending): array
     {
         $copy = static::from($iterable);
-        $reIndex = array_is_list($copy);
+        $reindex = array_is_list($copy);
 
         $refs = [];
         foreach ($copy as $key => $item) {
@@ -1802,8 +1802,8 @@ class Arr
             $sorted[$key] = $copy[$key];
         }
 
-        if ($reIndex) {
-            static::reIndex($sorted);
+        if ($reindex) {
+            static::reindex($sorted);
         }
 
         return $sorted;
@@ -1819,12 +1819,12 @@ class Arr
     public static function sortDesc(iterable $iterable, int $flag = SORT_REGULAR): array
     {
         $copy = static::from($iterable);
-        $reIndex = array_is_list($copy);
+        $reindex = array_is_list($copy);
 
         arsort($copy, $flag);
 
-        if ($reIndex) {
-            static::reIndex($copy);
+        if ($reindex) {
+            static::reindex($copy);
         }
 
         return $copy;
@@ -1840,12 +1840,12 @@ class Arr
     public static function sortWith(iterable $iterable, Closure $comparison): array
     {
         $copy = static::from($iterable);
-        $reIndex = array_is_list($copy);
+        $reindex = array_is_list($copy);
 
         uasort($copy, $comparison);
 
-        if ($reIndex) {
-            static::reIndex($copy);
+        if ($reindex) {
+            static::reindex($copy);
         }
 
         return $copy;
