@@ -11,7 +11,7 @@ trait Macroable
     /**
      * @var Closure[]
      */
-    protected static array $macros = [];
+    protected static array $_macros = [];
 
     /**
      * @param string $name
@@ -20,7 +20,7 @@ trait Macroable
      */
     public static function macro(string $name, Closure $macro): void
     {
-        static::$macros[$name] = $macro;
+        static::$_macros[$name] = $macro;
     }
 
     /**
@@ -29,7 +29,7 @@ trait Macroable
      */
     public static function macroExists(string $name): bool
     {
-        return isset(static::$macros[$name]);
+        return isset(static::$_macros[$name]);
     }
 
     /**
@@ -59,8 +59,8 @@ trait Macroable
      */
     protected static function callMacro(string $method, array $parameters): mixed
     {
-        if (isset(static::$macros[$method])) {
-            return static::$macros[$method](...$parameters);
+        if (isset(static::$_macros[$method])) {
+            return static::$_macros[$method](...$parameters);
         }
         throw new BadMethodCallException(sprintf('Method %s::%s does not exist.', static::class, $method));
     }
