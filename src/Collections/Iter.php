@@ -18,18 +18,19 @@ class Iter
      * @template TValue
      * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
      * @param int $size Size of each chunk. Must be >= 1.
+     * @param bool|null $reindex
      * @return Iterator<int, array<TKey, TValue>>
      */
-    public static function chunk(iterable $iterable, int $size): Iterator
+    public static function chunk(iterable $iterable, int $size, ?bool $reindex = null): Iterator
     {
         Assert::positiveInteger($size);
 
         $remaining = $size;
         $chunk = [];
         foreach ($iterable as $key => $val) {
-            $isList ??= $key === 0;
+            $reindex ??= $key === 0;
 
-            $isList
+            $reindex
                 ? $chunk[] = $val
                 : $chunk[$key] = $val;
 
@@ -49,14 +50,15 @@ class Iter
      * @template TKey of array-key
      * @template TValue
      * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
+     * @param bool|null $reindex
      * @return Iterator<TKey, TValue>
      */
-    public static function compact(iterable $iterable): Iterator
+    public static function compact(iterable $iterable, ?bool $reindex = null): Iterator
     {
         foreach ($iterable as $key => $val) {
-            $isList ??= $key === 0;
+            $reindex ??= $key === 0;
             if ($val !== null) {
-                if ($isList) {
+                if ($reindex) {
                     yield $val;
                 } else {
                     yield $key => $val;
@@ -83,20 +85,21 @@ class Iter
      * @template TValue
      * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
      * @param Closure(TValue, TKey): bool $condition
+     * @param bool|null $reindex
      * @return Iterator<TKey, TValue>
      */
-    public static function dropUntil(iterable $iterable, Closure $condition): Iterator
+    public static function dropUntil(iterable $iterable, Closure $condition, ?bool $reindex = null): Iterator
     {
         $drop = true;
         foreach ($iterable as $key => $item) {
-            $isList ??= $key === 0;
+            $reindex ??= $key === 0;
 
             if ($drop && static::verify($condition, $key, $item)) {
                 $drop = false;
             }
 
             if (!$drop) {
-                if ($isList) {
+                if ($reindex) {
                     yield $item;
                 } else {
                     yield $key => $item;
@@ -110,20 +113,21 @@ class Iter
      * @template TValue
      * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
      * @param Closure(TValue, TKey): bool $condition
+     * @param bool|null $reindex
      * @return Iterator<TKey, TValue>
      */
-    public static function dropWhile(iterable $iterable, Closure $condition): Iterator
+    public static function dropWhile(iterable $iterable, Closure $condition, ?bool $reindex = null): Iterator
     {
         $drop = true;
         foreach ($iterable as $key => $item) {
-            $isList ??= $key === 0;
+            $reindex ??= $key === 0;
 
             if ($drop && !static::verify($condition, $key, $item)) {
                 $drop = false;
             }
 
             if (!$drop) {
-                if ($isList) {
+                if ($reindex) {
                     yield $item;
                 } else {
                     yield $key => $item;
@@ -137,14 +141,15 @@ class Iter
      * @template TValue
      * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
      * @param Closure(TValue, TKey): bool $condition
+     * @param bool|null $reindex
      * @return Iterator<TKey, TValue>
      */
-    public static function filter(iterable $iterable, Closure $condition): Iterator
+    public static function filter(iterable $iterable, Closure $condition, ?bool $reindex = null): Iterator
     {
         foreach ($iterable as $key => $val) {
-            $isList ??= $key === 0;
+            $reindex ??= $key === 0;
             if (static::verify($condition, $key, $val)) {
-                if ($isList) {
+                if ($reindex) {
                     yield $val;
                 } else {
                     yield $key => $val;

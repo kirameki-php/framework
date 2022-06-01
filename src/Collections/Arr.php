@@ -1286,11 +1286,12 @@ class Arr
      * @template T
      * @param array<T> $array
      * @param array-key $key
+     * @param bool|null $reindex
      * @return T|null
      */
-    public static function pull(array &$array, int|string $key): mixed
+    public static function pull(array &$array, int|string $key, ?bool $reindex = null): mixed
     {
-        return static::pullOr($array, $key, null);
+        return static::pullOr($array, $key, null, $reindex);
     }
 
     /**
@@ -1300,15 +1301,16 @@ class Arr
      * @param array<TValue> $array
      * @param TKey $key
      * @param TDefault $default
+     * @param bool|null $reindex
      * @return TValue|TDefault
      */
-    public static function pullOr(array &$array, int|string $key, mixed $default): mixed
+    public static function pullOr(array &$array, int|string $key, mixed $default, ?bool $reindex = null): mixed
     {
         if (!array_key_exists($key, $array)) {
             return $default;
         }
 
-        $reindex = array_is_list($array);
+        $reindex ??= array_is_list($array);
 
         $value = $array[$key];
         unset($array[$key]);
@@ -1325,12 +1327,13 @@ class Arr
      * @template TValue
      * @param array<TKey, TValue> $array
      * @param TKey $key
+     * @param bool|null $reindex
      * @return TValue
      */
-    public static function pullOrFail(array &$array, int|string $key): mixed
+    public static function pullOrFail(array &$array, int|string $key, ?bool $reindex = null): mixed
     {
         $miss = Miss::instance();
-        $result = static::pullOr($array, $key, $miss);
+        $result = static::pullOr($array, $key, $miss, $reindex);
         if ($result instanceof Miss) {
             throw new RuntimeException("Tried to pull undefined array key \"$key\"");
         }
@@ -1341,19 +1344,20 @@ class Arr
      * @template TKey as array-key
      * @template TValue
      * @param array<TKey, TValue> $array
-     * @param int|string ...$key
+     * @param iterable<array-key> $keys
+     * @param bool|null $reindex
      * @return array<TKey, TValue>
      */
-    public static function pullMany(array &$array, int|string ...$key): array
+    public static function pullMany(array &$array, iterable $keys, ?bool $reindex = null): array
     {
-        $reindex = array_is_list($array);
+        $reindex ??= array_is_list($array);
 
         $pulled = [];
-        foreach ($key as $k) {
-            if (array_key_exists($k, $array)) {
-                $value = $array[$k];
-                unset($array[$k]);
-                $pulled[$k] = $value;
+        foreach ($keys as $key) {
+            if (array_key_exists($key, $array)) {
+                $value = $array[$key];
+                unset($array[$key]);
+                $pulled[$key] = $value;
             }
         }
 
@@ -1408,16 +1412,17 @@ class Arr
      * @param array<TKey, TValue> $array
      * @param TValue $value
      * @param int|null $limit
+     * @param bool|null $reindex
      * @return array<int, TKey>
      */
-    public static function remove(array &$array, mixed $value, ?int $limit = null): array
+    public static function remove(array &$array, mixed $value, ?int $limit = null, ?bool $reindex = null): array
     {
         $count = 0;
         $limit ??= PHP_INT_MAX;
         $removed = [];
 
         // Must check before processing, since unset converts lists to assoc array.
-        $reindex = array_is_list($array);
+        $reindex ??= array_is_list($array);
 
         foreach ($array as $key => $val) {
             if ($count < $limit && $val === $value) {
@@ -1644,13 +1649,14 @@ class Arr
      * @template TKey of array-key
      * @template TValue
      * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
+     * @param bool|null $reindex
      * @return array<array-key, TValue>
      */
-    public static function shuffle(iterable $iterable): array
+    public static function shuffle(iterable $iterable, ?bool $reindex = null): array
     {
         $copy = static::from($iterable);
         $size = count($copy);
-        $reindex = static::isList($copy);
+        $reindex ??= array_is_list($copy);
         $array = [];
         while ($size > 0) {
             $key = array_rand($copy);
@@ -1704,12 +1710,13 @@ class Arr
      * @template TValue
      * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
      * @param int $flag
+     * @param bool|null $reindex
      * @return array<TKey, TValue>
      */
-    public static function sort(iterable $iterable, int $flag = SORT_REGULAR): array
+    public static function sort(iterable $iterable, int $flag = SORT_REGULAR, ?bool $reindex = null): array
     {
         $copy = static::from($iterable);
-        $reindex = array_is_list($copy);
+        $reindex ??= array_is_list($copy);
 
         asort($copy, $flag);
 
@@ -1726,11 +1733,12 @@ class Arr
      * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
      * @param Closure(TValue, TKey): mixed $callback
      * @param int $flag
+     * @param bool|null $reindex
      * @return array<TKey, TValue>
      */
-    public static function sortBy(iterable $iterable, Closure $callback, int $flag = SORT_REGULAR): array
+    public static function sortBy(iterable $iterable, Closure $callback, int $flag = SORT_REGULAR, ?bool $reindex = null): array
     {
-        return static::sortByInternal($iterable, $callback, $flag, true);
+        return static::sortByInternal($iterable, $callback, $flag, true, $reindex);
     }
 
     /**
@@ -1739,11 +1747,12 @@ class Arr
      * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
      * @param Closure(TValue, TKey): mixed $callback
      * @param int $flag
+     * @param bool|null $reindex
      * @return array<TKey, TValue>
      */
-    public static function sortByDesc(iterable $iterable, Closure $callback, int $flag = SORT_REGULAR): array
+    public static function sortByDesc(iterable $iterable, Closure $callback, int $flag = SORT_REGULAR, ?bool $reindex = null): array
     {
-        return static::sortByInternal($iterable, $callback, $flag, false);
+        return static::sortByInternal($iterable, $callback, $flag, false, $reindex);
     }
 
     /**
@@ -1781,12 +1790,13 @@ class Arr
      * @param Closure(TValue, TKey): mixed $callback
      * @param int $flag
      * @param bool $ascending
+     * @param bool|null $reindex
      * @return array<TKey, TValue>
      */
-    protected static function sortByInternal(iterable $iterable, Closure $callback, int $flag, bool $ascending): array
+    protected static function sortByInternal(iterable $iterable, Closure $callback, int $flag, bool $ascending, ?bool $reindex): array
     {
         $copy = static::from($iterable);
-        $reindex = array_is_list($copy);
+        $reindex ??= array_is_list($copy);
 
         $refs = [];
         foreach ($copy as $key => $item) {
@@ -1814,12 +1824,13 @@ class Arr
      * @template TValue
      * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
      * @param int $flag
+     * @param bool|null $reindex
      * @return array<TKey, TValue>
      */
-    public static function sortDesc(iterable $iterable, int $flag = SORT_REGULAR): array
+    public static function sortDesc(iterable $iterable, int $flag = SORT_REGULAR, ?bool $reindex = null): array
     {
         $copy = static::from($iterable);
-        $reindex = array_is_list($copy);
+        $reindex ??= array_is_list($copy);
 
         arsort($copy, $flag);
 
@@ -1835,12 +1846,13 @@ class Arr
      * @template TValue
      * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
      * @param Closure(TValue, TValue): int $comparison
+     * @param bool|null $reindex
      * @return array<TKey, TValue>
      */
-    public static function sortWith(iterable $iterable, Closure $comparison): array
+    public static function sortWith(iterable $iterable, Closure $comparison, ?bool $reindex = null): array
     {
         $copy = static::from($iterable);
-        $reindex = array_is_list($copy);
+        $reindex ??= array_is_list($copy);
 
         uasort($copy, $comparison);
 
@@ -2010,7 +2022,6 @@ class Arr
     {
         $refs = [];
         $preserved = [];
-
         foreach ($iterable as $key => $val) {
             $ref = static::valueToKey($callback($val, $key));
             if (!array_key_exists($ref, $refs)) {
