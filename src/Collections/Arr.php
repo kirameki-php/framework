@@ -178,11 +178,12 @@ class Arr
      * @template TValue
      * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
      * @param int $size
+     * @param bool|null $reindex
      * @return array<int, array<TKey, TValue>>
      */
-    public static function chunk(iterable $iterable, int $size): array
+    public static function chunk(iterable $iterable, int $size, ?bool $reindex = null): array
     {
-        return iterator_to_array(Iter::chunk($iterable, $size));
+        return iterator_to_array(Iter::chunk($iterable, $size, $reindex));
     }
 
     /**
@@ -229,24 +230,18 @@ class Arr
      * @template TValue
      * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
      * @param int $depth Optional. Must be >= 1. Default is 1.
+     * @param bool|null $reindex
      * @return array<TKey, TValue>
      */
-    public static function compact(iterable $iterable, int $depth = 1): array
+    public static function compact(iterable $iterable, int $depth = 1, ?bool $reindex = null): array
     {
         $result = [];
-        foreach (Iter::compact($iterable) as $key => $val) {
-            $isList ??= $key === 0;
+        foreach (Iter::compact($iterable, $reindex) as $key => $val) {
             if (is_iterable($val) && $depth > 1) {
                 /** @var TValue $val */
-                $val = static::compact($val, $depth - 1); /** @phpstan-ignore-line */
+                $val = static::compact($val, $depth - 1, $reindex); /** @phpstan-ignore-line */
             }
-            if ($val !== null) {
-                if ($isList) {
-                    $result[] = $val;
-                } else {
-                    $result[$key] = $val;
-                }
-            }
+            $result[$key] = $val;
         }
         return $result;
     }
@@ -355,11 +350,12 @@ class Arr
      * @template TValue
      * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
      * @param Closure(TValue, TKey): bool $condition
+     * @param bool|null $reindex
      * @return array<TKey, TValue>
      */
-    public static function dropUntil(iterable $iterable, Closure $condition): array
+    public static function dropUntil(iterable $iterable, Closure $condition, ?bool $reindex = null): array
     {
-        return iterator_to_array(Iter::dropUntil($iterable, $condition));
+        return iterator_to_array(Iter::dropUntil($iterable, $condition, $reindex));
     }
 
     /**
@@ -367,11 +363,12 @@ class Arr
      * @template TValue
      * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
      * @param Closure(TValue, TKey): bool $condition
+     * @param bool|null $reindex
      * @return array<TKey, TValue>
      */
-    public static function dropWhile(iterable $iterable, Closure $condition): array
+    public static function dropWhile(iterable $iterable, Closure $condition, ?bool $reindex = null): array
     {
-        return iterator_to_array(Iter::dropWhile($iterable, $condition));
+        return iterator_to_array(Iter::dropWhile($iterable, $condition, $reindex));
     }
 
     /**
@@ -435,11 +432,12 @@ class Arr
      * @template TValue
      * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
      * @param Closure(TValue, TKey): bool $condition
+     * @param bool|null $reindex
      * @return array<TKey, TValue>
      */
-    public static function filter(iterable $iterable, Closure $condition): array
+    public static function filter(iterable $iterable, Closure $condition, ?bool $reindex = null): array
     {
-        return iterator_to_array(Iter::filter($iterable, $condition));
+        return iterator_to_array(Iter::filter($iterable, $condition, $reindex));
     }
 
     /**
@@ -714,9 +712,10 @@ class Arr
         }
 
         $tail = array_splice($array, $index);
+        $isList = array_is_list($array);
 
         foreach ($value as $key => $val) {
-            if (is_int($key)) {
+            if ($isList) {
                 $array[] = $val;
             } else {
                 $array[$key] = $val;
@@ -724,7 +723,7 @@ class Arr
         }
 
         foreach ($tail as $key => $val) {
-            if (is_int($key)) {
+            if ($isList) {
                 $array[] = $val;
             } elseif (!array_key_exists($key, $array)) {
                 $array[$key] = $val;
