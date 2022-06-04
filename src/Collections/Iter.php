@@ -277,6 +277,7 @@ class Iter
      * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
      * @param int $offset
      * @param int $length
+     * @param bool|null $reindex
      * @return Iterator<TKey, TValue>
      */
     public static function slice(iterable $iterable, int $offset, int $length = PHP_INT_MAX, ?bool $reindex = null): Iterator

@@ -1052,11 +1052,12 @@ class Arr
      * @template TValue
      * @param iterable<TKey, TValue> $iterable1 Iterable to be traversed.
      * @param iterable<TKey, TValue> $iterable2
+     * @param bool|null $reindex
      * @return array<TKey, TValue>
      */
-    public static function merge(iterable $iterable1, iterable $iterable2): array
+    public static function merge(iterable $iterable1, iterable $iterable2, ?bool $reindex = null): array
     {
-        return static::mergeRecursive($iterable1, $iterable2, 1);
+        return static::mergeRecursive($iterable1, $iterable2, 1, $reindex);
     }
 
     /**
@@ -1065,13 +1066,15 @@ class Arr
      * @param iterable<TKey, TValue> $iterable1 Iterable to be traversed.
      * @param iterable<TKey, TValue> $iterable2
      * @param int<1, max> $depth
+     * @param bool|null $reindex
      * @return array<TKey, TValue>
      */
-    public static function mergeRecursive(iterable $iterable1, iterable $iterable2, int $depth = PHP_INT_MAX): array
+    public static function mergeRecursive(iterable $iterable1, iterable $iterable2, int $depth = PHP_INT_MAX, ?bool $reindex = null): array
     {
         $merged = static::from($iterable1);
         foreach ($iterable2 as $key => $val) {
-            if (is_int($key)) {
+            $reindex ??= $key === 0;
+            if ($reindex) {
                 $merged[] = $val;
             } else if ($depth > 1 && array_key_exists($key, $merged) && is_iterable($merged[$key]) && is_iterable($val)) {
                 $merged[$key] = static::mergeRecursive($merged[$key], $val, $depth - 1);
@@ -1674,11 +1677,12 @@ class Arr
      * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
      * @param int $offset
      * @param int $length
+     * @param bool|null $reindex
      * @return array<TKey, TValue>
      */
-    public static function slice(iterable $iterable, int $offset, int $length = PHP_INT_MAX): array
+    public static function slice(iterable $iterable, int $offset, int $length = PHP_INT_MAX, ?bool $reindex = null): array
     {
-        return iterator_to_array(Iter::slice($iterable, $offset, $length));
+        return iterator_to_array(Iter::slice($iterable, $offset, $length, $reindex));
     }
 
     /**
@@ -1963,11 +1967,12 @@ class Arr
      * @template TValue
      * @param iterable<TKey, TValue> $iterable1 Iterable to be traversed.
      * @param iterable<TKey, TValue> $iterable2
+     * @param bool|null $reindex
      * @return array<TKey, TValue>
      */
-    public static function union(iterable $iterable1, iterable $iterable2): array
+    public static function union(iterable $iterable1, iterable $iterable2, ?bool $reindex = null): array
     {
-        return static::unionRecursive($iterable1, $iterable2, 1);
+        return static::unionRecursive($iterable1, $iterable2, 1, $reindex);
     }
 
     /**
@@ -1976,13 +1981,15 @@ class Arr
      * @param iterable<TKey, TValue> $iterable1 Iterable to be traversed.
      * @param iterable<TKey, TValue> $iterable2
      * @param int<1, max> $depth
+     * @param bool|null $reindex
      * @return array<TKey, TValue>
      */
-    public static function unionRecursive(iterable $iterable1, iterable $iterable2, int $depth = PHP_INT_MAX): array
+    public static function unionRecursive(iterable $iterable1, iterable $iterable2, int $depth = PHP_INT_MAX, ?bool $reindex = null): array
     {
         $union = static::from($iterable1);
         foreach ($iterable2 as $key => $val) {
-            if (is_int($key)) {
+            $reindex ??= $key === 0;
+            if ($reindex) {
                 $union[] = $val;
             } else if (!array_key_exists($key, $union)) {
                 $union[$key] = $val;
@@ -2000,6 +2007,7 @@ class Arr
      * @template TKey of array-key
      * @template TValue
      * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
+     * @param bool|null $reindex
      * @return array<TKey, TValue>
      */
     public static function unique(iterable $iterable, ?bool $reindex = null): array
@@ -2015,6 +2023,7 @@ class Arr
      * @template TValue
      * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
      * @param Closure(TValue, TKey): bool $callback
+     * @param bool|null $reindex
      * @return array<TKey, TValue>
      */
     public static function uniqueBy(iterable $iterable, Closure $callback, ?bool $reindex = null): array
