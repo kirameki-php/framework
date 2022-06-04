@@ -1383,15 +1383,6 @@ class SequenceTest extends TestCase
         self::assertEquals(['b' => 1, 'a' => 3, 'c' => 2], $seq->toArray());
     }
 
-    public function test_tally(): void
-    {
-        $seq = $this->seq([1, 1, 1, 2, 3, 3])->tally();
-        self::assertEquals([1 => 3, 2 => 1, 3 => 2], $seq->toArray());
-
-        $seq = $this->seq(['b' => 1, 'a' => 1, 'c' => 1])->tally();
-        self::assertEquals([1 => 3], $seq->toArray());
-    }
-
     public function test_tap(): void
     {
         $seq = $this->seq([1, 2])->tap(fn() => 100);

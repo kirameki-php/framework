@@ -1469,10 +1469,10 @@ class Arr
      * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
      * @return array<TKey, TValue>
      */
-    public static function reverse(iterable $iterable): array
+    public static function reverse(iterable $iterable, ?bool $reindex = null): array
     {
         $array = static::from($iterable);
-        return array_reverse($array, static::isAssoc($array));
+        return array_reverse($array, $reindex ?? array_is_list($array));
     }
 
     /**
@@ -1929,23 +1929,6 @@ class Arr
     public static function takeWhile(iterable $iterable, Closure $condition): array
     {
         return iterator_to_array(Iter::takeWhile($iterable, $condition));
-    }
-
-    /**
-     * @template TKey of array-key
-     * @template TValue
-     * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
-     * @return array<array-key, int>
-     */
-    public static function tally(iterable $iterable): array
-    {
-        $mapping = [];
-        foreach ($iterable as $val) {
-            Assert::validArrayKey($val);
-            $mapping[$val] ??= 0;
-            ++$mapping[$val];
-        }
-        return $mapping;
     }
 
     /**
