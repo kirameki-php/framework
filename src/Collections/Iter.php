@@ -279,7 +279,7 @@ class Iter
      * @param int $length
      * @return Iterator<TKey, TValue>
      */
-    public static function slice(iterable $iterable, int $offset, int $length = PHP_INT_MAX): Iterator
+    public static function slice(iterable $iterable, int $offset, int $length = PHP_INT_MAX, ?bool $reindex = null): Iterator
     {
         $isNegativeOffset = $offset < 0;
         $isNegativeLength = $length < 0;
@@ -298,7 +298,9 @@ class Iter
         }
 
         $i = 0;
-        foreach ($iterable as $key => $value) {
+        foreach ($iterable as $key => $val) {
+            $reindex ??= $key === 0;
+
             if ($i++ < $offset) {
                 continue;
             }
@@ -307,10 +309,10 @@ class Iter
                 break;
             }
 
-            if (is_int($key)) {
-                yield $value;
+            if ($reindex) {
+                yield $val;
             } else {
-                yield $key => $value;
+                yield $key => $val;
             }
         }
     }

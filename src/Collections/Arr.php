@@ -2002,9 +2002,9 @@ class Arr
      * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
      * @return array<TKey, TValue>
      */
-    public static function unique(iterable $iterable): array
+    public static function unique(iterable $iterable, ?bool $reindex = null): array
     {
-        return static::uniqueBy($iterable, static fn($val) => $val);
+        return static::uniqueBy($iterable, static fn($val) => $val, $reindex);
     }
 
     /**
@@ -2017,15 +2017,18 @@ class Arr
      * @param Closure(TValue, TKey): bool $callback
      * @return array<TKey, TValue>
      */
-    public static function uniqueBy(iterable $iterable, Closure $callback): array
+    public static function uniqueBy(iterable $iterable, Closure $callback, ?bool $reindex = null): array
     {
         $refs = [];
         $preserved = [];
         foreach ($iterable as $key => $val) {
+            $reindex ??= $key === 0;
             $ref = static::valueToKey($callback($val, $key));
             if (!array_key_exists($ref, $refs)) {
                 $refs[$ref] = null;
-                $preserved[$key] = $val;
+                $reindex
+                    ? $preserved[] = $val
+                    : $preserved[$key] = $val;
             }
         }
         return $preserved;
