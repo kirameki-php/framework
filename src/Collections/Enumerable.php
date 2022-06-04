@@ -182,7 +182,7 @@ class Enumerable extends Iterator implements Countable, JsonSerializable
      */
     public function drop(int $amount): static
     {
-        return $this->newInstance(Iter::drop($this, $amount));
+        return $this->newInstance(Iter::drop($this, $amount, $this->isList));
     }
 
     /**

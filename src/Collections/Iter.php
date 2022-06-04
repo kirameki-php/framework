@@ -72,12 +72,13 @@ class Iter
      * @template TValue
      * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
      * @param int $amount Amount of elements to drop. Must be >= 0.
+     * @param bool|null $reindex
      * @return Iterator<TKey, TValue>
      */
-    public static function drop(iterable $iterable, int $amount): Iterator
+    public static function drop(iterable $iterable, int $amount, ?bool $reindex = null): Iterator
     {
         Assert::greaterThanEq($amount, 0);
-        return static::slice($iterable, $amount);
+        return static::slice($iterable, $amount, PHP_INT_MAX, $reindex);
     }
 
     /**

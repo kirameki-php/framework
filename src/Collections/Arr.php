@@ -338,11 +338,12 @@ class Arr
      * @template TValue
      * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
      * @param int $amount
+     * @param bool|null $reindex
      * @return array<TKey, TValue>
      */
-    public static function drop(iterable $iterable, int $amount): array
+    public static function drop(iterable $iterable, int $amount, ?bool $reindex = null): array
     {
-        return iterator_to_array(Iter::drop($iterable, $amount));
+        return iterator_to_array(Iter::drop($iterable, $amount, $reindex));
     }
 
     /**
@@ -677,23 +678,26 @@ class Arr
      * @template TValue
      * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
      * @param TGroupKey|Closure(TValue, TKey): TGroupKey $key
-     * @return array<TGroupKey, array<TKey, TValue>>
+     * @param bool|null $reindex
+     * @return array<TGroupKey, array<int|TKey, TValue>>
      */
-    public static function groupBy(iterable $iterable, int|string|Closure $key): array
+    public static function groupBy(iterable $iterable, int|string|Closure $key, ?bool $reindex = null): array
     {
         $callback = (is_string($key) || is_int($key))
             ? static fn(array $val, $_key) => $val[$key]
             : $key;
 
         $map = [];
-
         foreach ($iterable as $_key => $val) {
+            $reindex ??= $_key === 0;
             /** @var TGroupKey $groupKey */
             $groupKey = $callback($val, $_key);
             if ($groupKey !== null) {
                 Assert::validArrayKey($groupKey);
                 $map[$groupKey] ??= [];
-                $map[$groupKey][$_key] = $val;
+                $reindex
+                    ? $map[$groupKey][] = $val
+                    : $map[$groupKey][$_key] = $val;
             }
         }
 
