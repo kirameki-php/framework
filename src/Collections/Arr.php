@@ -416,14 +416,22 @@ class Arr
      * @template TValue
      * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
      * @param array<int|string> $keys
+     * @param bool|null $reindex
      * @return array<TKey, TValue>
      */
-    public static function except(iterable $iterable, iterable $keys): array
+    public static function except(iterable $iterable, iterable $keys, ?bool $reindex = null): array
     {
         $copy = static::from($iterable);
+        $reindex ??= array_is_list($copy);
+
         foreach ($keys as $key) {
             unset($copy[$key]);
         }
+
+        if ($reindex) {
+            static::reindex($copy);
+        }
+
         return $copy;
     }
 
@@ -1185,15 +1193,21 @@ class Arr
      * @template TValue
      * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
      * @param iterable<TKey> $keys
+     * @param bool|null $reindex
      * @return array<TKey, TValue>
      */
-    public static function only(iterable $iterable, iterable $keys): array
+    public static function only(iterable $iterable, iterable $keys, ?bool $reindex = null): array
     {
         $copy = static::from($iterable);
+        $reindex ??= array_is_list($copy);
+
         $array = [];
         foreach ($keys as $key) {
-            $array[$key] = $copy[$key];
+            $reindex
+                ? $array[] = $copy[$key]
+                : $array[$key] = $copy[$key];
         }
+
         return $array;
     }
 

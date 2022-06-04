@@ -250,7 +250,7 @@ class Enumerable extends Iterator implements Countable, JsonSerializable
      */
     public function except(iterable $keys): static
     {
-        return $this->newInstance(Arr::except($this, $keys));
+        return $this->newInstance(Arr::except($this, $keys, $this->isList));
     }
 
     /**
@@ -535,7 +535,7 @@ class Enumerable extends Iterator implements Countable, JsonSerializable
      */
     public function only(iterable $keys): static
     {
-        return $this->newInstance(Arr::only($this, $keys));
+        return $this->newInstance(Arr::only($this, $keys, $this->isList));
     }
 
     /**
