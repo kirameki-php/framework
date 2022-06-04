@@ -301,7 +301,7 @@ class Sequence extends Iterator implements Countable, JsonSerializable
      * @param Closure(TValue, TKey): bool|null $condition
      * @return TKey|null
      */
-    public function firstKey(?Closure $condition = null): mixed
+    public function firstKey(?Closure $condition = null): int|string|null
     {
         return Arr::firstKey($this, $condition);
     }

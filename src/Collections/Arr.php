@@ -487,7 +487,7 @@ class Arr
      * @param Closure(TValue, TKey): bool|null $condition
      * @return TKey|null
      */
-    public static function firstKey(iterable $iterable, ?Closure $condition = null): mixed
+    public static function firstKey(iterable $iterable, ?Closure $condition = null): int|string|null
     {
         $condition ??= static fn() => true;
 
