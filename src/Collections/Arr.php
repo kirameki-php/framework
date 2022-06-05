@@ -314,11 +314,22 @@ class Arr
      * @template TValue
      * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
      * @param iterable<TKey, TValue> $items
+     * @param bool|null $reindex
      * @return array<TKey, TValue>
      */
-    public static function diff(iterable $iterable, iterable $items): array
+    public static function diff(iterable $iterable, iterable $items, ?bool $reindex = null): array
     {
-        return array_diff(static::from($iterable), static::from($items));
+        $array = static::from($iterable);
+
+        $reindex ??= array_is_list($array);
+
+        $result = array_diff($array, static::from($items));
+
+        if ($reindex) {
+            static::reindex($result);
+        }
+
+        return $result;
     }
 
     /**
@@ -746,11 +757,22 @@ class Arr
      * @template TValue
      * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
      * @param iterable<TKey, TValue> $items
+     * @param bool|null $reindex
      * @return array<TKey, TValue>
      */
-    public static function intersect(iterable $iterable, iterable $items): array
+    public static function intersect(iterable $iterable, iterable $items, ?bool $reindex = null): array
     {
-        return array_intersect(static::from($iterable), static::from($items));
+        $array = static::from($iterable);
+
+        $reindex ??= array_is_list($array);
+
+        $result = array_intersect($array, static::from($items));
+
+        if ($reindex) {
+            static::reindex($result);
+        }
+
+        return $result;
     }
 
     /**
