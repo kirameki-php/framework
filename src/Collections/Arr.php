@@ -727,11 +727,9 @@ class Arr
         $isList = array_is_list($array);
 
         foreach ($value as $key => $val) {
-            if ($isList) {
-                $array[] = $val;
-            } else {
-                $array[$key] = $val;
-            }
+            $isList
+                ? $array[] = $val
+                : $array[$key] = $val;
         }
 
         foreach ($tail as $key => $val) {
@@ -834,22 +832,9 @@ class Arr
      * @param iterable<array-key, T> $iterable Iterable to be traversed.
      * @param string|Closure(T, mixed): array-key $key
      * @param bool $overwrite
-     * @return array<T>
+     * @return array<array-key, T>
      */
     public static function keyBy(iterable $iterable, string|Closure $key, bool $overwrite = false): array
-    {
-        return static::keyByRecursive($iterable, $key, $overwrite, 1);
-    }
-
-    /**
-     * @template T
-     * @param iterable<array-key, T> $iterable Iterable to be traversed.
-     * @param string|Closure(T, mixed): array-key $key
-     * @param bool $overwrite
-     * @param int<1, max> $depth
-     * @return array<T>
-     */
-    public static function keyByRecursive(iterable $iterable, string|Closure $key, bool $overwrite = false, int $depth = PHP_INT_MAX): array
     {
         $callback = is_string($key)
             ? static fn (): string => $key
@@ -863,9 +848,7 @@ class Arr
                 throw new DuplicateKeyException($newKey, $val);
             }
 
-            $result[$newKey] = ($depth > 1 && is_iterable($val))
-                ? static::keyByRecursive($val, $callback, $overwrite, $depth - 1)
-                : $val;
+            $result[$newKey] = $val;
         }
         /** @var array<T> $result */
         return $result;
