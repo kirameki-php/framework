@@ -328,17 +328,17 @@ class CollectionTest extends TestCase
     public function test_pullMany(): void
     {
         $collect = collect([1, 2, 3]);
-        $pulled = $collect->pullMany(0, 1);
+        $pulled = $collect->pullMany([0, 1]);
         self::assertEquals([3], $collect->toArray());
         self::assertEquals([1, 2], $pulled->toArray());
 
         $collect = collect(['a' => 1, 'b' => 2, 'c' => 3]);
-        $pulled = $collect->pullMany('a', 'c');
+        $pulled = $collect->pullMany(['a', 'c']);
         self::assertEquals(['b' => 2], $collect->toArray());
         self::assertEquals(['a' => 1, 'c' => 3], $pulled->toArray());
 
         $collect = collect(['a' => 1]);
-        $pulled = $collect->pullMany('a', 'c');
+        $pulled = $collect->pullMany(['a', 'c']);
         self::assertEquals([], $collect->toArray());
         self::assertEquals(['a' => 1], $pulled->toArray());
     }

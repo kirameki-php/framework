@@ -216,7 +216,7 @@ class StrTest extends TestCase
         self::assertTrue(Str::containsPattern('ABC', '/abc/i'));
         self::assertTrue(Str::containsPattern('aaaz', '/a{3}/'));
         self::assertTrue(Str::containsPattern('ABC1', '/[A-z\d]+/'));
-        self::assertTrue(Str::containsPattern('ABC1', '/\d]$/'));
+        self::assertTrue(Str::containsPattern('ABC1]', '/\d]$/'));
         self::assertFalse(Str::containsPattern('AB1C', '/\d]$/'));
     }
 

@@ -351,13 +351,13 @@ class SequenceTest extends TestCase
         self::assertCount(0, $empty);
         self::assertCount(0, $diffed);
 
-        $original = [-1, 'a' => 1, 'b' => 2, 3];
+        $original = [-1, 'a' => 1, 'b' => 2, 3, 4];
         $differ = [2, 3, 'a' => 1, 'c' => 2, 5];
         $assoc = $this->seq($original);
         $diffed = $assoc->diff($differ);
         self::assertNotSame($assoc, $diffed);
         self::assertSame($original, $assoc->toArray());
-        self::assertSame([-1], $diffed->toArray());
+        self::assertSame([-1, 4], $diffed->toArray());
     }
 
     public function test_diffKeys(): void
@@ -443,7 +443,7 @@ class SequenceTest extends TestCase
         self::assertEquals([], $seq->duplicates()->toArray());
 
         $seq = $this->seq(['a' => 1, 'b' => 1, 'c' => 1, 'd' => 2]);
-        self::assertEquals(['a' => 1], $seq->duplicates()->toArray());
+        self::assertEquals([1], $seq->duplicates()->toArray());
 
         $seq = $this->seq([5, 6, 4, 4, 'a', 'a', 'b']);
         self::assertEquals([4, 'a'], $seq->duplicates()->toArray());
@@ -642,7 +642,7 @@ class SequenceTest extends TestCase
     {
         $seq = $this->seq([1, 2, 3, 4, 5, 6]);
         $grouped = $seq->groupBy(fn(int $n): int => $n % 3)->toArrayRecursive();
-        self::assertEquals([[2 => 3, 5 => 6], [0 => 1, 3 => 4], [1 => 2, 4 => 5]], $grouped);
+        self::assertEquals([[3, 6], [1, 4], [2, 5]], $grouped);
 
         $seq = $this->seq([
             ['id' => 1],
@@ -651,11 +651,11 @@ class SequenceTest extends TestCase
         ]);
         self::assertEquals([
             1 => [
-                0 => ['id' => 1],
-                2 => ['id' => 1]
+                ['id' => 1],
+                ['id' => 1]
             ],
             2 => [
-                1 => ['id' => 2]
+                ['id' => 2]
             ]
         ], $seq->groupBy('id')->toArrayRecursive());
     }
@@ -1042,7 +1042,7 @@ class SequenceTest extends TestCase
     {
         // with list array
         $seq = $this->seq([1, 2, 3]);
-        self::assertEquals([1 => 2], $seq->only([1])->toArray());
+        self::assertEquals([2], $seq->only([1])->toArray());
 
         // with assoc array
         $seq = $this->seq(['a' => 1, 'b' => 2, 'c' => 3]);
@@ -1166,7 +1166,7 @@ class SequenceTest extends TestCase
     public function test_sampleMany(): void
     {
         mt_srand(100);
-        self::assertEquals([8 => 8, 9 => 9], $this->seq(range(0, 10))->sampleMany(2)->toArray());
+        self::assertEquals([8, 9], $this->seq(range(0, 10))->sampleMany(2)->toArray());
     }
 
     public function test_satisfyAll(): void
@@ -1489,7 +1489,7 @@ class SequenceTest extends TestCase
         self::assertEquals([], $seq->toArray());
 
         $seq = $this->seq([1, 1, 2, 2])->unique();
-        self::assertEquals([0 => 1, 2 => 2], $seq->toArray());
+        self::assertEquals([1, 2], $seq->toArray());
 
         $seq = $this->seq(['a' => 1, 'b' => 2, 'c' => 2])->unique();
         self::assertEquals(['a' => 1, 'b' => 2], $seq->toArray());

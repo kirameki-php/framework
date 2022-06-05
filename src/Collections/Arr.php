@@ -1473,7 +1473,7 @@ class Arr
     public static function reverse(iterable $iterable, ?bool $reindex = null): array
     {
         $array = static::from($iterable);
-        return array_reverse($array, $reindex ?? array_is_list($array));
+        return array_reverse($array, !($reindex ?? array_is_list($array)));
     }
 
     /**
