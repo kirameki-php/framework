@@ -357,6 +357,14 @@ class SequenceTest extends TestCase
         $diffed = $assoc->diff($differ);
         self::assertNotSame($assoc, $diffed);
         self::assertSame($original, $assoc->toArray());
+        self::assertSame([-1, 2 => 4], $diffed->toArray());
+
+        $original = [-1, 3, 4];
+        $differ = [2, 3, 5];
+        $assoc = $this->seq($original);
+        $diffed = $assoc->diff($differ);
+        self::assertNotSame($assoc, $diffed);
+        self::assertSame($original, $assoc->toArray());
         self::assertSame([-1, 4], $diffed->toArray());
     }
 

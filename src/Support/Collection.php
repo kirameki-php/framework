@@ -120,9 +120,20 @@ class Collection extends Sequence implements ArrayAccess
      * @param mixed $value
      * @return $this
      */
-    public function insertAt(int $index, mixed ...$value): static
+    public function insertAt(int $index, mixed $value): static
     {
-        Arr::insertAt($this->items, $index, ...$value);
+        Arr::insertAt($this->items, $index, $value);
+        return $this;
+    }
+
+    /**
+     * @param int $index
+     * @param array<TKey, TValue> $values
+     * @return $this
+     */
+    public function insertManyAt(int $index, array $values): static
+    {
+        Arr::insertManyAt($this->items, $index, $values);
         return $this;
     }
 

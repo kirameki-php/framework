@@ -720,9 +720,24 @@ class Arr
      * @param array<T> $array
      * @param int $index
      * @param T $value
+     * @param bool|null $reindex
      * @return void
      */
-    public static function insertAt(array &$array, int $index, mixed ...$value): void
+    public static function insertAt(array &$array, int $index, mixed $value, ?bool $reindex = null): void
+    {
+        static::insertManyAt($array, $index, [$value], $reindex);
+    }
+
+    /**
+     * @template TKey of array-key
+     * @template TValue
+     * @param array<TKey, TValue> $array
+     * @param int $index
+     * @param array<TKey, TValue> $value
+     * @param bool|null $reindex
+     * @return void
+     */
+    public static function insertManyAt(array &$array, int $index, array $value, ?bool $reindex = null): void
     {
         // NOTE: This used to be simply array_splice($array, $index, 0, $value) but passing replacement
         // in the 4th argument does not preserve keys so implementation was changed to the current one.
@@ -735,16 +750,16 @@ class Arr
         }
 
         $tail = array_splice($array, $index);
-        $isList = array_is_list($array);
+        $reindex ??= array_is_list($array);
 
         foreach ($value as $key => $val) {
-            $isList
+            $reindex
                 ? $array[] = $val
                 : $array[$key] = $val;
         }
 
         foreach ($tail as $key => $val) {
-            if ($isList) {
+            if ($reindex) {
                 $array[] = $val;
             } elseif (!array_key_exists($key, $array)) {
                 $array[$key] = $val;

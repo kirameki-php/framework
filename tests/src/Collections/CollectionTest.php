@@ -134,12 +134,13 @@ class CollectionTest extends TestCase
 
         $collect = collect([1, 2, 3, 4]);
         self::assertEquals([1, 2, 3, 'a', 4], $collect->insertAt(-2, 'a')->toArray());
+    }
 
+    public function test_insertManyAt(): void
+    {
         $collect = collect(['a' => 1, 'b' => 2]);
-        self::assertEquals(['a' => 1, 'c' => 3, 'b' => 2], $collect->insertAt(1, c: 3)->toArray());
-
-        $collect = collect(['a' => 1, 'b' => 2]);
-        self::assertEquals(['a' => 1, 'b' => 3], $collect->insertAt(1, b: 3)->toArray());
+        $inserted = $collect->insertManyAt(1, ['c' => 3, 'd' => 4]);
+        self::assertEquals(['a' => 1, 'c' => 3, 'd' => 4, 'b' => 2], $inserted->toArray());
     }
 
     public function test_offsetExists(): void
