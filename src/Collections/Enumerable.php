@@ -173,7 +173,7 @@ class Enumerable extends Iterator implements Countable, JsonSerializable
      */
     public function diff(iterable $items): static
     {
-        return $this->newInstance(Arr::diff($this, $items));
+        return $this->newInstance(Arr::diff($this, $items, $this->isList));
     }
 
     /**
@@ -345,7 +345,7 @@ class Enumerable extends Iterator implements Countable, JsonSerializable
      */
     public function groupBy(int|string|Closure $key): Map
     {
-        $grouped = Arr::groupBy($this, $key);
+        $grouped = Arr::groupBy($this, $key, $this->isList);
         return (new Map($grouped))->map(function(array $group): static {
             return $this->newInstance($group);
         });
@@ -357,7 +357,7 @@ class Enumerable extends Iterator implements Countable, JsonSerializable
      */
     public function intersect(iterable $items): static
     {
-        return $this->newInstance(Arr::intersect($this, $items));
+        return $this->newInstance(Arr::intersect($this, $items, $this->isList));
     }
 
     /**
@@ -546,7 +546,7 @@ class Enumerable extends Iterator implements Countable, JsonSerializable
      */
     public function prioritize(Closure $condition): static
     {
-        return $this->newInstance(Arr::prioritize($this, $condition));
+        return $this->newInstance(Arr::prioritize($this, $condition, $this->isList));
     }
 
     /**
@@ -572,7 +572,7 @@ class Enumerable extends Iterator implements Countable, JsonSerializable
      */
     public function rotate(int $count): static
     {
-        return $this->newInstance(Arr::rotate($this, $count));
+        return $this->newInstance(Arr::rotate($this, $count, $this->isList));
     }
 
     /**
@@ -589,7 +589,7 @@ class Enumerable extends Iterator implements Countable, JsonSerializable
      */
     public function sampleMany(int $amount): static
     {
-        return $this->newInstance(Arr::sampleMany($this, $amount));
+        return $this->newInstance(Arr::sampleMany($this, $amount, $this->isList));
     }
 
     /**

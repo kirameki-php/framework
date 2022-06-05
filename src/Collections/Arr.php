@@ -1104,8 +1104,8 @@ class Arr
     public static function mergeRecursive(iterable $iterable1, iterable $iterable2, int $depth = PHP_INT_MAX, ?bool $reindex = null): array
     {
         $merged = static::from($iterable1);
+        $reindex = array_is_list($merged);
         foreach ($iterable2 as $key => $val) {
-            $reindex ??= $key === 0;
             if ($reindex) {
                 $merged[] = $val;
             } else if ($depth > 1 && array_key_exists($key, $merged) && is_iterable($merged[$key]) && is_iterable($val)) {
@@ -1308,18 +1308,29 @@ class Arr
      * @template TValue
      * @param iterable<TKey, TValue> $iterable
      * @param Closure(TValue, TKey): bool $condition
+     * @param bool|null $reindex
      * @return array<TKey, TValue>
      */
-    public static function prioritize(iterable $iterable, Closure $condition): array
+    public static function prioritize(iterable $iterable, Closure $condition, ?bool $reindex = null): array
     {
+        $array = static::from($iterable);
+        $reindex ??= array_is_list($array);
+
         $prioritized = [];
         $remains = [];
-        foreach ($iterable as $key => $val) {
+        foreach ($array as $key => $val) {
             static::verify($condition, $key, $val)
                 ? $prioritized[$key] = $val
                 : $remains[$key] = $val;
         }
-        return static::merge($prioritized, $remains);
+
+        $result = static::merge($prioritized, $remains);
+
+        if ($reindex) {
+            static::reindex($result);
+        }
+
+        return $result;
     }
 
     /**
@@ -1505,6 +1516,7 @@ class Arr
      * @template TKey of array-key
      * @template TValue
      * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
+     * @param bool|null $reindex
      * @return array<TKey, TValue>
      */
     public static function reverse(iterable $iterable, ?bool $reindex = null): array
@@ -1518,40 +1530,39 @@ class Arr
      * @template TValue
      * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
      * @param int $count
+     * @param bool|null $reindex
      * @return array<TKey, TValue>
      */
-    public static function rotate(iterable $iterable, int $count): array
+    public static function rotate(iterable $iterable, int $count, ?bool $reindex = null): array
     {
+        $array = static::from($iterable);
+
         $ptr = 0;
-        $array = [];
+        $result = [];
         $rotated = [];
-        $isList = null;
 
         if ($count < 0) {
-            $count = static::count($iterable) + $count;
+            $count = count($array) + $count;
         }
 
-        foreach ($iterable as $key => $val) {
-            $isList ??= $key === 0;
+        foreach ($array as $key => $val) {
             if ($ptr < $count) {
-                $isList
-                    ? $rotated[] = $val
-                    : $rotated[$key] = $val;
+                $rotated[$key] = $val;
             } else {
-                $isList
-                    ? $array[] = $val
-                    : $array[$key] = $val;
+                $result[$key] = $val;
             }
             ++$ptr;
         }
 
         foreach ($rotated as $key => $val) {
-            $isList
-                ? $array[] = $val
-                : $array[$key] = $val;
+            $result[$key] = $val;
         }
 
-        return $array;
+        if ($reindex ?? array_is_list($array)) {
+            static::reindex($result);
+        }
+
+        return $result;
     }
 
     /**
@@ -1571,14 +1582,15 @@ class Arr
      * @template TValue
      * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
      * @param int $amount
+     * @param bool|null $reindex
      * @return array<TKey, TValue>
      */
-    public static function sampleMany(iterable $iterable, int $amount): array
+    public static function sampleMany(iterable $iterable, int $amount, ?bool $reindex = null): array
     {
         $array = static::from($iterable);
         /** @var array<TKey> $sampledKeys */
         $sampledKeys = (array) array_rand($array, $amount);
-        return static::only($array, $sampledKeys);
+        return static::only($array, $sampledKeys, $reindex);
     }
 
     /**
@@ -2008,8 +2020,8 @@ class Arr
     public static function unionRecursive(iterable $iterable1, iterable $iterable2, int $depth = PHP_INT_MAX, ?bool $reindex = null): array
     {
         $union = static::from($iterable1);
+        $reindex ??= array_is_list($union);
         foreach ($iterable2 as $key => $val) {
-            $reindex ??= $key === 0;
             if ($reindex) {
                 $union[] = $val;
             } else if (!array_key_exists($key, $union)) {
@@ -2049,10 +2061,13 @@ class Arr
      */
     public static function uniqueBy(iterable $iterable, Closure $callback, ?bool $reindex = null): array
     {
+        $array = static::from($iterable);
+        $reindex ??= array_is_list($array);
+
         $refs = [];
         $preserved = [];
-        foreach ($iterable as $key => $val) {
-            $reindex ??= $key === 0;
+
+        foreach ($array as $key => $val) {
             $ref = static::valueToKey($callback($val, $key));
             if (!array_key_exists($ref, $refs)) {
                 $refs[$ref] = null;
