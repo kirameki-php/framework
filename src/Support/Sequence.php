@@ -199,7 +199,7 @@ class Sequence extends Iterator implements Countable, JsonSerializable
      */
     public function drop(int $amount): static
     {
-        return $this->newInstance(Iter::drop($this, $amount));
+        return $this->newInstance(Arr::drop($this, $amount));
     }
 
     /**
@@ -208,7 +208,7 @@ class Sequence extends Iterator implements Countable, JsonSerializable
      */
     public function dropUntil(Closure $condition): static
     {
-        return $this->newInstance(Iter::dropUntil($this, $condition));
+        return $this->newInstance(Arr::dropUntil($this, $condition));
     }
 
     /**
@@ -217,7 +217,7 @@ class Sequence extends Iterator implements Countable, JsonSerializable
      */
     public function dropWhile(Closure $condition): static
     {
-        return $this->newInstance(Iter::dropWhile($this, $condition));
+        return $this->newInstance(Arr::dropWhile($this, $condition));
     }
 
     /**
@@ -453,7 +453,7 @@ class Sequence extends Iterator implements Countable, JsonSerializable
      */
     public function keys(): static
     {
-        return $this->newInstance(Iter::keys($this));
+        return $this->newInstance(Arr::keys($this));
     }
 
     /**
@@ -710,7 +710,7 @@ class Sequence extends Iterator implements Countable, JsonSerializable
      */
     public function slice(int $offset, int $length = PHP_INT_MAX): static
     {
-        return $this->newInstance(Iter::slice($this, $offset, $length));
+        return $this->newInstance(Arr::slice($this, $offset, $length));
     }
 
     /**
@@ -810,7 +810,7 @@ class Sequence extends Iterator implements Countable, JsonSerializable
      */
     public function take(int $amount): static
     {
-        return $this->newInstance(Iter::take($this, $amount));
+        return $this->newInstance(Arr::take($this, $amount));
     }
 
     /**
@@ -819,7 +819,7 @@ class Sequence extends Iterator implements Countable, JsonSerializable
      */
     public function takeUntil(Closure $condition): static
     {
-        return $this->newInstance(Iter::takeUntil($this, $condition));
+        return $this->newInstance(Arr::takeUntil($this, $condition));
     }
 
     /**
@@ -828,7 +828,7 @@ class Sequence extends Iterator implements Countable, JsonSerializable
      */
     public function takeWhile(Closure $condition): static
     {
-        return $this->newInstance(Iter::takeWhile($this, $condition));
+        return $this->newInstance(Arr::takeWhile($this, $condition));
     }
 
     /**
