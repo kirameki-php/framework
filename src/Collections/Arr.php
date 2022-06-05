@@ -183,7 +183,9 @@ class Arr
      */
     public static function chunk(iterable $iterable, int $size, ?bool $reindex = null): array
     {
-        return iterator_to_array(Iter::chunk($iterable, $size, $reindex));
+        $array = static::from($iterable);
+        $reindex ??= array_is_list($array);
+        return iterator_to_array(Iter::chunk($array, $size, $reindex));
     }
 
     /**
@@ -236,13 +238,18 @@ class Arr
     public static function compact(iterable $iterable, int $depth = 1, ?bool $reindex = null): array
     {
         $result = [];
-        foreach (Iter::compact($iterable, $reindex) as $key => $val) {
+        foreach (Iter::compact($iterable) as $key => $val) {
             if (is_iterable($val) && $depth > 1) {
                 /** @var TValue $val */
                 $val = static::compact($val, $depth - 1, $reindex); /** @phpstan-ignore-line */
             }
             $result[$key] = $val;
         }
+
+        if ($reindex ?? array_is_list($result)) {
+            static::reindex($result);
+        }
+
         return $result;
     }
 
@@ -1104,7 +1111,7 @@ class Arr
     public static function mergeRecursive(iterable $iterable1, iterable $iterable2, int $depth = PHP_INT_MAX, ?bool $reindex = null): array
     {
         $merged = static::from($iterable1);
-        $reindex = array_is_list($merged);
+        $reindex ??= array_is_list($merged);
         foreach ($iterable2 as $key => $val) {
             if ($reindex) {
                 $merged[] = $val;

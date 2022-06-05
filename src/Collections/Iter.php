@@ -18,18 +18,16 @@ class Iter
      * @template TValue
      * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
      * @param int $size Size of each chunk. Must be >= 1.
-     * @param bool|null $reindex
+     * @param bool $reindex
      * @return Iterator<int, array<TKey, TValue>>
      */
-    public static function chunk(iterable $iterable, int $size, ?bool $reindex = null): Iterator
+    public static function chunk(iterable $iterable, int $size, bool $reindex = false): Iterator
     {
         Assert::positiveInteger($size);
 
         $remaining = $size;
         $chunk = [];
         foreach ($iterable as $key => $val) {
-            $reindex ??= $key === 0;
-
             $reindex
                 ? $chunk[] = $val
                 : $chunk[$key] = $val;
@@ -50,13 +48,12 @@ class Iter
      * @template TKey of array-key
      * @template TValue
      * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
-     * @param bool|null $reindex
+     * @param bool $reindex
      * @return Iterator<TKey, TValue>
      */
-    public static function compact(iterable $iterable, ?bool $reindex = null): Iterator
+    public static function compact(iterable $iterable, bool $reindex = false): Iterator
     {
         foreach ($iterable as $key => $val) {
-            $reindex ??= $key === 0;
             if ($val !== null) {
                 if ($reindex) {
                     yield $val;
@@ -72,10 +69,10 @@ class Iter
      * @template TValue
      * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
      * @param int $amount Amount of elements to drop. Must be >= 0.
-     * @param bool|null $reindex
+     * @param bool $reindex
      * @return Iterator<TKey, TValue>
      */
-    public static function drop(iterable $iterable, int $amount, ?bool $reindex = null): Iterator
+    public static function drop(iterable $iterable, int $amount, bool $reindex = false): Iterator
     {
         Assert::greaterThanEq($amount, 0);
         return static::slice($iterable, $amount, PHP_INT_MAX, $reindex);
@@ -86,15 +83,13 @@ class Iter
      * @template TValue
      * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
      * @param Closure(TValue, TKey): bool $condition
-     * @param bool|null $reindex
+     * @param bool $reindex
      * @return Iterator<TKey, TValue>
      */
-    public static function dropUntil(iterable $iterable, Closure $condition, ?bool $reindex = null): Iterator
+    public static function dropUntil(iterable $iterable, Closure $condition, bool $reindex = false): Iterator
     {
         $drop = true;
         foreach ($iterable as $key => $item) {
-            $reindex ??= $key === 0;
-
             if ($drop && static::verify($condition, $key, $item)) {
                 $drop = false;
             }
@@ -114,15 +109,13 @@ class Iter
      * @template TValue
      * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
      * @param Closure(TValue, TKey): bool $condition
-     * @param bool|null $reindex
+     * @param bool $reindex
      * @return Iterator<TKey, TValue>
      */
-    public static function dropWhile(iterable $iterable, Closure $condition, ?bool $reindex = null): Iterator
+    public static function dropWhile(iterable $iterable, Closure $condition, bool $reindex = false): Iterator
     {
         $drop = true;
         foreach ($iterable as $key => $item) {
-            $reindex ??= $key === 0;
-
             if ($drop && !static::verify($condition, $key, $item)) {
                 $drop = false;
             }
@@ -142,13 +135,12 @@ class Iter
      * @template TValue
      * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
      * @param Closure(TValue, TKey): bool $condition
-     * @param bool|null $reindex
+     * @param bool $reindex
      * @return Iterator<TKey, TValue>
      */
-    public static function filter(iterable $iterable, Closure $condition, ?bool $reindex = null): Iterator
+    public static function filter(iterable $iterable, Closure $condition, bool $reindex = false): Iterator
     {
         foreach ($iterable as $key => $val) {
-            $reindex ??= $key === 0;
             if (static::verify($condition, $key, $val)) {
                 if ($reindex) {
                     yield $val;
@@ -278,10 +270,10 @@ class Iter
      * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
      * @param int $offset
      * @param int $length
-     * @param bool|null $reindex
+     * @param bool $reindex
      * @return Iterator<TKey, TValue>
      */
-    public static function slice(iterable $iterable, int $offset, int $length = PHP_INT_MAX, ?bool $reindex = null): Iterator
+    public static function slice(iterable $iterable, int $offset, int $length = PHP_INT_MAX, bool $reindex = false): Iterator
     {
         $isNegativeOffset = $offset < 0;
         $isNegativeLength = $length < 0;
@@ -301,8 +293,6 @@ class Iter
 
         $i = 0;
         foreach ($iterable as $key => $val) {
-            $reindex ??= $key === 0;
-
             if ($i++ < $offset) {
                 continue;
             }
