@@ -16,11 +16,21 @@ use function is_iterable;
  * @template TValue
  * @extends Iterator<TKey, TValue>
  */
-class Enumerable extends Iterator implements Countable, JsonSerializable
+class Sequence extends Iterator implements Countable, JsonSerializable
 {
     use Tappable;
 
     protected bool $isList;
+
+    /**
+     * @param iterable<TKey, TValue>|null $items
+     * @param bool $isList
+     */
+    public function __construct(iterable|null $items = null, bool $isList = false)
+    {
+        parent::__construct($items ?? []);
+        $this->isList = $isList;
+    }
 
     /**
      * @template TNewKey of array-key

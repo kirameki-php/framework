@@ -7,11 +7,17 @@ use Closure;
 /**
  * @template TKey of array-key|class-string
  * @template TValue
- * @extends Enumerable<TKey, TValue>
+ * @extends MutableCollection<TKey, TValue>
  */
-class Map extends Enumerable
+class Map extends MutableCollection
 {
-    protected bool $isList = false;
+    /**
+     * @param iterable<TKey, TValue>|null $items
+     */
+    public function __construct(iterable|null $items = null)
+    {
+        parent::__construct($items, false);
+    }
 
     /**
      * @param int|string $key
@@ -73,6 +79,54 @@ class Map extends Enumerable
     public function notContainsKey(int|string $key): bool
     {
         return Arr::notContainsKey($this, $key);
+    }
+
+    /**
+     * @param TKey $key
+     * @return bool
+     */
+    public function removeKey(int|string $key): bool
+    {
+        return Arr::removeKey($this->items, $key);
+    }
+
+    /**
+     * @param TKey $key
+     * @param TValue $value
+     * @return $this
+     */
+    public function set(int|string $key, mixed $value): static
+    {
+        Arr::set($this->items, $key, $value);
+        return $this;
+    }
+
+    /**
+     * @param TKey $key
+     * @param TValue $value
+     * @param bool|null $result
+     * @return $this
+     */
+    public function setIfExists(int|string $key, mixed $value, ?bool &$result = null): static
+    {
+        $result !== null
+            ? Arr::setIfExists($this->items, $key, $value, $result)
+            : Arr::setIfExists($this->items, $key, $value);
+        return $this;
+    }
+
+    /**
+     * @param TKey $key
+     * @param TValue $value
+     * @param bool|null $result
+     * @return $this
+     */
+    public function setIfNotExists(int|string $key, mixed $value, ?bool &$result = null): static
+    {
+        $result !== null
+            ? Arr::setIfNotExists($this->items, $key, $value, $result)
+            : Arr::setIfNotExists($this->items, $key, $value);
+        return $this;
     }
 
     /**
