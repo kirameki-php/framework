@@ -54,7 +54,7 @@ class Map extends Enumerable
      */
     public function keys(): static
     {
-        return $this->newInstance(Iter::keys($this));
+        return $this->newInstance(Arr::keys($this));
     }
 
     /**

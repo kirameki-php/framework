@@ -24,7 +24,7 @@ class Vec extends Enumerable
      */
     public function indices(): static
     {
-        return $this->newInstance(Iter::keys($this));
+        return $this->newInstance(Arr::keys($this));
     }
 
     /**
@@ -38,12 +38,12 @@ class Vec extends Enumerable
     }
 
     /**
-     * @param int $times
+     * @param int<0, max> $times
      * @return static
      */
     public function repeat(int $times): static
     {
-        return $this->newInstance(Iter::repeat($this, $times));
+        return $this->newInstance(Arr::repeat($this, $times));
     }
 
     /**

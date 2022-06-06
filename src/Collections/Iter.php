@@ -250,7 +250,7 @@ class Iter
     /**
      * @template T
      * @param iterable<array-key, T> $iterable Iterable to be traversed.
-     * @param int $times
+     * @param int<0, max> $times
      * @return Iterator<int, T>
      */
     public static function repeat(iterable $iterable, int $times): Iterator
