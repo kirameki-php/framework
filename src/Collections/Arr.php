@@ -356,10 +356,10 @@ class Arr
      * @template TValue
      * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
      * @param int $amount
-     * @param bool|null $reindex
+     * @param bool $reindex
      * @return array<TKey, TValue>
      */
-    public static function drop(iterable $iterable, int $amount, ?bool $reindex = null): array
+    public static function drop(iterable $iterable, int $amount, bool $reindex = false): array
     {
         return iterator_to_array(Iter::drop($iterable, $amount, $reindex));
     }
@@ -369,10 +369,10 @@ class Arr
      * @template TValue
      * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
      * @param Closure(TValue, TKey): bool $condition
-     * @param bool|null $reindex
+     * @param bool $reindex
      * @return array<TKey, TValue>
      */
-    public static function dropUntil(iterable $iterable, Closure $condition, ?bool $reindex = null): array
+    public static function dropUntil(iterable $iterable, Closure $condition, bool $reindex = false): array
     {
         return iterator_to_array(Iter::dropUntil($iterable, $condition, $reindex));
     }
@@ -382,10 +382,10 @@ class Arr
      * @template TValue
      * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
      * @param Closure(TValue, TKey): bool $condition
-     * @param bool|null $reindex
+     * @param bool $reindex
      * @return array<TKey, TValue>
      */
-    public static function dropWhile(iterable $iterable, Closure $condition, ?bool $reindex = null): array
+    public static function dropWhile(iterable $iterable, Closure $condition, bool $reindex = false): array
     {
         return iterator_to_array(Iter::dropWhile($iterable, $condition, $reindex));
     }
@@ -459,10 +459,10 @@ class Arr
      * @template TValue
      * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
      * @param Closure(TValue, TKey): bool $condition
-     * @param bool|null $reindex
+     * @param bool $reindex
      * @return array<TKey, TValue>
      */
-    public static function filter(iterable $iterable, Closure $condition, ?bool $reindex = null): array
+    public static function filter(iterable $iterable, Closure $condition, bool $reindex = false): array
     {
         return iterator_to_array(Iter::filter($iterable, $condition, $reindex));
     }
@@ -696,10 +696,10 @@ class Arr
      * @template TValue
      * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
      * @param TGroupKey|Closure(TValue, TKey): TGroupKey $key
-     * @param bool|null $reindex
+     * @param bool $reindex
      * @return array<TGroupKey, array<int|TKey, TValue>>
      */
-    public static function groupBy(iterable $iterable, int|string|Closure $key, ?bool $reindex = null): array
+    public static function groupBy(iterable $iterable, int|string|Closure $key, bool $reindex = false): array
     {
         $callback = (is_string($key) || is_int($key))
             ? static fn(array $val, $_key) => $val[$key]
@@ -707,7 +707,6 @@ class Arr
 
         $map = [];
         foreach ($iterable as $_key => $val) {
-            $reindex ??= $_key === 0;
             /** @var TGroupKey $groupKey */
             $groupKey = $callback($val, $_key);
             if ($groupKey !== null) {
@@ -1112,6 +1111,7 @@ class Arr
     {
         $merged = static::from($iterable1);
         $reindex ??= array_is_list($merged);
+
         foreach ($iterable2 as $key => $val) {
             if ($reindex) {
                 $merged[] = $val;
@@ -1121,6 +1121,7 @@ class Arr
                 $merged[$key] = $val;
             }
         }
+
         /** @var array<TKey, TValue> $merged */
         return $merged;
     }
@@ -1217,6 +1218,15 @@ class Arr
     public static function notContainsKey(iterable $iterable, int|string $key): bool
     {
         return !static::containsKey($iterable, $key);
+    }
+
+    /**
+     * @param mixed ...$values
+     * @return array<array-key, mixed>
+     */
+    public static function of(mixed ...$values): array
+    {
+        return $values;
     }
 
     /**
@@ -1529,7 +1539,8 @@ class Arr
     public static function reverse(iterable $iterable, ?bool $reindex = null): array
     {
         $array = static::from($iterable);
-        return array_reverse($array, !($reindex ?? array_is_list($array)));
+        $preserveKeys = !($reindex ?? array_is_list($array));
+        return array_reverse($array, $preserveKeys);
     }
 
     /**
@@ -1734,10 +1745,10 @@ class Arr
      * @param iterable<TKey, TValue> $iterable Iterable to be traversed.
      * @param int $offset
      * @param int $length
-     * @param bool|null $reindex
+     * @param bool $reindex
      * @return array<TKey, TValue>
      */
-    public static function slice(iterable $iterable, int $offset, int $length = PHP_INT_MAX, ?bool $reindex = null): array
+    public static function slice(iterable $iterable, int $offset, int $length = PHP_INT_MAX, bool $reindex = false): array
     {
         return iterator_to_array(Iter::slice($iterable, $offset, $length, $reindex));
     }
@@ -2028,6 +2039,7 @@ class Arr
     {
         $union = static::from($iterable1);
         $reindex ??= array_is_list($union);
+
         foreach ($iterable2 as $key => $val) {
             if ($reindex) {
                 $union[] = $val;
@@ -2037,6 +2049,7 @@ class Arr
                 $union[$key] = static::unionRecursive($union[$key], $val, $depth - 1);
             }
         }
+
         /** @var array<TKey, TValue> $union */
         return $union;
     }
