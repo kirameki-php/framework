@@ -1222,7 +1222,7 @@ class Arr
 
     /**
      * @param mixed ...$values
-     * @return array<array-key, mixed>
+     * @return array<mixed>
      */
     public static function of(mixed ...$values): array
     {
