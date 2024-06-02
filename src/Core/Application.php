@@ -2,16 +2,11 @@
 
 namespace Kirameki\Core;
 
-use Kirameki\Container\Container;
-use Kirameki\Database\DatabaseInitializer;
-use Kirameki\Event\EventInitializer;
-use Kirameki\Exception\ExceptionInitializer;
 use Kirameki\Http\HttpInitializer;
 use Kirameki\Logging\LogInitializer;
 use Kirameki\Model\ModelInitializer;
 use Kirameki\Redis\RedisInitializer;
 use Kirameki\Security\SecurityInitializer;
-use Kirameki\Support\Str;
 use LogicException;
 use RuntimeException;
 use Webmozart\Assert\Assert;
@@ -39,11 +34,6 @@ class Application extends Container
     protected float $startTime;
 
     /**
-     * @var Config
-     */
-    protected Config $config;
-
-    /**
      * @return Application
      */
     public static function instance(): Application
@@ -58,24 +48,15 @@ class Application extends Container
     public function __construct(string $basePath, string $dotEnvPath = null)
     {
         static::$instance = $this;
-        static::setPhpRuntimeConfigs();
-        Env::applyDotFile($dotEnvPath ?? $basePath.'/.env');
 
         // getcwd() will be root project path
         chdir($basePath);
 
         $this->basePath = $basePath;
         $this->startTime = microtime(true) * 1000;
-        $this->config = Config::fromDirectory($basePath.'/config');
         $this->setName($this->config->getString('app.name'));
         $this->setTimeZone($this->config->getString('app.timezone'));
         $this->initialize();
-    }
-
-    public static function setPhpRuntimeConfigs(): void
-    {
-        error_reporting(E_ALL & ~E_NOTICE);
-        ini_set('display_errors', 'Off');
     }
 
     /**
@@ -201,17 +182,6 @@ class Application extends Container
     public function startTime(): float
     {
         return $this->startTime;
-    }
-
-    /**
-     * @param string|null $for
-     * @return Config
-     */
-    public function config(?string $for = null): Config
-    {
-        return $for !== null
-            ? $this->config->for($for)
-            : $this->config;
     }
 
     /**
